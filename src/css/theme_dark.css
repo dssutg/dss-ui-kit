@@ -1,0 +1,146 @@
+body {
+	--color-indigo-light: #35375e;
+	--color-indigo-dark: #2c2a4f;
+	--color-indigo-dark2: #242140;
+	--color-gray-light: #4d4e67;
+	--color-gray-light8: hsl(238, 14%, 35%);
+	--color-cyan-light: #3d446d;
+	--color-cyan-light2: #447a82;
+	--color-purple-light: #6d50ac;
+	--color-brown-light: #403c5f;
+	--color-brown-light2: #434343;
+	--color-gray-light2: #565289;
+	--color-green-light: #a0fb9f;
+	--color-red-light: #e55f5f;
+	--color-yellow-light: #ffb66c;
+	--color-white: #ffffff;
+	--color-black: #181b30;
+	--color-gray-light3: #dddddd;
+	--color-gray-light4: #989898;
+	--color-brand: #56698f; /* Sigma-IS brand logo color */
+	--color-blue-light: #5a8ebe;
+	--color-pink-light: #c6aee7;
+	--color-magenta-dark: #6200ee;
+	--color-purple-light2: #6b546a;
+	--color-gray-light5: #37373a;
+	--color-gray-light6: hsl(0, 1%, 33%);
+	--color-gray-light7: hsl(0, 5%, 29%);
+
+	--color-bpl: #333333; /* Background: Primary Light */
+	--color-bpd: #222222; /* Background: Primary Dark */
+	--color-bpd2: #0f0f0f; /* Background: Primary Dark 2 */
+
+	--color-bse: var(--color-gray-light6); /* Background: Selected */
+	--color-bhd: var(--color-gray-light5); /* Background: Header */
+	--color-bbp: var(--color-purple-light2); /* Background: Button Primary */
+	--color-bin: var(--color-brown-light2); /* Background: Input */
+	--color-bsp: var(--color-gray-light7); /* Background: Separator */
+	--color-bok: var(--color-green-light); /* Background: Okay */
+	--color-bokt: var(
+		--color-black
+	); /* Text: Okay text color above Okay background */
+	--color-bda: var(--color-red-light); /* Background: Danger */
+	--color-bdat: var(
+		--color-white
+	); /* Text: Danger text color above Danger background */
+	--color-bno: var(--color-yellow-light); /* Background: Normal */
+	--color-bnot: var(
+		--color-black
+	); /* Text: Normal text color above Normal background */
+	--color-bgt: #111112; /* Background: Group Title */
+	--color-bocb: #161517; /* Background: Oscilloscope: chart background */
+
+	--color-tpl: var(--color-white); /* Text: Primary Light */
+	--color-tpd: var(--color-gray-light4); /* Text: Primary Dark */
+	--color-tse: var(--color-gray-light8); /* Text: Selected */
+	--color-thd: var(--color-gray-light3); /* Text: Header */
+	--color-ths: var(--color-gray-light3); /* Text: Header, Separator */
+	--color-tbp: var(--color-purple-light2); /* Text: Button Primary */
+	--color-tin: var(--color-brown-light2); /* Text: Input */
+	--color-tsp: var(--color-gray-light2); /* Text: Separator */
+	--color-tok: var(--color-green-light); /* Text: Okay */
+	--color-tda: var(--color-red-light); /* Text: Danger */
+	--color-tno: var(--color-yellow-light); /* Text: Normal */
+	--color-tgt: var(--color-white); /* Background: Group Title */
+	--color-tli: var(--color-blue-light); /* Text: Link */
+
+	--color-bslider: var(--color-pink-light); /* Slider background */
+	--color-sliderthumb: var(--color-magenta-dark); /* Slider thumb */
+
+	--color-texpander: var(--color-white); /* Expand/collapse text */
+	--color-bexpander: var(
+		--color-purple-light2
+	); /* Expand/collapse background */
+
+	--color-topl: var(--color-white); /* Text: Oscilloscope: primary light */
+	--color-topd: var(--color-black); /* Text: Oscilloscope: primary dark */
+	--color-bopl: var(
+		--color-gray-light5
+	); /* Background: Oscilloscope: primary light */
+	--color-ocpl: #ffffff; /* Oscilloscope: Position Label */
+	--color-occlp: #338693; /* Oscilloscope: Chunk Line Primary */
+	--color-occls: #163c41; /* Oscilloscope: Chunk Line Secondary */
+	--color-ocaxis: #3da8b3; /* Oscilloscope: Axis */
+	--color-ochi: #b76a6a44; /* Oscilloscope: Highlight */
+	--color-ochi-selected: #f68f8f44; /* Oscilloscope: Highlight (Selected) */
+
+	--color-to-top-bg: #9c759c;
+
+	--color-event-log-record-column-fg: #ffffff;
+	--color-event-log-record-column-bg: #6e3797;
+	--color-event-log-record-header-column-fg: var(--color-tpl);
+	--color-event-log-record-header-column-bg: var(--color-bpl);
+	--color-event-log-record-cell-border: #512373;
+	--color-event-log-window-bg: var(--color-bpd);
+	--color-icon-regular: #898989;
+	--color-icon-inactive: #696969;
+	--color-menu-item: #cccccc;
+	--color-ripple-button: rgba(128, 128, 255, 0.7);
+	--color-ripple-icon-button: #cccccc;
+	--color-text: #eeeeee;
+	--color-inactive-text: #999999;
+	--color-placeholder: #bbbbbb;
+	--color-separator: #999999;
+	--color-loading-spinner-bg: #cfd0d1;
+	--color-loading-spinner-fg: #1c87c9;
+	--color-notification-panel-bg: var(--color-bpd);
+	--color-notification-panel-item-unread-bg: var(--color-bpd2);
+	--color-notification-panel-relative-date: #cccccc;
+	--color-scroll-progress-bar: var(--color-bpd);
+	--color-error-dialog-window-text: #eeeeee;
+	--color-error-dialog-window-bg: #aa0000;
+	--color-error-dialog-window-scroll-bar: #a00000;
+	--color-error-dialog-window-scroll-bar-thumb: #e00000;
+	--color-error-dialog-window-close-button-text: #eeeeee;
+	--color-error-dialog-window-close-button-bg: #ab0000;
+	--color-zone-manager-main-window-bg: var(--color-bpd);
+	--color-zone-manager-top-control-bg: var(--color-bpl);
+	--color-zone-manager-top-control-object-count-bg: var(--color-bpl);
+	--color-zone-manager-top-tile-title-icon: var(--color-bpl);
+	--color-mini-calendar-bg: #262626;
+	--color-mini-calendar-today-bg: #ffff00;
+	--color-mini-calendar-today-fg: #000000;
+	--color-mini-calendar-title-fg: #ffffff;
+	--color-mini-calendar-weekend: #ff0000;
+	--color-mini-calendar-adjacent: #999999;
+	--color-mini-calendar-weekday: #ffffff;
+	--color-button-regular-bg: var(--color-purple-light2);
+	--color-button-good-bg: var(--color-green-light);
+	--color-button-good-mobile-bg: var(--color-green-light);
+	--color-button-good-fg: var(--color-black);
+	--color-button-good-mobile-fg: var(--color-black);
+	--color-input-bg: var(--color-brown-light2);
+
+	--rs-variable-section-highlighted-variable-row: #664059;
+
+	--color-ring-progress-bar-good: #a0fb9f;
+	--color-ring-progress-bar-normal: #ffb66c;
+	--color-ring-progress-bar-bad: #e55f5f;
+
+	--object-action-manager-feedback-date-fg: #bb0;
+	--object-action-manager-feedback-message-fg: #ff0;
+
+	--color-graph-connected-edge: var(--color-bok);
+	--color-graph-disconnected-edge: var(--color-bno);
+	--color-graph-edge-selected: var(--color-white);
+}

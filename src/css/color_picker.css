@@ -1,0 +1,103 @@
+.color-picker-cn {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	width: 200px;
+	height: 200px;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+	cursor: default;
+}
+
+.color-picker-cn__saturation {
+	position: relative;
+	flex-grow: 1;
+	border-color: transparent;
+	border-bottom: 12px solid #000;
+	border-radius: 8px 8px 0 0;
+	background-image:
+		linear-gradient(to top, #000, #0000), linear-gradient(to right, #fff, #fff0);
+}
+
+.color-picker-cn__pointer-fill,
+.color-picker-cn__alpha-gradient {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	pointer-events: none;
+	border-radius: inherit;
+}
+
+.color-picker-cn__alpha-gradient,
+.color-picker-cn__saturation {
+	box-shadow: inset 0 0 0 1px #0000000d;
+}
+
+.color-picker-cn__hue,
+.color-picker-cn__alpha {
+	position: relative;
+	height: 24px;
+}
+
+.color-picker-cn__hue {
+	background: linear-gradient(
+		to right,
+		red,
+		#ff0 17%,
+		#0f0 33%,
+		#0ff,
+		#00f 67%,
+		#f0f 83%,
+		red
+	);
+}
+
+.color-picker-cn__last-control {
+	border-radius: 0 0 8px 8px;
+}
+
+.color-picker-cn__interactive {
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	border-radius: inherit;
+	outline: none;
+	touch-action: none;
+}
+
+.color-picker-cn__pointer {
+	position: absolute;
+	z-index: 1;
+	box-sizing: border-box;
+	width: 28px;
+	height: 28px;
+	transform: translate(-50%, -50%);
+	background-color: #fff;
+	border: 2px solid #fff;
+	border-radius: 50%;
+	box-shadow: 0 2px 4px #0003;
+}
+
+.color-picker-cn__interactive:focus .color-picker-cn__pointer {
+	transform: translate(-50%, -50%) scale(1.1);
+}
+
+.color-picker-cn__alpha,
+.color-picker-cn__alpha-pointer {
+	background-color: #fff;
+	background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill-opacity=".05"><rect x="8" width="8" height="8"/><rect y="8" width="8" height="8"/></svg>');
+}
+
+.color-picker-cn__saturation-pointer {
+	z-index: 3;
+}
+
+.color-picker-cn__hue-pointer {
+	z-index: 2;
+}
