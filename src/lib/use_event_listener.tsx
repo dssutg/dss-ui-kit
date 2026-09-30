@@ -1,32 +1,32 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
 
 // For registering event listeners
 type EventListenerCallback<E> = (event: E) => void;
 
 export function useEventListener<E>(
-	eventType: string,
-	callback: EventListenerCallback<E>,
-	element: EventTarget | null = window,
+  eventType: string,
+  callback: EventListenerCallback<E>,
+  element: EventTarget | null = window,
 ) {
-	const callbackRef = useRef<EventListenerCallback<E>>(callback);
+  const callbackRef = useRef<EventListenerCallback<E>>(callback);
 
-	useEffect(() => {
-		callbackRef.current = callback;
-	}, [callback]);
+  useEffect(() => {
+    callbackRef.current = callback;
+  }, [callback]);
 
-	useEffect(() => {
-		if (element === null || element === undefined) {
-			return undefined;
-		}
+  useEffect(() => {
+    if (element === null || element === undefined) {
+      return undefined;
+    }
 
-		const handler: EventListener = (event: Event) => {
-			callbackRef.current(event as E);
-		};
+    const handler: EventListener = (event: Event) => {
+      callbackRef.current(event as E);
+    };
 
-		element.addEventListener(eventType, handler);
+    element.addEventListener(eventType, handler);
 
-		return () => {
-			element.removeEventListener(eventType, handler);
-		};
-	}, [eventType, element]);
+    return () => {
+      element.removeEventListener(eventType, handler);
+    };
+  }, [eventType, element]);
 }

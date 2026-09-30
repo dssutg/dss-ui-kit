@@ -1,74 +1,73 @@
 :root {
-	--font-mono:
-		ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono,
-		Courier New, monospace;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
 }
 
 * {
-	scrollbar-width: thin;
-	scrollbar-color: #b070e0 transparent;
+  scrollbar-width: thin;
+  scrollbar-color: #b070e0 transparent;
 }
 
 ::-webkit-scrollbar {
-	height: 12px;
-	width: 12px;
-	background-color: #7030a0;
+  height: 12px;
+  width: 12px;
+  background-color: #7030a0;
 }
 
 ::-webkit-scrollbar-corner {
-	background-color: #7030a0;
+  background-color: #7030a0;
 }
 
 ::-webkit-scrollbar-thumb {
-	background-color: #b070e0;
-	border-radius: 9999rem;
+  background-color: #b070e0;
+  border-radius: 9999rem;
 }
 
 html {
-	font-size: 16px;
-	scroll-behavior: smooth;
+  font-size: 16px;
+  scroll-behavior: smooth;
 }
 
 body {
-	font-family:
-		sans-serif,
-		ui-sans-serif,
-		system-ui,
-		"Apple Color Emoji",
-		"Segoe UI Emoji",
-		Segoe UI Symbol,
-		"Noto Color Emoji";
+  font-family:
+    sans-serif,
+    ui-sans-serif,
+    system-ui,
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    Segoe UI Symbol,
+    "Noto Color Emoji";
 
-	padding: 0;
-	margin: 0;
-	background-color: var(--color-bpl);
-	-webkit-font-smoothing: antialiased;
-	color: var(--color-tpl);
+  padding: 0;
+  margin: 0;
+  background-color: var(--color-bpl);
+  -webkit-font-smoothing: antialiased;
+  color: var(--color-tpl);
 }
 
 *:focus {
-	outline: none;
+  outline: none;
 }
 
 *:focus-visible {
-	outline: none;
+  outline: none;
 }
 
 .enable_js {
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	width: 100%;
-	max-width: 100%;
-	padding: 1rem;
-	color: #fff;
-	box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
+  padding: 1rem;
+  color: #fff;
+  box-sizing: border-box;
 }
 
 .enable_js__lang_string {
-	width: max-content;
-	max-width: 100%;
-	text-align: center;
-	box-sizing: border-box;
+  width: max-content;
+  max-width: 100%;
+  text-align: center;
+  box-sizing: border-box;
 }

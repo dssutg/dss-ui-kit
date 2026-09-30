@@ -1,19 +1,19 @@
 body[data-theme="purple"] {
-	--color-bbp: var(--color-purple-light);
-	--color-bexpander: var(--color-purple-light);
-	--color-bhd: var(--color-cyan-light);
-	--color-bin: #6d2ca1;
-	--color-bocb: #242140;
-	--color-bopl: var(--color-cyan-light2);
-	--color-bpd2: var(--color-indigo-dark2);
-	--color-bpd: #3f0b69;
-	--color-bpl: #5e1995;
-	--color-bse: var(--color-gray-light);
-	--color-bsp: var(--color-gray-light2);
-	--color-button-regular-bg: var(--color-purple-light);
-	--color-input-bg: var(--color-brown-light);
-	--color-tbp: var(--color-purple-light);
-	--color-tin: var(--color-brown-light);
-	--color-tse: var(--color-gray-light);
-	--color-bgt: var(--color-black);
+  --color-bbp: var(--color-purple-light);
+  --color-bexpander: var(--color-purple-light);
+  --color-bhd: var(--color-cyan-light);
+  --color-bin: #6d2ca1;
+  --color-bocb: #242140;
+  --color-bopl: var(--color-cyan-light2);
+  --color-bpd2: var(--color-indigo-dark2);
+  --color-bpd: #3f0b69;
+  --color-bpl: #5e1995;
+  --color-bse: var(--color-gray-light);
+  --color-bsp: var(--color-gray-light2);
+  --color-button-regular-bg: var(--color-purple-light);
+  --color-input-bg: var(--color-brown-light);
+  --color-tbp: var(--color-purple-light);
+  --color-tin: var(--color-brown-light);
+  --color-tse: var(--color-gray-light);
+  --color-bgt: var(--color-black);
 }

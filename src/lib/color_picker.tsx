@@ -998,13 +998,13 @@ function useColorManipulation<T extends AnyColor>(
 // Saves incoming handler to the ref in order to avoid "useCallback hell"
 function useEventCallback<T>(handler?: (value: T) => void): (value: T) => void {
 	const callbackRef = useRef(handler);
-	const function_ = useRef((value: T) => {
+	const function = useRef((value: T) => {
 		callbackRef.current?.(value);
 	});
 
 	callbackRef.current = handler;
 
-	return function_.current;
+	return function.current;
 }
 
 function validHex(value: string, alpha?: boolean): boolean {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * The library's event bus.
@@ -29,14 +29,14 @@ import { useEffect, useRef, useState } from "react";
  * a consumer that never augments it can still use the untyped form.
  */
 // biome-ignore lint/style/noEmptyInterface: an empty interface is the extension point consumers merge into
-export interface EventTypes {}
+export type EventTypes = {};
 
 interface EventDetail<T = undefined> {
-	id: string;
-	data?: T;
+  id: string;
+  data?: T;
 }
 
-const EVENT_CATEGORY = "ui-kit:event";
+const EVENT_CATEGORY = 'ui-kit:event';
 
 /**
  * Emits an event.
@@ -45,11 +45,11 @@ const EVENT_CATEGORY = "ui-kit:event";
  * payload and cannot tell the difference between "emitted with no payload" and "never emitted".
  */
 export function emitEvent<T>(eventId: string, data?: T): void {
-	window.dispatchEvent(
-		new CustomEvent<EventDetail<T>>(EVENT_CATEGORY, {
-			detail: { id: eventId, data },
-		}),
-	);
+  window.dispatchEvent(
+    new CustomEvent<EventDetail<T>>(EVENT_CATEGORY, {
+      detail: { id: eventId, data },
+    }),
+  );
 }
 
 /**
@@ -60,25 +60,25 @@ export function emitEvent<T>(eventId: string, data?: T): void {
  * is missed, as with any subscription: this is for reacting to change, not for reading initial state.
  */
 export function useEvent<T>(eventId: string, callback: (data: T | undefined) => void): void {
-	const callbackRef = useRef(callback);
+  const callbackRef = useRef(callback);
 
-	useEffect(() => {
-		callbackRef.current = callback;
-	}, [callback]);
+  useEffect(() => {
+    callbackRef.current = callback;
+  }, [callback]);
 
-	useEffect(() => {
-		function handleEvent(event: Event) {
-			const detail = (event as CustomEvent<EventDetail<T>>).detail;
-			if (detail.id === eventId) {
-				callbackRef.current(detail.data);
-			}
-		}
+  useEffect(() => {
+    function handleEvent(event: Event) {
+      const detail = (event as CustomEvent<EventDetail<T>>).detail;
+      if (detail.id === eventId) {
+        callbackRef.current(detail.data);
+      }
+    }
 
-		window.addEventListener(EVENT_CATEGORY, handleEvent);
-		return () => {
-			window.removeEventListener(EVENT_CATEGORY, handleEvent);
-		};
-	}, [eventId]);
+    window.addEventListener(EVENT_CATEGORY, handleEvent);
+    return () => {
+      window.removeEventListener(EVENT_CATEGORY, handleEvent);
+    };
+  }, [eventId]);
 }
 
 /**
@@ -88,16 +88,16 @@ export function useEvent<T>(eventId: string, callback: (data: T | undefined) => 
  * anything that re-runs, use {@link useEvent}.
  */
 export function onEvent<T>(eventId: string, callback: (data: T | undefined) => void): void {
-	function handleEvent(event: Event) {
-		const detail = (event as CustomEvent<EventDetail<T>>).detail;
-		if (detail.id !== eventId) {
-			return;
-		}
-		window.removeEventListener(EVENT_CATEGORY, handleEvent);
-		callback(detail.data);
-	}
+  function handleEvent(event: Event) {
+    const detail = (event as CustomEvent<EventDetail<T>>).detail;
+    if (detail.id !== eventId) {
+      return;
+    }
+    window.removeEventListener(EVENT_CATEGORY, handleEvent);
+    callback(detail.data);
+  }
 
-	window.addEventListener(EVENT_CATEGORY, handleEvent);
+  window.addEventListener(EVENT_CATEGORY, handleEvent);
 }
 
 /**
@@ -106,23 +106,20 @@ export function onEvent<T>(eventId: string, callback: (data: T | undefined) => v
  * A name the consumer has not declared is a compile error, so the typed and untyped forms cannot
  * drift apart unnoticed.
  */
-export function emitTypedEvent<T extends keyof EventTypes>(
-	eventId: T,
-	data: EventTypes[T],
-): void {
-	emitEvent(eventId, data);
+export function emitTypedEvent<T extends keyof EventTypes>(eventId: T, data: EventTypes[T]): void {
+  emitEvent(eventId, data);
 }
 
 /** Subscribes to a declared event for the lifetime of the calling component. */
 export function useTypedEvent<T extends keyof EventTypes>(
-	eventId: T,
-	callback: (data: EventTypes[T]) => void,
+  eventId: T,
+  callback: (data: EventTypes[T]) => void,
 ): void {
-	useEvent<EventTypes[T]>(eventId, (data) => {
-		if (data !== undefined) {
-			callback(data);
-		}
-	});
+  useEvent<EventTypes[T]>(eventId, (data) => {
+    if (data !== undefined) {
+      callback(data);
+    }
+  });
 }
 
 /**
@@ -132,16 +129,14 @@ export function useTypedEvent<T extends keyof EventTypes>(
  * subscription to the source: an event that fires while the component is unmounted is not seen, so a
  * component that mounts late reads `null` and should fetch what it needs.
  */
-export function useTypedEventData<T extends keyof EventTypes>(
-	eventId: T,
-): EventTypes[T] | null {
-	const [data, setData] = useState<EventTypes[T] | null>(null);
+export function useTypedEventData<T extends keyof EventTypes>(eventId: T): EventTypes[T] | null {
+  const [data, setData] = useState<EventTypes[T] | null>(null);
 
-	useEvent<EventTypes[T]>(eventId, (incoming) => {
-		if (incoming !== undefined) {
-			setData(incoming);
-		}
-	});
+  useEvent<EventTypes[T]>(eventId, (incoming) => {
+    if (incoming !== undefined) {
+      setData(incoming);
+    }
+  });
 
-	return data;
+  return data;
 }

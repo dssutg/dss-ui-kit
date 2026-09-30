@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { emitEvent, useEvent } from "@/event";
+import { useCallback, useEffect, useState } from 'react';
+import { emitEvent, useEvent } from '@/event';
 
 /**
  * The themes the library ships.
@@ -9,7 +9,7 @@ import { emitEvent, useEvent } from "@/event";
  * the library does not ship declares the custom properties itself and adds the name to
  * {@link registerTheme} before using it.
  */
-export const builtinThemeNames = ["dark", "light", "acme", "indigo", "purple"] as const;
+export const builtinThemeNames = ['dark', 'light', 'acme', 'indigo', 'purple'] as const;
 
 export type BuiltinThemeName = (typeof builtinThemeNames)[number];
 
@@ -20,25 +20,25 @@ export type ThemeName = string;
 
 /** The swatch shown for a theme in a theme picker. */
 export interface ThemeDescriptor {
-	readonly name: ThemeName;
-	/** A CSS colour, used as the picker's tile. Not a design token: it is a literal fill. */
-	readonly tileColor: string;
+  readonly name: ThemeName;
+  /** A CSS colour, used as the picker's tile. Not a design token: it is a literal fill. */
+  readonly tileColor: string;
 }
 
 export const builtinThemes: readonly ThemeDescriptor[] = [
-	{ name: "dark", tileColor: "#222222" },
-	{ name: "light", tileColor: "#dedede" },
-	{ name: "acme", tileColor: "#ffffea" },
-	{ name: "indigo", tileColor: "#6b67bb" },
-	{ name: "purple", tileColor: "#a967bb" },
+  { name: 'dark', tileColor: '#222222' },
+  { name: 'light', tileColor: '#dedede' },
+  { name: 'acme', tileColor: '#ffffea' },
+  { name: 'indigo', tileColor: '#6b67bb' },
+  { name: 'purple', tileColor: '#a967bb' },
 ];
 
-const registeredThemes = new Map<ThemeName, ThemeDescriptor>(builtinThemes.map(
-	(theme) => [theme.name, theme],
-));
+const registeredThemes = new Map<ThemeName, ThemeDescriptor>(
+  builtinThemes.map((theme) => [theme.name, theme]),
+);
 
 /** The theme used when nothing else applies, and the fallback for an unknown name. */
-export const defaultTheme: ThemeName = "dark";
+export const defaultTheme: ThemeName = 'dark';
 
 /**
  * Adds a theme the library does not ship.
@@ -48,23 +48,23 @@ export const defaultTheme: ThemeName = "dark";
  * brand looks like.
  */
 export function registerTheme(theme: ThemeDescriptor): void {
-	registeredThemes.set(theme.name, theme);
+  registeredThemes.set(theme.name, theme);
 }
 
 /** Every known theme, the built-in ones first. */
 export function getAllThemes(): readonly ThemeDescriptor[] {
-	return [...registeredThemes.values()];
+  return [...registeredThemes.values()];
 }
 
 export function isThemeName(name: string): name is ThemeName {
-	return registeredThemes.has(name);
+  return registeredThemes.has(name);
 }
 
 /** The key the current theme is persisted under. Configurable so two libraries can coexist. */
-export const THEME_STORAGE_KEY = "ui-kit.theme";
+export const THEME_STORAGE_KEY = 'ui-kit.theme';
 
 /** The attribute the current theme is written to. Tailwind and the theme CSS both read this. */
-export const THEME_ATTRIBUTE = "data-theme";
+export const THEME_ATTRIBUTE = 'data-theme';
 
 /**
  * The theme currently applied, read from storage and then from the document.
@@ -74,28 +74,28 @@ export const THEME_ATTRIBUTE = "data-theme";
  * leaving the document in a state no stylesheet matches.
  */
 export function getCurrentTheme(): ThemeName {
-	const stored = readStoredTheme();
-	if (stored !== null) {
-		return stored;
-	}
+  const stored = readStoredTheme();
+  if (stored !== null) {
+    return stored;
+  }
 
-	const fromDocument = document.body?.getAttribute(THEME_ATTRIBUTE);
-	if (fromDocument !== null && fromDocument !== undefined && isThemeName(fromDocument)) {
-		return fromDocument;
-	}
+  const fromDocument = document.body?.getAttribute(THEME_ATTRIBUTE);
+  if (fromDocument !== null && fromDocument !== undefined && isThemeName(fromDocument)) {
+    return fromDocument;
+  }
 
-	return defaultTheme;
+  return defaultTheme;
 }
 
 function readStoredTheme(): ThemeName | null {
-	try {
-		const stored = localStorage.getItem(THEME_STORAGE_KEY);
-		return stored !== null && isThemeName(stored) ? stored : null;
-	} catch {
-		// Storage is unavailable in a private window or a sandboxed frame. The document attribute
-		// is still a valid source, so this is not worth failing over.
-		return null;
-	}
+  try {
+    const stored = localStorage.getItem(THEME_STORAGE_KEY);
+    return stored !== null && isThemeName(stored) ? stored : null;
+  } catch {
+    // Storage is unavailable in a private window or a sandboxed frame. The document attribute
+    // is still a valid source, so this is not worth failing over.
+    return null;
+  }
 }
 
 /**
@@ -103,15 +103,15 @@ function readStoredTheme(): ThemeName | null {
  * event so anything that cached the old value updates.
  */
 export function setTheme(themeName: ThemeName): void {
-	document.body?.setAttribute(THEME_ATTRIBUTE, themeName);
+  document.body?.setAttribute(THEME_ATTRIBUTE, themeName);
 
-	try {
-		localStorage.setItem(THEME_STORAGE_KEY, themeName);
-	} catch {
-		// As above: a theme that cannot be persisted is still a theme that is applied.
-	}
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, themeName);
+  } catch {
+    // As above: a theme that cannot be persisted is still a theme that is applied.
+  }
 
-	emitEvent("ui-kit:theme-changed", { themeName });
+  emitEvent('ui-kit:theme-changed', { themeName });
 }
 
 /**
@@ -121,29 +121,29 @@ export function setTheme(themeName: ThemeName): void {
  * document itself, so that a programmatic `setTheme` from outside React is picked up too.
  */
 export function useTheme(): ThemeName {
-	const [theme, setThemeState] = useState<ThemeName>(getCurrentTheme);
+  const [theme, setThemeState] = useState<ThemeName>(getCurrentTheme);
 
-	useEvent<{ themeName: ThemeName }>(
-		"ui-kit:theme-changed",
-		useCallback(({ themeName }) => {
-			setThemeState(themeName);
-		}, []),
-	);
+  useEvent<{ themeName: ThemeName }>(
+    'ui-kit:theme-changed',
+    useCallback(({ themeName }) => {
+      setThemeState(themeName);
+    }, []),
+  );
 
-	// The document attribute is the source of truth for the CSS, and another tab can change it.
-	useEffect(() => {
-		const onStorage = (event: StorageEvent) => {
-			if (event.key !== THEME_STORAGE_KEY) {
-				return;
-			}
-			setThemeState(getCurrentTheme());
-		};
+  // The document attribute is the source of truth for the CSS, and another tab can change it.
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== THEME_STORAGE_KEY) {
+        return;
+      }
+      setThemeState(getCurrentTheme());
+    };
 
-		window.addEventListener("storage", onStorage);
-		return () => {
-			window.removeEventListener("storage", onStorage);
-		};
-	}, []);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
 
-	return theme;
+  return theme;
 }

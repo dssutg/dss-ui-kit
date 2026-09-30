@@ -1,4 +1,4 @@
-import { type Point2D, clamp } from "@/lib/math";
+import { clamp, type Point2D } from "@/lib/math";
 
 export function inViewport(element: Readonly<HTMLElement>) {
 	const { top, bottom, left, right } = element.getBoundingClientRect();
@@ -324,18 +324,18 @@ export function areDOMRectsEqual(rect1: DOMRect, rect2: DOMRect): boolean {
 	);
 }
 
-export function debounce<T extends (...arguments_: readonly unknown[]) => void>(
-	function_: T,
+export function debounce<T extends (...arguments: readonly unknown[]) => void>(
+	function: T,
 	delay: number,
-): (thisObject: unknown, ...arguments_: Parameters<T>) => void {
+): (thisObject: unknown, ...arguments: Parameters<T>) => void {
 	let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-	return (thisObject: unknown, ...arguments_: Parameters<T>) => {
+	return (thisObject: unknown, ...arguments: Parameters<T>) => {
 		if (timeoutId) {
 			clearTimeout(timeoutId);
 		}
 		timeoutId = setTimeout(() => {
-			function_.apply(thisObject, arguments_);
+			function.apply(thisObject, arguments);
 		}, delay);
 	};
 }
