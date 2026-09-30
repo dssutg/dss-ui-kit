@@ -5,6 +5,10 @@
     "emitDeclarationOnly": true,
     "declaration": true,
     "declarationMap": true,
+    // `rootDir` has to be stated rather than inferred: the package publishes `dist/types/index.d.ts`
+    // as its `types` entry, which requires the emitted tree to be rooted at `src` and not one
+    // directory above it.
+    "rootDir": "./src",
     "outDir": "dist/types"
   },
   "include": ["src"],

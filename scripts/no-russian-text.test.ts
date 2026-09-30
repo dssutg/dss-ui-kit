@@ -12,10 +12,6 @@ import { collectFiles, REPOSITORY_ROOT } from './lib/source-tree.ts';
  * The rule this checks is therefore the strict form of the convention: Russian text lives in
  * `src/locales/ru.tsx` and nowhere else, and everything else holds message keys. It is checked here
  * rather than left to review — this runs as part of `deno task ci`.
- *
- * It currently fails. The tree is a mid-decoupling copy of the original application and six files still
- * hold Russian outside the locale file; the list is in `TODO.md` stage 7, and this test is what
- * keeps it from growing.
  */
 
 /** Extensions of the files a reader of this repository opens as text. */
