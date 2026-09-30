@@ -11,8 +11,8 @@ export function Ripple({
   color = 'rgba(128, 128, 255, 0.7)',
   duration = 600,
 }: {
-  readonly color?: string;
-  readonly duration?: number;
+  readonly color?: string | undefined;
+  readonly duration?: number | undefined;
 }) {
   const wrapperRef = useRef<HTMLSpanElement>(null);
 

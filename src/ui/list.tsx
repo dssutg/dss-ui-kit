@@ -1,3 +1,4 @@
+import type { TargetedEvent } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForceUpdate } from '@/lib/use_force_update';
 import { useGranularEffect } from '@/lib/use_granular_effect';
@@ -23,11 +24,13 @@ export function VirtualizedList({
   readonly rowRenderer: (props: VirtualizedListRowRendererProps) => React.ReactNode;
   readonly width: number | string;
   readonly height: number | string;
-  readonly onScroll?: (event: UIEvent) => void;
-  readonly overScanCount?: number;
+  // The handler is attached to the scrolling div, so it is that element event it receives.
+  readonly onScroll?: (event: TargetedEvent<HTMLDivElement, Event>) => void;
+  readonly overScanCount?: number | undefined;
   readonly containerRef: React.MutableRefObject<HTMLDivElement | null>;
 }) {
   const { startIndex, endIndex, getItemStyle } = useVirtualizedList({
+    // The default lives in the hook, so an absent count is passed on as absent.
     ref: containerRef,
     itemCount,
     itemSize,
@@ -64,8 +67,8 @@ export function useVirtualizedList({
 }: {
   itemCount: number;
   itemSize: number;
-  overScanCount?: number;
-  ref?: React.MutableRefObject<HTMLDivElement | null>;
+  overScanCount?: number | undefined;
+  ref?: React.MutableRefObject<HTMLDivElement | null> | undefined;
 }) {
   const [startIndex, setStartIndex] = useState(0);
   const [endIndex, setEndIndex] = useState(0);

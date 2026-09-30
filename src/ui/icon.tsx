@@ -16,13 +16,13 @@ export function Icon({
   children,
 }: {
   readonly name: IconName;
-  readonly className?: string;
-  readonly style?: React.CSSProperties;
-  readonly prependComponent?: React.ReactNode;
-  readonly appendComponent?: React.ReactNode;
-  readonly onDrop?: React.DragEventHandler<SVGSVGElement>;
-  readonly invisible?: boolean;
-  readonly children?: React.ReactNode;
+  readonly className?: string | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  readonly prependComponent?: React.ReactNode | undefined;
+  readonly appendComponent?: React.ReactNode | undefined;
+  readonly onDrop?: React.DragEventHandler<SVGSVGElement> | undefined;
+  readonly invisible?: boolean | undefined;
+  readonly children?: React.ReactNode | undefined;
 }) {
   const icon = iconPaths[name];
 

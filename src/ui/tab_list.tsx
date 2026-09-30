@@ -23,10 +23,10 @@ export function MUITabList<ID extends string>({
   tabTriggerStyle,
 }: {
   readonly tabs: readonly MUITabDescriptor<ID>[];
-  readonly rightComponent?: React.ReactNode;
-  readonly style?: React.CSSProperties;
-  readonly tabTriggerListStyle?: React.CSSProperties;
-  readonly tabTriggerStyle?: React.CSSProperties;
+  readonly rightComponent?: React.ReactNode | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  readonly tabTriggerListStyle?: React.CSSProperties | undefined;
+  readonly tabTriggerStyle?: React.CSSProperties | undefined;
 }) {
   const [tabId, setTabId] = useState<ID | null>(tabs[0]?.id ?? null);
 
@@ -53,10 +53,10 @@ export function ControlledMUITabList<ID extends string>({
   setTabId,
 }: {
   readonly tabs: readonly MUITabDescriptor<ID>[];
-  readonly rightComponent?: React.ReactNode;
-  readonly style?: React.CSSProperties;
-  readonly tabTriggerListStyle?: React.CSSProperties;
-  readonly tabTriggerStyle?: React.CSSProperties;
+  readonly rightComponent?: React.ReactNode | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  readonly tabTriggerListStyle?: React.CSSProperties | undefined;
+  readonly tabTriggerStyle?: React.CSSProperties | undefined;
   readonly tabId: ID | null;
   readonly setTabId: (tabId: ID | null) => void;
 }) {

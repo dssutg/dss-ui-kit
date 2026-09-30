@@ -33,7 +33,7 @@ export function openFileDialog(
   {
     accept,
   }: {
-    readonly accept?: string;
+    readonly accept?: string | undefined;
   } = {},
 ) {
   const fileInput = document.createElement('input');
@@ -100,7 +100,7 @@ export function downloadCanvasAsFile(
   {
     mimeType = 'image/png',
   }: {
-    readonly mimeType?: string;
+    readonly mimeType?: string | undefined;
   } = {},
 ) {
   downloadURLAsFile(filename, canvas.toDataURL(mimeType));
@@ -121,8 +121,8 @@ export function openPdfExporterForHtml(
     width = window.innerWidth,
     height = window.innerHeight,
   }: {
-    readonly width?: number;
-    readonly height?: number;
+    readonly width?: number | undefined;
+    readonly height?: number | undefined;
   },
 ) {
   const printWindow = window.open('', '', `height=${height},width=${width}`);
@@ -150,8 +150,8 @@ export function formatByteSize(
     decimals = 2,
     sizeUnitTitles = defaultSizeUnitTitles,
   }: {
-    readonly decimals?: number;
-    readonly sizeUnitTitles?: string[];
+    readonly decimals?: number | undefined;
+    readonly sizeUnitTitles?: string[] | undefined;
   } = {},
 ): string {
   if (bytes === 0) {

@@ -49,10 +49,10 @@ export function ButtonGroup<T extends string>({
   readonly itemId: T;
   readonly items: readonly ButtonGroupItem<T>[];
   readonly onItemChange: ButtonGroupItemChangeHandler<T>;
-  readonly className?: string;
-  readonly style?: React.CSSProperties;
-  readonly buttonStyle?: React.CSSProperties;
-  readonly transparentBG?: boolean;
+  readonly className?: string | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  readonly buttonStyle?: React.CSSProperties | undefined;
+  readonly transparentBG?: boolean | undefined;
 }) {
   function onKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
     if (event.code !== 'ArrowLeft' && event.code !== 'ArrowRight') {
@@ -105,11 +105,11 @@ export function CopyToClipboardButton({
   title,
 }: {
   readonly contentToCopy: string | (() => string);
-  readonly className?: string;
-  readonly style?: React.CSSProperties;
-  readonly buttonStyle?: React.CSSProperties;
-  readonly iconStyle?: React.CSSProperties;
-  readonly title?: string;
+  readonly className?: string | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  readonly buttonStyle?: React.CSSProperties | undefined;
+  readonly iconStyle?: React.CSSProperties | undefined;
+  readonly title?: string | undefined;
 }) {
   const { t } = useLocale();
 
@@ -175,24 +175,24 @@ export function IconButton({
   children,
 }: {
   readonly icon: IconName;
-  readonly rippleColor?: string;
-  readonly title?: string;
-  readonly ariaLabel?: string;
-  readonly className?: string;
-  readonly style?: React.CSSProperties;
-  readonly iconClassName?: string;
-  readonly bgClassName?: string;
-  readonly iconStyle?: React.CSSProperties;
-  readonly inactive?: boolean;
-  readonly invisible?: boolean;
-  readonly onClick?: MouseEventHandler<HTMLButtonElement>;
-  readonly onDblClick?: MouseEventHandler<HTMLButtonElement>;
-  readonly buttonRef?: React.Ref<HTMLButtonElement> | undefined;
-  readonly children?: React.ReactNode;
+  readonly rippleColor?: string | undefined;
+  readonly title?: string | undefined;
+  readonly ariaLabel?: string | undefined;
+  readonly className?: string | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  readonly iconClassName?: string | undefined;
+  readonly bgClassName?: string | undefined;
+  readonly iconStyle?: React.CSSProperties | undefined;
+  readonly inactive?: boolean | undefined;
+  readonly invisible?: boolean | undefined;
+  readonly onClick?: MouseEventHandler<HTMLButtonElement> | undefined;
+  readonly onDblClick?: MouseEventHandler<HTMLButtonElement> | undefined;
+  buttonRef?: React.Ref<HTMLButtonElement> | undefined;
+  readonly children?: React.ReactNode | undefined;
 }) {
   return (
     <button
-      ref={buttonRef}
+      ref={buttonRef ?? null}
       tabIndex={0}
       type="button"
       title={title}
@@ -221,9 +221,9 @@ export function IconedButtonGroup({
   style,
 }: {
   readonly group: { icon: IconName; title: string }[];
-  readonly value?: number;
+  readonly value?: number | undefined;
   readonly onChange?: (index: number) => void;
-  readonly style?: React.CSSProperties;
+  readonly style?: React.CSSProperties | undefined;
 }) {
   return (
     <div className="flex items-center justify-center" style={style}>
@@ -269,9 +269,9 @@ export interface ToggleButtonProps<TValue extends string> {
   readonly options: readonly ToggleButtonOption<TValue>[];
   /** Called with the newly selected value. The button never changes its own state. */
   readonly onChange: (value: TValue) => void;
-  readonly className?: string;
-  readonly style?: React.CSSProperties;
-  readonly iconClassName?: string;
+  readonly className?: string | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  readonly iconClassName?: string | undefined;
 }
 
 /**
@@ -356,18 +356,18 @@ export function Button({
   onClick,
   children,
 }: {
-  readonly type?: ButtonType;
-  readonly htmlButtonType?: 'button' | 'submit' | 'reset';
-  readonly icon?: IconName;
-  readonly title?: string;
-  readonly style?: React.CSSProperties;
-  readonly buttonRef?: React.Ref<HTMLButtonElement>;
-  readonly onClick?: React.MouseEventHandler<HTMLButtonElement>;
-  readonly children?: React.ReactNode;
+  readonly type?: ButtonType | undefined;
+  readonly htmlButtonType?: 'button' | 'submit' | 'reset' | undefined;
+  readonly icon?: IconName | undefined;
+  readonly title?: string | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  buttonRef?: React.Ref<HTMLButtonElement> | undefined;
+  readonly onClick?: React.MouseEventHandler<HTMLButtonElement> | undefined;
+  readonly children?: React.ReactNode | undefined;
 }) {
   return (
     <button
-      ref={buttonRef}
+      ref={buttonRef ?? null}
       type={htmlButtonType}
       className={`
         justify-content relative flex shrink-0 select-none items-center justify-center overflow-hidden rounded-lg hover:brightness-150
@@ -407,9 +407,9 @@ export interface LinkProps {
    */
   readonly onNavigate?: (to: string) => void;
   readonly onClick?: () => void;
-  readonly className?: string;
-  readonly style?: React.CSSProperties;
-  readonly children?: React.ReactNode;
+  readonly className?: string | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  readonly children?: React.ReactNode | undefined;
 }
 
 /**
@@ -449,8 +449,8 @@ export function ToTop({
   minAppearanceY = 300,
   style,
 }: {
-  readonly minAppearanceY?: number;
-  readonly style?: React.CSSProperties;
+  readonly minAppearanceY?: number | undefined;
+  readonly style?: React.CSSProperties | undefined;
 }) {
   const [visible, setVisible] = useState(false);
 

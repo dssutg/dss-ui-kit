@@ -11,9 +11,9 @@ export function Select({
 }: {
   readonly value: string;
   readonly onChange: React.ChangeEventHandler<HTMLSelectElement>;
-  readonly style?: React.CSSProperties;
-  readonly disabled?: boolean;
-  readonly id?: string;
+  readonly style?: React.CSSProperties | undefined;
+  readonly disabled?: boolean | undefined;
+  readonly id?: string | undefined;
   readonly children: React.ReactNode;
 }) {
   useTheme();

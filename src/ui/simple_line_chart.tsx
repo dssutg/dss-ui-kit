@@ -16,13 +16,13 @@ export function SimpleLineChart({
   style,
 }: {
   readonly yPoints: number[];
-  readonly color?: string;
-  readonly gridColor?: string;
-  readonly xScale?: number;
-  readonly gridCellWidth?: number;
-  readonly gridCellHeight?: number;
-  readonly className?: string;
-  readonly style?: React.CSSProperties;
+  readonly color?: string | undefined;
+  readonly gridColor?: string | undefined;
+  readonly xScale?: number | undefined;
+  readonly gridCellWidth?: number | undefined;
+  readonly gridCellHeight?: number | undefined;
+  readonly className?: string | undefined;
+  readonly style?: React.CSSProperties | undefined;
 }) {
   useTheme();
 

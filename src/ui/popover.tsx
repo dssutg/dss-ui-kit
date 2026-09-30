@@ -20,14 +20,14 @@ export function Popover({
 }: {
   readonly open: boolean;
   readonly onOpenChange: (open: boolean) => void;
-  readonly trigger?: React.ReactNode;
-  readonly hasBackDrop?: boolean;
-  readonly backDropStyle?: React.CSSProperties;
-  readonly forceMount?: boolean;
-  readonly noAutofocusToPanel?: boolean;
-  readonly popoverStyle?: React.CSSProperties;
-  readonly popoverClassName?: string;
-  readonly children?: React.ReactNode;
+  readonly trigger?: React.ReactNode | undefined;
+  readonly hasBackDrop?: boolean | undefined;
+  readonly backDropStyle?: React.CSSProperties | undefined;
+  readonly forceMount?: boolean | undefined;
+  readonly noAutofocusToPanel?: boolean | undefined;
+  readonly popoverStyle?: React.CSSProperties | undefined;
+  readonly popoverClassName?: string | undefined;
+  readonly children?: React.ReactNode | undefined;
 }) {
   const triggerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -159,9 +159,9 @@ function PopoverPanel({
   readonly panelRef: React.MutableRefObject<HTMLDivElement | null>;
   readonly rootTriggerBox: DOMRect | null;
   readonly noAutofocusToPanel: boolean;
-  readonly className?: string;
-  readonly style?: React.CSSProperties;
-  readonly children?: React.ReactNode;
+  readonly className?: string | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  readonly children?: React.ReactNode | undefined;
 }) {
   const [panelPosX, setPanelPosX] = useState<number | null>(null);
   const [panelPosY, setPanelPosY] = useState<number | null>(null);

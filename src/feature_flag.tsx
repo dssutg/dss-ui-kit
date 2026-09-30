@@ -23,7 +23,7 @@ const registry = new Set<FeatureName>();
 
 export interface FeatureDescriptor {
   readonly name: FeatureName;
-  readonly defaultValue?: boolean;
+  readonly defaultValue?: boolean | undefined;
 }
 
 export function registerFeatureFlag(descriptor: FeatureDescriptor): void {
@@ -66,9 +66,11 @@ export function useFeatureFlag(featureName: FeatureName): boolean {
   useEvent<FeatureToggleEvent>(
     'ui-kit:feature-toggled',
     useCallback(
-      ({ featureName: toggledFeatureName, enabled }) => {
-        if (toggledFeatureName === featureName) {
-          setEnabled(enabled);
+      (event) => {
+        // Every event on the bus arrives with a possibly-absent payload; only a toggle event
+        // concerns this flag, and one without a payload is not one.
+        if (event !== undefined && event.featureName === featureName) {
+          setEnabled(event.enabled);
           forceUpdate();
         }
       },

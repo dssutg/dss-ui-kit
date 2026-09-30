@@ -50,21 +50,21 @@ export function DropDownMenu({
   onTriggerMouseEnter,
   onTriggerMouseLeave,
 }: {
-  readonly variant?: 'dots' | 'button';
-  readonly triggerIcon?: IconName;
-  readonly triggerTitle?: string;
-  readonly triggerTitleStyle?: React.CSSProperties;
-  readonly triggerHoverTitle?: string;
-  readonly triggerStyle?: React.CSSProperties;
-  readonly triggerIconStyle?: React.CSSProperties;
-  readonly dropDownListStyle?: React.CSSProperties;
-  readonly menuItemClassName?: string;
-  readonly menuItemIconStyle?: React.CSSProperties;
-  readonly menuItemIconMoreStyle?: React.CSSProperties;
+  readonly variant?: 'dots' | 'button' | undefined;
+  readonly triggerIcon?: IconName | undefined;
+  readonly triggerTitle?: string | undefined;
+  readonly triggerTitleStyle?: React.CSSProperties | undefined;
+  readonly triggerHoverTitle?: string | undefined;
+  readonly triggerStyle?: React.CSSProperties | undefined;
+  readonly triggerIconStyle?: React.CSSProperties | undefined;
+  readonly dropDownListStyle?: React.CSSProperties | undefined;
+  readonly menuItemClassName?: string | undefined;
+  readonly menuItemIconStyle?: React.CSSProperties | undefined;
+  readonly menuItemIconMoreStyle?: React.CSSProperties | undefined;
   readonly menu: DropDownMenuItem[];
-  readonly onTriggerClick?: React.MouseEventHandler<HTMLButtonElement>;
-  readonly onTriggerMouseEnter?: React.MouseEventHandler<HTMLButtonElement>;
-  readonly onTriggerMouseLeave?: React.MouseEventHandler<HTMLButtonElement>;
+  readonly onTriggerClick?: React.MouseEventHandler<HTMLButtonElement> | undefined;
+  readonly onTriggerMouseEnter?: React.MouseEventHandler<HTMLButtonElement> | undefined;
+  readonly onTriggerMouseLeave?: React.MouseEventHandler<HTMLButtonElement> | undefined;
 }) {
   const { t } = useLocale();
 
@@ -313,9 +313,9 @@ export function DropDownButton({
   style,
 }: {
   readonly menu: DropDownMenuItem[];
-  readonly variant?: DropDownButtonVariant;
+  readonly variant?: DropDownButtonVariant | undefined;
   readonly triggerTitle: string;
-  readonly style?: React.CSSProperties;
+  readonly style?: React.CSSProperties | undefined;
 }) {
   return (
     <DropDownMenu
@@ -340,10 +340,10 @@ export function DropDownButton({
 
 export interface DropDownMenuItem {
   path: string[];
-  icon?: IconName;
+  icon?: IconName | undefined;
   title: string;
   onSelect?: () => void;
-  submenu?: DropDownMenuItem[];
+  submenu?: DropDownMenuItem[] | undefined;
 }
 
 function getPanelMenuItemsByPath(path: readonly string[], rootPanel: readonly DropDownMenuItem[]) {
@@ -395,10 +395,10 @@ function DropDownMenuPanel({
   readonly submenu: DropDownMenuItem[];
   readonly rootTriggerBox: DOMRect | null;
   readonly triggerBox: DOMRect | null;
-  readonly dropDownListStyle?: React.CSSProperties;
-  readonly menuItemClassName?: string;
-  readonly menuItemIconStyle?: React.CSSProperties;
-  readonly menuItemIconMoreStyle?: React.CSSProperties;
+  readonly dropDownListStyle?: React.CSSProperties | undefined;
+  readonly menuItemClassName?: string | undefined;
+  readonly menuItemIconStyle?: React.CSSProperties | undefined;
+  readonly menuItemIconMoreStyle?: React.CSSProperties | undefined;
 }) {
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -520,10 +520,10 @@ function DropDownMenuItemElement({
   readonly path: string[];
   readonly setPath: (path: string[]) => void;
   readonly rootTriggerBox: DOMRect | null;
-  readonly dropDownListStyle?: React.CSSProperties;
-  readonly menuItemClassName?: string;
-  readonly menuItemIconStyle?: React.CSSProperties;
-  readonly menuItemIconMoreStyle?: React.CSSProperties;
+  readonly dropDownListStyle?: React.CSSProperties | undefined;
+  readonly menuItemClassName?: string | undefined;
+  readonly menuItemIconStyle?: React.CSSProperties | undefined;
+  readonly menuItemIconMoreStyle?: React.CSSProperties | undefined;
 }) {
   const iconSizeStyle: React.CSSProperties = {
     width: '1.25rem',

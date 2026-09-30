@@ -20,34 +20,34 @@ interface VerticalSize {
 type Size = HorizontalSize & VerticalSize;
 
 interface BaseProps extends HTMLAttributes<HTMLDivElement> {
-  doNotBailOutOnEmptyChildren?: boolean;
-  nonce?: string;
-  tagName?: string;
-  style?: React.CSSProperties;
+  doNotBailOutOnEmptyChildren?: boolean | undefined;
+  nonce?: string | undefined;
+  tagName?: string | undefined;
+  style?: React.CSSProperties | undefined;
 }
 
 type HeightOnlyProps = BaseProps & {
   children: (size: VerticalSize) => ReactNode;
-  defaultHeight?: number;
-  disableHeight?: false;
+  defaultHeight?: number | undefined;
+  disableHeight?: false | undefined;
   disableWidth: true;
   onResize?: (size: VerticalSize) => void;
 };
 
 type WidthOnlyProps = BaseProps & {
   children: (size: HorizontalSize) => ReactNode;
-  defaultWidth?: number;
+  defaultWidth?: number | undefined;
   disableHeight: true;
-  disableWidth?: false;
+  disableWidth?: false | undefined;
   onResize?: (size: HorizontalSize) => void;
 };
 
 type HeightAndWidthProps = BaseProps & {
   children: (size: Size) => ReactNode;
-  defaultHeight?: number;
-  defaultWidth?: number;
-  disableHeight?: false;
-  disableWidth?: false;
+  defaultHeight?: number | undefined;
+  defaultWidth?: number | undefined;
+  disableHeight?: false | undefined;
+  disableWidth?: false | undefined;
   onResize?: (size: Size) => void;
 };
 

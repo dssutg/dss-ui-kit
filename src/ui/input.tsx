@@ -10,7 +10,7 @@ import { Icon } from './icon';
 import { useIsMobileScreen } from './use_is_mobile_screen';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  readonly className?: string;
+  readonly className?: string | undefined;
 }
 
 export function Input({ ...rest }: InputProps) {
@@ -30,8 +30,8 @@ export function UnsignedIntegerInput({
 }: {
   readonly value: number;
   readonly onChange: (value: number) => void;
-  readonly min?: number;
-  readonly max?: number;
+  readonly min?: number | undefined;
+  readonly max?: number | undefined;
 }) {
   const actualMin = Math.max(min, 0);
   const actualMax = Math.min(max, Number.MAX_SAFE_INTEGER);
@@ -137,38 +137,38 @@ export function TextInput({
   clearIconInnerStyle,
   inputStyle,
 }: {
-  readonly type?: React.HTMLInputTypeAttribute;
-  readonly shouldRender?: boolean;
-  readonly textColor?: string;
-  readonly placeholderColor?: string;
-  readonly outline?: string;
-  readonly placeholder?: string;
-  readonly width?: string;
-  readonly minWidth?: string;
-  readonly inputPadding?: string;
-  readonly clearButtonPadding?: string;
-  readonly value?: string;
-  readonly min?: string | number;
-  readonly max?: string | number;
-  readonly step?: string | number;
-  readonly hasShowPasswordButton?: boolean;
-  readonly inputRef?: React.Ref<HTMLInputElement>;
-  readonly onChange?: React.ChangeEventHandler<HTMLInputElement>;
+  readonly type?: React.HTMLInputTypeAttribute | undefined;
+  readonly shouldRender?: boolean | undefined;
+  readonly textColor?: string | undefined;
+  readonly placeholderColor?: string | undefined;
+  readonly outline?: string | undefined;
+  readonly placeholder?: string | undefined;
+  readonly width?: string | undefined;
+  readonly minWidth?: string | undefined;
+  readonly inputPadding?: string | undefined;
+  readonly clearButtonPadding?: string | undefined;
+  readonly value?: string | undefined;
+  readonly min?: string | number | undefined;
+  readonly max?: string | number | undefined;
+  readonly step?: string | number | undefined;
+  readonly hasShowPasswordButton?: boolean | undefined;
+  inputRef?: React.Ref<HTMLInputElement> | undefined;
+  readonly onChange?: React.ChangeEventHandler<HTMLInputElement> | undefined;
   readonly onChangeText?: (value: string) => void;
-  readonly onClearClick?: React.MouseEventHandler<HTMLButtonElement>;
-  readonly onKeyUp?: React.KeyboardEventHandler<HTMLInputElement>;
-  readonly onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
-  readonly onConfirm?: React.KeyboardEventHandler<HTMLInputElement>;
-  readonly onFocus?: React.FocusEventHandler<HTMLInputElement>;
-  readonly onBlur?: React.FocusEventHandler<HTMLInputElement>;
-  readonly onShowPasswordClick?: React.MouseEventHandler<HTMLButtonElement>;
-  readonly spellCheck?: boolean;
-  readonly hiddenText?: boolean;
-  readonly pattern?: string;
-  readonly inputAutoFocus?: boolean;
-  readonly showPasswordIconInnerStyle?: React.CSSProperties;
-  readonly clearIconInnerStyle?: React.CSSProperties;
-  readonly inputStyle?: React.CSSProperties;
+  readonly onClearClick?: React.MouseEventHandler<HTMLButtonElement> | undefined;
+  readonly onKeyUp?: React.KeyboardEventHandler<HTMLInputElement> | undefined;
+  readonly onKeyDown?: React.KeyboardEventHandler<HTMLInputElement> | undefined;
+  readonly onConfirm?: React.KeyboardEventHandler<HTMLInputElement> | undefined;
+  readonly onFocus?: React.FocusEventHandler<HTMLInputElement> | undefined;
+  readonly onBlur?: React.FocusEventHandler<HTMLInputElement> | undefined;
+  readonly onShowPasswordClick?: React.MouseEventHandler<HTMLButtonElement> | undefined;
+  readonly spellCheck?: boolean | undefined;
+  readonly hiddenText?: boolean | undefined;
+  readonly pattern?: string | undefined;
+  readonly inputAutoFocus?: boolean | undefined;
+  readonly showPasswordIconInnerStyle?: React.CSSProperties | undefined;
+  readonly clearIconInnerStyle?: React.CSSProperties | undefined;
+  readonly inputStyle?: React.CSSProperties | undefined;
   [x: string]: unknown;
 }) {
   const { t } = useLocale();
@@ -269,7 +269,7 @@ export function IPInput({
 }: {
   readonly value: string;
   readonly onChange: (value: string) => void;
-  readonly width?: string;
+  readonly width?: string | undefined;
 }) {
   const onChangeText = useCallback(
     (text: string) => {
@@ -310,9 +310,9 @@ export function FloatInput({
 }: {
   readonly value: string;
   readonly onChange: (value: string) => void;
-  readonly width?: string;
-  readonly min?: number;
-  readonly max?: number;
+  readonly width?: string | undefined;
+  readonly min?: number | undefined;
+  readonly max?: number | undefined;
 }) {
   const valueNum = Number(value);
 
@@ -402,15 +402,15 @@ export function SearchInput({
   historyId,
 }: {
   readonly value: string;
-  readonly placeholder?: string;
-  readonly onChange?: React.ChangeEventHandler<HTMLInputElement>;
-  readonly onClear?: () => void;
-  readonly onChangeText?: (text: string) => void;
-  readonly style?: React.CSSProperties;
-  readonly inputStyle?: React.CSSProperties;
-  readonly autoFocus?: boolean;
-  readonly outerRef?: React.MutableRefObject<HTMLDivElement | null>;
-  readonly historyId?: string;
+  readonly placeholder?: string | undefined;
+  readonly onChange?: React.ChangeEventHandler<HTMLInputElement> | undefined;
+  readonly onClear?: (() => void) | undefined;
+  readonly onChangeText?: ((text: string) => void) | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  readonly inputStyle?: React.CSSProperties | undefined;
+  readonly autoFocus?: boolean | undefined;
+  outerRef?: React.MutableRefObject<HTMLDivElement | null> | undefined;
+  readonly historyId?: string | undefined;
 }) {
   const { t } = useLocale();
 
@@ -480,7 +480,7 @@ export function SearchInput({
 
   return (
     <div
-      ref={outerRef}
+      ref={outerRef ?? null}
       className="relative bg-bin flex flex-grow items-center rounded-lg px-2 py-1"
       style={style}
       tabIndex={0}
@@ -913,26 +913,26 @@ export function DecimalIntegerInput({
   onInputKeyDown,
   onInputWheel,
   shouldResetEmptyInput = false,
-  inputRef,
+  inputRef = null,
   noAlteringValueWithArrowKeys = false,
   noAlteringValueWithMouseWheel = false,
   base = 10,
 }: {
   readonly value: DecimalIntegerInputValue;
   readonly onChange: (value: DecimalIntegerInputValue) => void;
-  readonly onClear?: () => void;
-  readonly minValue?: number;
-  readonly maxValue?: number;
-  readonly style?: React.CSSProperties;
-  readonly inputStyle?: React.CSSProperties;
+  readonly onClear?: (() => void) | undefined;
+  readonly minValue?: number | undefined;
+  readonly maxValue?: number | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  readonly inputStyle?: React.CSSProperties | undefined;
   readonly onInputBlur?: React.FocusEventHandler<HTMLInputElement> | undefined;
   readonly onInputKeyDown?: (event: KeyboardEvent) => void;
   readonly onInputWheel?: (event: WheelEvent) => void;
-  readonly shouldResetEmptyInput?: boolean;
-  readonly inputRef?: React.Ref<HTMLInputElement>;
-  readonly noAlteringValueWithArrowKeys?: boolean;
-  readonly noAlteringValueWithMouseWheel?: boolean;
-  readonly base?: 10 | 16;
+  readonly shouldResetEmptyInput?: boolean | undefined;
+  inputRef?: React.Ref<HTMLInputElement> | undefined;
+  readonly noAlteringValueWithArrowKeys?: boolean | undefined;
+  readonly noAlteringValueWithMouseWheel?: boolean | undefined;
+  readonly base?: 10 | 16 | undefined;
 }) {
   const { t } = useLocale();
 
@@ -1083,12 +1083,12 @@ export function DelayedInput({
   readonly value: string;
   readonly onChange: (value: string) => void;
   readonly onBlur?: () => void;
-  readonly spellCheck?: boolean;
-  readonly className?: string;
-  readonly style?: React.CSSProperties;
+  readonly spellCheck?: boolean | undefined;
+  readonly className?: string | undefined;
+  readonly style?: React.CSSProperties | undefined;
   readonly getFilteredValue?: (value: string) => string;
-  readonly changeOnEnterKey?: boolean;
-  readonly autoFocus?: boolean;
+  readonly changeOnEnterKey?: boolean | undefined;
+  readonly autoFocus?: boolean | undefined;
 }) {
   const [hotValue, setHotValue] = useState(value);
 
@@ -1137,10 +1137,10 @@ export function JsonEditor({
 }: {
   readonly code: string;
   readonly setCode: (code: string) => void;
-  readonly expandingTab?: boolean;
-  readonly tabSize?: number;
-  readonly highlightSyntax?: boolean;
-  readonly style?: React.CSSProperties;
+  readonly expandingTab?: boolean | undefined;
+  readonly tabSize?: number | undefined;
+  readonly highlightSyntax?: boolean | undefined;
+  readonly style?: React.CSSProperties | undefined;
 }) {
   return (
     <div className="flex w-full gap-2 overflow-hidden" style={style}>
@@ -1213,10 +1213,10 @@ export function LogWidget({
   readonly onPlayClick: React.MouseEventHandler<HTMLButtonElement>;
   readonly onPauseClick: React.MouseEventHandler<HTMLButtonElement>;
   readonly onClearClick: React.MouseEventHandler<HTMLButtonElement>;
-  readonly extraLeftControlsComponent?: React.ReactNode;
-  readonly extraRightControlsComponent?: React.ReactNode;
-  readonly style?: React.CSSProperties;
-  readonly className?: string;
+  readonly extraLeftControlsComponent?: React.ReactNode | undefined;
+  readonly extraRightControlsComponent?: React.ReactNode | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  readonly className?: string | undefined;
 }) {
   const { t } = useLocale();
 
@@ -1261,9 +1261,9 @@ export function LogOutputTextArea({
   shouldScrollToEndOnUpdate = false,
 }: {
   readonly output: string;
-  readonly dontWrapLongLines?: boolean;
-  readonly style?: React.CSSProperties;
-  readonly shouldScrollToEndOnUpdate?: boolean;
+  readonly dontWrapLongLines?: boolean | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  readonly shouldScrollToEndOnUpdate?: boolean | undefined;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -1305,7 +1305,7 @@ export function HighlightedJson({
   className,
 }: {
   readonly json: string;
-  readonly className?: string;
+  readonly className?: string | undefined;
 }) {
   return (
     <pre className={className} dangerouslySetInnerHTML={{ __html: highlightText(json, 'json') }} />

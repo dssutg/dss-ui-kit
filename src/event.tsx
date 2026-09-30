@@ -33,7 +33,7 @@ export type EventTypes = {};
 
 interface EventDetail<T = undefined> {
   id: string;
-  data?: T;
+  data?: T | undefined;
 }
 
 const EVENT_CATEGORY = 'ui-kit:event';
@@ -45,11 +45,11 @@ const EVENT_CATEGORY = 'ui-kit:event';
  * payload and cannot tell the difference between "emitted with no payload" and "never emitted".
  */
 export function emitEvent<T>(eventId: string, data?: T): void {
-  window.dispatchEvent(
-    new CustomEvent<EventDetail<T>>(EVENT_CATEGORY, {
-      detail: { id: eventId, data },
-    }),
-  );
+  // The key is omitted rather than set to `undefined`, so a listener can tell an event that carries
+  // no payload from one that was never emitted.
+  const detail: EventDetail<T> = data === undefined ? { id: eventId } : { id: eventId, data };
+
+  window.dispatchEvent(new CustomEvent<EventDetail<T>>(EVENT_CATEGORY, { detail }));
 }
 
 /**

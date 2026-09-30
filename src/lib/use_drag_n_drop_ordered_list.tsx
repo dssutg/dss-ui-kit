@@ -19,7 +19,7 @@ export function useDragNDropOrderedList<ListItemDataType>(
   });
 
   const onDragStart = (event: TargetedEvent<HTMLElement, DragEvent>) => {
-    const initialPosition = Number(event.currentTarget.dataset.position);
+    const initialPosition = Number(event.currentTarget.dataset['position']);
 
     setDragAndDrop({
       ...dragAndDrop,
@@ -37,7 +37,7 @@ export function useDragNDropOrderedList<ListItemDataType>(
     let updatedOrder: ListItemDataType[] = [...items];
 
     const { draggedFrom } = dragAndDrop;
-    const draggedTo = Number(event.currentTarget.dataset.position);
+    const draggedTo = Number(event.currentTarget.dataset['position']);
     const itemDragged = updatedOrder[draggedFrom!];
     const remainingItems = updatedOrder.filter(
       (_: ListItemDataType, index: number) => index !== draggedFrom,

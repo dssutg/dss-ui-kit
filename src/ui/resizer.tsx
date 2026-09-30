@@ -11,13 +11,13 @@ export function ResizableSplit({
   readonly panels: readonly {
     id: string;
     component: React.ReactNode;
-    initialSize?: number;
-    minSize?: number;
-    maxSize?: number;
+    initialSize?: number | undefined;
+    minSize?: number | undefined;
+    maxSize?: number | undefined;
   }[];
-  readonly style?: React.CSSProperties;
-  readonly orientation?: 'horizontal' | 'vertical';
-  readonly childrenOverflow?: string;
+  readonly style?: React.CSSProperties | undefined;
+  readonly orientation?: 'horizontal' | 'vertical' | undefined;
+  readonly childrenOverflow?: string | undefined;
 }) {
   const vertical = orientation === 'vertical';
 
@@ -58,7 +58,7 @@ function ResizablePanel({
   readonly totalPanels: number;
   readonly vertical: boolean;
   readonly childrenOverflow: string;
-  readonly children?: React.ReactNode;
+  readonly children?: React.ReactNode | undefined;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
 

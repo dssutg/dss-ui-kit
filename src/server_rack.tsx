@@ -674,7 +674,7 @@ function buildArrowDownModel({
   flip = false,
 }: {
   readonly pos: Vector3Array;
-  readonly flip?: boolean;
+  readonly flip?: boolean | undefined;
 }): SceneObject {
   const color = '#00ff00';
 
@@ -700,7 +700,7 @@ function buildPointerPartModel({
   flip = false,
 }: {
   readonly color: string;
-  readonly flip?: boolean;
+  readonly flip?: boolean | undefined;
 }): SceneObject {
   return {
     type: 'box',
@@ -731,14 +731,14 @@ interface GLQuad {
   topRight: Vector3Array;
   topLeft: Vector3Array;
 
-  modulator?: Vector4Array;
+  modulator?: Vector4Array | undefined;
 
-  bottomLeftColor?: Vector4Array;
-  bottomRightColor?: Vector4Array;
-  topRightColor?: Vector4Array;
-  topLeftColor?: Vector4Array;
+  bottomLeftColor?: Vector4Array | undefined;
+  bottomRightColor?: Vector4Array | undefined;
+  topRightColor?: Vector4Array | undefined;
+  topLeftColor?: Vector4Array | undefined;
 
-  uv?: GLQuadUV;
+  uv?: GLQuadUV | undefined;
 }
 
 interface ObjectMaterial {
@@ -753,42 +753,42 @@ interface ObjectMaterial {
 
 interface QuadSceneObject {
   type: 'quad';
-  pos?: Vector3Array;
-  scale?: Vector3Array;
-  rotation?: Vector3Array;
+  pos?: Vector3Array | undefined;
+  scale?: Vector3Array | undefined;
+  rotation?: Vector3Array | undefined;
   material: ObjectMaterial;
 }
 
 interface BoxSceneObject {
   type: 'box';
-  pos?: Vector3Array;
-  scale?: Vector3Array;
-  rotation?: Vector3Array;
+  pos?: Vector3Array | undefined;
+  scale?: Vector3Array | undefined;
+  rotation?: Vector3Array | undefined;
   material: ObjectMaterial;
-  frontUV?: GLQuadUV;
-  backUV?: GLQuadUV;
-  topUV?: GLQuadUV;
-  bottomUV?: GLQuadUV;
-  rightUV?: GLQuadUV;
-  leftUV?: GLQuadUV;
-  tag?: unknown;
+  frontUV?: GLQuadUV | undefined;
+  backUV?: GLQuadUV | undefined;
+  topUV?: GLQuadUV | undefined;
+  bottomUV?: GLQuadUV | undefined;
+  rightUV?: GLQuadUV | undefined;
+  leftUV?: GLQuadUV | undefined;
+  tag?: unknown | undefined;
 }
 
 interface TextSceneObject {
   type: 'text';
   text: string;
-  pos?: Vector3Array;
-  scale?: Vector3Array;
-  rotation?: Vector3Array;
-  material?: ObjectMaterial;
-  color?: Vector4Array;
+  pos?: Vector3Array | undefined;
+  scale?: Vector3Array | undefined;
+  rotation?: Vector3Array | undefined;
+  material?: ObjectMaterial | undefined;
+  color?: Vector4Array | undefined;
 }
 
 interface GroupSceneObject {
   type: 'group';
-  pos?: Vector3Array;
-  scale?: Vector3Array;
-  rotation?: Vector3Array;
+  pos?: Vector3Array | undefined;
+  scale?: Vector3Array | undefined;
+  rotation?: Vector3Array | undefined;
   children: SceneObject[];
 }
 
@@ -1132,13 +1132,13 @@ function getBoxCropUV({
   atlasHeight,
   faceName = 'front',
 }: {
-  readonly cropX?: number;
-  readonly cropY?: number;
+  readonly cropX?: number | undefined;
+  readonly cropY?: number | undefined;
   readonly cropWidth: number;
   readonly cropHeight: number;
   readonly atlasWidth: number;
   readonly atlasHeight: number;
-  readonly faceName?: BoxFaceName;
+  readonly faceName?: BoxFaceName | undefined;
 }): GLQuadUV {
   const x0 = cropX / atlasWidth;
   const y0 = cropY / atlasHeight;
@@ -1372,13 +1372,13 @@ export interface ServerRackViewProps {
    * The background behind the cabinet. A prop because a rack drawn on a black rectangle is one
    * look, and a consumer placing it on a page of its own may want another.
    */
-  readonly backgroundColor?: string;
+  readonly backgroundColor?: string | undefined;
   /**
    * Draws the ray used to pick a device, plus a marker in the corner. A developer aid for working
    * out why a click misses, and off by default: it is switched on by whoever is debugging rather
    * than by a debug menu in the application around the library.
    */
-  readonly showRayTrail?: boolean;
+  readonly showRayTrail?: boolean | undefined;
 }
 
 /**
@@ -2533,17 +2533,17 @@ export interface ServerRackEditorProps {
    * instead of asking the operator to map every column by hand. Without it the editor only reads
    * databases whose columns the operator has named themselves.
    */
-  readonly columns?: RackDatabaseColumns;
+  readonly columns?: RackDatabaseColumns | undefined;
   /**
    * Ready-made column mappings the operator can pick from, for the exports a caller knows about.
    * A template is a suggestion: whatever the operator has typed wins.
    */
-  readonly aliasMapTemplates?: readonly RackDeviceAliasMap[];
+  readonly aliasMapTemplates?: readonly RackDeviceAliasMap[] | undefined;
   /**
    * The name the editor offers for a downloaded rack configuration. A prop because the file name
    * ends up in the operator's downloads folder and the convention is the caller's.
    */
-  readonly configFilename?: string;
+  readonly configFilename?: string | undefined;
 }
 
 /**

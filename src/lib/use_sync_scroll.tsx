@@ -7,7 +7,7 @@ export function useSyncScroll<T extends HTMLElement>({
 }: {
   readonly container1: T | null;
   readonly container2: T | null;
-  readonly enabled?: boolean;
+  readonly enabled?: boolean | undefined;
 }) {
   useEventListener(
     'scroll',

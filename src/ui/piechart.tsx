@@ -25,7 +25,7 @@ export function getShareColor({
 }: {
   readonly shareIndex: number;
   readonly totalShares: number;
-  readonly colors?: readonly string[];
+  readonly colors?: readonly string[] | undefined;
 }) {
   const curColor = colors[shareIndex % colors.length]!;
 
@@ -86,8 +86,8 @@ export function PieChart({
 }: {
   readonly shares: readonly PieChartShare[];
   readonly radius: number;
-  readonly style?: React.CSSProperties;
-  readonly shareMarginDegrees?: number;
+  readonly style?: React.CSSProperties | undefined;
+  readonly shareMarginDegrees?: number | undefined;
 }) {
   const [hoveredShare, setHoveredShare] = useState<PieChartShare | null>(null);
 

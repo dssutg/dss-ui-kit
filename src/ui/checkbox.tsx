@@ -11,9 +11,9 @@ export function Checkbox({
 }: {
   readonly checked: boolean;
   readonly onChange: (checked: boolean) => void;
-  readonly label?: React.ReactNode;
-  readonly style?: React.CSSProperties;
-  readonly labelStyle?: React.CSSProperties;
+  readonly label?: React.ReactNode | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  readonly labelStyle?: React.CSSProperties | undefined;
 }) {
   const id = useId();
 
@@ -69,13 +69,13 @@ export function LockableToggleSwitch({
   readonly label: string;
   readonly enabled: boolean;
   readonly onChange: () => void;
-  readonly gap?: string;
-  readonly shouldLabelGrow?: boolean;
-  readonly rightSide?: boolean;
-  readonly locked?: boolean;
-  readonly lockReasonTitle?: string;
-  readonly title?: string;
-  readonly style?: React.CSSProperties;
+  readonly gap?: string | undefined;
+  readonly shouldLabelGrow?: boolean | undefined;
+  readonly rightSide?: boolean | undefined;
+  readonly locked?: boolean | undefined;
+  readonly lockReasonTitle?: string | undefined;
+  readonly title?: string | undefined;
+  readonly style?: React.CSSProperties | undefined;
 }) {
   const [feedbackVisible, setFeedbackVisible] = useState(false);
 
@@ -121,17 +121,17 @@ export function ToggleSwitch({
   barStyle,
   enabledBgClassName = 'bg-[#4bd763]',
 }: {
-  readonly label?: React.ReactNode;
+  readonly label?: React.ReactNode | undefined;
   readonly enabled: boolean;
   readonly onChange?: () => void;
-  readonly rightSide?: boolean;
-  readonly shouldLabelGrow?: boolean;
-  readonly locked?: boolean;
-  readonly title?: string;
-  readonly style?: React.CSSProperties;
-  readonly labelStyle?: React.CSSProperties;
-  readonly barStyle?: React.CSSProperties;
-  readonly enabledBgClassName?: string;
+  readonly rightSide?: boolean | undefined;
+  readonly shouldLabelGrow?: boolean | undefined;
+  readonly locked?: boolean | undefined;
+  readonly title?: string | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  readonly labelStyle?: React.CSSProperties | undefined;
+  readonly barStyle?: React.CSSProperties | undefined;
+  readonly enabledBgClassName?: string | undefined;
 }) {
   const labelComponent = label !== undefined &&
     label !== null &&

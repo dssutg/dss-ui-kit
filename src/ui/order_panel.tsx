@@ -18,16 +18,16 @@ export function OrderPanel<T extends number>({
   noOrderControls = false,
   style,
 }: {
-  readonly title?: string;
+  readonly title?: string | undefined;
   readonly items: T[];
-  readonly visibilityMap?: boolean[];
+  readonly visibilityMap?: boolean[] | undefined;
   readonly itemIndexFormatter?: (item: T, index: number) => React.ReactNode;
   readonly onChange?: (items: T[]) => void;
   readonly onVisibilityChange?: (visibilityMap: boolean[]) => void;
   readonly onResetDefaultOrder?: () => void;
   readonly onRemoveItem?: (item: T, itemIndex: number) => void;
-  readonly noOrderControls?: boolean;
-  readonly style?: React.CSSProperties;
+  readonly noOrderControls?: boolean | undefined;
+  readonly style?: React.CSSProperties | undefined;
 }) {
   const { t } = useLocale();
 
@@ -182,7 +182,7 @@ function OrderPanelControlButton({
   readonly icon: IconName;
   readonly title: string;
   readonly onClick: React.MouseEventHandler<HTMLButtonElement>;
-  readonly style?: React.CSSProperties;
+  readonly style?: React.CSSProperties | undefined;
 }) {
   return (
     <IconButton

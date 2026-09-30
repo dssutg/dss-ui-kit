@@ -16,11 +16,11 @@ export function Modal({
   readonly open: boolean;
   readonly onOpenChange: (open: boolean) => void;
   readonly title: string;
-  readonly style?: React.CSSProperties;
-  readonly innerStyle?: React.CSSProperties;
-  readonly noWidthRestriction?: boolean;
-  readonly verticalAlignment?: 'center' | 'top';
-  readonly children?: React.ReactNode;
+  readonly style?: React.CSSProperties | undefined;
+  readonly innerStyle?: React.CSSProperties | undefined;
+  readonly noWidthRestriction?: boolean | undefined;
+  readonly verticalAlignment?: 'center' | 'top' | undefined;
+  readonly children?: React.ReactNode | undefined;
 }) {
   const { t } = useLocale();
 

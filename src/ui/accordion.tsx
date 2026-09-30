@@ -23,18 +23,18 @@ export function Accordion({
 }: {
   readonly expanded: boolean;
   readonly onExpansionChange: (expanded: boolean) => void;
-  readonly flippedIcon?: boolean;
-  readonly triggerTitle?: React.ReactNode;
-  readonly style?: React.CSSProperties;
-  readonly contentClassName?: string;
-  readonly triggerClassName?: string;
-  readonly triggerStyle?: React.CSSProperties;
-  readonly fixedSize?: number;
-  readonly children?: React.ReactNode;
-  readonly beforeTriggerComponent?: React.ReactNode;
-  readonly afterTriggerComponent?: React.ReactNode;
+  readonly flippedIcon?: boolean | undefined;
+  readonly triggerTitle?: React.ReactNode | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  readonly contentClassName?: string | undefined;
+  readonly triggerClassName?: string | undefined;
+  readonly triggerStyle?: React.CSSProperties | undefined;
+  readonly fixedSize?: number | undefined;
+  readonly children?: React.ReactNode | undefined;
+  readonly beforeTriggerComponent?: React.ReactNode | undefined;
+  readonly afterTriggerComponent?: React.ReactNode | undefined;
   readonly getContentStyle?: (expanded: boolean) => React.CSSProperties;
-  readonly forceMount?: boolean;
+  readonly forceMount?: boolean | undefined;
 }) {
   const id = useId();
   const { contentRef, contentStyle: defaultContentStyle } = useAccordion(
@@ -161,7 +161,7 @@ export function EditableAccordionList({
   readonly errors: string[];
   readonly getItemContent: (item: EditableAccordionListItem) => React.ReactNode;
   readonly appendItemTitle: string;
-  readonly className?: string;
+  readonly className?: string | undefined;
   readonly getFilteredItemName?: (name: string) => string;
 }) {
   const { t } = useLocale();

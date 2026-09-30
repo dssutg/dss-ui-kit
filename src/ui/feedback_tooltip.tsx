@@ -19,12 +19,12 @@ export function FeedbackTooltip({
   trigger,
   children,
 }: {
-  readonly type?: FeedbackTooltipType;
+  readonly type?: FeedbackTooltipType | undefined;
   readonly visible: boolean;
-  readonly duration?: number;
-  readonly title?: string;
-  readonly trigger?: HTMLElement | null;
-  readonly children?: React.ReactNode;
+  readonly duration?: number | undefined;
+  readonly title?: string | undefined;
+  readonly trigger?: HTMLElement | null | undefined;
+  readonly children?: React.ReactNode | undefined;
 }) {
   const [isVisible, setIsVisible] = useState(false);
 

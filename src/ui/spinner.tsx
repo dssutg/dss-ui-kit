@@ -15,8 +15,8 @@ export function WshSpinner({
   color = '#ddd',
   style,
 }: {
-  readonly color?: string;
-  readonly style?: React.CSSProperties;
+  readonly color?: string | undefined;
+  readonly style?: React.CSSProperties | undefined;
 }) {
   return (
     <div
@@ -50,8 +50,8 @@ export function DashedCircle({
   active = true,
   title = 'Loading...',
 }: {
-  readonly active?: boolean;
-  readonly title?: string;
+  readonly active?: boolean | undefined;
+  readonly title?: string | undefined;
 }) {
   if (!active) {
     return null;

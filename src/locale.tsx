@@ -203,7 +203,7 @@ export interface LocaleProviderProps {
    * The locale to start in. Defaults to the browser's preference when it is one the library ships,
    * and to the fallback locale otherwise.
    */
-  readonly initialLocale?: LocaleName;
+  readonly initialLocale?: LocaleName | undefined;
   /**
    * Extra or replacement messages, merged over the shipped catalogues.
    *
@@ -211,9 +211,9 @@ export interface LocaleProviderProps {
    * overrides an individual string without forking the library. A consumer still adds its own keys
    * here; the library never needs to know about them.
    */
-  readonly messages?: Readonly<Record<string, MessageCatalogue>>;
+  readonly messages?: Readonly<Record<string, MessageCatalogue>> | undefined;
   /** Persist the chosen locale under this key. Pass `null` to not persist it at all. */
-  readonly storageKey?: string | null;
+  readonly storageKey?: string | null | undefined;
 }
 
 function detectInitialLocale(storageKey: string | null): LocaleName {

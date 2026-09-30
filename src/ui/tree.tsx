@@ -42,15 +42,15 @@ import { useIsMobileScreen } from './use_is_mobile_screen';
 
 export interface TreeViewItem {
   id: string;
-  labelPrefix?: React.ReactNode;
+  labelPrefix?: React.ReactNode | undefined;
   label: string;
-  labelSuffix?: React.ReactNode;
-  loading?: boolean;
-  icon?: IconName;
-  children?: TreeViewItem[];
-  expanded?: boolean;
-  checked?: boolean;
-  level?: number;
+  labelSuffix?: React.ReactNode | undefined;
+  loading?: boolean | undefined;
+  icon?: IconName | undefined;
+  children?: TreeViewItem[] | undefined;
+  expanded?: boolean | undefined;
+  checked?: boolean | undefined;
+  level?: number | undefined;
   onDragOver?: (e: DragEvent) => void;
   onDrop?: (e: DragEvent) => void;
 }
@@ -81,17 +81,17 @@ export function TreeView({
   readonly setTree: (tree: TreeViewItem[]) => void;
   readonly selectedItemId: string | null;
   readonly onSelectedItemIdChange: (itemId: string | null) => void;
-  readonly hasSearch?: boolean;
-  readonly levelPaddingPixels?: number;
-  readonly itemHeight?: number;
-  readonly className?: string;
-  readonly style?: React.CSSProperties;
-  readonly itemClassName?: string;
-  readonly itemStyle?: React.CSSProperties;
-  readonly itemLabelStyle?: React.CSSProperties;
-  readonly itemIconStyle?: React.CSSProperties;
+  readonly hasSearch?: boolean | undefined;
+  readonly levelPaddingPixels?: number | undefined;
+  readonly itemHeight?: number | undefined;
+  readonly className?: string | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  readonly itemClassName?: string | undefined;
+  readonly itemStyle?: React.CSSProperties | undefined;
+  readonly itemLabelStyle?: React.CSSProperties | undefined;
+  readonly itemIconStyle?: React.CSSProperties | undefined;
   readonly onItemExpansionChange?: (itemId: string, expanded: boolean) => void;
-  readonly overScanCount?: number;
+  readonly overScanCount?: number | undefined;
   readonly onDragOver?: (e: DragEvent) => void;
   readonly onKeyDown?: (e: KeyboardEvent) => void;
   readonly onCopy?: (e: ClipboardEvent) => void;
@@ -599,29 +599,29 @@ export const colorIndicatorColorMap: Record<ColorIndicator, string> = {
 
 export interface TMenuTreeItem {
   id: string;
-  route?: string;
-  title?: string;
+  route?: string | undefined;
+  title?: string | undefined;
   /**
    * A message key resolved through the active locale, used when `title` is not given.
    *
    * A plain string rather than the library's own key union, because a menu describes the consuming
    * application and its titles live in the consumer's catalogue, not in this library's.
    */
-  titleKey?: string;
-  titlePrefix?: React.ReactNode;
-  titleSuffix?: React.ReactNode;
-  afterTitleComponent?: React.ReactNode;
-  icon?: IconName;
+  titleKey?: string | undefined;
+  titlePrefix?: React.ReactNode | undefined;
+  titleSuffix?: React.ReactNode | undefined;
+  afterTitleComponent?: React.ReactNode | undefined;
+  icon?: IconName | undefined;
   subitems: TMenuTreeItem[];
-  hideListIfEmpty?: boolean;
-  hasRefresh?: boolean;
-  onlyList?: boolean;
-  hidden?: boolean;
-  inactive?: boolean;
-  colorIndicator?: ColorIndicator;
-  onlyMobile?: boolean;
+  hideListIfEmpty?: boolean | undefined;
+  hasRefresh?: boolean | undefined;
+  onlyList?: boolean | undefined;
+  hidden?: boolean | undefined;
+  inactive?: boolean | undefined;
+  colorIndicator?: ColorIndicator | undefined;
+  onlyMobile?: boolean | undefined;
   onClick?: () => void;
-  defaultSubitemsShown?: boolean;
+  defaultSubitemsShown?: boolean | undefined;
 }
 
 /**
@@ -664,9 +664,9 @@ export function MenuTree({
   readonly currentItemId: string;
   readonly getMenuItemDepth: (menuItem: TMenuTreeItem) => number;
   readonly onItemClick: MenuTreeItemClickCallback;
-  readonly onItemContextMenu?: MenuTreeItemContextMenuCallback;
-  readonly onRefreshItem?: (menuItem: TMenuTreeItem) => void;
-  readonly onMenuExpansionChange?: (expanded: boolean) => void;
+  readonly onItemContextMenu?: MenuTreeItemContextMenuCallback | undefined;
+  readonly onRefreshItem?: ((menuItem: TMenuTreeItem) => void) | undefined;
+  readonly onMenuExpansionChange?: ((expanded: boolean) => void) | undefined;
 
   /**
    * Called with the destination of an activated menu item.
@@ -674,18 +674,20 @@ export function MenuTree({
    * The tree has no router: it reports the item's `route`, or the item id when it has none, and
    * leaves the decision of what that means to the application.
    */
-  readonly onNavigate?: (to: string) => void;
+  readonly onNavigate?: ((to: string) => void) | undefined;
   /** See {@link IsOnPathToCurrentItem}. */
-  readonly isOnPathToCurrentItem?: IsOnPathToCurrentItem;
-  readonly style?: React.CSSProperties;
-  readonly menuItemClassName?: string | ((menuItem: TMenuTreeItem) => string);
-  readonly menuItemStyle?: React.CSSProperties | ((menuItem: TMenuTreeItem) => React.CSSProperties);
-  readonly menuItemIconStyle?: React.CSSProperties;
-  readonly menuItemLabelStyle?: React.CSSProperties;
-  readonly alwaysFullVersion?: boolean;
-  readonly searchShown?: boolean;
-  readonly searchText?: string;
-  readonly onChangeSearchText?: (searchText: string) => void;
+  readonly isOnPathToCurrentItem?: IsOnPathToCurrentItem | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  readonly menuItemClassName?: (string | ((menuItem: TMenuTreeItem) => string)) | undefined;
+  readonly menuItemStyle?:
+    | (React.CSSProperties | ((menuItem: TMenuTreeItem) => React.CSSProperties))
+    | undefined;
+  readonly menuItemIconStyle?: React.CSSProperties | undefined;
+  readonly menuItemLabelStyle?: React.CSSProperties | undefined;
+  readonly alwaysFullVersion?: boolean | undefined;
+  readonly searchShown?: boolean | undefined;
+  readonly searchText?: string | undefined;
+  readonly onChangeSearchText?: ((searchText: string) => void) | undefined;
 }) {
   const { tRaw } = useLocale();
 
@@ -797,9 +799,9 @@ function MenuTreeItem({
   readonly expanded: boolean;
   readonly getMenuItemDepth: (item: TMenuTreeItem) => number;
   readonly onClick: MenuTreeItemClickCallback;
-  readonly onContextMenu?: MenuTreeItemContextMenuCallback;
-  readonly onRefresh?: (item: TMenuTreeItem) => void;
-  readonly onMenuExpansionChange?: (expanded: boolean) => void;
+  readonly onContextMenu?: MenuTreeItemContextMenuCallback | undefined;
+  readonly onRefresh?: ((item: TMenuTreeItem) => void) | undefined;
+  readonly onMenuExpansionChange?: ((expanded: boolean) => void) | undefined;
 
   /**
    * Called with the destination of an activated menu item.
@@ -807,16 +809,18 @@ function MenuTreeItem({
    * The tree has no router: it reports the item's `route`, or the item id when it has none, and
    * leaves the decision of what that means to the application.
    */
-  readonly onNavigate?: (to: string) => void;
+  readonly onNavigate?: ((to: string) => void) | undefined;
   /** See {@link IsOnPathToCurrentItem}. */
-  readonly isOnPathToCurrentItem?: IsOnPathToCurrentItem;
-  readonly menuItemClassName?: string | ((menuItem: TMenuTreeItem) => string);
-  readonly menuItemStyle?: React.CSSProperties | ((menuItem: TMenuTreeItem) => React.CSSProperties);
-  readonly menuItemIconStyle?: React.CSSProperties;
-  readonly menuItemLabelStyle?: React.CSSProperties;
-  readonly alwaysFullVersion?: boolean;
-  readonly last?: boolean;
-  readonly treeLevelBlockTypes?: readonly TreeLevelBlockType[];
+  readonly isOnPathToCurrentItem?: IsOnPathToCurrentItem | undefined;
+  readonly menuItemClassName?: (string | ((menuItem: TMenuTreeItem) => string)) | undefined;
+  readonly menuItemStyle?:
+    | (React.CSSProperties | ((menuItem: TMenuTreeItem) => React.CSSProperties))
+    | undefined;
+  readonly menuItemIconStyle?: React.CSSProperties | undefined;
+  readonly menuItemLabelStyle?: React.CSSProperties | undefined;
+  readonly alwaysFullVersion?: boolean | undefined;
+  readonly last?: boolean | undefined;
+  readonly treeLevelBlockTypes?: readonly TreeLevelBlockType[] | undefined;
 }) {
   const { t, tRaw } = useLocale();
 

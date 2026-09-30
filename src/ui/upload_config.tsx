@@ -14,17 +14,17 @@ export interface UploadConfigProps {
    * firmware image, a licence — is the caller's fact and not the component's. The component knows
    * about a file, and nothing about what kind.
    */
-  readonly icon?: IconName;
-  readonly uploadTitle?: string;
-  readonly cancelTitle?: string;
+  readonly icon?: IconName | undefined;
+  readonly uploadTitle?: string | undefined;
+  readonly cancelTitle?: string | undefined;
   readonly onFileUpload: (file: File) => Promise<void>;
   readonly onFileUploadCancel?: (file: File) => void;
   readonly onFileChange?: (file: File) => void;
-  readonly hint?: string;
-  readonly style?: React.CSSProperties;
-  readonly progress?: number;
-  readonly onlyDrop?: boolean;
-  readonly uploadedFile?: File;
+  readonly hint?: string | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  readonly progress?: number | undefined;
+  readonly onlyDrop?: boolean | undefined;
+  readonly uploadedFile?: File | undefined;
 }
 
 export function UploadConfig({

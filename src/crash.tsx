@@ -36,7 +36,7 @@ export interface CrashReport {
   readonly errorStack: string | null;
   readonly componentStack: string | null;
   /** The caller's own context. Serialized as JSON when the report is copied or submitted. */
-  readonly context: string;
+  readonly context: string | null;
   readonly memory: {
     readonly totalJSHeapSize: number | null;
     readonly usedJSHeapSize: number | null;
@@ -46,9 +46,9 @@ export interface CrashReport {
 
 /** Where an operator should send a report. Supplied by the caller; the library has no address. */
 export interface CrashReportContact {
-  readonly email?: string;
+  readonly email?: string | undefined;
   /** An alternative destination, such as an issue tracker URL. Rendered as a second link. */
-  readonly issueUrl?: string;
+  readonly issueUrl?: string | undefined;
 }
 
 /**
@@ -65,9 +65,9 @@ export interface CrashGuardProps {
   /** The application version, included in the report. */
   readonly version: string;
   /** When the application started. Defaults to now, which is only right for a report taken at once. */
-  readonly startDate?: Date;
+  readonly startDate?: Date | undefined;
   /** Where the operator should send the report. Without it the fallback shows the report only. */
-  readonly contact?: CrashReportContact;
+  readonly contact?: CrashReportContact | undefined;
   /**
    * The caller's own context for the report.
    *
@@ -80,11 +80,13 @@ export interface CrashGuardProps {
   /** Called for every crash, before the fallback renders. Use it to submit or log the report. */
   readonly onCrash?: (report: CrashReport) => void;
   /** Replaces the whole fallback. Receives the report, which is `null` before the first effect runs. */
-  readonly fallback?: ComponentType<{
-    error: Error;
-    componentStack: string | null;
-    report: CrashReport | null;
-  }>;
+  readonly fallback?:
+    | ComponentType<{
+        error: Error;
+        componentStack: string | null;
+        report: CrashReport | null;
+      }>
+    | undefined;
 }
 
 /**
@@ -109,10 +111,7 @@ function DefaultCrashFallback({
   version,
   error,
   componentStack,
-}: CrashGuardProps & {
-  readonly error: Error;
-  readonly componentStack: string | null;
-}) {
+}: DefaultCrashFallbackProps) {
   const { t } = useLocale();
   const [report, setReport] = useState<CrashReport | null>(null);
 
@@ -123,14 +122,13 @@ function DefaultCrashFallback({
     if (onCrash !== undefined) {
       // A crash handler that throws must not replace the crash the operator is looking at with
       // a different one, so the failure is reported and swallowed.
-      tryCatch(
-        () => {
-          onCrash(built);
-        },
-        (handlerError) => {
-          console.error('The onCrash handler threw:', handlerError);
-        },
-      );
+      const [, handlerError] = tryCatch(() => {
+        onCrash(built);
+      });
+
+      if (handlerError !== null) {
+        console.error('The onCrash handler threw:', handlerError);
+      }
     }
 
     console.error(error);
@@ -215,13 +213,14 @@ function buildCrashReport({
   const memory = (globalThis.performance as { memory?: Record<string, number> } | undefined)
     ?.memory;
 
-  const context = tryCatch(
-    () => (getContext === undefined ? null : (JSON.stringify(getContext()) ?? null)),
-    (contextError) => {
-      console.error('Reading the crash context threw:', contextError);
-      return JSON.stringify({ error: String(contextError) });
-    },
+  // A `getContext` that throws still yields a report: the failure becomes part of the context
+  // rather than costing the operator the whole thing.
+  const [contextValue, contextError] = tryCatch(() =>
+    getContext === undefined ? null : (JSON.stringify(getContext()) ?? null),
   );
+
+  const context =
+    contextError === null ? contextValue : JSON.stringify({ error: String(contextError) });
 
   return {
     reportId: uuidv4(),
@@ -242,26 +241,34 @@ function buildCrashReport({
     componentStack,
     context,
     memory: {
-      totalJSHeapSize: memory?.totalJSHeapSize ?? null,
-      usedJSHeapSize: memory?.usedJSHeapSize ?? null,
-      jsHeapSizeLimit: memory?.jsHeapSizeLimit ?? null,
+      totalJSHeapSize: memory?.['totalJSHeapSize'] ?? null,
+      usedJSHeapSize: memory?.['usedJSHeapSize'] ?? null,
+      jsHeapSizeLimit: memory?.['jsHeapSizeLimit'] ?? null,
     },
   };
 }
 
+/**
+ * What the boundary hands the default fallback.
+ *
+ * The boundary always knows `version` — it is a required prop of the guard and is spread straight
+ * through — so it is required here too, which is what lets the fallback put it in the report
+ * without re-deriving it.
+ */
+type DefaultCrashFallbackProps = CrashGuardProps & {
+  readonly error: Error;
+  readonly componentStack: string | null;
+};
+
 interface ErrorBoundaryProps {
-  readonly fallbackComponent: ComponentType<{
-    error: Error;
-    componentStack: string | null;
-  }> &
-    Partial<CrashGuardProps>;
+  readonly fallbackComponent: ComponentType<DefaultCrashFallbackProps>;
   readonly children: ReactNode;
   readonly version: string;
-  readonly startDate?: Date;
-  readonly contact?: CrashReportContact;
+  readonly startDate?: Date | undefined;
+  readonly contact?: CrashReportContact | undefined;
   readonly getContext?: () => unknown;
   readonly onCrash?: (report: CrashReport) => void;
-  readonly fallback?: CrashGuardProps['fallback'];
+  readonly fallback?: CrashGuardProps['fallback'] | undefined;
 }
 
 interface ErrorBoundaryState {

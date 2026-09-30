@@ -107,7 +107,7 @@ export async function postJson<T>(input: string | URL | globalThis.Request, body
     headers: {
       'Content-Type': 'application/json',
     },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body: body !== undefined ? JSON.stringify(body) : null,
   });
 
   return response;

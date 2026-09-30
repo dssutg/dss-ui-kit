@@ -135,14 +135,14 @@ export function useSwipe({
   minY = null,
   maxY = null,
 }: {
-  readonly onUpSwipe?: SwipeCallback;
-  readonly onDownSwipe?: SwipeCallback;
-  readonly onLeftSwipe?: SwipeCallback;
-  readonly onRightSwipe?: SwipeCallback;
-  readonly minX?: number | null;
-  readonly maxX?: number | null;
-  readonly minY?: number | null;
-  readonly maxY?: number | null;
+  readonly onUpSwipe?: SwipeCallback | undefined;
+  readonly onDownSwipe?: SwipeCallback | undefined;
+  readonly onLeftSwipe?: SwipeCallback | undefined;
+  readonly onRightSwipe?: SwipeCallback | undefined;
+  readonly minX?: number | null | undefined;
+  readonly maxX?: number | null | undefined;
+  readonly minY?: number | null | undefined;
+  readonly maxY?: number | null | undefined;
 }) {
   const swipe = useRef(new Swipe());
 

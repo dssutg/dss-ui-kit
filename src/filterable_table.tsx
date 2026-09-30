@@ -9,17 +9,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import {
-  type BCPType,
-  isValidBCPType,
-  isValidTCOType,
-  type NDState,
-  ndStateInfoMap,
-  type TCOType,
-  validBCPTypes,
-  validTCOTypes,
-} from '@/def';
-import { dateFormatLocales, minstrftime } from '@/lib/date';
+import { minstrftime } from '@/lib/date';
 import { copyToClipboard } from '@/lib/dom';
 import { serializeCSV } from '@/lib/dsv';
 import { downloadStringAsPlainTextFile } from '@/lib/file';
@@ -28,24 +18,7 @@ import { handleKeyMapKeyDown, type KeyMapActions } from '@/lib/key_map';
 import { clamp, cmp } from '@/lib/math';
 import { useEventListener } from '@/lib/use_event_listener';
 import { useFullScreenChange } from '@/lib/use_fullscreen_change';
-import { getBCPTypeTitle, type LocaleName, useLocale } from '@/locale';
-import {
-  type RObjectState,
-  type RStateGroup,
-  rStateGroupLocaleKeyMap,
-  rStateTable,
-  statesSortedByWeight,
-} from '@/robject';
-import {
-  type DBKAUSensorOrUnknownType,
-  isValidDBKAUSensorOrUnknownType,
-  validDBKAUSensorOrUnknownTypes,
-} from '@/sensor';
-import {
-  isValidNDOrNoneType,
-  type NetworkDeviceOrNoneType,
-  validNetworkDeviceOrNoneTypes,
-} from '@/server_nd_type';
+import { getLocaleDates, type LocaleName, useLocale } from '@/locale';
 import { useTheme } from '@/theme';
 import { Button } from '@/ui/button';
 import { DropDownMenu } from '@/ui/dropdown';
@@ -86,11 +59,11 @@ import {
 
 export interface FilterableTableColumnProperty<T, C extends string> {
   id: C;
-  variant?: 'column';
+  variant?: 'column' | undefined;
   title: string;
   width: number;
   minWidth: number;
-  headerStyle?: React.CSSProperties;
+  headerStyle?: React.CSSProperties | undefined;
   cell: SortableTableCellRenderer<T, C>;
   comparator: SortableTableComparatorFunction<T>;
   search: AnonymousSearchPropertySchema<T>;
@@ -118,11 +91,11 @@ export interface FilterableTableProps<T, C extends string> {
   readonly rowHeight: number;
   readonly properties: FilterableTablePropertyList<T, C>;
   readonly getExportedTableFilename: GetExportedTableFilenameCallback;
-  readonly sortColumnId?: C;
-  readonly reversedSort?: boolean;
-  readonly style?: React.CSSProperties;
-  readonly historyId?: string;
-  readonly getItemId?: (item: T, index: number) => string | number;
+  readonly sortColumnId?: C | undefined;
+  readonly reversedSort?: boolean | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  readonly historyId?: string | undefined;
+  readonly getItemId?: ((item: T, index: number) => string | number) | undefined;
 }
 
 export interface ControlledFilterableTableProps<T, C extends string>
@@ -386,15 +359,15 @@ export function FilterableTableTopPanel<T>({
   readonly items: readonly T[];
   readonly extraSearchSchema: SearchSchema<T>;
   readonly getExportedTableFilename: GetExportedTableFilenameCallback;
-  readonly countLabelPrefix?: string;
-  readonly countLabel?: React.ReactNode;
-  readonly minCountLabelWidth?: string;
-  readonly style?: React.CSSProperties;
-  readonly leftComponent?: React.ReactNode;
-  readonly rightComponent?: React.ReactNode;
-  readonly historyId?: string;
+  readonly countLabelPrefix?: string | undefined;
+  readonly countLabel?: React.ReactNode | undefined;
+  readonly minCountLabelWidth?: string | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  readonly leftComponent?: React.ReactNode | undefined;
+  readonly rightComponent?: React.ReactNode | undefined;
+  readonly historyId?: string | undefined;
 }) {
-  const { t, tCfg, lang } = useLocale();
+  const { t, lang } = useLocale();
 
   const [extraSearchModalOpen, setExtraSearchModalOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
@@ -413,35 +386,25 @@ export function FilterableTableTopPanel<T>({
       columnProperties.map((property) => property.label),
       ...items
         .map((item) =>
-          columnProperties
-            .filter((property) => property.type !== 'rObjectStateGroup')
-            .map((property) => {
-              switch (property.type) {
-                case 'string':
-                case 'decimalInteger':
-                case 'ip':
-                  return property.extractValue(item).toString();
-                case 'sensorTypeOrUnknown':
-                case 'ndTypeOrNone':
-                case 'tcoType':
-                  return tCfg(property.extractValue(item));
-                case 'ndState':
-                  return t(ndStateInfoMap[property.extractValue(item)].localeKey);
-                case 'bcpType':
-                  return getBCPTypeTitle(property.extractValue(item));
-                case 'rObjectState':
-                  return t(rStateTable[property.extractValue(item)].titleKey);
-                case 'dateAndTime':
-                  return formatDateAndTime(property.extractValue(item), lang);
-                case 'unsignedHex':
-                  return formatHexNumber(property.extractValue(item), 1);
-                case 'boolean':
-                  if (property.extractValue(item)) {
-                    return t('yes');
-                  }
-                  return t('no');
-              }
-            }),
+          columnProperties.map((property) => {
+            switch (property.type) {
+              case 'string':
+              case 'decimalInteger':
+              case 'ip':
+                return property.extractValue(item).toString();
+              case 'enum':
+                return getEnumLabel(property, property.extractValue(item));
+              case 'dateAndTime':
+                return formatDateAndTime(property.extractValue(item), lang);
+              case 'unsignedHex':
+                return formatHexNumber(property.extractValue(item), 1);
+              case 'boolean':
+                if (property.extractValue(item)) {
+                  return t('yes');
+                }
+                return t('no');
+            }
+          }),
         )
         .toSorted(),
     ]);
@@ -538,63 +501,10 @@ export function FilterableTableTopPanel<T>({
                       );
                     }
 
-                    case 'ndTypeOrNone':
-                    case 'sensorTypeOrUnknown':
-                    case 'tcoType':
+                    case 'enum': {
                       return (
                         <td key={propertyIndex} className="center">
-                          {tCfg(property.extractValue(item))}
-                        </td>
-                      );
-
-                    case 'ndState':
-                      return (
-                        <td key={propertyIndex} className="center">
-                          {t(ndStateInfoMap[property.extractValue(item)].localeKey)}
-                        </td>
-                      );
-
-                    case 'bcpType': {
-                      const bcpType = property.extractValue(item);
-
-                      if (bcpType === 'backup') {
-                        return (
-                          <td key={propertyIndex} className="center text-normal">
-                            {getBCPTypeTitle(bcpType)}
-                          </td>
-                        );
-                      }
-
-                      return (
-                        <td key={propertyIndex} className="center">
-                          {getBCPTypeTitle(bcpType)}
-                        </td>
-                      );
-                    }
-
-                    case 'rObjectState': {
-                      const rObjectState = property.extractValue(item);
-                      const stateGroup = rStateTable[rObjectState].group;
-                      const title = t(rStateTable[rObjectState].titleKey);
-
-                      switch (stateGroup) {
-                        case 'alarm':
-                          return (
-                            <td key={propertyIndex} className="center text-bad">
-                              {title}
-                            </td>
-                          );
-                        case 'trouble':
-                          return (
-                            <td key={propertyIndex} className="center text-normal">
-                              {title}
-                            </td>
-                          );
-                      }
-
-                      return (
-                        <td key={propertyIndex} className="center">
-                          {title}
+                          {getEnumLabel(property, property.extractValue(item))}
                         </td>
                       );
                     }
@@ -620,8 +530,14 @@ export function FilterableTableTopPanel<T>({
                       return <td key={propertyIndex}>{property.extractValue(item)}</td>;
                     }
 
-                    case 'rObjectStateGroup':
-                      throw new Error('unexpected property type');
+                    default: {
+                      // Every type the schema declares is handled above. Binding the leftover to
+                      // `never` makes a type added to the schema later a compile error here
+                      // rather than a blank cell in the export.
+                      const unhandled: never = property;
+
+                      throw new Error(`unexpected property type: ${JSON.stringify(unhandled)}`);
+                    }
                   }
                 })}
               </tr>
@@ -785,7 +701,7 @@ function CountLabel({
   readonly filteredRowCount: number;
   readonly totalRowCount: number;
   readonly countLabelPrefix: string;
-  readonly minCountLabelWidth?: string;
+  readonly minCountLabelWidth?: string | undefined;
 }) {
   return (
     <div
@@ -1280,7 +1196,7 @@ function PropertyStats<T>({
 }
 
 function useSearchSchemaPropertyValueToString<T>() {
-  const { t, tCfg, lang } = useLocale();
+  const { t, lang } = useLocale();
 
   return (item: T, property: SearchPropertySchema<T>) => {
     switch (property.type) {
@@ -1289,18 +1205,8 @@ function useSearchSchemaPropertyValueToString<T>() {
           return t('yes');
         }
         return t('no');
-      case 'ndTypeOrNone':
-      case 'sensorTypeOrUnknown':
-      case 'tcoType':
-        return tCfg(property.extractValue(item));
-      case 'ndState':
-        return t(ndStateInfoMap[property.extractValue(item)].localeKey);
-      case 'bcpType':
-        return getBCPTypeTitle(property.extractValue(item));
-      case 'rObjectState':
-        return t(rStateTable[property.extractValue(item)].titleKey);
-      case 'rObjectStateGroup':
-        return t(rStateGroupLocaleKeyMap[property.extractValue(item)]);
+      case 'enum':
+        return getEnumLabel(property, property.extractValue(item));
       case 'string':
       case 'decimalInteger':
       case 'ip':
@@ -1313,6 +1219,8 @@ function useSearchSchemaPropertyValueToString<T>() {
   };
 }
 
+// The value an option carries when nothing has been chosen. It is a locale key, because the
+// select renders it as the prompt above the list.
 const notChosen = 'notChosen' as const;
 
 type OptionalValue<T extends string> = T | typeof notChosen;
@@ -1330,7 +1238,7 @@ function GeneralizedSearchModal<T>({
   readonly searchSchema: SearchSchema<T>;
   readonly onSearch: (searchText: string) => void;
 }) {
-  const { t, tCfg, lang } = useLocale();
+  const { t, lang } = useLocale();
 
   const [valueMap, setValueMap] = useState<Record<string, unknown>>({});
 
@@ -1374,13 +1282,7 @@ function GeneralizedSearchModal<T>({
                   }
                   break;
                 case 'ip':
-                case 'ndTypeOrNone':
-                case 'ndState':
-                case 'sensorTypeOrUnknown':
-                case 'tcoType':
-                case 'bcpType':
-                case 'rObjectState':
-                case 'rObjectStateGroup':
+                case 'enum':
                 case 'dateAndTime':
                   if ((value ?? '').toString().trim() === '') {
                     continue;
@@ -1396,36 +1298,7 @@ function GeneralizedSearchModal<T>({
                   break;
               }
 
-              let strValue = '';
-              switch (property.type) {
-                case 'sensorTypeOrUnknown':
-                  strValue = tCfg(value as DBKAUSensorOrUnknownType);
-                  break;
-                case 'ndTypeOrNone':
-                  strValue = tCfg(value as NetworkDeviceOrNoneType);
-                  break;
-                case 'ndState':
-                  strValue = t(ndStateInfoMap[value as NDState].localeKey);
-                  break;
-                case 'tcoType':
-                  strValue = tCfg(value as TCOType);
-                  break;
-                case 'bcpType':
-                  strValue = getBCPTypeTitle(value as BCPType);
-                  break;
-                case 'rObjectState':
-                  strValue = t(rStateTable[value as RObjectState].titleKey);
-                  break;
-                case 'rObjectStateGroup':
-                  strValue = t(rStateGroupLocaleKeyMap[value as RStateGroup]);
-                  break;
-                case 'dateAndTime':
-                  strValue = formatDateAndTime(value as number, lang);
-                  break;
-                default:
-                  strValue = (value ?? '').toString();
-                  break;
-              }
+              const strValue = getFilterValueAsString(property, value, lang);
               fields.push(`${escapeProp(property.name)}=${escapeProp(strValue)}`);
             }
 
@@ -1490,231 +1363,110 @@ function BooleanSelect({
   );
 }
 
-function SensorTypeOrUnknownSelect({
-  value,
-  onChange,
-}: {
-  readonly value: DBKAUSensorOrUnknownType | null;
-  readonly onChange: (value: DBKAUSensorOrUnknownType | null) => void;
-}) {
-  const { t, tCfg } = useLocale();
-
-  return (
-    <Select
-      style={{ width: '100%' }}
-      value={value === null ? notChosen : value}
-      onChange={(e) => {
-        const value = e.currentTarget.value as OptionalValue<DBKAUSensorOrUnknownType>;
-        if (isValidDBKAUSensorOrUnknownType(value)) {
-          onChange(value);
-        } else {
-          onChange(null);
-        }
-      }}
-    >
-      <option value="notChosen">{t(notChosen)}</option>
-      {validDBKAUSensorOrUnknownTypes
-        .toSorted((a, b) => cmp(tCfg(a), tCfg(b)))
-        .map((ndType) => (
-          <option key={ndType} value={ndType}>
-            {tCfg(ndType)}
-          </option>
-        ))}
-    </Select>
-  );
+/**
+ * One value an operator may filter a `enum` column by.
+ *
+ * `label` is rendered as given rather than looked up, because which words name a value is the
+ * caller's vocabulary: a filter over device types, over connection states or over anything else
+ * labels its values itself.
+ */
+export interface EnumOption {
+  readonly value: string;
+  readonly label: string;
 }
 
-function NDTypeOrNoneSelect({
+/**
+ * The filter control for a closed set of values.
+ *
+ * A value held in the data but missing from `options` is still offered, labelled with the value
+ * itself, so that a caller who adds a value to their data sees it in the filter before they add it
+ * here. Without that, a new value would silently be unfilterable.
+ */
+function EnumSelect({
   value,
+  options,
   onChange,
 }: {
-  readonly value: NetworkDeviceOrNoneType | null;
-  readonly onChange: (value: NetworkDeviceOrNoneType | null) => void;
-}) {
-  const { t, tCfg } = useLocale();
-
-  return (
-    <Select
-      style={{ width: '100%' }}
-      value={value === null ? notChosen : value}
-      onChange={(e) => {
-        const value = e.currentTarget.value as OptionalValue<NetworkDeviceOrNoneType>;
-        if (isValidNDOrNoneType(value)) {
-          onChange(value);
-        } else {
-          onChange(null);
-        }
-      }}
-    >
-      <option value="notChosen">{t(notChosen)}</option>
-      {validNetworkDeviceOrNoneTypes
-        .toSorted((a, b) => cmp(tCfg(a), tCfg(b)))
-        .map((ndType) => (
-          <option key={ndType} value={ndType}>
-            {tCfg(ndType)}
-          </option>
-        ))}
-    </Select>
-  );
-}
-
-function NDStateSelect({
-  value,
-  onChange,
-}: {
-  readonly value: NDState | null;
-  readonly onChange: (value: NDState | null) => void;
-}) {
-  const { t, tCfg } = useLocale();
-
-  return (
-    <Select
-      style={{ width: '100%' }}
-      value={value === null ? notChosen : value.toString()}
-      onChange={(e) => {
-        if (e.currentTarget.value === notChosen) {
-          onChange(null);
-        } else {
-          onChange(Number(e.currentTarget.value) as NDState);
-        }
-      }}
-    >
-      <option value="notChosen">{t(notChosen)}</option>
-      {Object.entries(ndStateInfoMap)
-        .toSorted((a, b) => cmp(tCfg(a[1].localeKey), tCfg(b[1].localeKey)))
-        .map(([ndState, ndStateInfo]) => (
-          <option key={ndState} value={ndState}>
-            {t(ndStateInfo.localeKey)}
-          </option>
-        ))}
-    </Select>
-  );
-}
-
-function TCOTypeSelect({
-  value,
-  onChange,
-}: {
-  readonly value: TCOType | null;
-  readonly onChange: (value: TCOType | null) => void;
-}) {
-  const { t, tCfg } = useLocale();
-
-  return (
-    <Select
-      style={{ width: '100%' }}
-      value={value === null ? notChosen : value}
-      onChange={(e) => {
-        const value = e.currentTarget.value as OptionalValue<TCOType>;
-        if (isValidTCOType(value)) {
-          onChange(value);
-        } else {
-          onChange(null);
-        }
-      }}
-    >
-      <option value="notChosen">{t(notChosen)}</option>
-      {validTCOTypes.map((tcoType) => (
-        <option key={tcoType} value={tcoType}>
-          {tCfg(tcoType)}
-        </option>
-      ))}
-    </Select>
-  );
-}
-
-function BCPTypeSelect({
-  value,
-  onChange,
-}: {
-  readonly value: BCPType | null;
-  readonly onChange: (value: BCPType | null) => void;
+  readonly value: string | null;
+  readonly options: readonly EnumOption[];
+  readonly onChange: (value: string | undefined) => void;
 }) {
   const { t } = useLocale();
 
+  const known = new Set(options.map((option) => option.value));
+
+  const unlisted = value !== null && value !== '' && !known.has(value) ? [value] : [];
+
   return (
     <Select
       style={{ width: '100%' }}
-      value={value === null ? notChosen : value}
+      value={value ?? notChosen}
       onChange={(e) => {
-        const value = e.currentTarget.value as OptionalValue<BCPType>;
-        if (isValidBCPType(value)) {
-          onChange(value);
-        } else {
-          onChange(null);
+        const chosen = e.currentTarget.value as OptionalValue<string>;
+
+        if (chosen === notChosen) {
+          onChange(undefined);
+
+          return;
         }
+
+        onChange(chosen);
       }}
     >
-      <option value="notChosen">{t(notChosen)}</option>
-      {validBCPTypes.map((bcpType) => (
-        <option key={bcpType} value={bcpType}>
-          {getBCPTypeTitle(bcpType)}
+      <option value={notChosen}>{t(notChosen)}</option>
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+      {unlisted.map((unlistedValue) => (
+        <option key={unlistedValue} value={unlistedValue}>
+          {unlistedValue}
         </option>
       ))}
     </Select>
   );
 }
 
-function RObjectStateSelect({
-  value,
-  onChange,
-}: {
-  readonly value: RObjectState | null;
-  readonly onChange: (value: RObjectState | null) => void;
-}) {
-  const { t } = useLocale();
+/**
+ * Renders a filter value the way the search string and the CSV export spell it.
+ *
+ * A closed set of values is rendered through the caller's own labels, so what an operator searches
+ * for is the wording they see in the column rather than a key.
+ */
+/**
+ * The label a `enum` value is shown, searched and exported as.
+ *
+ * The caller's own label when it has one, and the raw value when it does not, so a value added to
+ * the caller's data is still visible before they list it in `options`.
+ */
+function getEnumLabel(
+  property: { readonly options: readonly EnumOption[] },
+  value: string,
+): string {
+  const asString = value.toString();
 
-  return (
-    <Select
-      style={{ width: '100%' }}
-      value={value === null ? notChosen : value.toString()}
-      onChange={(e) => {
-        if (e.currentTarget.value === notChosen) {
-          onChange(null);
-        } else {
-          onChange(Number(e.currentTarget.value) as RObjectState);
-        }
-      }}
-    >
-      <option value="notChosen">{t(notChosen)}</option>
-      {statesSortedByWeight.map((state) => (
-        <option key={state.id} value={state.id}>
-          {t(state.titleKey)}
-        </option>
-      ))}
-    </Select>
-  );
+  return property.options.find((option) => option.value === asString)?.label ?? asString;
 }
 
-function RObjectStateGroupSelect({
-  value,
-  onChange,
-}: {
-  readonly value: RStateGroup | null;
-  readonly onChange: (value: RStateGroup | null) => void;
-}) {
-  const { t } = useLocale();
+function getFilterValueAsString<T>(
+  property: AnonymousSearchPropertySchema<T>,
+  value: unknown,
+  lang: LocaleName,
+): string {
+  switch (property.type) {
+    case 'enum': {
+      const asString = (value ?? '').toString();
 
-  return (
-    <Select
-      style={{ width: '100%' }}
-      value={value === null ? notChosen : value.toString()}
-      onChange={(e) => {
-        if (e.currentTarget.value === notChosen) {
-          onChange(null);
-        } else {
-          onChange(e.currentTarget.value as RStateGroup);
-        }
-      }}
-    >
-      <option value="notChosen">{t(notChosen)}</option>
-      {Object.entries(rStateGroupLocaleKeyMap).map(([stateGroup, localeKey]) => (
-        <option key={stateGroup} value={stateGroup}>
-          {t(localeKey)}
-        </option>
-      ))}
-    </Select>
-  );
+      return property.options.find((option) => option.value === asString)?.label ?? asString;
+    }
+
+    case 'dateAndTime':
+      return formatDateAndTime(value as number, lang);
+
+    default:
+      return (value ?? '').toString();
+  }
 }
 
 function DateAndTimeInput({
@@ -1803,46 +1555,11 @@ function InputComponent<T>({
       return <BooleanSelect value={(value ?? null) as boolean | null} onChange={onChange} />;
     }
 
-    case 'sensorTypeOrUnknown': {
+    case 'enum': {
       return (
-        <SensorTypeOrUnknownSelect
-          value={(value ?? null) as DBKAUSensorOrUnknownType | null}
-          onChange={onChange}
-        />
-      );
-    }
-
-    case 'ndTypeOrNone': {
-      return (
-        <NDTypeOrNoneSelect
-          value={(value ?? null) as NetworkDeviceOrNoneType | null}
-          onChange={onChange}
-        />
-      );
-    }
-
-    case 'ndState': {
-      return <NDStateSelect value={(value ?? null) as NDState | null} onChange={onChange} />;
-    }
-
-    case 'tcoType': {
-      return <TCOTypeSelect value={(value ?? null) as TCOType | null} onChange={onChange} />;
-    }
-
-    case 'bcpType': {
-      return <BCPTypeSelect value={(value ?? null) as BCPType | null} onChange={onChange} />;
-    }
-
-    case 'rObjectState': {
-      return (
-        <RObjectStateSelect value={(value ?? null) as RObjectState | null} onChange={onChange} />
-      );
-    }
-
-    case 'rObjectStateGroup': {
-      return (
-        <RObjectStateGroupSelect
-          value={(value ?? null) as RStateGroup | null}
+        <EnumSelect
+          value={value === null || value === undefined ? null : String(value)}
+          options={property.options}
           onChange={onChange}
         />
       );
@@ -1875,79 +1592,59 @@ export const FilterableTableContext = createContext<{
 export type AnonymousSearchPropertySchema<T> =
   | {
       type: 'string';
-      default?: string;
+      default?: string | undefined;
       extractValue: (item: T) => string;
-      trim?: boolean;
+      trim?: boolean | undefined;
     }
   | {
       type: 'decimalInteger';
-      default?: number;
+      default?: number | undefined;
       extractValue: (item: T) => number;
-      min?: number;
-      max?: number;
+      min?: number | undefined;
+      max?: number | undefined;
     }
   | {
       type: 'boolean';
-      default?: boolean | null;
+      default?: boolean | null | undefined;
       extractValue: (item: T) => boolean;
     }
   | {
-      type: 'sensorTypeOrUnknown';
-      default?: DBKAUSensorOrUnknownType | null;
-      extractValue: (item: T) => DBKAUSensorOrUnknownType;
-    }
-  | {
-      type: 'ndTypeOrNone';
-      default?: NetworkDeviceOrNoneType | null;
-      extractValue: (item: T) => NetworkDeviceOrNoneType;
-    }
-  | {
-      type: 'ndState';
-      default?: NDState | null;
-      extractValue: (item: T) => NDState;
-    }
-  | {
-      type: 'tcoType';
-      default?: TCOType | null;
-      extractValue: (item: T) => TCOType;
-    }
-  | {
-      type: 'bcpType';
-      default?: BCPType | null;
-      extractValue: (item: T) => BCPType;
-    }
-  | {
-      type: 'rObjectState';
-      default?: RObjectState | null;
-      extractValue: (item: T) => RObjectState;
-    }
-  | {
-      type: 'rObjectStateGroup';
-      default?: RStateGroup | null;
-      extractValue: (item: T) => RStateGroup;
+      type: 'enum';
+      default?: string | null | undefined;
+      extractValue: (item: T) => string;
+      /**
+       * The values the operator may filter by, and how to label each one. A column is a closed set
+       * of values in every table this serves, but which set is the caller's: naming them here is
+       * what lets one filter control serve device types, connection states or anything else without
+       * this module knowing any of them.
+       *
+       * A value present in the data but absent from `options` still renders, labelled with the
+       * value itself, so a new value in the caller's data is visible before it is added here.
+       */
+      options: readonly EnumOption[];
     }
   | {
       type: 'ip';
-      default?: string | null;
+      default?: string | null | undefined;
       extractValue: (item: T) => string;
     }
   | {
       type: 'unsignedHex';
-      default?: number | null;
+      default?: number | null | undefined;
       extractValue: (item: T) => number;
-      min?: number;
-      max?: number;
+      min?: number | undefined;
+      max?: number | undefined;
     }
   | {
       type: 'dateAndTime';
-      default?: number | null;
+      default?: number | null | undefined;
       extractValue: (item: T) => number;
     };
 
 export type SearchPropertySchema<T> = AnonymousSearchPropertySchema<T> & {
   name: string;
   label: string;
-  hiddenInTable?: boolean;
+  hiddenInTable?: boolean | undefined;
 };
 
 export type SearchPropertySchemaType<T> =
@@ -1987,7 +1684,7 @@ export function useFilteredItems<T>({
   readonly searchText: string;
   readonly searchSchema: SearchSchema<T>;
 }) {
-  const { t, tCfg, lang } = useLocale();
+  const { lang } = useLocale();
 
   if (searchText === '') {
     return items;
@@ -2018,13 +1715,7 @@ export function useFilteredItems<T>({
           return { property, value: valueString };
         }
 
-        case 'sensorTypeOrUnknown':
-        case 'ndTypeOrNone':
-        case 'ndState':
-        case 'tcoType':
-        case 'bcpType':
-        case 'rObjectState':
-        case 'rObjectStateGroup':
+        case 'enum':
         case 'dateAndTime': {
           return { property, value: valueString };
         }
@@ -2111,54 +1802,8 @@ export function useFilteredItems<T>({
           break;
         }
 
-        case 'sensorTypeOrUnknown':
-        case 'ndTypeOrNone':
-        case 'tcoType': {
-          const itemValue = normalize(tCfg(property.extractValue(item)));
-          const stringValue = normalize((value ?? '').toString());
-
-          if (!itemValue.includes(stringValue)) {
-            return false;
-          }
-
-          break;
-        }
-
-        case 'ndState': {
-          const itemValue = normalize(t(ndStateInfoMap[property.extractValue(item)].localeKey));
-          const stringValue = normalize((value ?? '').toString());
-
-          if (!itemValue.includes(stringValue)) {
-            return false;
-          }
-
-          break;
-        }
-
-        case 'bcpType': {
-          const itemValue = normalize(getBCPTypeTitle(property.extractValue(item)));
-          const stringValue = normalize((value ?? '').toString());
-
-          if (!itemValue.includes(stringValue)) {
-            return false;
-          }
-
-          break;
-        }
-
-        case 'rObjectState': {
-          const itemValue = normalize(t(rStateTable[property.extractValue(item)].titleKey));
-          const stringValue = normalize((value ?? '').toString());
-
-          if (!itemValue.includes(stringValue)) {
-            return false;
-          }
-
-          break;
-        }
-
-        case 'rObjectStateGroup': {
-          const itemValue = normalize(t(rStateGroupLocaleKeyMap[property.extractValue(item)]));
+        case 'enum': {
+          const itemValue = normalize(getEnumLabel(property, property.extractValue(item)));
           const stringValue = normalize((value ?? '').toString());
 
           if (!itemValue.includes(stringValue)) {
@@ -2194,18 +1839,8 @@ export function useFilteredItems<T>({
       searchSchema.properties
         .map((property) => {
           switch (property.type) {
-            case 'sensorTypeOrUnknown':
-            case 'ndTypeOrNone':
-            case 'tcoType':
-              return tCfg(property.extractValue(item));
-            case 'ndState':
-              return t(ndStateInfoMap[property.extractValue(item)].localeKey);
-            case 'bcpType':
-              return getBCPTypeTitle(property.extractValue(item));
-            case 'rObjectState':
-              return t(rStateTable[property.extractValue(item)].titleKey);
-            case 'rObjectStateGroup':
-              return t(rStateGroupLocaleKeyMap[property.extractValue(item)]);
+            case 'enum':
+              return getEnumLabel(property, property.extractValue(item));
             case 'dateAndTime':
               return formatDateAndTime(property.extractValue(item), lang);
             default:
@@ -2218,7 +1853,11 @@ export function useFilteredItems<T>({
 }
 
 export function formatDateAndTime(timestamp: number, lang: LocaleName) {
-  return minstrftime(dateFormatLocales[lang].format, new Date(timestamp));
+  return minstrftime(
+    getLocaleDates(lang).formats.format,
+    new Date(timestamp),
+    getLocaleDates(lang).names,
+  );
 }
 
 export function escapeProp(x: string | null | undefined) {

@@ -29,23 +29,23 @@ export function RingProgress({
   titlePos = 'bottom',
 }: {
   readonly progress: number;
-  readonly progressMax?: number;
-  readonly title?: string;
-  readonly rotationDegrees?: number;
-  readonly backgroundColor?: string;
-  readonly titleColor?: string;
-  readonly ringWidth?: number;
-  readonly radius?: number;
-  readonly titleFontSize?: string;
-  readonly titleLineHeight?: string;
-  readonly progressSuffix?: string;
-  readonly colorBreakPoints?: readonly [number, string][];
-  readonly interpolation?: boolean;
-  readonly className?: string;
-  readonly titleClassName?: string;
-  readonly style?: React.CSSProperties;
-  readonly titleStyle?: React.CSSProperties;
-  readonly titlePos?: 'top' | 'bottom';
+  readonly progressMax?: number | undefined;
+  readonly title?: string | undefined;
+  readonly rotationDegrees?: number | undefined;
+  readonly backgroundColor?: string | undefined;
+  readonly titleColor?: string | undefined;
+  readonly ringWidth?: number | undefined;
+  readonly radius?: number | undefined;
+  readonly titleFontSize?: string | undefined;
+  readonly titleLineHeight?: string | undefined;
+  readonly progressSuffix?: string | undefined;
+  readonly colorBreakPoints?: readonly [number, string][] | undefined;
+  readonly interpolation?: boolean | undefined;
+  readonly className?: string | undefined;
+  readonly titleClassName?: string | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  readonly titleStyle?: React.CSSProperties | undefined;
+  readonly titlePos?: 'top' | 'bottom' | undefined;
 }) {
   useWindowSize();
 

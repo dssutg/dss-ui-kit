@@ -125,8 +125,10 @@ export function useTheme(): ThemeName {
 
   useEvent<{ themeName: ThemeName }>(
     'ui-kit:theme-changed',
-    useCallback(({ themeName }) => {
-      setThemeState(themeName);
+    useCallback((event) => {
+      if (event !== undefined) {
+        setThemeState(event.themeName);
+      }
     }, []),
   );
 

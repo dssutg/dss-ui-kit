@@ -10,7 +10,7 @@ export function useDebounce(
   {
     shouldCallOnUnmount = false,
   }: {
-    readonly shouldCallOnUnmount?: boolean;
+    readonly shouldCallOnUnmount?: boolean | undefined;
   } = {},
 ) {
   const { reset, clear } = useTimeout(callback, delay);

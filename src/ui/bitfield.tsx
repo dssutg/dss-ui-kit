@@ -10,8 +10,8 @@ export function BitField({
 }: {
   readonly flags: number;
   readonly flagDescriptionMap: Readonly<Record<number, string>>;
-  readonly showEntireDescription?: boolean;
-  readonly octetCount?: number;
+  readonly showEntireDescription?: boolean | undefined;
+  readonly octetCount?: number | undefined;
 }) {
   // IMPORTANT: Bitwise operators are not used to support numbers greater than 32-bit
 

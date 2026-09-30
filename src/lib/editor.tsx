@@ -79,36 +79,36 @@ export const Editor = forwardRef(
     }: {
       // Props for the component
       readonly highlight: (value: string) => string | React.ReactNode;
-      readonly ignoreTabKey?: boolean;
-      readonly insertSpaces?: boolean;
+      readonly ignoreTabKey?: boolean | undefined;
+      readonly insertSpaces?: boolean | undefined;
       readonly onValueChange: (value: string) => void;
-      readonly padding?: Padding<number | string>;
-      readonly style?: React.CSSProperties;
-      readonly tabSize?: number;
+      readonly padding?: Padding<number | string> | undefined;
+      readonly style?: React.CSSProperties | undefined;
+      readonly tabSize?: number | undefined;
       readonly value: string;
 
       // Props for the textarea
-      readonly autoFocus?: boolean;
-      readonly disabled?: boolean;
-      readonly form?: string;
-      readonly maxLength?: number;
-      readonly minLength?: number;
-      readonly name?: string;
-      readonly onBlur?: React.FocusEventHandler<HTMLTextAreaElement>;
-      readonly onClick?: React.MouseEventHandler<HTMLTextAreaElement>;
-      readonly onFocus?: React.FocusEventHandler<HTMLTextAreaElement>;
-      readonly onKeyDown?: React.KeyboardEventHandler<HTMLTextAreaElement>;
-      readonly onKeyUp?: React.KeyboardEventHandler<HTMLTextAreaElement>;
-      readonly placeholder?: string;
-      readonly readOnly?: boolean;
-      readonly required?: boolean;
-      readonly textareaStyle?: React.CSSProperties;
-      readonly textareaId?: string;
+      readonly autoFocus?: boolean | undefined;
+      readonly disabled?: boolean | undefined;
+      readonly form?: string | undefined;
+      readonly maxLength?: number | undefined;
+      readonly minLength?: number | undefined;
+      readonly name?: string | undefined;
+      readonly onBlur?: React.FocusEventHandler<HTMLTextAreaElement> | undefined;
+      readonly onClick?: React.MouseEventHandler<HTMLTextAreaElement> | undefined;
+      readonly onFocus?: React.FocusEventHandler<HTMLTextAreaElement> | undefined;
+      readonly onKeyDown?: React.KeyboardEventHandler<HTMLTextAreaElement> | undefined;
+      readonly onKeyUp?: React.KeyboardEventHandler<HTMLTextAreaElement> | undefined;
+      readonly placeholder?: string | undefined;
+      readonly readOnly?: boolean | undefined;
+      readonly required?: boolean | undefined;
+      readonly textareaStyle?: React.CSSProperties | undefined;
+      readonly textareaId?: string | undefined;
 
       // Props for the code pre element
-      readonly preClassName?: string;
+      readonly preClassName?: string | undefined;
 
-      readonly className?: string;
+      readonly className?: string | undefined;
     },
     ref: React.Ref<null | { session: { history: EditorHistory } }>,
   ) => {

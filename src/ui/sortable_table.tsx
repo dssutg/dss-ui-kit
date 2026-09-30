@@ -19,8 +19,8 @@ export type SortableTableHeaderColumn<C extends string> = Readonly<{
   id: C;
   title: string;
   width: number;
-  minWidth?: number;
-  style?: React.CSSProperties;
+  minWidth?: number | undefined;
+  style?: React.CSSProperties | undefined;
 }>;
 
 export type SortableTableCellDescriptor<C extends string> = Readonly<{
@@ -92,13 +92,13 @@ export function SortableTable<T, C extends string>({
   tableRef,
 }: {
   readonly descriptor: Readonly<SortableTableDescriptor<T, C>>;
-  readonly sortColumnId?: C;
-  readonly reversedSort?: boolean;
-  readonly rowListOverScanCount?: number;
-  readonly style?: React.CSSProperties;
-  readonly className?: string;
-  readonly rowStyle?: React.CSSProperties;
-  readonly tableRef?: React.MutableRefObject<HTMLTableSectionElement | null>;
+  readonly sortColumnId?: C | undefined;
+  readonly reversedSort?: boolean | undefined;
+  readonly rowListOverScanCount?: number | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  readonly className?: string | undefined;
+  readonly rowStyle?: React.CSSProperties | undefined;
+  tableRef?: React.MutableRefObject<HTMLTableSectionElement | null> | undefined;
 }) {
   const { t } = useLocale();
 
@@ -351,7 +351,7 @@ export function ColumnResizer({
   onResize,
   onResizeDone,
 }: {
-  readonly style?: React.CSSProperties;
+  readonly style?: React.CSSProperties | undefined;
   readonly onResize?: (movementX: number) => void;
   readonly onResizeDone?: () => void;
 }) {
@@ -402,8 +402,8 @@ export function SortableTableRow<T, C extends string>({
   readonly columnWidths: number[];
   readonly row: SortableTableRowDescriptor<T>;
   readonly rowIndex: number;
-  readonly style?: React.CSSProperties;
-  readonly rowStyle?: React.CSSProperties;
+  readonly style?: React.CSSProperties | undefined;
+  readonly rowStyle?: React.CSSProperties | undefined;
 }) {
   let cells: React.ReactNode[] = [];
 

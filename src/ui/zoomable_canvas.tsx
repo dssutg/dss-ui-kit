@@ -45,21 +45,21 @@ export function ZoomableCanvas({
     transform: ZoomableCanvasTransform,
     props: ZoomableCanvasDrawCallbackProps,
   ) => void;
-  readonly onDragOver?: React.DragEventHandler<HTMLCanvasElement>;
-  readonly onDragEnter?: React.DragEventHandler<HTMLCanvasElement>;
+  readonly onDragOver?: React.DragEventHandler<HTMLCanvasElement> | undefined;
+  readonly onDragEnter?: React.DragEventHandler<HTMLCanvasElement> | undefined;
   readonly onClickAt?: (x: number, y: number) => void;
   readonly onMouseMoveNoDragging?: (event: MouseEvent) => void;
   readonly onSingleTouchMove?: (event: TouchEvent) => void;
   readonly onMouseLeave?: (event: MouseEvent) => void;
   readonly onCanvasDragStart?: () => void;
   readonly onCanvasDragEnd?: () => void;
-  readonly minScale?: number;
-  readonly maxScale?: number;
-  readonly scaleFactor?: number;
-  readonly canvasRef?: React.Ref<HTMLCanvasElement>;
-  readonly usingWebGL?: boolean;
-  readonly shouldReleaseDragOnMouseLeave?: boolean;
-  readonly style?: React.CSSProperties;
+  readonly minScale?: number | undefined;
+  readonly maxScale?: number | undefined;
+  readonly scaleFactor?: number | undefined;
+  canvasRef?: React.RefObject<HTMLCanvasElement> | undefined;
+  readonly usingWebGL?: boolean | undefined;
+  readonly shouldReleaseDragOnMouseLeave?: boolean | undefined;
+  readonly style?: React.CSSProperties | undefined;
 }) {
   const internalCanvasRef = useRef<HTMLCanvasElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -110,14 +110,9 @@ export function ZoomableCanvas({
 
       draw();
 
-      // Forward the internal ref to the parent if provided
+      // Forward the internal ref to the caller, which sizes the canvas from it.
       if (canvasRef) {
-        if (typeof canvasRef === 'function') {
-          canvasRef(internalCanvasRef.current);
-        } else {
-          (canvasRef as React.RefObject<HTMLCanvasElement | null>).current =
-            internalCanvasRef.current;
-        }
+        canvasRef.current = internalCanvasRef.current;
       }
 
       const canvas = internalCanvasRef.current;

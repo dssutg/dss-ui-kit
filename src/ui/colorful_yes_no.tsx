@@ -5,7 +5,7 @@ export function ColorfulYesNo({
   yesIsBad = false,
 }: {
   readonly yes: boolean;
-  readonly yesIsBad?: boolean;
+  readonly yesIsBad?: boolean | undefined;
 }) {
   const { t } = useLocale();
 

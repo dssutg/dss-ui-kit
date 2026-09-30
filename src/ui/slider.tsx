@@ -22,16 +22,16 @@ export function Slider({
   readonly max: number;
   readonly value: number;
   readonly onChange: (value: number) => void;
-  readonly step?: number;
-  readonly progressColor?: string;
-  readonly toolTipBackgroundColor?: string;
-  readonly toolTipTextColor?: string;
-  readonly toolTipColor?: string;
-  readonly breakPointLabelColor?: string;
-  readonly thumbSize?: number;
-  readonly trackHeight?: number;
-  readonly breakPoints?: readonly number[];
-  readonly breakPointsVisible?: boolean;
+  readonly step?: number | undefined;
+  readonly progressColor?: string | undefined;
+  readonly toolTipBackgroundColor?: string | undefined;
+  readonly toolTipTextColor?: string | undefined;
+  readonly toolTipColor?: string | undefined;
+  readonly breakPointLabelColor?: string | undefined;
+  readonly thumbSize?: number | undefined;
+  readonly trackHeight?: number | undefined;
+  readonly breakPoints?: readonly number[] | undefined;
+  readonly breakPointsVisible?: boolean | undefined;
 }) {
   const minValue = Math.min(min, max);
   const maxValue = Math.max(min, max);

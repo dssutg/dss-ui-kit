@@ -7,7 +7,7 @@ export function IconedSectionTitle({
 }: {
   readonly icon: IconName;
   readonly title: string;
-  readonly style?: React.CSSProperties;
+  readonly style?: React.CSSProperties | undefined;
 }) {
   return (
     <h1
