@@ -1,13 +1,9 @@
 import { getPluralizationIndex } from '@/lib/pluralization';
 import type { LocaleDates } from '@/locales/dates';
 
-/**
- * The date data for this locale, declared beside the messages so that adding a language means
- * writing one file and not three. The shape is shared with every other locale and lives in
- * `src/locales/dates.ts`.
- */
 export const ru = {
   'BitField.bitNoPrefix': 'Бит ',
+  'Chart.axis': 'Подписи осей графика',
   'ConfigurableOrderPanel.hide': 'Скрыть',
   'ConfigurableOrderPanel.hideAll': 'Скрыть все',
   'ConfigurableOrderPanel.moveDown': 'Переместить вниз',
@@ -38,6 +34,7 @@ export const ru = {
   'FilterableTable.search': 'Поиск',
   'FilterableTable.showStats': 'Показать статистику',
   'FilterableTable.showTimeline': 'Показать хронологию',
+  'FilterableTableStatsModal.itemCountByCriterionColumn': 'Количество',
   'FilterableTableStatsModal.propertySelect.label': 'Столбец: ',
   'FilterableTableStatsModal.title': 'Статистика',
   'FilterableTableStatsModal.totalItems': 'Всего строк в таблице: ',
@@ -86,7 +83,10 @@ export const ru = {
   'actions.copied': 'Скопировано',
   'actions.copyToClipboard': 'Скопировать в буфер обмена',
   'actions.find': 'Найти',
+  'actions.hidePassword': 'Скрыть пароль',
+  'actions.showPassword': 'Показать пароль',
   no: 'Нет',
+  notChosen: 'Не выбрано',
   yes: 'Да',
 };
 

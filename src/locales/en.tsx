@@ -1,12 +1,8 @@
 import type { LocaleDates } from '@/locales/dates';
 
-/**
- * The date data for this locale, declared beside the messages so that adding a language means
- * writing one file and not three. The shape is shared with every other locale and lives in
- * `src/locales/dates.ts`.
- */
 export const en = {
   'BitField.bitNoPrefix': 'Bit ',
+  'Chart.axis': 'Chart axis labels',
   'ConfigurableOrderPanel.hide': 'Hide',
   'ConfigurableOrderPanel.hideAll': 'Hide all',
   'ConfigurableOrderPanel.moveDown': 'Move down',
@@ -37,6 +33,7 @@ export const en = {
   'FilterableTable.search': 'Search',
   'FilterableTable.showStats': 'Show Stats',
   'FilterableTable.showTimeline': 'Show Timeline',
+  'FilterableTableStatsModal.itemCountByCriterionColumn': 'Count',
   'FilterableTableStatsModal.propertySelect.label': 'Column: ',
   'FilterableTableStatsModal.title': 'Stats',
   'FilterableTableStatsModal.totalItems': 'Total rows: ',
@@ -85,7 +82,10 @@ export const en = {
   'actions.copied': 'Copied',
   'actions.copyToClipboard': 'Copy to clipboard',
   'actions.find': 'Find',
+  'actions.hidePassword': 'Hide password',
+  'actions.showPassword': 'Show password',
   no: 'No',
+  notChosen: 'Not chosen',
   yes: 'Yes',
 };
 
