@@ -3,7 +3,6 @@ import { copyToClipboard } from "@/lib/dom";
 import { wrapIndex } from "@/lib/math";
 import { useEventListener } from "@/lib/use_event_listener";
 import { useLocale } from "@/locale";
-import { routeTo } from "@/routing";
 import { FeedbackTooltip, showFeedbackTooltip } from "./feedback_tooltip";
 import { Icon, type IconName } from "./icon";
 import { Ripple } from "./ripple";
@@ -163,7 +162,7 @@ export function CopyToClipboardButton({
 				/>
 			</button>
 			<FeedbackTooltip
-				title={t("copied")}
+				title={t("actions.copied")}
 				type="good"
 				visible={feedbackShown}
 				trigger={triggerRef.current}
@@ -275,30 +274,63 @@ export function IconedButtonGroup({
 	);
 }
 
-export function ToggleMetricDiagramViewButton({
-	isChart,
-	onChange,
-	style,
-}: {
-	readonly isChart: boolean;
-	readonly onChange: (isChart: boolean) => void;
+export interface ToggleButtonOption<TValue extends string> {
+	/** The value this option selects. */
+	readonly value: TValue;
+	/** The icon shown while this option is not selected. */
+	readonly icon: IconName;
+	/** Tooltip naming the option, and therefore what activating the button will do. */
+	readonly title: string;
+}
+
+export interface ToggleButtonProps<TValue extends string> {
+	/** The currently selected value. */
+	readonly value: TValue;
+	/** The mutually exclusive values, in the order they are cycled through. */
+	readonly options: readonly ToggleButtonOption<TValue>[];
+	/** Called with the newly selected value. The button never changes its own state. */
+	readonly onChange: (value: TValue) => void;
+	readonly className?: string;
 	readonly style?: React.CSSProperties;
-}) {
-	const { t } = useLocale();
+	readonly iconClassName?: string;
+}
+
+/**
+ * A button that cycles through a set of mutually exclusive representations of the same thing — a line
+ * chart against a ring, a list against a grid.
+ *
+ * The button is told which option is current and which are available rather than carrying a boolean of
+ * its own, because the decision of what the alternatives are belongs to the caller and not to a
+ * component library. Titles are supplied rather than looked up so that the button has no opinion about
+ * what the options mean.
+ */
+export function ToggleButton<TValue extends string>({
+	value,
+	options,
+	onChange,
+	className,
+	style,
+	iconClassName,
+}: ToggleButtonProps<TValue>) {
+	const currentIndex = options.findIndex((option) => option.value === value);
+
+	if (currentIndex === -1) {
+		throw new Error(`ToggleButton: "${value}" is not one of its options.`);
+	}
+
+	const current = options[currentIndex]!;
+	const next = options[(currentIndex + 1) % options.length]!;
 
 	return (
 		<IconButton
-			icon={isChart ? "ringProgress" : "lineChart"}
-			className="fill-tpd p-2 rounded-full"
+			icon={current.icon}
+			className={className}
 			style={style}
-			iconClassName="size-6"
-			title={
-				isChart
-					? t("ToggleMetricDiagramViewButton.chooseRingProgress")
-					: t("ToggleMetricDiagramViewButton.chooseLineChart")
-			}
-			rippleColor="var(--color-ripple-icon-button)"
-			onClick={() => onChange(!isChart)}
+			iconClassName={iconClassName}
+			// The title names the option the button will switch to, which is what a toggle is asked.
+			title={next.title}
+			ariaLabel={next.title}
+			onClick={() => onChange(next.value)}
 		/>
 	);
 }
@@ -385,32 +417,53 @@ export function Button({
 	);
 }
 
+export interface LinkProps {
+	/** The destination. Rendered as the anchor's `href`. */
+	readonly to: string;
+	/**
+	 * Called when the link is activated.
+	 *
+	 * The library has no router and does not take one: navigating is the application's decision, so the
+	 * destination is reported and the consumer decides what it means. Pass `undefined` to let the
+	 * browser follow the `href` itself.
+	 */
+	readonly onNavigate?: (to: string) => void;
+	readonly onClick?: () => void;
+	readonly className?: string;
+	readonly style?: React.CSSProperties;
+	readonly children?: React.ReactNode;
+}
+
+/**
+ * A link styled as a button.
+ *
+ * Rendered as a real anchor so that the browser's own affordances — middle-click, open in a new tab,
+ * the status bar preview — keep working. The library does not intercept navigation unless
+ * {@link LinkProps.onNavigate} is given, because a component that navigates is a component that has
+ * chosen the application's router for it.
+ */
 export function Link({
-	to = "/",
+	to,
+	onNavigate,
 	onClick,
 	className,
 	style,
 	children,
 	...properties
-}: {
-	readonly to: string;
-	readonly onClick?: () => void;
-	readonly className?: string;
-	readonly style?: React.CSSProperties;
-	readonly children?: React.ReactNode;
-}) {
+}: LinkProps) {
 	return (
-		<button
+		<a
+			href={to}
 			className={className}
 			style={{ fontSize: "inherit", ...style }}
 			onClick={() => {
-				routeTo(to);
+				onNavigate?.(to);
 				onClick?.();
 			}}
 			{...properties}
 		>
 			{children}
-		</button>
+		</a>
 	);
 }
 

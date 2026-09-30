@@ -1,76 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { CalendarLocale } from "@/lib/date";
 import { useEventListener } from "@/lib/use_event_listener";
 import { useGranularEffect } from "@/lib/use_granular_effect";
-import { useLocale } from "@/locale";
+import { getLocaleDates, useLocale } from "@/locale";
 
 const MONTH_ROWS = 6;
 const WEEK_DAYS = 7;
 
-const monthTable = [
-	{ fullName: "January", name: "Jan", days: 31, daysLeap: 31 },
-	{ fullName: "February", name: "Feb", days: 28, daysLeap: 29 },
-	{ fullName: "March", name: "Mar", days: 31, daysLeap: 31 },
-	{ fullName: "April", name: "Apr", days: 30, daysLeap: 30 },
-	{ fullName: "May", name: "May", days: 31, daysLeap: 31 },
-	{ fullName: "June", name: "Jun", days: 30, daysLeap: 30 },
-	{ fullName: "July", name: "Jul", days: 31, daysLeap: 31 },
-	{ fullName: "August", name: "Aug", days: 31, daysLeap: 31 },
-	{ fullName: "September", name: "Sep", days: 30, daysLeap: 30 },
-	{ fullName: "October", name: "Oct", days: 31, daysLeap: 31 },
-	{ fullName: "November", name: "Nov", days: 30, daysLeap: 30 },
-	{ fullName: "December", name: "Dec", days: 31, daysLeap: 31 },
-] as const;
+/**
+ * How many days each month has, and how many in a leap year.
+ *
+ * Pure calendar arithmetic rather than anything translatable, which is why it is a table here and not
+ * a message: February is 29 days long in a leap year whatever language the calendar is drawn in.
+ */
+const daysPerMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
+const daysPerLeapMonth = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
 
-const weekdayNames = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"] as const;
-
-const fullWeekdayNames = [
-	"Sunday",
-	"Monday",
-	"Tuesday",
-	"Wednesday",
-	"Thursday",
-	"Friday",
-	"Saturday",
-] as const;
-
-const locales = {
-	en: {
-		isSundayFirstWeekDay: true,
-		monthNames: [
-			"January",
-			"February",
-			"March",
-			"April",
-			"May",
-			"June",
-			"July",
-			"August",
-			"September",
-			"October",
-			"November",
-			"December",
-		],
-		weekdayNames: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
-	},
-	ru: {
-		isSundayFirstWeekDay: false,
-		monthNames: [
-			"Январь",
-			"Февраль",
-			"Март",
-			"Апрель",
-			"Май",
-			"Июнь",
-			"Июль",
-			"Август",
-			"Сентябрь",
-			"Октябрь",
-			"Ноябрь",
-			"Декабрь",
-		],
-		weekdayNames: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
-	},
-} as const;
 
 function isLeapYear(year: number) {
 	return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
@@ -97,9 +42,9 @@ function getWeekday(year: number, month: number, monthDay: number) {
 
 function getDaysInMonth(year: number, month: number) {
 	if (isLeapYear(year)) {
-		return monthTable[month]!.daysLeap;
+		return daysPerLeapMonth[month]!;
 	}
-	return monthTable[month]!.days;
+	return daysPerMonth[month]!;
 }
 
 interface MonthCalendar {
@@ -123,12 +68,15 @@ interface Calendar {
 	year: number;
 	isLeapYear: boolean;
 	isSundayFirstWeekDay: boolean;
-	fullWeekdayHeader: string[];
 	weekdayHeader: string[];
 	months: MonthCalendar[];
 }
 
-function getCalendar(year?: number, isSundayFirstWeekDay = true) {
+function getCalendar(
+	year: number | undefined,
+	isSundayFirstWeekDay: boolean,
+	calendarLocale: CalendarLocale,
+) {
 	let definedYear = year;
 	if (definedYear === undefined) {
 		definedYear = new Date().getFullYear();
@@ -138,8 +86,7 @@ function getCalendar(year?: number, isSundayFirstWeekDay = true) {
 		year: definedYear,
 		isLeapYear: isLeapYear(definedYear),
 		isSundayFirstWeekDay,
-		fullWeekdayHeader: [...fullWeekdayNames],
-		weekdayHeader: [...weekdayNames],
+		weekdayHeader: [...calendarLocale.weekdayNames],
 		months: [],
 	};
 
@@ -154,8 +101,8 @@ function getCalendar(year?: number, isSundayFirstWeekDay = true) {
 		const numberOfDays = getDaysInMonth(definedYear, month);
 
 		const monthCalendar: MonthCalendar = {
-			fullName: monthTable[month]!.fullName,
-			name: monthTable[month]!.name,
+			fullName: calendarLocale.monthNames[month]!,
+			name: calendarLocale.monthNames[month]!.slice(0, 3),
 			dayTable: [],
 			numberOfDays,
 			firstWeekday,
@@ -270,9 +217,13 @@ function Day({
 export function StaticCalendar({ date }: { readonly date: Date }) {
 	const { lang } = useLocale();
 
-	const { isSundayFirstWeekDay } = locales[lang];
+	const { isSundayFirstWeekDay } = getLocaleDates(lang).calendar;
 
-	const calendar = getCalendar(date.getFullYear(), isSundayFirstWeekDay);
+	const calendar = getCalendar(
+		date.getFullYear(),
+		isSundayFirstWeekDay,
+		getLocaleDates(lang).calendar,
+	);
 
 	const year = date.getFullYear();
 	const monthIndex = date.getMonth();
@@ -305,7 +256,7 @@ export function StaticCalendar({ date }: { readonly date: Date }) {
 	return (
 		<div className="flex flex-col gap-4">
 			<h2 className="m-0 truncate text-center text-xl font-normal text-[var(--color-mini-calendar-title-fg)]">
-				{locales[lang].monthNames[monthIndex]}, {year}
+				{getLocaleDates(lang).calendar.monthNames[monthIndex]}, {year}
 			</h2>
 			<div>
 				<div className="flex justify-between first:mb-2">
@@ -324,7 +275,7 @@ export function StaticCalendar({ date }: { readonly date: Date }) {
 										: "weekday"
 								}
 							>
-								{locales[lang].weekdayNames[weekdayIndex]}
+								{getLocaleDates(lang).calendar.weekdayNames[weekdayIndex]}
 							</Day>
 						);
 					})}

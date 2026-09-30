@@ -1,263 +1,361 @@
-import { useCallback } from "react";
 import {
-	type BCPType,
-	globalState,
-	onGlobalStateUpdate,
-	useAppState,
-} from "@/def";
-import { emitTypedEvent } from "@/event";
+	type ReactNode,
+	createContext,
+	useCallback,
+	useContext,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
 import { getPluralizationIndex } from "@/lib/pluralization";
 import { substituteStringByMap } from "@/lib/record";
-import type {
-	LocaleKey,
-	LocaleKeyWithParameters,
-	LocaleKeyWithoutParameters,
-	LocaleParameters,
-} from "@/locale_schema";
+import { builtinDates, type LocaleDates } from "@/locales/dates";
 import { en } from "@/locales/en";
 import { ru } from "@/locales/ru";
 
-export const validLocales = ["en", "ru"] as const;
+/**
+ * The locales the library ships translations for.
+ *
+ * A UI library that only ships its own component strings still has to pick a set, and shipping both
+ * keeps every message the library renders translatable without a consumer writing the library's
+ * strings for them.
+ */
+export const supportedLocales = ["en", "ru"] as const;
 
-export type LocaleName = (typeof validLocales)[number];
+/**
+ * A locale name.
+ *
+ * The shipped locales are a literal union, but a consumer adding a language is not a type error: the
+ * `string` arm is what makes `LocaleProvider initialLocale="de"` legal. A consumer that supplies its
+ * own catalogue also supplies the pluralization rules, so a language the library has never seen still
+ * formats its counts correctly.
+ */
+export type LocaleName = (typeof supportedLocales)[number] | (string & {});
 
-export function isValidLocale(localeName: string): localeName is LocaleName {
-	return new Set<string>(validLocales).has(localeName);
+export function isSupportedLocale(name: string): name is (typeof supportedLocales)[number] {
+	return (supportedLocales as readonly string[]).includes(name);
 }
 
-export const fallBackLocale: LocaleName = "ru";
+/** The locale used when the browser asks for one the library does not ship. */
+export const fallbackLocale = "en";
 
-export function getLocaleName() {
-	return globalState.locale.lang;
+/** A message catalogue: every key the library renders, mapped to its translation. */
+export type MessageCatalogue = Record<string, string>;
+
+/**
+ * The keys the library renders, derived from the English catalogue.
+ *
+ * Deriving from a value rather than declaring a union of string literals means a key exists because a
+ * message was added, not because a type was edited, and a key that is used but never defined is a
+ * compile error at the point of use.
+ */
+export type MessageKey = keyof typeof en;
+
+/** Parameters substituted into a message, referenced as `{name}` in the text. */
+export type MessageParameters = Record<string, string | number | boolean | null | undefined>;
+
+/**
+ * The catalogues the library ships.
+ *
+ * English is the source of the key set; the others are typed against it, so a message missing from a
+ * translation is a type error rather than a blank label on a panel someone is reading.
+ */
+export const builtinCatalogues: Readonly<Record<string, MessageCatalogue>> = { en, ru };
+
+/**
+ * The date data for a locale, falling back to the fallback locale.
+ *
+ * Dates are looked up separately from messages because they are not messages: a format string and a
+ * month heading are structured data, and a component that has to reach for them should be handed the
+ * whole set rather than assembling it from a key lookup.
+ */
+export function getLocaleDates(locale: LocaleName): LocaleDates {
+	return builtinDates[locale] ?? builtinDates[fallbackLocale]!;
 }
 
-export const allLocales: Readonly<
-	Record<LocaleName, Record<LocaleKey, string>>
-> = {
-	en,
-	ru,
-};
+/** The key the chosen locale is persisted under. Configurable so two libraries can coexist. */
+export const LOCALE_STORAGE_KEY = "ui-kit.locale";
 
-export const locale = allLocales;
-
-export function getTranslation<K extends LocaleKeyWithoutParameters>(
-	localeKey: K | "" | undefined | null,
-	parameters?: null,
-): string;
-
-export function getTranslation<K extends LocaleKeyWithParameters>(
-	localeKey: K | "" | undefined | null,
-	parameters: LocaleParameters[K],
-): string;
-
-export function getTranslation<K extends LocaleKey>(
-	localeKey: K | "" | undefined | null,
-	parameters: K extends LocaleKey ? LocaleParameters[K] : null,
+/**
+ * Replaces one `{name}` placeholder per parameter.
+ *
+ * A parameter that is absent or `undefined` becomes an empty string rather than the literal text
+ * `{name}`, so a missing value never reaches an operator as a template.
+ */
+function substituteParameters(
+	template: string,
+	parameters: MessageParameters | null | undefined,
 ): string {
-	if (localeKey === undefined || localeKey === null || localeKey === "") {
-		return "";
+	if (!parameters) {
+		return template;
 	}
-
-	const lang = getLocaleName();
-
-	const title =
-		locale[lang]?.[localeKey] ?? locale[fallBackLocale][localeKey] ?? localeKey;
 
 	const substitutionMap: Record<string, string> = {};
-
-	if (parameters) {
-		for (const key in parameters) {
-			substitutionMap[`{${key}}`] = (
-				(parameters as Record<string, string>)[key] ?? ""
-			).toString();
-		}
+	for (const [key, value] of Object.entries(parameters)) {
+		substitutionMap[`{${key}}`] = value === null || value === undefined ? "" : String(value);
 	}
 
-	const expanded = substituteStringByMap(title, substitutionMap);
+	return substituteStringByMap(template, substitutionMap);
+}
 
-	const final = expanded.replace(
-		/{:(P):([A-Z_a-z]\w*):(\d+):(.*?)}/g,
-		(_match, _mode, counter, index, form) => {
-			const count = (parameters as Record<string, string>)?.[counter];
+/**
+ * Expands the pluralization placeholders in a message.
+ *
+ * The syntax is `{:(P):counter:index:form}`: a message may carry one placeholder per plural form, and
+ * exactly one survives. `index` is the form number the locale's rules select for `counter`. A counter
+ * that is not a parameter is reported and treated as zero rather than silently producing an empty
+ * string, because a message that renders as nothing is harder to notice than a console line.
+ */
+function expandPluralForms(
+	template: string,
+	locale: LocaleName,
+	parameters: MessageParameters | null | undefined,
+): string {
+	if (!template.includes("{:(P):")) {
+		return template;
+	}
 
-			if (count === undefined) {
+	return template.replace(
+		/{:(P):([A-Za-z_]\w*):(\d+):([\s\S]*?)}/g,
+		(_match, counter: string, index: string, form: string) => {
+			const rawCount = parameters?.[counter];
+
+			if (rawCount === undefined || rawCount === null) {
 				console.error(
-					`Unknown parameter ${counter} in locale key ${localeKey}`,
+					`Unknown pluralization parameter "${counter}" in message; treating the count as 0.`,
 				);
 			}
 
-			let localeName = fallBackLocale;
-			if (locale[lang] !== undefined) {
-				localeName = lang;
-			}
+			const count = Number(rawCount ?? 0) || 0;
+			const selectedForm = getPluralizationIndex(locale, count);
 
-			const pluralizationIndex = getPluralizationIndex(
-				localeName,
-				Number(count ?? 0) || 0,
-			);
-
-			if (parseInt(index, 10) !== pluralizationIndex) {
-				return "";
-			}
-
-			return form;
+			return parseInt(index, 10) === selectedForm ? form : "";
 		},
 	);
-
-	return final;
 }
 
-export function isLocaleWithCyrillicScript(locale: LocaleName) {
-	return locale === "ru";
+/**
+ * Looks a message up in a set of catalogues.
+ *
+ * Resolution falls back through the requested locale, then the fallback locale, then the key itself,
+ * so a message that exists in neither still renders something identifiable instead of `undefined`.
+ */
+export function translate(
+	catalogues: Readonly<Record<string, MessageCatalogue>>,
+	locale: LocaleName,
+	key: string,
+	parameters?: MessageParameters | null,
+): string {
+	const catalogue = catalogues[locale];
+	const message =
+		catalogue?.[key] ?? catalogues[fallbackLocale]?.[key] ?? key;
+
+	const substituted = substituteParameters(message, parameters);
+	return expandPluralForms(substituted, locale, parameters);
 }
 
-const keyCountMap: Record<string, number> = {};
+export interface LocaleContextValue {
+	/** The locale in effect. */
+	readonly lang: LocaleName;
+	/**
+	 * Resolves a message the library renders.
+	 *
+	 * Returns an empty string for an absent key rather than throwing: a component must render while a
+	 * consumer's catalogue is still being filled in, and a panel that throws is worse than a blank
+	 * label. The key is not echoed back, because that would put a raw key in front of an operator.
+	 */
+	readonly t: (key: MessageKey, parameters?: MessageParameters | null) => string;
+	/** Resolves an arbitrary string, for a message a consumer added to its own catalogue. */
+	readonly tRaw: (key: string, parameters?: MessageParameters | null) => string;
+	/** Switches the locale and persists the choice. */
+	readonly setLocale: (locale: LocaleName) => void;
+	/** True when the locale is written right to left. */
+	readonly isRtl: boolean;
+	/** True when the locale uses a non-Latin script, which some components lay out differently. */
+	readonly isCyrillic: boolean;
+}
 
-for (const [, keys] of Object.entries(allLocales)) {
-	for (const key of Object.keys(keys)) {
-		keyCountMap[key] = (keyCountMap[key] ?? 0) + 1;
+const LocaleContext = createContext<LocaleContextValue | null>(null);
+
+/** Locales written right to left. Extends as a consumer adds a language. */
+const RTL_LANGUAGES = new Set(["ar", "fa", "he", "ur", "yi"]);
+
+/** Locales written in the Cyrillic script, which affects plural rules and some component layouts. */
+const CYRILLIC_LANGUAGES = new Set(["be", "bg", "kk", "ky", "mk", "mn", "ru", "sr", "tg", "uk"]);
+
+function primaryLanguageSubtag(locale: LocaleName): string {
+	return locale.split("-")[0]?.toLowerCase() ?? "";
+}
+
+export interface LocaleProviderProps {
+	readonly children: ReactNode;
+	/**
+	 * The locale to start in. Defaults to the browser's preference when it is one the library ships,
+	 * and to the fallback locale otherwise.
+	 */
+	readonly initialLocale?: LocaleName;
+	/**
+	 * Extra or replacement messages, merged over the shipped catalogues.
+	 *
+	 * This is how a consumer translates the library into a language it does not ship, and how it
+	 * overrides an individual string without forking the library. A consumer still adds its own keys
+	 * here; the library never needs to know about them.
+	 */
+	readonly messages?: Readonly<Record<string, MessageCatalogue>>;
+	/** Persist the chosen locale under this key. Pass `null` to not persist it at all. */
+	readonly storageKey?: string | null;
+}
+
+function detectInitialLocale(storageKey: string | null): LocaleName {
+	if (storageKey !== null) {
+		try {
+			const stored = localStorage.getItem(storageKey);
+			if (stored !== null && stored !== "") {
+				return stored;
+			}
+		} catch {
+			// Storage may be unavailable; the browser preference below is still usable.
+		}
 	}
-}
 
-const localeCount = Object.keys(allLocales).length;
-
-for (const [key, count] of Object.entries(keyCountMap)) {
-	if (count !== localeCount) {
-		console.warn(`Key ${key} is not present in all locales`);
+	const preferred = globalThis.navigator?.languages ?? [globalThis.navigator?.language];
+	for (const candidate of preferred) {
+		if (candidate === undefined) {
+			continue;
+		}
+		const exact = supportedLocales.find((locale) => locale === candidate);
+		if (exact !== undefined) {
+			return exact;
+		}
+		const byLanguage = supportedLocales.find(
+			(locale) => primaryLanguageSubtag(locale) === primaryLanguageSubtag(candidate),
+		);
+		if (byLanguage !== undefined) {
+			return byLanguage;
+		}
 	}
+
+	return fallbackLocale;
 }
 
-const bcpTypeToLocaleKeyMap: Record<BCPType, LocaleKeyWithoutParameters> = {
-	standard: "bcpTitleStandard",
-	main: "bcpTitleMain",
-	backup: "bcpTitleBackup",
-};
-
-export function getBCPTypeTitle(bcpType: BCPType) {
-	return getTranslation(bcpTypeToLocaleKeyMap[bcpType]);
-}
-
-export function useLocale() {
-	const lang: LocaleName = useAppState((s) => s.locale.lang);
-
-	const L = locale[lang];
-
-	// biome-ignore lint: lint/correctness/useExhaustiveDependencies: need to update t reference to reflect lang change
-	const t: typeof getTranslation = useCallback(
-		// biome-ignore lint: lint/suspicious/noExplicitAny
-		(localeKey: any, parameters: any) => getTranslation(localeKey, parameters),
-		[lang],
+/**
+ * Supplies the locale to every component below it.
+ *
+ * Wrap the application once. Without a provider the components still render, in the fallback locale:
+ * a component library that throws when it is mounted inside a test or a Storybook story is a
+ * component library nobody can use.
+ */
+export function LocaleProvider({
+	children,
+	initialLocale,
+	messages,
+	storageKey = LOCALE_STORAGE_KEY,
+}: LocaleProviderProps) {
+	const [lang, setLang] = useState<LocaleName>(
+		() => initialLocale ?? detectInitialLocale(storageKey),
 	);
 
-	// biome-ignore lint: lint/correctness/useExhaustiveDependencies: need to update t reference to reflect lang change
-	const tCfg = useCallback(
-		(localeSubKey: string) =>
-			getTranslation(`cfg.${localeSubKey}` as LocaleKeyWithoutParameters, null),
-		[lang],
+	const catalogues = useMemo<Readonly<Record<string, MessageCatalogue>>>(() => {
+		if (messages === undefined) {
+			return builtinCatalogues;
+		}
+		return { ...builtinCatalogues, ...messages };
+	}, [messages]);
+
+	const setLocale = useCallback(
+		(nextLocale: LocaleName) => {
+			setLang(nextLocale);
+
+			if (storageKey !== null) {
+				try {
+					localStorage.setItem(storageKey, nextLocale);
+				} catch {
+					// A locale that cannot be persisted is still a locale that is applied.
+				}
+			}
+
+			// The document language matters for the browser's own hyphenation and for assistive
+			// technology, and the library is what knows which locale it just switched to.
+			document.documentElement?.setAttribute("lang", nextLocale);
+		},
+		[storageKey],
 	);
 
-	return { L, t, tCfg, lang, locale, fallBackLocale };
+	useEffect(() => {
+		document.documentElement?.setAttribute("lang", lang);
+	}, [lang]);
+
+	const tRaw = useCallback(
+		(key: string, parameters?: MessageParameters | null) =>
+			translate(catalogues, lang, key, parameters),
+		[catalogues, lang],
+	);
+
+	const t = useCallback(
+		(key: MessageKey, parameters?: MessageParameters | null) => tRaw(key, parameters),
+		[tRaw],
+	);
+
+	const value = useMemo<LocaleContextValue>(
+		() => ({
+			lang,
+			t,
+			tRaw,
+			setLocale,
+			isRtl: RTL_LANGUAGES.has(primaryLanguageSubtag(lang)),
+			isCyrillic: CYRILLIC_LANGUAGES.has(primaryLanguageSubtag(lang)),
+		}),
+		[lang, t, tRaw, setLocale],
+	);
+
+	return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 }
 
-export function alterLocale(localeName: LocaleName) {
-	globalState.locale = { ...globalState.locale, lang: localeName };
-	onGlobalStateUpdate();
-
-	localStorage.setItem("locale", localeName);
-	emitTypedEvent("SETTINGS_UPDATE", null);
-
-	document.documentElement.setAttribute("lang", localeName);
-}
-
-export const localeTitles = {
-	aa: "Afaraf",
-	ab: "Аҧсуа",
-	af: "Afrikaans",
-	am: "አማርኛ",
-	ar: "العربية",
-	as: "অসমীয়া",
-	av: "Авар",
-	ay: "Aymara",
-	az: "Azərbaycanca",
-	ba: "Башҡортса",
-	be: "Беларуская",
-	bg: "Български",
-	bm: "Bamanankan",
-	bn: "বাংলা",
-	br: "Breton",
-	bs: "Bosanski",
-	ca: "Català",
-	ce: "Нохчийн",
-	ch: "Chamorro",
-	co: "Corsu",
-	cs: "Čeština",
-	cv: "Чӑваш",
-	cy: "Cymraeg",
-	da: "Dansk",
-	de: "Deutsch",
-	el: "Ελληνικά",
-	en: "English",
-	eo: "Esperanto",
-	es: "Español",
-	et: "Eesti",
-	eu: "Euskara",
-	fi: "Suomi",
-	fo: "Føroyskt",
-	fr: "Français",
-	gl: "Galego",
-	gu: "ગુજરાતી",
-	he: "עברית",
-	hi: "हिन्दी",
-	hr: "Hrvatski",
-	hu: "Magyar",
-	hy: "Հայերեն",
-	id: "Bahasa Indonesia",
-	ig: "Igbo",
-	is: "Íslenska",
-	it: "Italiano",
-	ja: "日本語",
-	jv: "Basa Jawa",
-	ka: "ქართული",
-	km: "ភាសាខ្មែរ",
-	kn: "ಕನ್ನಡ",
-	ko: "한국어",
-	ku: "Kurdî",
-	la: "Latina",
-	lb: "Lëtzebuergesch",
-	li: "Limburgs",
-	lt: "Lietuvių",
-	lv: "Latviešu",
-	mk: "Македонски",
-	ml: "മലയാളം",
-	mn: "Монгол",
-	mr: "मराठी",
-	ms: "Bahasa Melayu",
-	mt: "Malti",
-	ne: "नेपाली",
-	nl: "Nederlands",
-	ny: "Chichewa",
-	or: "ଓଡ଼ିଆ",
-	pa: "ਪੰਜਾਬੀ",
-	pl: "Polski",
-	pt: "Português",
-	ro: "Română",
-	ru: "Русский",
-	si: "සිංහල",
-	sk: "Slovenčina",
-	sl: "Slovenščina",
-	sq: "Shqip",
-	su: "Basa Sunda",
-	sv: "Svenska",
-	sw: "Swahili",
-	ta: "தமிழ்",
-	te: "తెలుగు",
-	th: "ไทย",
-	tl: "Tagalog",
-	tr: "Türkçe",
-	uk: "Українська",
-	vi: "Tiếng Việt",
-	xh: "isiXhosa",
-	yi: "ייִדיש",
-	zh: "中文",
-	zu: "isiZulu",
+const unmanagedContextValue: LocaleContextValue = {
+	lang: fallbackLocale,
+	t: (key, parameters) => translate(builtinCatalogues, fallbackLocale, key, parameters),
+	tRaw: (key, parameters) => translate(builtinCatalogues, fallbackLocale, key, parameters),
+	setLocale: () => {
+		// Outside a provider there is no locale state to change. Silently doing nothing keeps a
+		// component that offers a language switch from crashing when it is rendered standalone.
+	},
+	isRtl: false,
+	isCyrillic: false,
 };
+
+/**
+ * The locale, and the function that resolves the messages a component renders.
+ *
+ * Returns the fallback locale rather than throwing when no {@link LocaleProvider} is above it, so a
+ * single component can be rendered on its own — in a test, a documentation example or a design
+ * review — without the whole application around it. A switch rendered this way will not do anything,
+ * which is the lesser evil next to a component that cannot be looked at.
+ */
+export function useLocale(): LocaleContextValue {
+	return useContext(LocaleContext) ?? unmanagedContextValue;
+}
+
+/**
+ * The current locale outside React.
+ *
+ * Reads the document's `lang` attribute, which {@link LocaleProvider} keeps in step with the value it
+ * holds, and falls back to the stored preference.
+ */
+export function getLocaleName(): LocaleName {
+	const fromDocument = document.documentElement?.getAttribute("lang");
+	if (fromDocument !== null && fromDocument !== undefined && fromDocument !== "") {
+		return fromDocument;
+	}
+
+	return detectInitialLocale(LOCALE_STORAGE_KEY);
+}
+
+/** True when the locale is written in the Cyrillic script. */
+export function isLocaleWithCyrillicScript(locale: LocaleName): boolean {
+	return CYRILLIC_LANGUAGES.has(primaryLanguageSubtag(locale));
+}
+
+/** True when the locale is written right to left. */
+export function isLocaleWithRtlScript(locale: LocaleName): boolean {
+	return RTL_LANGUAGES.has(primaryLanguageSubtag(locale));
+}

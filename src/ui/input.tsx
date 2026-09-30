@@ -691,7 +691,7 @@ export function SearchInput({
 				className="rounded-full p-2"
 				bgClassName={value !== "" ? "hover:bg-bse" : ""}
 				rippleColor="var(--color-ripple-icon-button)"
-				title={value !== "" ? t("BcpControlPanel.SearchInput.clear") : ""}
+				title={value !== "" ? t("SearchInput.clear") : ""}
 				onClick={(e) => {
 					e.stopPropagation();
 					onClear?.();
@@ -767,7 +767,7 @@ function HistoryListItem({
 }
 
 function getHistoryLocaleStorageKey(historyId: string) {
-	return `SearchInput_${historyId}`;
+	return `ui-kit.search-input.${historyId}`;
 }
 
 function saveHistory(history: Readonly<History>) {
@@ -1264,8 +1264,8 @@ export function LogWidget({
 			<div className="flex justify-between">
 				<div className="flex">
 					<PlayPauseButton
-						playTitle={t("BcpControlPanel.LogWidget.enableMessageOutput")}
-						pauseTitle={t("BcpControlPanel.LogWidget.disableMessageOutput")}
+						playTitle={t("LogWidget.enableMessageOutput")}
+						pauseTitle={t("LogWidget.disableMessageOutput")}
 						playing={playing}
 						onClick={playing ? onPauseClick : onPlayClick}
 					/>
@@ -1274,7 +1274,7 @@ export function LogWidget({
 						iconClassName="fill-tda size-6"
 						className="ml-2 rounded-full p-1 sm:ml-10"
 						rippleColor="var(--color-ripple-icon-button)"
-						title={t("BcpControlPanel.LogWidget.clearMessageOutput")}
+						title={t("LogWidget.clearMessageOutput")}
 						onClick={onClearClick}
 					/>
 					{extraLeftControlsComponent}

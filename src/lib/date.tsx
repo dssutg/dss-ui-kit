@@ -1,5 +1,3 @@
-import { getPluralizationIndex } from "@/lib/pluralization";
-
 export function getDateComponents(dateObject: Date = new Date()) {
 	return {
 		year: dateObject.getFullYear(),
@@ -19,30 +17,77 @@ export function hours24to12(hours = 0) {
 	return { hours: hours12, ampm };
 }
 
-export const weekdayNames = [
-	"Sunday",
-	"Monday",
-	"Tuesday",
-	"Wednesday",
-	"Thursday",
-	"Friday",
-	"Saturday",
-] as const;
+/**
+ * Weekday and month names, for the date formatters to render in a language.
+ *
+ * Indexed from Sunday and January respectively, because that is what `Date` reports and what every
+ * caller of these arrays has to hand them.
+ */
+export interface DateNames {
+	readonly weekdayNames: readonly string[];
+	readonly monthNames: readonly string[];
+}
 
-export const monthNames = [
-	"January",
-	"February",
-	"March",
-	"April",
-	"May",
-	"June",
-	"July",
-	"August",
-	"September",
-	"October",
-	"November",
-	"December",
-] as const;
+/**
+ * English names, used when a caller supplies none.
+ *
+ * A date formatted with these is still a correct date in a monolingual application, and it is the one
+ * language a formatter can produce without being told: hardcoding a language here is what made a
+ * Russian calendar render its months in English.
+ */
+export const defaultDateNames: DateNames = {
+	weekdayNames: [
+		"Sunday",
+		"Monday",
+		"Tuesday",
+		"Wednesday",
+		"Thursday",
+		"Friday",
+		"Saturday",
+	],
+	monthNames: [
+		"January",
+		"February",
+		"March",
+		"April",
+		"May",
+		"June",
+		"July",
+		"August",
+		"September",
+		"October",
+		"November",
+		"December",
+	],
+} as const;
+
+/**
+ * The names a calendar draws its own headings with.
+ *
+ * Separate from {@link DateNames} because a calendar needs the two forms a date format does not: the
+ * abbreviated weekday, and whether the week starts on Sunday. A locale that starts its week on Monday
+ * cannot be expressed as a set of names.
+ */
+export interface CalendarLocale {
+	readonly isSundayFirstWeekDay: boolean;
+	readonly monthNames: readonly string[];
+	readonly weekdayNames: readonly string[];
+}
+
+/** The `strftime` format strings a locale dates in, named after the fields they show. */
+export interface DateFormatLocale {
+	/** Date and time, the default for a timestamp. */
+	readonly format: string;
+	/** Everything, for somewhere there is room to say all of it. */
+	readonly verboseFormat: string;
+	/** Time first, for a log that reads newest-first. */
+	readonly timeFirst: string;
+	readonly timeOnly: string;
+	readonly dateOnly: string;
+	readonly numericDateOnly: string;
+	readonly hourMinuteOnly: string;
+}
+
 // See GNU date manual for date format specifiers
 //
 // To see the manual enter the following command in]
@@ -55,7 +100,11 @@ export const monthNames = [
 //   https://man7.org/linux/man-pages/man1/date.1.html
 //
 
-export function minstrftime(format = "", date: Date = new Date()) {
+export function minstrftime(
+	format = "",
+	date: Date = new Date(),
+	names: DateNames = defaultDateNames,
+) {
 	type Padding = Readonly<{
 		readPadChar: string;
 		padChar: string;
@@ -173,10 +222,10 @@ export function minstrftime(format = "", date: Date = new Date()) {
 			p: () => hours24to12(date.getHours()).ampm.toUpperCase(),
 			s: () => Math.floor(date.getTime() / 1000).toString(),
 			u: () => date.getTime().toString(),
-			A: () => weekdayNames[date.getDay()]!,
-			a: () => weekdayNames[date.getDay()]!.slice(0, 3),
-			B: () => monthNames[date.getMonth()]!,
-			b: () => monthNames[date.getMonth()]!.slice(0, 3),
+			A: () => names.weekdayNames[date.getDay()]!,
+			a: () => names.weekdayNames[date.getDay()]!.slice(0, 3),
+			B: () => names.monthNames[date.getMonth()]!,
+			b: () => names.monthNames[date.getMonth()]!.slice(0, 3),
 			"%": () => "%",
 			t: () => "\t",
 		};
@@ -197,52 +246,6 @@ export function minstrftime(format = "", date: Date = new Date()) {
 	return result;
 }
 
-export const minstrftimeSubstitutionMaps = {
-	en: {},
-	ru: {
-		Apr: "апреля",
-		Aug: "августа",
-		Dec: "декабря",
-		Feb: "февраля",
-		Fri: "Пт",
-		Jan: "января",
-		Jul: "июля",
-		Jun: "июня",
-		Mar: "марта",
-		May: "мая",
-		Mon: "Пн",
-		Nov: "ноября",
-		Oct: "октября",
-		Sat: "Сб",
-		Sep: "сентября",
-		Sun: "Вс",
-		Thu: "Чт",
-		Tue: "Вт",
-		Wed: "Ср",
-	},
-} as const;
-
-export const dateFormatLocales = {
-	en: {
-		format: "%m/%d/%Y %r",
-		verboseFormat: "%b %-d, %Y (%a) %r",
-		timeFirst: "%r, %b %-d, %Y (%a)",
-		timeOnly: "%r",
-		dateOnly: "%b %-d, %Y",
-		numericDateOnly: "%F",
-		hourMinuteOnly: "%I:%M %p",
-	},
-	ru: {
-		format: "%d.%m.%Y %T",
-		verboseFormat: "%-d %b, %Y (%a) %T",
-		timeFirst: "%T, %-d %b, %Y (%a)",
-		timeOnly: "%T",
-		dateOnly: "%-d %b, %Y",
-		numericDateOnly: "%d.%m.%Y",
-		hourMinuteOnly: "%H:%M",
-	},
-} as const;
-
 export interface DateLocale {
 	daysAgo: (days: number) => string;
 	yesterday: string;
@@ -261,51 +264,6 @@ export interface DateLocale {
 	inDays: (days: number) => string;
 }
 
-export const relativeDateLocales = {
-	en: {
-		daysAgo: (days: number) => `${days} days ago`,
-		yesterday: "yesterday",
-		hoursAgo: (hours: number) => `${hours} hours ago`,
-		oneHourAgo: "1 hour ago",
-		minutesAgo: (minutes: number) => `${minutes} minutes ago`,
-		oneMinuteAgo: "a minute ago",
-		secondsAgo: (seconds: number) => `${seconds} seconds ago`,
-		justThen: "just then",
-		inSeconds: (seconds: number) => `in ${seconds} seconds`,
-		inOneMinute: "in a minute",
-		inMinutes: (minutes: number) => `in ${minutes} minutes`,
-		inOneHour: "in 1 hour",
-		inHours: (hours: number) => `in ${hours} hours`,
-		tomorrow: "tomorrow",
-		inDays: (days: number) => `in ${days} days`,
-	},
-	ru: {
-		daysAgo: (days: number) =>
-			`${days} ${["день", "дня", "дней"][getPluralizationIndex("ru", days)]} назад`,
-		yesterday: "вчера",
-		hoursAgo: (hours: number) =>
-			`${hours} час${["", "а", "ов"][getPluralizationIndex("ru", hours)]} назад`,
-		oneHourAgo: "час назад",
-		minutesAgo: (minutes: number) =>
-			`${minutes} минут${["а", "ы", ""][getPluralizationIndex("ru", minutes)]} назад`,
-		oneMinuteAgo: "одну минуту назад",
-		secondsAgo: (seconds: number) =>
-			`${seconds} секунд${["а", "ы", ""][getPluralizationIndex("ru", seconds)]} назад`,
-		justThen: "только что",
-		inSeconds: (seconds: number) =>
-			`через ${seconds} секунд${["у", "ы", ""][getPluralizationIndex("ru", seconds)]}`,
-		inOneMinute: "через минуту",
-		inMinutes: (minutes: number) =>
-			`через ${minutes} минут${["у", "ы", ""][getPluralizationIndex("ru", minutes)]}`,
-		inOneHour: "через час",
-		inHours: (hours: number) =>
-			`через ${hours} час${["", "а", "ов"][getPluralizationIndex("ru", hours)]}`,
-		tomorrow: "завтра",
-		inDays: (days: number) =>
-			`через ${days} ${["день", "дня", "дней"][getPluralizationIndex("ru", days)]}`,
-	},
-} as const;
-
 const minute = 60;
 const hour = minute * 60;
 const day = hour * 24;
@@ -322,7 +280,8 @@ export function formatRelativeDate(
 		(relativeToDateObject.getTime() - dateObject.getTime()) / 1000,
 	);
 
-	const locale: DateLocale = dateLocale ?? relativeDateLocales.en;
+	// The locale is a required argument: choosing one here would mean choosing a language.
+	const locale: DateLocale = dateLocale;
 
 	function formatFutureDate(locale: DateLocale, delta: number) {
 		const absDelta = Math.abs(delta);

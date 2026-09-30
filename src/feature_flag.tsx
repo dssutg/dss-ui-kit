@@ -1,41 +1,80 @@
-import { global } from "@/def";
-import { emitTypedEvent, useTypedEvent } from "@/event";
+import { useCallback, useState } from "react";
+import { emitEvent, useEvent } from "@/event";
 import { useForceUpdate } from "@/lib/use_force_update";
 
-export function useFeatureFlag(featureName: FeatureName) {
-	const forceUpdate = useForceUpdate();
+/**
+ * The name of a feature flag.
+ *
+ * A library component should take a boolean prop for a toggleable behaviour. Feature flags are
+ * convenient when the decision is global to the application and the component cannot know the
+ * decision, but they are deliberately generic here: a consumer registers the flags it uses rather
+ * than importing a list from the application.
+ */
+export type FeatureName = string;
 
-	useTypedEvent("FEATURE_TOGGLED", ({ featureName: toggledFeatureName }) => {
-		if (featureName === toggledFeatureName) {
-			forceUpdate();
-		}
-	});
-
-	return isFeatureEnabled(featureName);
+export interface FeatureToggleEvent {
+	readonly featureName: FeatureName;
+	readonly enabled: boolean;
 }
 
-export function isFeatureEnabled(featureName: FeatureName) {
-	return global.FEATURE_MAP[featureName];
+const featureFlags = new Map<FeatureName, boolean>();
+
+const registry = new Set<FeatureName>();
+
+export interface FeatureDescriptor {
+	readonly name: FeatureName;
+	readonly defaultValue?: boolean;
 }
 
-export function setFeatureEnabled(featureName: FeatureName, enabled: boolean) {
-	global.FEATURE_MAP[featureName] = enabled;
-	emitTypedEvent("FEATURE_TOGGLED", { featureName, enabled });
+export function registerFeatureFlag(descriptor: FeatureDescriptor): void {
+	registry.add(descriptor.name);
+	if (!featureFlags.has(descriptor.name)) {
+		featureFlags.set(descriptor.name, descriptor.defaultValue ?? false);
+	}
+}
+
+export function unregisterFeatureFlag(name: FeatureName): void {
+	registry.delete(name);
+	featureFlags.delete(name);
+}
+
+export function isFeatureEnabled(featureName: FeatureName): boolean {
+	return featureFlags.get(featureName) ?? false;
+}
+
+export function setFeatureEnabled(featureName: FeatureName, enabled: boolean): boolean {
+	featureFlags.set(featureName, enabled);
+	emitEvent("ui-kit:feature-toggled", { featureName, enabled });
 	return enabled;
 }
 
-export function toggleFeature(featureName: FeatureName) {
+export function toggleFeature(featureName: FeatureName): boolean {
 	return setFeatureEnabled(featureName, !isFeatureEnabled(featureName));
 }
 
-export const featureNames = ["kauConfigTab"] as const;
-
-export type FeatureName = (typeof featureNames)[number];
-
-export function isValidFeatureName(
-	featureName: string,
-): featureName is FeatureName {
-	return new Set<string>(featureNames).has(featureName);
+export function getAllFeatureFlags(): FeatureDescriptor[] {
+	return [...registry].map((name) => ({
+		name,
+		defaultValue: featureFlags.get(name) ?? false,
+	}));
 }
 
-export type FeatureMap = Record<FeatureName, boolean>;
+export function useFeatureFlag(featureName: FeatureName): boolean {
+	const forceUpdate = useForceUpdate();
+	const [enabled, setEnabled] = useState<boolean>(() => isFeatureEnabled(featureName));
+
+	useEvent<FeatureToggleEvent>(
+		"ui-kit:feature-toggled",
+		useCallback(
+			({ featureName: toggledFeatureName, enabled }) => {
+				if (toggledFeatureName === featureName) {
+					setEnabled(enabled);
+					forceUpdate();
+				}
+			},
+			[featureName, forceUpdate],
+		),
+	);
+
+	return enabled;
+}

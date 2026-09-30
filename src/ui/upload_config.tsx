@@ -3,20 +3,20 @@ import { openFileDialog } from "@/lib/file";
 import { clamp } from "@/lib/math";
 import { useLocale } from "@/locale";
 import { Button } from "./button";
-import { Icon } from "./icon";
+import { Icon, type IconName } from "./icon";
 
-export function UploadConfig({
-	type = "config",
-	onFileUpload,
-	onFileUploadCancel,
-	onFileChange,
-	hint,
-	style,
-	progress,
-	onlyDrop = false,
-	uploadedFile,
-}: {
-	readonly type?: "config" | "firmware";
+export interface UploadConfigProps {
+	/**
+	 * The icon shown once a file has been chosen, and the message the button beside the drop area
+	 * speaks for.
+	 *
+	 * A prop rather than a fixed pair of variants, because what is being uploaded — a configuration, a
+	 * firmware image, a licence — is the caller's fact and not the component's. The component knows
+	 * about a file, and nothing about what kind.
+	 */
+	readonly icon?: IconName;
+	readonly uploadTitle?: string;
+	readonly cancelTitle?: string;
 	readonly onFileUpload: (file: File) => Promise<void>;
 	readonly onFileUploadCancel?: (file: File) => void;
 	readonly onFileChange?: (file: File) => void;
@@ -25,7 +25,21 @@ export function UploadConfig({
 	readonly progress?: number;
 	readonly onlyDrop?: boolean;
 	readonly uploadedFile?: File;
-}) {
+}
+
+export function UploadConfig({
+	icon = "uploadFileText",
+	uploadTitle,
+	cancelTitle,
+	onFileUpload,
+	onFileUploadCancel,
+	onFileChange,
+	hint,
+	style,
+	progress,
+	onlyDrop = false,
+	uploadedFile,
+}: UploadConfigProps) {
 	const needsProgressTracking = progress !== undefined;
 
 	const percent = Math.floor(clamp(progress ?? 100, 0, 100));
@@ -158,17 +172,17 @@ export function UploadConfig({
 				{(status === "empty" || hasDragEntered) && (
 					<>
 						<Icon
-							name="uploaderEmpty"
+							name="uploadDropZone"
 							style={{
 								pointerEvents: "none",
 								width: "6rem",
 								height: "6rem",
-								fill: `url(#${id}uploaderEmpty)`,
+								fill: `url(#${id}uploadDropZone)`,
 							}}
 							prependComponent={
 								<defs>
 									<linearGradient
-										id={`${id}uploaderEmpty`}
+										id={`${id}uploadDropZone`}
 										x1="1094.4"
 										x2="1194.9"
 										y1="1250.3"
@@ -205,19 +219,17 @@ export function UploadConfig({
 				{status !== "empty" && !hasDragEntered && (
 					<>
 						<Icon
-							name={
-								type === "config" ? "uploaderConfiguration" : "uploaderFirmware"
-							}
+							name={icon}
 							style={{
 								pointerEvents: "none",
 								width: "6rem",
 								height: "6rem",
-								fill: `url(#${id}uploaderConfiguration)`,
+								fill: `url(#${id}uploadFileIcon)`,
 							}}
 							prependComponent={
 								<defs>
 									<linearGradient
-										id={`${id}uploaderConfiguration`}
+										id={`${id}uploadFileIcon`}
 										x1={964.02}
 										x2={1138.3}
 										y1={1943.4 - 200 + percent * 3}
@@ -242,14 +254,14 @@ export function UploadConfig({
 					<Button
 						key="cancelButton"
 						type="dangerous"
-						title={t("UploadConfig.cancel")}
+						title={cancelTitle ?? t("UploadConfig.cancel")}
 						onClick={cancelUpload}
 					/>
 				) : (
 					<Button
 						key="uploadButton"
 						type={status === "chosen" ? "regular" : "inactive"}
-						title={t("UploadConfig.upload")}
+						title={uploadTitle ?? t("UploadConfig.upload")}
 						onClick={() => {
 							(async () => {
 								await upload();

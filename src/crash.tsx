@@ -1,109 +1,184 @@
-// Crash guard and reporter.
-import type React from "react";
-import {
-	Component,
-	type ErrorInfo,
-	type ReactNode,
-	useEffect,
-	useState,
-} from "react";
-import { contacts } from "@/contact";
-import {
-	getSerializedGlobalState,
-	getSerializedLocalStorage,
-	getVersionString,
-	global,
-} from "@/def";
-import { emitTypedEvent } from "@/event";
-import { tryCatch } from "@/lib/catch";
+import type { ComponentType, ReactNode } from "react";
+import { Component, type ErrorInfo, useEffect, useState } from "react";
 import { copyToClipboard } from "@/lib/dom";
+import { tryCatch } from "@/lib/catch";
 import { uuidv4 } from "@/lib/uuid";
 import { IconButton } from "@/ui/button";
+import { useLocale } from "@/locale";
 
-export function AppCrashGuard({
-	children,
-}: {
-	readonly children: React.ReactNode;
-}) {
-	return (
-		<ErrorBoundary FallbackComponent={ErrorGuard}>{children}</ErrorBoundary>
-	);
+/**
+ * A crash report.
+ *
+ * The fields a library can know about the browser are filled in here. Everything specific to the
+ * application — its version, its configuration, the state an operator was looking at — comes from the
+ * caller through {@link CrashGuardProps.getContext}, because a library cannot know any of it and a
+ * report that omits the operator's context is rarely worth reading.
+ */
+export interface CrashReport {
+	/** Unique per crash, so two reports for the same error are not deduplicated into one. */
+	readonly reportId: string;
+	/** The application version, as the caller reports it. */
+	readonly appVersion: string;
+	/** When the application started, so a report can be placed in a session. */
+	readonly appStartDate: string;
+	/** The page the crash happened on. */
+	readonly uri: string;
+	readonly userAgent: string;
+	readonly language: string;
+	readonly screenWidth: number;
+	readonly screenHeight: number;
+	readonly viewportWidth: number;
+	readonly viewportHeight: number;
+	readonly cookiesEnabled: boolean;
+	readonly onlineStatus: boolean;
+	readonly timestamp: string;
+	readonly errorMessage: string;
+	readonly errorStack: string | null;
+	readonly componentStack: string | null;
+	/** The caller's own context. Serialized as JSON when the report is copied or submitted. */
+	readonly context: string;
+	readonly memory: {
+		readonly totalJSHeapSize: number | null;
+		readonly usedJSHeapSize: number | null;
+		readonly jsHeapSizeLimit: number | null;
+	};
 }
 
-function ErrorGuard({
+/** Where an operator should send a report. Supplied by the caller; the library has no address. */
+export interface CrashReportContact {
+	readonly email?: string;
+	/** An alternative destination, such as an issue tracker URL. Rendered as a second link. */
+	readonly issueUrl?: string;
+}
+
+/**
+ * Delivers a crash report.
+ *
+ * The library does not choose a transport: there is no endpoint, no protocol and no idea whether a
+ * report should be posted, queued, mailed or logged. The caller returns a promise that resolves when
+ * the report is safely delivered, and rejects to have it retried.
+ */
+export type CrashReportSubmitter = (report: CrashReport) => Promise<void>;
+
+export interface CrashGuardProps {
+	readonly children: ReactNode;
+	/** The application version, included in the report. */
+	readonly version: string;
+	/** When the application started. Defaults to now, which is only right for a report taken at once. */
+	readonly startDate?: Date;
+	/** Where the operator should send the report. Without it the fallback shows the report only. */
+	readonly contact?: CrashReportContact;
+	/**
+	 * The caller's own context for the report.
+	 *
+	 * Return a value that survives `JSON.stringify`. This is where an application puts the screen the
+	 * operator was on, the device they had selected, or whatever else makes a report actionable. It is
+	 * called once per crash, so it may be expensive; anything that throws is caught and recorded as
+	 * the context rather than being allowed to mask the original crash.
+	 */
+	readonly getContext?: () => unknown;
+	/** Called for every crash, before the fallback renders. Use it to submit or log the report. */
+	readonly onCrash?: (report: CrashReport) => void;
+	/** Replaces the whole fallback. Receives the report, which is `null` before the first effect runs. */
+	readonly fallback?: ComponentType<{
+		error: Error;
+		componentStack: string | null;
+		report: CrashReport | null;
+	}>;
+}
+
+/**
+ * Catches a render error anywhere below it and shows a fallback instead of a blank page.
+ *
+ * This does not recover the application: the subtree is unmounted and the fallback replaces it, so
+ * the operator has to reload. A crash guard that tried to keep the application running would leave it in
+ * a state where the next interaction crashes somewhere else, which is harder to report than one honest
+ * failure.
+ *
+ * A consumer that wants to send reports somewhere supplies `onCrash`; the library has no opinion where.
+ */
+export function AppCrashGuard(props: CrashGuardProps) {
+	return <ErrorBoundary fallbackComponent={DefaultCrashFallback} {...props} />;
+}
+
+function DefaultCrashFallback({
+	contact,
+	getContext,
+	onCrash,
+	startDate,
+	version,
 	error,
 	componentStack,
-}: {
+}: CrashGuardProps & {
 	readonly error: Error;
-	readonly componentStack: string;
+	readonly componentStack: string | null;
 }) {
-	const [crashReport, setCrashReport] = useState<CrashReport | null>(null);
+	const { t } = useLocale();
+	const [report, setReport] = useState<CrashReport | null>(null);
 
 	useEffect(() => {
-		const crashReport: CrashReport = {
-			reportId: uuidv4(),
-			appVersion: getVersionString(),
-			appStartDate: global.APP_START_TIME.toISOString(),
-			uri: document.location.href,
-			userAgent: navigator.userAgent,
-			language: navigator.language,
-			screenWidth: window.screen.width,
-			screenHeight: window.screen.height,
-			viewportWidth: window.innerWidth,
-			viewportHeight: window.innerHeight,
-			cookiesEnabled: navigator.cookieEnabled,
-			localStorage: getSerializedLocalStorage(),
-			onlineStatus: navigator.onLine,
-			timestamp: new Date().toISOString(),
-			errorMessage: error.message,
-			errorStack: error.stack ?? null,
-			componentStack: componentStack,
-			globalState: getSerializedGlobalState(),
-			memory: {
-				// @ts-expect-error
-				totalJSHeapSize: window.performance?.memory?.totalJSHeapSize ?? null,
-				// @ts-expect-error
-				usedJSHeapSize: window.performance?.memory?.usedJSHeapSize ?? null,
-				// @ts-expect-error
-				jsHeapSizeLimit: window.performance?.memory?.jsHeapSizeLimit ?? null,
-			},
-		};
+		const built = buildCrashReport({ error, componentStack, version, startDate, getContext });
+		setReport(built);
 
-		setCrashReport(crashReport);
-		emitTypedEvent("NEW_APP_CRASH_REPORT", crashReport);
+		if (onCrash !== undefined) {
+			// A crash handler that throws must not replace the crash the operator is looking at with
+			// a different one, so the failure is reported and swallowed.
+			tryCatch(
+				() => {
+					onCrash(built);
+				},
+				(handlerError) => {
+					console.error("The onCrash handler threw:", handlerError);
+				},
+			);
+		}
 
 		console.error(error);
 	}, [error, componentStack]);
 
-	const crashReportJSON = JSON.stringify(crashReport);
+	const reportJson = report === null ? "" : JSON.stringify(report, null, 2);
 
 	return (
 		<div className="fixed left-0 top-0 flex h-screen w-screen flex-col gap-8 p-2">
-			<h1 className="text-tda text-4xl">App Crashed</h1>
+			<h1 className="text-tda text-4xl">{t("CrashGuard.title")}</h1>
+
 			<div className="flex-grow overflow-auto">
-				<p className="text-tok">
-					<strong>Crash Report Email:</strong>{" "}
-					<a
-						className="hover:underline hover:brightness-150"
-						href={`mailto:${contacts.bugReportEmail}`}
-					>
-						{contacts.bugReportEmail}
-					</a>
-				</p>
+				{contact?.email !== undefined && (
+					<p className="text-tok">
+						<strong>{t("CrashGuard.contactLabel")}:</strong>{" "}
+						<a
+							className="hover:underline hover:brightness-150"
+							href={`mailto:${contact.email}`}
+						>
+							{contact.email}
+						</a>
+					</p>
+				)}
+
+				{contact?.issueUrl !== undefined && (
+					<p className="text-tok">
+						<strong>{t("CrashGuard.issueLabel")}:</strong>{" "}
+						<a
+							className="hover:underline hover:brightness-150"
+							href={contact.issueUrl}
+							rel="noreferrer"
+							target="_blank"
+						>
+							{contact.issueUrl}
+						</a>
+					</p>
+				)}
+
 				<p className="border-tno text-tno mt-8 border-l-2 pl-2">
-					Please provide a step-by-step report of what caused the crash. Attach
-					the report context in the box below.
+					{t("CrashGuidance.instructions")}
 				</p>
-				<p className="border-tno text-tno mt-2 border-l-2 pl-2">
-					Пожалуйста, предоставьте пошаговый отчет того, что привело к падению
-					приложения. Прикрепите контекст отчета в поле внизу.
-				</p>
-				{crashReport !== null && (
+
+				{report !== null && (
 					<div className="mx-auto mt-8 flex max-w-[800px] items-start gap-2">
 						<textarea
 							className="bg-bin mt-2 h-64 w-full resize-none rounded-lg p-2"
 							readOnly
-							value={crashReportJSON}
+							value={reportJson}
 						/>
 						<IconButton
 							icon="copy"
@@ -111,303 +186,242 @@ function ErrorGuard({
 							bgClassName="hover:bg-bse"
 							iconClassName="fill-tpl size-5"
 							rippleColor="var(--color-ripple-icon-button)"
-							title="Copy To Clipboard"
-							onClick={() => copyToClipboard(crashReportJSON)}
+							title={t("CrashGuard.copyReport")}
+							onClick={() => copyToClipboard(reportJson)}
 						/>
 					</div>
 				)}
+
 				<pre className="border-l-bda text-tda ml-2 mt-8 border-l-2 pl-4">
-					{`Error: ${error.message} \n${componentStack}`}
+					{`${error.name}: ${error.message}\n${componentStack ?? ""}`}
 				</pre>
 			</div>
 		</div>
 	);
 }
 
-interface ErrorBoundaryProperties {
-	readonly FallbackComponent: React.ComponentType<{
+function buildCrashReport({
+	error,
+	componentStack,
+	version,
+	startDate,
+	getContext,
+}: {
+	readonly error: Error;
+	readonly componentStack: string | null;
+	readonly version: string;
+	readonly startDate: Date | undefined;
+	readonly getContext: (() => unknown) | undefined;
+}): CrashReport {
+	// `performance.memory` is a non-standard extension, so it is read through a widening cast rather
+	// than by declaring the property exists.
+	const memory = (globalThis.performance as { memory?: Record<string, number> } | undefined)
+		?.memory;
+
+	const context = tryCatch(
+		() => (getContext === undefined ? null : JSON.stringify(getContext()) ?? null),
+		(contextError) => {
+			console.error("Reading the crash context threw:", contextError);
+			return JSON.stringify({ error: String(contextError) });
+		},
+	);
+
+	return {
+		reportId: uuidv4(),
+		appVersion: version,
+		appStartDate: (startDate ?? new Date()).toISOString(),
+		uri: globalThis.location?.href ?? "",
+		userAgent: globalThis.navigator?.userAgent ?? "",
+		language: globalThis.navigator?.language ?? "",
+		screenWidth: globalThis.screen?.width ?? 0,
+		screenHeight: globalThis.screen?.height ?? 0,
+		viewportWidth: globalThis.innerWidth ?? 0,
+		viewportHeight: globalThis.innerHeight ?? 0,
+		cookiesEnabled: globalThis.navigator?.cookieEnabled ?? false,
+		onlineStatus: globalThis.navigator?.onLine ?? true,
+		timestamp: new Date().toISOString(),
+		errorMessage: error.message,
+		errorStack: error.stack ?? null,
+		componentStack,
+		context,
+		memory: {
+			totalJSHeapSize: memory?.totalJSHeapSize ?? null,
+			usedJSHeapSize: memory?.usedJSHeapSize ?? null,
+			jsHeapSizeLimit: memory?.jsHeapSizeLimit ?? null,
+		},
+	};
+}
+
+interface ErrorBoundaryProps {
+	readonly fallbackComponent: ComponentType<{
 		error: Error;
-		componentStack: string;
-	}>;
+		componentStack: string | null;
+	}> & Partial<CrashGuardProps>;
 	readonly children: ReactNode;
+	readonly version: string;
+	readonly startDate?: Date;
+	readonly contact?: CrashReportContact;
+	readonly getContext?: () => unknown;
+	readonly onCrash?: (report: CrashReport) => void;
+	readonly fallback?: CrashGuardProps["fallback"];
 }
 
 interface ErrorBoundaryState {
-	hasError: boolean;
-	error: Error | null;
-	componentStack: string | null | undefined;
+	readonly error: Error | null;
+	readonly componentStack: string | null;
 }
 
-class ErrorBoundary extends Component<
-	ErrorBoundaryProperties,
-	ErrorBoundaryState
-> {
-	constructor(properties: ErrorBoundaryProperties) {
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+	constructor(properties: ErrorBoundaryProps) {
 		super(properties);
-
-		this.state = { hasError: false, error: null, componentStack: null };
+		this.state = { error: null, componentStack: null };
 	}
 
-	static override getDerivedStateFromError(error: Error) {
-		return { hasError: true, error };
+	static override getDerivedStateFromError(error: Error): ErrorBoundaryState {
+		return { error, componentStack: null };
 	}
 
-	override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-		this.setState({ error, componentStack: errorInfo.componentStack });
+	override componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+		this.setState({ error, componentStack: errorInfo.componentStack ?? null });
 	}
 
-	override render() {
-		const { FallbackComponent, children } = this.props;
-
-		const { hasError, error, componentStack } = this.state;
-
-		if (!hasError) {
-			return children;
+	override render(): ReactNode {
+		const { error, componentStack } = this.state;
+		if (error === null) {
+			return this.props.children;
 		}
 
-		return (
-			<FallbackComponent error={error!} componentStack={componentStack!} />
-		);
+		const { fallbackComponent: Fallback, ...fallbackProps } = this.props;
+		return <Fallback error={error} componentStack={componentStack} {...fallbackProps} />;
 	}
 }
 
 const MAX_CACHED_CRASH_REPORTS = 16;
 const MAX_CRASH_REPORT_QUEUE = 8;
-const DEFAULT_FETCH_TIMEOUT_MILLISECONDS = 5000;
 
-export const lastCrashReportsLocaleStorageKey = "crashReportCache";
-export const crashReportQueueLocalStorageKey = "crashReportQueue";
+/** Where the last reports are cached, so they survive a reload that follows a crash. */
+export const crashReportCacheKey = "ui-kit.crashReports";
+/** Where reports waiting to be delivered are held. */
+export const crashReportQueueKey = "ui-kit.crashReportQueue";
 
-export interface CrashReport {
-	reportId: string;
-	appVersion: string;
-	appStartDate: string;
-	uri: string;
-	userAgent: string;
-	language: string;
-	screenWidth: number;
-	screenHeight: number;
-	viewportWidth: number;
-	viewportHeight: number;
-	cookiesEnabled: boolean;
-	localStorage: string;
-	onlineStatus: boolean;
-	timestamp: string;
-	errorMessage: string;
-	errorStack: string | null;
-	componentStack: string | null;
-	globalState: string;
-	memory: {
-		totalJSHeapSize: number | null;
-		usedJSHeapSize: number | null;
-		jsHeapSizeLimit: number | null;
-	};
-}
-
-type CrashReportQueueType = [string, CrashReport][];
-
-async function sendCrashReportToEndPoint(
-	crashReportEndPoint: string,
-	crashReport: CrashReport,
-	timeout: number = DEFAULT_FETCH_TIMEOUT_MILLISECONDS,
-): Promise<true> {
-	const controller = new AbortController();
-	const { signal } = controller;
-
-	const timeoutPromise = new Promise<never>((_, reject) => {
-		setTimeout(() => {
-			controller.abort();
-			reject(new Error("Fetch request timed out"));
-		}, timeout);
-	});
-
+function readStorage(key: string): string | null {
 	try {
-		const response = await Promise.race([
-			fetch(crashReportEndPoint, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(crashReport),
-				signal,
-			}),
-			timeoutPromise,
-		]);
-
-		if (!response.ok) {
-			console.error("Failed to send crash report:", response.statusText);
-			throw new Error(`Failed to send crash report: ${response.statusText}`);
-		}
-
-		return true;
-	} catch (fetchError) {
-		console.error("Error sending crash report:", fetchError);
-		throw fetchError;
+		return localStorage.getItem(key);
+	} catch {
+		// Storage being unavailable means reports cannot be cached. Delivering them live still works,
+		// so this is not worth failing the crash over.
+		return null;
 	}
 }
 
-function overwriteCrashReportsCache(crashReports: readonly CrashReport[]) {
-	localStorage.setItem(
-		lastCrashReportsLocaleStorageKey,
-		JSON.stringify(crashReports),
-	);
-}
-
-function loadCachedCrashReports() {
-	const lastCrashReportsJSON = localStorage.getItem(
-		lastCrashReportsLocaleStorageKey,
-	);
-
-	if (lastCrashReportsJSON === null) {
-		return [];
-	}
-
-	const [lastCrashReports, parseError] = tryCatch(
-		() => JSON.parse(lastCrashReportsJSON) as CrashReport[],
-	);
-
-	if (parseError !== null || lastCrashReports === null) {
-		console.error("Failed to load crash reports cache");
-		overwriteCrashReportsCache([]);
-		return [];
-	}
-
-	return lastCrashReports;
-}
-
-function cacheCrashReport(crashReport: CrashReport) {
-	const lastCrashReports = loadCachedCrashReports();
-
-	const newReports = [...lastCrashReports, crashReport].slice(
-		-MAX_CACHED_CRASH_REPORTS,
-	);
-
-	overwriteCrashReportsCache(newReports);
-}
-
-async function sendCachedCrashReports() {
-	const lastCrashReports = loadCachedCrashReports();
-
-	if (lastCrashReports.length === 0) {
-		return;
-	}
-
-	const reportListPromises = await Promise.allSettled(
-		lastCrashReports.map((report) => {
-			const promises = contacts.crashReportEndPoints.map((endPoint) =>
-				sendCrashReportToEndPoint(endPoint, report),
-			);
-			return Promise.any(promises);
-		}),
-	);
-
-	const failedToSendReports = lastCrashReports.filter(
-		(_, index) => reportListPromises[index]?.status !== "fulfilled",
-	);
-
-	const allFailed = failedToSendReports.length === lastCrashReports.length;
-
-	if (allFailed) {
-		return;
-	}
-
-	overwriteCrashReportsCache(failedToSendReports);
-}
-
-function loadQueueEntries() {
+function writeStorage(key: string, value: string): void {
 	try {
-		return JSON.parse(
-			localStorage.getItem(crashReportQueueLocalStorageKey) ?? "[]",
-		) as CrashReportQueueType;
-	} catch (error) {
-		console.error(
-			"Failed to load crash report queue",
-			(error ?? "").toString(),
-		);
-		return [];
+		localStorage.setItem(key, value);
+	} catch {
+		// As above: a report that cannot be cached is a report that is not retried, not a crash.
 	}
 }
 
-function saveQueue(queue: Map<string, CrashReport>) {
-	const entries = Array.from(queue.entries());
-	const lastEntries = entries.slice(-MAX_CRASH_REPORT_QUEUE);
-	const json = JSON.stringify(lastEntries);
-	localStorage.setItem(crashReportQueueLocalStorageKey, json);
+function readJson<T>(key: string): T | null {
+	const raw = readStorage(key);
+	if (raw === null) {
+		return null;
+	}
+
+	// Cached data is whatever was in storage last time, so it is parsed defensively rather than
+	// trusted: a truncated write or a value another application put under the same key is not this
+	// module's to interpret.
+	try {
+		return JSON.parse(raw) as T;
+	} catch {
+		console.warn(`Discarding unreadable contents of ${key}.`);
+		return null;
+	}
 }
 
+/** Drops the oldest reports so the cache stays a fixed size. */
+function cacheCrashReport(report: CrashReport): readonly CrashReport[] {
+	const existing = readJson<CrashReport[]>(crashReportCacheKey) ?? [];
+	const kept = [report, ...existing].slice(0, MAX_CACHED_CRASH_REPORTS);
+	writeStorage(crashReportCacheKey, JSON.stringify(kept));
+	return kept;
+}
+
+export function readCachedCrashReports(): readonly CrashReport[] {
+	return readJson<CrashReport[]>(crashReportCacheKey) ?? [];
+}
+
+export function clearCachedCrashReports(): void {
+	writeStorage(crashReportCacheKey, JSON.stringify([]));
+}
+
+/**
+ * An offline-tolerant queue of crash reports.
+ *
+ * A crash is exactly when the network is least likely to be working, so a report that is only sent
+ * live is a report that is lost precisely when it matters. Each report is cached the moment it is
+ * added, and delivery is retried for whatever is left over on the next run.
+ *
+ * The queue is deliberately not wired to anything: the caller supplies the transport, and decides when
+ * to drain the queue. Nothing here runs on a timer or on application start.
+ */
 export class CrashReportQueue {
-	private queue: Map<string, CrashReport>;
-	private nextIdPart: number;
-	private processing: boolean;
-	private queueLocked: boolean;
+	private readonly queue = new Map<string, CrashReport>();
+	private processing = false;
 
-	constructor() {
-		this.queue = new Map<string, CrashReport>();
-		this.nextIdPart = 0;
-		this.processing = false;
-		this.queueLocked = false;
+	/** Adds a report. It is cached immediately, whether or not it is ever delivered. */
+	public add(report: CrashReport): void {
+		this.queue.set(uuidv4(), report);
+		cacheCrashReport(report);
 	}
 
-	private generateQueueId(report: CrashReport) {
-		const id = `${uuidv4()}${new Date().toISOString()}${this.nextIdPart}${report.reportId}`;
+	/** The reports still waiting, oldest first. */
+	public get size(): number {
+		return this.queue.size;
+	}
 
-		const newIdPart = this.nextIdPart + 1;
-
-		if (newIdPart >= Number.MAX_SAFE_INTEGER) {
-			this.nextIdPart = 0;
-		} else {
-			this.nextIdPart = newIdPart;
+	/** Loads whatever a previous run left behind. */
+	public load(): void {
+		this.queue.clear();
+		for (const [id, report] of readJson<[string, CrashReport][]>(crashReportQueueKey) ?? []) {
+			this.queue.set(id, report);
 		}
-
-		return id;
 	}
 
-	public add(report: CrashReport) {
-		this.queueLocked = true;
-		this.queue.set(this.generateQueueId(report), report);
-		this.queueLocked = false;
+	private save(): void {
+		const entries = [...this.queue].slice(-MAX_CRASH_REPORT_QUEUE);
+		writeStorage(crashReportQueueKey, JSON.stringify(entries));
 	}
 
-	public load() {
-		this.queueLocked = true;
-		this.queue = new Map<string, CrashReport>(loadQueueEntries());
-		this.queueLocked = false;
-	}
-
-	public saveAndLock() {
-		this.queueLocked = true;
-		saveQueue(this.queue);
-	}
-
-	public async process() {
+	/**
+	 * Delivers every queued report, stopping at the first failure.
+	 *
+	 * A partial drain is deliberate: the reports that failed stay queued in order for the next attempt,
+	 * so a backend that is down produces one failed run rather than a burst of retries. Returns the
+	 * reports that were not delivered.
+	 */
+	public async process(submit: CrashReportSubmitter): Promise<readonly CrashReport[]> {
 		if (this.processing) {
-			return;
-		}
-
-		if (this.queueLocked) {
-			return;
+			return [...this.queue.values()];
 		}
 
 		this.processing = true;
 
 		try {
-			const entries = Array.from(this.queue.entries());
-
-			for (const [reportId, report] of entries) {
-				cacheCrashReport(report);
-
-				if (!this.queueLocked) {
-					this.queue.delete(reportId);
+			for (const [id, report] of this.queue) {
+				try {
+					await submit(report);
+					this.queue.delete(id);
+				} catch (submitError) {
+					console.error("Could not deliver a crash report:", submitError);
+					break;
 				}
 			}
-
-			if (this.queueLocked) {
-				return;
-			}
-
-			await sendCachedCrashReports();
-		} catch (error) {
-			console.error("Error processing crash reports:", error);
 		} finally {
 			this.processing = false;
+			this.save();
 		}
+
+		return [...this.queue.values()];
 	}
 }

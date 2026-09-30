@@ -28,7 +28,7 @@ export function Icon({
 
 	const SVG_NS = "http://www.w3.org/2000/svg";
 
-	const iconId = `icons-${name}`;
+	const iconId = `ui-kit-icon-${name}`;
 
 	const iconElement = document.getElementById(iconId);
 

@@ -31,9 +31,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AutoSizer } from "@/lib/autosizer";
 import { clamp } from "@/lib/math";
 import { useGranularEffect } from "@/lib/use_granular_effect";
-import { getTranslation, useLocale } from "@/locale";
-import type { LocaleKeyWithoutParameters } from "@/locale_schema";
-import { isChildRoutingPath, routeTo } from "@/routing";
+import { builtinCatalogues, getLocaleName, translate, useLocale } from "@/locale";
 import { IconButton } from "./button";
 import { Checkbox } from "./checkbox";
 import { Icon, type IconName } from "./icon";
@@ -615,6 +613,28 @@ function findParentItem(tree: TreeViewItem[], itemId: string) {
 
 export type ColorIndicator = "unknown" | "bad" | "normal" | "good";
 
+/**
+ * The label a menu item renders: its literal title, or the message it names.
+ *
+ * An item with neither renders as nothing rather than as a raw key, because a menu item that displays
+ * `SomeApp.menu.overview` has failed in a way that is easy to miss and hard to report.
+ */
+function resolveItemTitle(
+	tRaw: (key: string) => string,
+	title: string | undefined,
+	titleKey: string | undefined,
+): string {
+	if (title !== undefined) {
+		return title;
+	}
+
+	if (titleKey === undefined) {
+		return "";
+	}
+
+	return tRaw(titleKey);
+}
+
 export const colorIndicatorColorMap: Record<ColorIndicator, string> = {
 	bad: "var(--color-bda)",
 	normal: "var(--color-bno)",
@@ -626,7 +646,13 @@ export interface TMenuTreeItem {
 	id: string;
 	route?: string;
 	title?: string;
-	titleLocaleKey?: LocaleKeyWithoutParameters;
+	/**
+	 * A message key resolved through the active locale, used when `title` is not given.
+	 *
+	 * A plain string rather than the library's own key union, because a menu describes the consuming
+	 * application and its titles live in the consumer's catalogue, not in this library's.
+	 */
+	titleKey?: string;
 	titlePrefix?: React.ReactNode;
 	titleSuffix?: React.ReactNode;
 	afterTitleComponent?: React.ReactNode;
@@ -643,6 +669,18 @@ export interface TMenuTreeItem {
 	defaultSubitemsShown?: boolean;
 }
 
+/**
+ * Decides whether a menu item counts as on the way to the current one, and is therefore
+ * highlighted as a parent of it.
+ *
+ * The tree knows nothing about how an application is addressed, so it cannot know that one item is
+ * an ancestor of another. The default highlights nothing beyond the item that is current; an
+ * application whose ids are paths passes a comparison of its own.
+ */
+export type IsOnPathToCurrentItem = (itemId: string, currentItemId: string) => boolean;
+
+const isNeverOnPath: IsOnPathToCurrentItem = () => false;
+
 export function MenuTree({
 	expanded,
 	width,
@@ -653,6 +691,8 @@ export function MenuTree({
 	onItemContextMenu,
 	onRefreshItem,
 	onMenuExpansionChange,
+	isOnPathToCurrentItem = isNeverOnPath,
+	onNavigate,
 	style,
 	menuItemClassName,
 	menuItemStyle,
@@ -672,6 +712,16 @@ export function MenuTree({
 	readonly onItemContextMenu?: MenuTreeItemContextMenuCallback;
 	readonly onRefreshItem?: (menuItem: TMenuTreeItem) => void;
 	readonly onMenuExpansionChange?: (expanded: boolean) => void;
+
+	/**
+	 * Called with the destination of an activated menu item.
+	 *
+	 * The tree has no router: it reports the item's `route`, or the item id when it has none, and
+	 * leaves the decision of what that means to the application.
+	 */
+	readonly onNavigate?: (to: string) => void;
+	/** See {@link IsOnPathToCurrentItem}. */
+	readonly isOnPathToCurrentItem?: IsOnPathToCurrentItem;
 	readonly style?: React.CSSProperties;
 	readonly menuItemClassName?: string | ((menuItem: TMenuTreeItem) => string);
 	readonly menuItemStyle?:
@@ -684,7 +734,7 @@ export function MenuTree({
 	readonly searchText?: string;
 	readonly onChangeSearchText?: (searchText: string) => void;
 }) {
-	const { t } = useLocale();
+	const { tRaw } = useLocale();
 
 	return (
 		<div
@@ -712,7 +762,7 @@ export function MenuTree({
 			>
 				{menuItems.map((item) => (
 					<MenuTreeItem
-						key={item.title ?? t(item.titleLocaleKey)}
+						key={resolveItemTitle(tRaw, item.title, item.titleKey)}
 						item={item}
 						currentItemId={currentItemId}
 						expanded={expanded}
@@ -721,6 +771,8 @@ export function MenuTree({
 						onContextMenu={onItemContextMenu}
 						onRefresh={onRefreshItem}
 						onMenuExpansionChange={onMenuExpansionChange}
+						onNavigate={onNavigate}
+						isOnPathToCurrentItem={isOnPathToCurrentItem}
 						menuItemClassName={menuItemClassName}
 						menuItemStyle={menuItemStyle}
 						menuItemIconStyle={menuItemIconStyle}
@@ -777,6 +829,8 @@ function MenuTreeItem({
 	onContextMenu,
 	onRefresh,
 	onMenuExpansionChange,
+	isOnPathToCurrentItem = isNeverOnPath,
+	onNavigate,
 	menuItemClassName,
 	menuItemStyle,
 	menuItemIconStyle,
@@ -793,6 +847,16 @@ function MenuTreeItem({
 	readonly onContextMenu?: MenuTreeItemContextMenuCallback;
 	readonly onRefresh?: (item: TMenuTreeItem) => void;
 	readonly onMenuExpansionChange?: (expanded: boolean) => void;
+
+	/**
+	 * Called with the destination of an activated menu item.
+	 *
+	 * The tree has no router: it reports the item's `route`, or the item id when it has none, and
+	 * leaves the decision of what that means to the application.
+	 */
+	readonly onNavigate?: (to: string) => void;
+	/** See {@link IsOnPathToCurrentItem}. */
+	readonly isOnPathToCurrentItem?: IsOnPathToCurrentItem;
 	readonly menuItemClassName?: string | ((menuItem: TMenuTreeItem) => string);
 	readonly menuItemStyle?:
 		| React.CSSProperties
@@ -803,7 +867,7 @@ function MenuTreeItem({
 	readonly last?: boolean;
 	readonly treeLevelBlockTypes?: readonly TreeLevelBlockType[];
 }) {
-	const { t } = useLocale();
+	const { t, tRaw } = useLocale();
 
 	const isMobileScreen = useIsMobileScreen();
 
@@ -821,7 +885,7 @@ function MenuTreeItem({
 		colorIndicator,
 		icon,
 		title,
-		titleLocaleKey,
+		titleKey,
 		titlePrefix,
 		titleSuffix,
 		afterTitleComponent,
@@ -860,7 +924,7 @@ function MenuTreeItem({
 
 	const selected =
 		id === currentItemId ||
-		(isChildRoutingPath(id, currentItemId) &&
+		(isOnPathToCurrentItem(id, currentItemId) &&
 			(!subitemsShown || !expanded || isEmptyList));
 
 	function handleClick(event: React.MouseEvent<HTMLDivElement>) {
@@ -891,7 +955,7 @@ function MenuTreeItem({
 			return;
 		}
 
-		routeTo(route ?? id);
+		onNavigate?.(route ?? id);
 		if (shouldSaveSpace && expanded) {
 			onMenuExpansionChange?.(false);
 		}
@@ -1051,7 +1115,7 @@ function MenuTreeItem({
 				{expanded && (
 					<div className="mx-2" style={menuItemLabelStyle}>
 						{titlePrefix}
-						{title ?? t(titleLocaleKey)}
+						{resolveItemTitle(tRaw, title, titleKey)}
 						{titleSuffix}
 					</div>
 				)}
@@ -1098,6 +1162,8 @@ function MenuTreeItem({
 							onContextMenu={onContextMenu}
 							onRefresh={onRefresh}
 							onMenuExpansionChange={onMenuExpansionChange}
+							onNavigate={onNavigate}
+							isOnPathToCurrentItem={isOnPathToCurrentItem}
 							menuItemClassName={menuItemClassName}
 							menuItemStyle={menuItemStyle}
 							menuItemIconStyle={menuItemIconStyle}
@@ -1127,7 +1193,11 @@ export function buildMenuItemFullTitleByItsId(
 			const menuTreeItem = item as TMenuTreeItem;
 
 			const title =
-				menuTreeItem.title ?? getTranslation(menuTreeItem.titleLocaleKey);
+				resolveItemTitle(
+					(key) => translate(builtinCatalogues, getLocaleName(), key),
+					menuTreeItem.title,
+					menuTreeItem.titleKey,
+				);
 
 			if (menuTreeItem.id === id) {
 				return [...path, title];
