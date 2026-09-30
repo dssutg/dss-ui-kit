@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+message_file="$1"
+
+if ! deno run --allow-read scripts/commitlint.ts < "$message_file"; then
+  echo ""
+  echo "Commit rejected. See the Conventional Commits format in AGENTS.md."
+  exit 1
+fi

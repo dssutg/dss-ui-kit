@@ -1,0 +1,20 @@
+node_modules/
+.deno/
+dist/
+coverage/
+.vite/
+*.tsbuildinfo
+
+# Generated from the source by `deno task docs`; never committed, so it cannot drift.
+docs/api/
+
+.env
+.env.*
+!.env.example
+
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.log

@@ -92,19 +92,82 @@ arrives it.
 
 Bring the inherited configuration over, so that from here on every stage is measurable.
 
-- [ ] Copy the configuration from the consuming application, adjusting only what the library differs in.
-  - [ ] `package.json`, `deno.json`, `deno.lock`, pinned exactly — no `^`, no `~`.
-  - [ ] `tsconfig.base.json`, `tsconfig.json`, `tsconfig.node.json`, `tsconfig.docs.json`.
-  - [ ] `biome.json`, `.editorconfig`, `.gitignore`, `.gitattributes`.
-  - [ ] `vite.config.ts`, with the PostCSS pipeline declared inline rather than in a
+- [x] Copy the configuration from the consuming application, adjusting only what the library differs in.
+  - [x] `package.json`, `deno.json`, `deno.lock`, pinned exactly — no `^`, no `~`.
+  - [x] `tsconfig.base.json`, `tsconfig.json`, `tsconfig.node.json`, `tsconfig.docs.json`.
+  - [x] `biome.json`, `.editorconfig`, `.gitignore`, `.gitattributes`.
+  - [x] `vite.config.ts`, with the PostCSS pipeline declared inline rather than in a
         `postcss.config.js`, and the `@` alias plus the `preact/compat` mappings.
-  - [ ] `.gitlab-ci.yml` and `.githooks/commit-msg`, plus `scripts/commitlint.ts`, for Conventional
+  - [x] `.gitlab-ci.yml` and `.githooks/commit-msg`, plus `scripts/commitlint.ts`, for Conventional
         Commits.
-  - [ ] `typedoc.json` and `docs/api-intro.md`.
-- [ ] `deno install`, then `deno task install:frozen`.
-- [ ] Confirm the inherited `biome.json` rules survive contact with this code base: stage 3 is where
-  `noExcessiveCognitiveComplexity` and `useNamingConvention` are most likely to need a decision, and
-  the decision is to fix the code unless the rule genuinely does not fit a component library.
+  - [x] `typedoc.json` and `docs/api-intro.md`.
+- [x] `deno install`, then `deno task install:frozen`.
+- [x] Confirm the inherited `biome.json` rules survive contact with this code base.
+
+### What the inherited rules found
+
+`deno run -A npm:@biomejs/biome ci .` on the copy, before any reformat: **849 errors and 24 warnings**
+across 277 files. Three rules did not fit this library and are turned off or narrowed; everything
+else is left as an error for stage 3 to fix in the code.
+
+| Rule | Hits | Decision |
+| ---- | ---: | -------- |
+| `noSvgWithoutTitle` | 142 | **Off for `src/ui/icons/**`.** Those files are generated path data, not images: `ui/icons/index.tsx` reads the `d` attribute out of each and the `Icon` component builds the `<svg>` itself, with `aria-hidden` set and the accessible name coming from the control around it. A `<title>` in these files would never reach the accessibility tree. |
+| `noRestrictedImports` | 35 | **Narrowed to `../**` inside `src/`.** Every hit is a sibling import (`./button`, `./icon`) inside `src/ui/`, which [`AGENTS.md`](./AGENTS.md) permits. Only walking up the tree is forbidden. |
+| `noDefaultExport` | 2 | **Off for `**/*.d.ts`.** `src/tsimport.d.ts` declares `*.glsl?raw` and `*.txt?raw`, and an ambient module declaration has no way to say anything else. |
+
+Two rules were expected to need a decision and did not get one, which is the outcome worth recording:
+
+- **`useNamingConvention` (16 hits) is not relaxed.** Biome 2.5 has no `leadingUnderscore` option and
+  no `_camelCase` format, so the underscore convention in `lib/autosizer.tsx` (`_autoSizer`,
+  `_parentNode`), `lib/dom.tsx`, `lib/editor.tsx` (`function_`, `arguments_`) and `lib/date.tsx`
+  (`_`) cannot be expressed in configuration. Sixteen renames in stage 3 are cheaper than a rule
+  that has been turned off, and the renames are the fix.
+- **`noExcessiveCognitiveComplexity` (37 hits) is not relaxed.** They concentrate in the two
+  components stage 9 rewrites anyway (`filterable_table.tsx` and `server_rack.tsx`, 5 each) and in
+  `ui/tree.tsx` (5). The cap stays at 12.
+
+The largest remaining block is `noNonNullAssertion` at 341, which [`AGENTS.md`](./AGENTS.md) forbids
+outright; that is stage 3 work, not a config change.
+
+### Where each command stands
+
+The toolchain runs; the copy it runs against is not yet decoupled. Measured on the tree as it stands
+after stage 2, so the next stage starts from a number rather than a guess:
+
+| Command | State | Why |
+| ------- | ----- | --- |
+| `deno task install:frozen` | passes | `package.json` and `deno.lock` agree. |
+| `deno task lint:types` (tooling half) | passes | `tsconfig.node.json` covers `vite.config.ts`, `tailwind.config.ts`, `vitest.config.ts` and `scripts/`. |
+| `deno task lint:types` (library half) | fails | The 22 unresolved modules, plus the copy's own `exactOptionalPropertyTypes` and implicit-`any` errors. |
+| `deno task lint:biome` | fails | 670 errors, 24 warnings — the copy's debt, analysed above. |
+| `deno task format:check` | fails | 110 files are not yet formatted. That is stage 3, in its own commit. |
+| `deno task test` | fails | `no-bare-javascript` passes; `no-russian-text` fails on the six known findings. |
+| `deno task build` | fails | `Cannot resolve entry module src/index.ts` — stage 5. |
+| `deno task pack` | fails | It validates what the build produced, and there is no `dist/`. |
+| `deno task docs` | fails | 181 type errors, from the same unresolved modules. |
+
+Nothing above is a configuration defect. Each is the copy being what it is, and the stage that removes
+the cause is named in the same row.
+
+### The one thing stage 2 had to fix in the inherited scripts
+
+the consuming application has no `vitest.config.ts`, so its tests run in the default `node` environment and
+`scripts/lib/source-tree.ts` can find the repository root through `import.meta.url`. This library needs
+a `vitest.config.ts` — the `@` alias and the `preact/compat` mappings have to be in the test pipeline
+for stage 11's render tests — and setting its environment to `jsdom` broke that walk, because jsdom
+replaces the global `URL` and `new URL('../..', import.meta.url)` then resolved to
+`http://localhost:3000/@fs/...` instead of a `file:` URL. Both suites crashed before running a single
+assertion.
+
+The fix is in two parts, and the second matters more than the first. `source-tree.ts` now derives the
+root from `import.meta.dirname`, which is a path and does not care which globals the environment
+installed; and `vitest.config.ts` defaults to `node`, with a component test declaring
+`// @vitest-environment jsdom` in the file that needs a DOM. A suite that walks the filesystem or
+builds a URL should not be running in a DOM emulation, because it will pass there and fail in the
+runtime it ships in. The six Russian-text findings the walk then surfaced are stage 7's work.
+
+
 
 ## 3. House style
 
@@ -279,20 +342,28 @@ code does not belong here, and it is most of the reason the copy does not compil
 
 The copy has none, and it arrives as 35 490 lines of TypeScript that nobody has run.
 
-- [ ] Port the two repository-policy tests the consuming application already has —
-      `scripts/no-bare-javascript.test.ts` and `scripts/no-russian-text.test.ts` — and add the
-      module-boundary walk from stage 5 alongside them. All three share one tree walker.
 - [ ] Add unit tests for the pure logic that carries real risk and is already written:
   `lib/array`, `lib/math`, `lib/dsv`, `lib/string`, `lib/pluralization`, `lib/fuzzy_search`,
   `lib/ipv4`, `lib/format_number`, `lib/validator`, and the locale lookup in stage 7.
 - [ ] Add a render test per component, driven by Preact through the compat layer, so a component that
-  stops rendering is a failing test rather than a blank page in someone else's application.
+  stops rendering is a failing test rather than a blank page in someone else's application. Each one
+  opens with `// @vitest-environment jsdom`; the default environment is `node`, and the reason is
+  recorded in stage 2.
+- [x] Port `scripts/no-bare-javascript.test.ts` and `scripts/no-russian-text.test.ts` from
+  the consuming application, so the rules they guard are enforced from stage 2 rather than from here. Both
+  share `scripts/lib/source-tree.ts`. `no-bare-javascript` passes; `no-russian-text` is red on six
+  findings, listed in stage 2, and is not to be relaxed to make it green.
 
 ## 12. Publish
 
 - [ ] `package.json` metadata: name, description, licence, `files`, `sideEffects` for the stylesheet
   entry point, and the `peerDependencies` on `preact` — a UI library must not pin the consumer's
   Preact, or the consumer ends up with two.
+- [ ] **Confirm the published tarball is domain-independent.** The repository is MIT-licensed, so
+  anything left in `src/` is covered by that licence; a leftover original application module would be published by
+  accident. This is the gate for it: `deno pack`, then read the file list and check every entry is
+  either a component, a hook, a locale file, a design token or a build artefact. A domain type, a
+  Sigma-IS contact detail or an event name is a release blocker, not a warning.
 - [ ] `README.md`: what the library is, the install line, the Tailwind setup a consumer has to
   perform, the CSS custom-property contract, and a component index.
 - [ ] `CHANGELOG.md` in Keep a Changelog form, and `scripts/release.ts` on the inherited git-tag

@@ -1,0 +1,28 @@
+{
+  "nodeModulesDir": "auto",
+  "fmt": false,
+  "lint": false,
+  "tasks": {
+    "dev": "deno run -A npm:vite",
+    "build": "deno task build:bundle && deno task build:types",
+    "build:bundle": "deno run -A npm:vite build",
+    "build:types": "deno run -A npm:@typescript/native-preview --emitDeclarationOnly --declaration --declarationMap --outDir dist/types -p tsconfig.build.json",
+    "pack": "deno run --allow-read scripts/check-package-manifest.ts",
+    "preview": "deno run -A npm:vite preview",
+    "typecheck": "deno run -A npm:@typescript/native-preview --noEmit -p tsconfig.json && deno run -A npm:@typescript/native-preview --noEmit -p tsconfig.node.json",
+    "lint": "deno task lint:biome && deno task typecheck",
+    "lint:biome": "deno run -A npm:@biomejs/biome ci .",
+    "lint:types": "deno task typecheck",
+    "format": "deno run -A npm:@biomejs/biome check --write .",
+    "format:check": "deno run -A npm:@biomejs/biome format .",
+    "install:frozen": "deno install --frozen",
+    "test": "deno run -A npm:vitest run",
+    "test:watch": "deno run -A npm:vitest",
+    "docs": "deno run -A npm:typedoc",
+    "docs:watch": "deno run -A npm:typedoc --watch",
+    "ci": "deno task install:frozen && deno task format:check && deno task lint && deno task test && deno task build && deno task pack && deno task docs",
+    "release": "deno run --allow-read --allow-write --allow-run --allow-env scripts/release.ts",
+    "changelog": "deno run --allow-read --allow-write --allow-run --allow-env scripts/release.ts --changelog-only",
+    "commitlint": "deno run --allow-read scripts/commitlint.ts"
+  }
+}

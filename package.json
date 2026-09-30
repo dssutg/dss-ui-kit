@@ -1,0 +1,76 @@
+{
+  "name": "dss-ui-kit",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Domain-independent Preact component library and design system: 119 CSS custom-property tokens, an event bus, localisation, and the components the original application was built from",
+  "license": "MIT",
+  "keywords": [
+    "preact",
+    "components",
+    "design-system",
+    "tailwindcss",
+    "ui",
+    "dss"
+  ],
+  "engines": {
+    "deno": "2.9.6"
+  },
+  "main": "./dist/dss-ui-kit.umd.cjs",
+  "module": "./dist/dss-ui-kit.js",
+  "types": "./dist/types/index.d.ts",
+  "style": "./dist/dss-ui-kit.css",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/dss-ui-kit.js",
+      "require": "./dist/dss-ui-kit.umd.cjs"
+    },
+    "./style.css": "./dist/dss-ui-kit.css",
+    "./package.json": "./package.json"
+  },
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "dist",
+    "src/css",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "dev": "deno task dev",
+    "build": "deno task build",
+    "preview": "deno task preview",
+    "lint": "deno task lint",
+    "format": "deno task format",
+    "typecheck": "deno task typecheck",
+    "test": "deno task test",
+    "docs": "deno task docs",
+    "ci": "deno task ci",
+    "release": "deno task release",
+    "commitlint": "deno task commitlint"
+  },
+  "peerDependencies": {
+    "preact": ">=10.19.0 <11"
+  },
+  "dependencies": {
+    "tailwind-merge": "2.6.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.14",
+    "@preact/preset-vite": "2.10.6",
+    "@tailwindcss/forms": "0.5.11",
+    "@types/deno": "2.7.0",
+    "@types/node": "26.6.3",
+    "@typescript/native-preview": "7.0.0-dev.20260707.2",
+    "autoprefixer": "10.6.1",
+    "jsdom": "30.1.1",
+    "postcss": "8.5.28",
+    "preact": "10.29.8",
+    "tailwindcss": "3.4.19",
+    "typedoc": "0.28.20",
+    "typescript": "6.0.3",
+    "vite": "8.3.1",
+    "vitest": "5.0.2"
+  }
+}

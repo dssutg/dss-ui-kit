@@ -15,10 +15,13 @@ be done and in what order. They are not the same thing: a rule here is why the w
 particular way, a stage there is what is done next.
 
 **This document describes the target, not the current tree.** A tool, a test or an entry point it
-names may not exist yet — the config and the commands arrive in stage 2, `src/index.ts` in stage 5,
-the policy tests in stage 11. Each is named in [`TODO.md`](./TODO.md) with the stage that brings it
-in, so a rule can be written down before the code that satisfies it lands. What is true *today* of
-`src/` is described in the table in [`TODO.md`](./TODO.md#what-was-copied-and-what-it-means-for-the-stages).
+names may not exist yet — `src/index.ts` arrives in stage 5, the per-component tests in stage 11,
+and most of the commands do not pass until the stages that fix what they report. The toolchain
+itself landed in stage 2, so the commands listed below run, but several of them are red on purpose
+until the copy is decoupled. Each stage is named in [`TODO.md`](./TODO.md) with the work that brings
+it in, so a rule can be written down before the code that satisfies it lands. What is true *today*
+of `src/` is described in the table in
+[`TODO.md`](./TODO.md#what-was-copied-and-what-it-means-for-the-stages).
 
 ## Project
 
@@ -70,6 +73,11 @@ Biome is the **only** formatter and linter. Deno's `deno fmt` / `deno lint` are 
 ## Code style
 
 Fixed by `biome.json`. Do not hand-maintain any of it; the formatter owns it.
+
+Three rules are turned off or narrowed for this code base, each with its reason recorded in
+[`TODO.md`](./TODO.md#what-the-inherited-rules-found): `noSvgWithoutTitle` for the generated path
+data under `src/ui/icons/`, `noDefaultExport` for `*.d.ts`, and `noRestrictedImports` narrowed to
+`../**`. A rule that turns out not to fit is a decision to record, not one to make silently.
 
 - **Semicolons: always.** Every JavaScript and TypeScript statement ends with `;`.
 - **Indentation: 2 spaces**, never tabs. Enforced in `biome.json` and `.editorconfig`.
@@ -125,10 +133,15 @@ not a convenience.
 
 ## Imports
 
-- **Everything under `src/` imports through the `@` alias**: `@/ui/button`, `@/lib/math`,
-  `@/index.css`. Never `../`, never `../../`. A relative path makes the reader count directories up
-  to the root before they know what is being imported, and it silently breaks when a file moves.
-  Biome's `noRestrictedImports` rejects `./**` and `../**` inside `src/`.
+- **Anything under `src/` that leaves its own directory imports through the `@` alias**:
+  `@/ui/button`, `@/lib/math`, `@/index.css`. Never `../`, never `../../`. A relative path makes the
+  reader count directories up to the root before they know what is being imported, and it silently
+  breaks when a file moves. Biome's `noRestrictedImports` rejects `../**` inside `src/`, and nothing
+  else.
+- **A sibling may be imported as `./name`.** `./button` from inside `src/ui/` names exactly one
+  file and cannot be misread, which is why 35 of the copied components already do it. The rule is
+  about not walking *up* the tree, and `./` does not. The copy is inconsistent — `ui/icon.tsx`
+  reaches `@/lib/dom` and `./icons` in three lines — and stage 3 makes each file pick one habit.
 - `scripts/` runs directly under Deno, outside the Vite alias, so it keeps single-level
   `./lib/conventional.ts` imports. `../**` is still rejected.
 - The `@` alias is declared twice and both halves must agree — `resolve.alias` in `vite.config.ts`

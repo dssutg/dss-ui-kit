@@ -1,0 +1,233 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
+  "files": {
+    "ignoreUnknown": true,
+    "includes": [
+      "**",
+      "!**/node_modules",
+      "!**/dist",
+      "!**/coverage",
+      "!**/docs/api",
+      "!**/.deno",
+      "!**/.vite",
+      "!**/.idea",
+      "!**/.vscode",
+      "!**/*.tsbuildinfo",
+      "!**/*.log",
+      "!**/.env",
+      "!**/.env.*"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "useEditorconfig": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100,
+    "lineEnding": "lf",
+    "formatWithErrors": false
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "a11y": {
+        "useSemanticElements": "error",
+        "useValidAnchor": "error"
+      },
+      "complexity": {
+        "noUselessFragments": "error",
+        "noUselessTernary": "error",
+        "useLiteralKeys": "error",
+        "noForEach": "error",
+        "noUselessCatch": "error",
+        "noUselessSwitchCase": "error",
+        "noUselessConstructor": "error",
+        "noUselessLoneBlockStatements": "error",
+        "noStaticOnlyClass": "error",
+        "noThisInStatic": "error",
+        "noExcessiveCognitiveComplexity": {
+          "level": "error",
+          "options": { "maxAllowedComplexity": 12 }
+        }
+      },
+      "correctness": {
+        "useJsxKeyInIterable": "error",
+        "useHookAtTopLevel": "error",
+        "useExhaustiveDependencies": "error",
+        "noUnusedVariables": "error",
+        "noUnusedImports": "error",
+        "noUndeclaredVariables": "error"
+      },
+      "style": {
+        "useConst": "error",
+        "noNonNullAssertion": "error",
+        "useImportType": "error",
+        "useSelfClosingElements": "error",
+        "useSingleVarDeclarator": "error",
+        "noUnusedTemplateLiteral": "error",
+        "noDefaultExport": "error",
+        "noUselessElse": "error",
+        "noParameterAssign": "error",
+        "useDefaultParameterLast": "error",
+        "noInferrableTypes": "error",
+        "useConsistentArrayType": "error",
+        "useExportType": "error",
+        "useComponentExportOnlyModules": "error",
+        "noNestedTernary": "error",
+        "useCollapsedIf": "error",
+        "useCollapsedElseIf": "error",
+        "useNamingConvention": {
+          "level": "error",
+          "options": {
+            "conventions": [
+              {
+                "selector": { "kind": "any" },
+                "formats": ["camelCase", "PascalCase", "CONSTANT_CASE"]
+              }
+            ],
+            "strictCase": false
+          }
+        },
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "patterns": [
+              {
+                "group": ["../**"],
+                "message": "Import through the '@' alias, for example '@/types/domain'. Never walk up the tree with '../'."
+              }
+            ]
+          }
+        }
+      },
+      "suspicious": {
+        "noExplicitAny": "error",
+        "noDoubleEquals": "error",
+        "noDuplicateObjectKeys": "error",
+        "noDuplicateClassMembers": "error",
+        "noDuplicateCase": "error",
+        "noRedeclare": "error",
+        "noAssignInExpressions": "error",
+        "noShadowRestrictedNames": "error",
+        "noEmptyInterface": "error",
+        "useAwait": "error",
+        "noPrototypeBuiltins": "error",
+        "noThenProperty": "error"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "jsxQuoteStyle": "double",
+      "quoteProperties": "asNeeded",
+      "semicolons": "always",
+      "trailingCommas": "all",
+      "arrowParentheses": "always",
+      "bracketSpacing": true,
+      "bracketSameLine": false,
+      "attributePosition": "auto",
+      "lineEnding": "lf"
+    }
+  },
+  "json": {
+    "formatter": {
+      "enabled": true,
+      "indentWidth": 2,
+      "lineWidth": 100
+    }
+  },
+  "css": {
+    "formatter": {
+      "enabled": true,
+      "indentWidth": 2,
+      "lineWidth": 100
+    },
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["**/*.css"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noUnknownAtRules": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/*.d.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDefaultExport": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/ui/icons/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noSvgWithoutTitle": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["../**"],
+                    "message": "Import through the '@' alias, for example '@/ui/button'. A sibling may be imported as './name' — that path is unambiguous — but nothing walks up the tree with '../'."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["scripts/**/*.ts"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUndeclaredVariables": "off"
+          },
+          "style": {
+            "noNonNullAssertion": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["*.config.*"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDefaultExport": "off"
+          }
+        }
+      }
+    }
+  ],
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  }
+}

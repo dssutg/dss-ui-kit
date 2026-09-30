@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.node.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
+    "types": ["node", "deno"],
+    "paths": {
+      "react": ["./node_modules/preact/compat"],
+      "react-dom": ["./node_modules/preact/compat"],
+      "react-dom/client": ["./node_modules/preact/compat/client"],
+      "react-dom/test-utils": ["./node_modules/preact/test-utils"],
+      "react/jsx-runtime": ["./node_modules/preact/jsx-runtime"],
+      "react/jsx-dev-runtime": ["./node_modules/preact/jsx-runtime"],
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src", "scripts/**/*.ts"],
+  "exclude": ["**/*.test.ts", "**/*.test.tsx"]
+}
