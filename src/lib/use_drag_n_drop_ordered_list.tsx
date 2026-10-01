@@ -37,8 +37,14 @@ export function useDragNDropOrderedList<ListItemDataType>(
     let updatedOrder: ListItemDataType[] = [...items];
 
     const { draggedFrom } = dragAndDrop;
+
+    // Nothing is being dragged, so there is no item to move and no order to compute.
+    if (draggedFrom === null) {
+      return;
+    }
+
     const draggedTo = Number(event.currentTarget.dataset['position']);
-    const itemDragged = updatedOrder[draggedFrom!];
+    const itemDragged = updatedOrder[draggedFrom];
     const remainingItems = updatedOrder.filter(
       (_: ListItemDataType, index: number) => index !== draggedFrom,
     );

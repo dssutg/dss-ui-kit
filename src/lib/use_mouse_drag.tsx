@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getPointerPosition } from '@/lib/dom';
 import type { Point2D } from '@/lib/math';
 import { useEventListener } from '@/lib/use_event_listener';
 
@@ -33,16 +34,14 @@ export function useMouseDrag(
   const [relativeMove, setRelativeMove] = useState<Point2D>({ x: 0, y: 0 });
   const [lastPosition, setLastPosition] = useState<Point2D>({ x: 0, y: 0 });
 
-  function getPosition(event: TouchEvent | MouseEvent) {
-    return event instanceof TouchEvent
-      ? { x: event.touches[0]!.clientX, y: event.touches[0]!.clientY }
-      : { x: event.clientX, y: event.clientY };
-  }
-
-  function handleDown(event: MouseEvent | TouchEvent) {
+  function handleDown(event: TouchEvent | MouseEvent) {
     event.preventDefault();
 
-    const initialPosition = getPosition(event);
+    const initialPosition = getPointerPosition(event);
+
+    if (initialPosition === null) {
+      return;
+    }
 
     setIsDragging(true);
     setInitialPosition(initialPosition);
@@ -52,14 +51,18 @@ export function useMouseDrag(
     onHandleDown?.(initialPosition);
   }
 
-  function handleMove(event: MouseEvent | TouchEvent) {
+  function handleMove(event: TouchEvent | MouseEvent) {
     if (!isDragging) {
       return;
     }
 
     event.preventDefault();
 
-    const newPosition = getPosition(event);
+    const newPosition = getPointerPosition(event);
+
+    if (newPosition === null) {
+      return;
+    }
 
     const x = newPosition.x - lastPosition.x;
     const y = newPosition.y - lastPosition.y;

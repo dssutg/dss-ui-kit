@@ -229,11 +229,13 @@ export function ZoomableCanvas({
       }
 
       function handleTouchStart(event: TouchEvent) {
+        const first = event.touches.item(0);
+
         if (event.touches.length === 2) {
           setStartDistance(getTouchPointDistance(event.touches));
-        } else if (event.touches.length > 0) {
+        } else if (first !== null) {
           setStartDistance(0);
-          handlePointerStart(event, event.touches[0]!.clientX, event.touches[0]!.clientY);
+          handlePointerStart(event, first.clientX, first.clientY);
         }
       }
 
@@ -249,23 +251,32 @@ export function ZoomableCanvas({
           const minDistance = 1;
 
           if (startDistance >= minDistance) {
-            const canvasRect = canvas.getBoundingClientRect();
+            const firstTouch = e.touches.item(0);
+            const secondTouch = e.touches.item(1);
 
-            const pinchX = (e.touches[0]!.clientX + e.touches[1]!.clientX) / 2;
-            const pinchY = (e.touches[0]!.clientY + e.touches[1]!.clientY) / 2;
+            if (firstTouch !== null && secondTouch !== null) {
+              const canvasRect = canvas.getBoundingClientRect();
 
-            const offsetX = pinchX - canvasRect.x;
-            const offsetY = pinchY - canvasRect.y;
+              const pinchX = (firstTouch.clientX + secondTouch.clientX) / 2;
+              const pinchY = (firstTouch.clientY + secondTouch.clientY) / 2;
 
-            zoomToPos(startDistance - currentDistance, offsetX, offsetY);
+              const offsetX = pinchX - canvasRect.x;
+              const offsetY = pinchY - canvasRect.y;
+
+              zoomToPos(startDistance - currentDistance, offsetX, offsetY);
+            }
           }
 
           setStartDistance(currentDistance);
 
           draw();
-        } else if (e.touches[0]) {
-          onSingleTouchMove?.(e);
-          handlePointerMove(e, e.touches[0].clientX, e.touches[0].clientY);
+        } else {
+          const first = e.touches.item(0);
+
+          if (first !== null) {
+            onSingleTouchMove?.(e);
+            handlePointerMove(e, first.clientX, first.clientY);
+          }
         }
       }
 

@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { minInArrayMapped } from '@/lib/array';
+import { getPointerPosition } from '@/lib/dom';
 import { clamp, cmp, lerp, unlerp } from '@/lib/math';
 import { useOutsideComponentClick } from '@/lib/use_outside_component_click';
 
@@ -97,11 +98,10 @@ export function Slider({
         return;
       }
 
-      let clientX = 0;
-      if (event instanceof MouseEvent) {
-        clientX = event.clientX;
-      } else {
-        clientX = event.touches[0]!.clientX;
+      const pointer = getPointerPosition(event);
+
+      if (pointer === null) {
+        return;
       }
 
       if (event instanceof MouseEvent) {
@@ -109,7 +109,7 @@ export function Slider({
         event.stopPropagation();
       }
 
-      updateValueByCursorX(clientX);
+      updateValueByCursorX(pointer.x);
 
       function onCursorMove(e: MouseEvent | TouchEvent) {
         if (e instanceof MouseEvent) {
@@ -117,14 +117,13 @@ export function Slider({
           e.stopPropagation();
         }
 
-        let clientX = 0;
-        if (e instanceof MouseEvent) {
-          clientX = e.clientX;
-        } else {
-          clientX = e.touches[0]!.clientX;
+        const moved = getPointerPosition(e);
+
+        if (moved === null) {
+          return;
         }
 
-        updateValueByCursorX(clientX);
+        updateValueByCursorX(moved.x);
       }
 
       function onCursorUp() {

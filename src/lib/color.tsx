@@ -112,8 +112,14 @@ export function findBreakPointRange(breakPoints: readonly RGBA32BreakPoint[], po
   const clampedPosition = clamp(position, 0, 1);
 
   for (let i = 0; i < breakPoints.length - 1; i++) {
-    const start = breakPoints[i]!;
-    const end = breakPoints[i + 1]!;
+    const start = breakPoints[i];
+    const end = breakPoints[i + 1];
+
+    // The loop bound already excludes the last index, so this cannot happen. It is here because the
+    // compiler cannot see that `i` is in range, and an assertion would be a claim rather than a check.
+    if (start === undefined || end === undefined) {
+      break;
+    }
 
     if (clampedPosition < start[0] || clampedPosition > end[0]) {
       continue;

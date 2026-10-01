@@ -28,8 +28,8 @@ import { useEffect, useRef, useState } from 'react';
  * The interface is empty on purpose. An empty interface is what makes declaration merging possible;
  * a consumer that never augments it can still use the untyped form.
  */
-// biome-ignore lint/style/noEmptyInterface: an empty interface is the extension point consumers merge into
-export type EventTypes = {};
+// biome-ignore lint/suspicious/noEmptyInterface: this is the extension point consumers merge into, and merging needs an interface
+export interface EventTypes {}
 
 interface EventDetail<T = undefined> {
   id: string;

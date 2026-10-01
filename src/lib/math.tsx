@@ -845,20 +845,23 @@ export function multiplyMatrices(
     );
   }
 
-  const result = Array.from({ length: rowsA }, () =>
-    Array.from({ length: colsB }).fill(0),
-  ) as number[][];
+  // One row of the product is the dot product of one row of `a` with every column of `b`, so it is
+  // computed directly rather than accumulated in place. That way the result is built as it is read
+  // and nothing has to be asserted about an array this function created a moment earlier.
+  //
+  // A matrix whose rows are not all the same length is treated as padded with zeros, because the
+  // dimensions of the result are taken from the first row and a missing entry contributes nothing.
+  return Array.from({ length: rowsA }, (_, row) =>
+    Array.from({ length: colsB }, (_, column) => {
+      const rowA = a[row];
 
-  for (let index1 = 0; index1 < rowsA; index1++) {
-    for (let index2 = 0; index2 < colsB; index2++) {
-      for (let index3 = 0; index3 < colsA; index3++) {
-        result[index1]![index2] =
-          result[index1]![index2]! + a[index1]![index3]! * b[index3]![index2]!;
+      if (rowA === undefined) {
+        return 0;
       }
-    }
-  }
 
-  return result;
+      return rowA.reduce((sum, value, index) => sum + value * (b[index]?.[column] ?? 0), 0);
+    }),
+  );
 }
 
 export function roundToPowerOfTwo(n: number): number {

@@ -60,7 +60,11 @@ const SOURCE_FILES = new Set(
 
 /** The import specifier of every import in a source file. */
 function importSpecifiers(text: string): string[] {
-  return [...text.matchAll(/(?:from|import)\s+["']([^"']+)["']/g)].map((match) => match[1]!);
+  return [...text.matchAll(/(?:from|import)\s+["']([^"']+)["']/g)].flatMap((match) => [
+    // The capture group always participates when the pattern matches, but the compiler does not know
+    // that, and an assertion here would guard a test rather than the code the test is about.
+    ...(match[1] === undefined ? [] : [match[1]]),
+  ]);
 }
 
 /** Resolves a `./` or `../` specifier against the file it appears in. */
