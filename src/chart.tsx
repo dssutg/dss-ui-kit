@@ -243,37 +243,7 @@ function drawPlotFunction(
   context.lineWidth = Math.max(1, pointSize / 2);
 
   if (plotFunction.type === 'line') {
-    context.beginPath();
-
-    let penIsDown = false;
-
-    for (let column = 0; column <= columns; column++) {
-      const y = getPointY(column);
-
-      if (y === undefined) {
-        // A gap lifts the pen rather than joining across it, so a series that stops and starts
-        // is not drawn as if it were continuous.
-        penIsDown = false;
-
-        continue;
-      }
-
-      const { x, y: canvasY } = chartPosToCanvasRelative(
-        transform,
-        canvasHeight,
-        column * gridGap,
-        y,
-      );
-
-      if (penIsDown) {
-        context.lineTo(x, canvasY);
-      } else {
-        context.moveTo(x, canvasY);
-        penIsDown = true;
-      }
-    }
-
-    context.stroke();
+    drawLine(context, transform, canvasHeight, plotFunction, columns);
 
     return;
   }
@@ -296,6 +266,50 @@ function drawPlotFunction(
     context.arc(x, canvasY, pointSize, 0, 2 * Math.PI);
     context.fill();
   }
+}
+
+/**
+ * Draws a series as a joined line rather than as markers.
+ *
+ * The pen is lifted across a gap instead of joining over it, so a series that stops and starts is
+ * not drawn as if it were continuous.
+ */
+function drawLine(
+  context: CanvasRenderingContext2D,
+  transform: ZoomableCanvasTransform,
+  canvasHeight: number,
+  plotFunction: PlotFunctionRangeOptions,
+  columns: number,
+) {
+  context.beginPath();
+
+  let penIsDown = false;
+
+  for (let column = 0; column <= columns; column++) {
+    const y = plotFunction.getPointY(column);
+
+    if (y === undefined) {
+      penIsDown = false;
+
+      continue;
+    }
+
+    const { x, y: canvasY } = chartPosToCanvasRelative(
+      transform,
+      canvasHeight,
+      column * gridGap,
+      y,
+    );
+
+    if (penIsDown) {
+      context.lineTo(x, canvasY);
+    } else {
+      context.moveTo(x, canvasY);
+      penIsDown = true;
+    }
+  }
+
+  context.stroke();
 }
 
 /**

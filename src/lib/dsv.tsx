@@ -74,6 +74,50 @@ export function serializeCSV(rows: readonly (readonly string[])[]): string {
 // CSV Parser retrieved from Trevor Dixon's answer at
 // https://stackoverflow.com/questions/1293147/how-to-parse-csv-data
 
+/** What a character read at a position in the input means to the CSV grammar. */
+type CsvCharacterRole = 'escapedQuote' | 'quote' | 'delimiter' | 'lineEnding' | 'literal';
+
+/**
+ * What the character at a position means, given whether a quoted field is open.
+ *
+ * The order of the tests is the grammar's: an escaped quotation mark is read before a quotation
+ * mark, because inside a quoted field the pair is one literal character and the second half must not
+ * be taken for the end of the field. A delimiter and a line ending end a field only outside one,
+ * which is what lets a quoted field hold either.
+ */
+function classifyCsvCharacter(
+  current: string,
+  next: string,
+  insideQuotedField: boolean,
+): CsvCharacterRole {
+  if (current === '"' && insideQuotedField && next === '"') {
+    return 'escapedQuote';
+  }
+
+  if (current === '"') {
+    return 'quote';
+  }
+
+  if (insideQuotedField) {
+    return 'literal';
+  }
+
+  if (current === ',') {
+    return 'delimiter';
+  }
+
+  if (current === '\r' || current === '\n') {
+    return 'lineEnding';
+  }
+
+  return 'literal';
+}
+
+/** Whether the two characters read together are one CRLF line ending rather than two endings. */
+function isCarriageReturnLineFeed(current: string, next: string): boolean {
+  return current === '\r' && next === '\n';
+}
+
 export function parseCSV(csv: string) {
   const rows: string[][] = [];
 
@@ -111,38 +155,30 @@ export function parseCSV(csv: string) {
     cellStarted = true;
     rowStarted = true;
 
-    // A doubled quotation mark inside a quoted field is one literal quotation mark, and the pair is
-    // consumed together so the second half is not mistaken for the end of the field.
-    if (currentCharacter === '"' && insideQuotedField && nextCharacter === '"') {
-      field += currentCharacter;
-      characterIndex += 2;
-      continue;
+    switch (classifyCsvCharacter(currentCharacter, nextCharacter, insideQuotedField)) {
+      case 'escapedQuote':
+        field += currentCharacter;
+        characterIndex += 2;
+        break;
+      case 'quote':
+        insideQuotedField = !insideQuotedField;
+        characterIndex++;
+        break;
+      case 'delimiter':
+        endField();
+        characterIndex++;
+        break;
+      case 'lineEnding':
+        endRow();
+        // A CRLF pair is one ending, not two, so the LF is consumed with the CR rather than
+        // starting an empty row of its own.
+        characterIndex += isCarriageReturnLineFeed(currentCharacter, nextCharacter) ? 2 : 1;
+        break;
+      case 'literal':
+        field += currentCharacter;
+        characterIndex++;
+        break;
     }
-
-    // A single quotation mark opens or closes a quoted field. Anything inside one is literal, which
-    // is what lets a field contain the delimiter, a newline, or a quotation mark of its own.
-    if (currentCharacter === '"') {
-      insideQuotedField = !insideQuotedField;
-      characterIndex++;
-      continue;
-    }
-
-    if (currentCharacter === ',' && !insideQuotedField) {
-      endField();
-      characterIndex++;
-      continue;
-    }
-
-    // A line ending ends the row. A CRLF pair is one ending, not two, so the LF is consumed with
-    // the CR rather than starting an empty row of its own.
-    if (!insideQuotedField && (currentCharacter === '\r' || currentCharacter === '\n')) {
-      endRow();
-      characterIndex += currentCharacter === '\r' && nextCharacter === '\n' ? 2 : 1;
-      continue;
-    }
-
-    field += currentCharacter;
-    characterIndex++;
   }
 
   // Input that does not end in a delimiter or a line ending still has a cell and a row to commit.

@@ -221,10 +221,6 @@ function buildCrashReport({
   readonly startDate: Date | undefined;
   readonly getContext: (() => unknown) | undefined;
 }): CrashReport {
-  // `performance.memory` is a non-standard extension, so it is read through a narrowing cast rather
-  // than by declaring the property exists.
-  const memory = (globalThis.performance as { memory?: PerformanceMemory } | undefined)?.memory;
-
   // A `getContext` that throws still yields a report: the failure becomes part of the context
   // rather than costing the operator the whole thing.
   const [contextValue, contextError] = tryCatch(() =>
@@ -238,25 +234,50 @@ function buildCrashReport({
     reportId: uuidv4(),
     appVersion: version,
     appStartDate: (startDate ?? new Date()).toISOString(),
-    uri: globalThis.location?.href ?? '',
-    userAgent: globalThis.navigator?.userAgent ?? '',
-    language: globalThis.navigator?.language ?? '',
-    screenWidth: globalThis.screen?.width ?? 0,
-    screenHeight: globalThis.screen?.height ?? 0,
-    viewportWidth: globalThis.innerWidth ?? 0,
-    viewportHeight: globalThis.innerHeight ?? 0,
-    cookiesEnabled: globalThis.navigator?.cookieEnabled ?? false,
-    onlineStatus: globalThis.navigator?.onLine ?? true,
     timestamp: new Date().toISOString(),
     errorMessage: error.message,
     errorStack: error.stack ?? null,
     componentStack,
     context,
-    memory: {
-      totalJSHeapSize: memory?.totalJSHeapSize ?? null,
-      usedJSHeapSize: memory?.usedJSHeapSize ?? null,
-      jsHeapSizeLimit: memory?.jsHeapSizeLimit ?? null,
-    },
+    memory: readHeapSize(),
+    ...readEnvironment(),
+  };
+}
+
+/**
+ * What the browser could be asked about the machine the crash happened on.
+ *
+ * Every field is optional-chained and defaulted, because none of these globals exists outside a
+ * browser: the report is built from a Node process during a test, and from a worker that has no
+ * `screen`. An absent value is recorded as the neutral one rather than omitted, so a report always
+ * has the same shape for whatever reads it.
+ */
+function readEnvironment() {
+  const { location, navigator, screen, innerWidth, innerHeight } = globalThis;
+
+  return {
+    uri: location?.href ?? '',
+    userAgent: navigator?.userAgent ?? '',
+    language: navigator?.language ?? '',
+    screenWidth: screen?.width ?? 0,
+    screenHeight: screen?.height ?? 0,
+    viewportWidth: innerWidth ?? 0,
+    viewportHeight: innerHeight ?? 0,
+    cookiesEnabled: navigator?.cookieEnabled ?? false,
+    onlineStatus: navigator?.onLine ?? true,
+  };
+}
+
+/** The heap figures the browser offers, or three nulls where the extension is not present. */
+function readHeapSize(): CrashReport['memory'] {
+  // `performance.memory` is a non-standard extension, so it is read through a narrowing cast rather
+  // than by declaring the property exists.
+  const memory = (globalThis.performance as { memory?: PerformanceMemory } | undefined)?.memory;
+
+  return {
+    totalJSHeapSize: memory?.totalJSHeapSize ?? null,
+    usedJSHeapSize: memory?.usedJSHeapSize ?? null,
+    jsHeapSizeLimit: memory?.jsHeapSizeLimit ?? null,
   };
 }
 

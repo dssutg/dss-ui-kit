@@ -18,6 +18,27 @@ interface UseFetchResult<T> {
   refetch: () => void;
 }
 
+/**
+ * Reports one failed request as an abort or as an error.
+ *
+ * An abort is the caller changing their mind — a dependency changing, the component unmounting —
+ * and it is not a failure of anything, so it is logged and not reported. A thrown value that is not
+ * an `Error` is not reported either: there is nothing to show a caller that has no message.
+ */
+function reportFetchFailure(failure: unknown, setError: (error: Error | null) => void): void {
+  if (!(failure instanceof Error)) {
+    return;
+  }
+
+  if (failure.name === 'AbortError') {
+    console.warn('Fetch aborted');
+
+    return;
+  }
+
+  setError(failure);
+}
+
 export function useFetch<T = unknown>(
   url: string,
   options: RequestInit = {},
@@ -76,13 +97,9 @@ export function useFetch<T = unknown>(
           }
 
           setData(json);
-        } catch (error: unknown) {
-          if (error instanceof Error && error.name === 'AbortError') {
-            console.warn('Fetch aborted');
-          } else if (error instanceof Error) {
-            setError(error);
-            setData(null);
-          }
+        } catch (failure: unknown) {
+          reportFetchFailure(failure, setError);
+          setData(null);
         } finally {
           setLoading(false);
         }

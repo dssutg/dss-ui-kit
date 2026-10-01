@@ -198,25 +198,40 @@ export function naturalCmp(a: string, b: string): number {
   const maxSegments = Math.max(aSegments.length, bSegments.length);
 
   for (let i = 0; i < maxSegments; i++) {
-    const aSegment = aSegments[i] ?? '';
-    const bSegment = bSegments[i] ?? '';
+    const order = cmpSegment(aSegments[i] ?? '', bSegments[i] ?? '');
 
-    const aIsNumber = /^\d+$/.test(aSegment);
-    const bIsNumber = /^\d+$/.test(bSegment);
-
-    if (aIsNumber && bIsNumber) {
-      const aNumber = parseInt(aSegment, 10);
-      const bNumber = parseInt(bSegment, 10);
-
-      if (aNumber !== bNumber) {
-        return cmp(aNumber, bNumber);
-      }
-    } else if (aSegment !== bSegment) {
-      return aSegment.localeCompare(bSegment);
+    // Equal segments say nothing about the order of the strings; the next segment decides.
+    if (order !== 0) {
+      return order;
     }
   }
 
   return 0;
+}
+
+/**
+ * The order of one segment against another.
+ *
+ * Two numeric segments compare as numbers, which is what puts `sensor2` before `sensor10`. A
+ * numeric segment against a non-numeric one compares as text, because there is no number on both
+ * sides to compare.
+ */
+function cmpSegment(aSegment: string, bSegment: string): number {
+  const aIsNumber = /^\d+$/.test(aSegment);
+  const bIsNumber = /^\d+$/.test(bSegment);
+
+  if (aIsNumber && bIsNumber) {
+    const aNumber = parseInt(aSegment, 10);
+    const bNumber = parseInt(bSegment, 10);
+
+    if (aNumber !== bNumber) {
+      return cmp(aNumber, bNumber);
+    }
+
+    return 0;
+  }
+
+  return aSegment.localeCompare(bSegment);
 }
 
 /**
@@ -278,23 +293,41 @@ export function mat4From(values: readonly number[]): Mat4 {
   }
 
   return [
-    values[0] ?? 0,
-    values[1] ?? 0,
-    values[2] ?? 0,
-    values[3] ?? 0,
-    values[4] ?? 0,
-    values[5] ?? 0,
-    values[6] ?? 0,
-    values[7] ?? 0,
-    values[8] ?? 0,
-    values[9] ?? 0,
-    values[10] ?? 0,
-    values[11] ?? 0,
-    values[12] ?? 0,
-    values[13] ?? 0,
-    values[14] ?? 0,
-    values[15] ?? 0,
+    componentAt(values, 0),
+    componentAt(values, 1),
+    componentAt(values, 2),
+    componentAt(values, 3),
+    componentAt(values, 4),
+    componentAt(values, 5),
+    componentAt(values, 6),
+    componentAt(values, 7),
+    componentAt(values, 8),
+    componentAt(values, 9),
+    componentAt(values, 10),
+    componentAt(values, 11),
+    componentAt(values, 12),
+    componentAt(values, 13),
+    componentAt(values, 14),
+    componentAt(values, 15),
   ];
+}
+
+/**
+ * The component at an index the caller has already established is there.
+ *
+ * A `readonly number[]` says an index may be absent even after its length has been checked, so
+ * reading one produces `number | undefined`. The default a `?? 0` would supply would be a silent
+ * matrix with a hole in it, so the absence is reported instead: reaching this means the length
+ * check that preceded it and the index that reached it disagree, which is a defect here.
+ */
+function componentAt(values: readonly number[], index: number): number {
+  const component = values[index];
+
+  if (component === undefined) {
+    throw new RangeError(`expected a component at index ${index}, but there are ${values.length}`);
+  }
+
+  return component;
 }
 
 /** A four-component vector, used for a homogeneous position and for a matrix-vector product. */
@@ -303,7 +336,12 @@ export function vec4From(values: readonly number[]): Vec4 {
     throw new RangeError(`a vector has 4 components, got ${values.length}`);
   }
 
-  return [values[0] ?? 0, values[1] ?? 0, values[2] ?? 0, values[3] ?? 0];
+  return [
+    componentAt(values, 0),
+    componentAt(values, 1),
+    componentAt(values, 2),
+    componentAt(values, 3),
+  ];
 }
 
 export interface Range {

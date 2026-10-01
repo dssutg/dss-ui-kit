@@ -282,64 +282,78 @@ export function formatRelativeDate(
   // The locale is a required argument: choosing one here would mean choosing a language.
   const locale: DateLocale = dateLocale;
 
+  // Both directions answer the same questions in the same order — is it a moment, is it within the
+  // minute, is it exactly one hour, is it yesterday — and differ only in which locale method says so.
+  // The questions are therefore listed once and each direction supplies its own phrasing, so an
+  // interval cannot be changed for a past date without changing it for a future one too.
+  const secondsOf = (seconds: number) => seconds;
+  const wholeMinutes = (seconds: number) => Math.floor(seconds / minute);
+  const wholeHours = (seconds: number) => Math.floor(seconds / hour);
+  const wholeDays = (seconds: number) => Math.floor(seconds / day);
+  const within = (limit: number) => (seconds: number) => seconds < limit;
+  const isExactlyOneHour = (seconds: number) => wholeHours(seconds) === 1;
+
   function formatFutureDate(locale: DateLocale, delta: number) {
-    const absDelta = Math.abs(delta);
+    const steps: ReadonlyArray<RelativeStep> = [
+      [within(30), locale.justThen],
+      [within(minute), locale.inSeconds(secondsOf(delta))],
+      [within(2 * minute), locale.inOneMinute],
+      [within(hour), locale.inMinutes(wholeMinutes(delta))],
+      [isExactlyOneHour, locale.inOneHour],
+      [within(day), locale.inHours(wholeHours(delta))],
+      [within(day * 2), locale.tomorrow],
+    ];
 
-    if (absDelta < 30) {
-      return locale.justThen;
-    }
-    if (absDelta < minute) {
-      return locale.inSeconds(absDelta);
-    }
-    if (absDelta < 2 * minute) {
-      return locale.inOneMinute;
-    }
-    if (absDelta < hour) {
-      return locale.inMinutes(Math.floor(absDelta / minute));
-    }
-    if (Math.floor(absDelta / hour) === 1) {
-      return locale.inOneHour;
-    }
-    if (absDelta < day) {
-      return locale.inHours(Math.floor(absDelta / hour));
-    }
-    if (absDelta < day * 2) {
-      return locale.tomorrow;
-    }
-
-    return locale.inDays(Math.floor(absDelta / day));
+    return firstMatchingStep(steps, delta) ?? locale.inDays(wholeDays(delta));
   }
 
   function formatPastDate(locale: DateLocale, delta: number) {
-    if (delta < 30) {
-      return locale.justThen;
-    }
-    if (delta < minute) {
-      return locale.secondsAgo(delta);
-    }
-    if (delta < 2 * minute) {
-      return locale.oneMinuteAgo;
-    }
-    if (delta < hour) {
-      return locale.minutesAgo(Math.floor(delta / minute));
-    }
-    if (Math.floor(delta / hour) === 1) {
-      return locale.oneHourAgo;
-    }
-    if (delta < day) {
-      return locale.hoursAgo(Math.floor(delta / hour));
-    }
-    if (delta < day * 2) {
-      return locale.yesterday;
-    }
+    const steps: ReadonlyArray<RelativeStep> = [
+      [within(30), locale.justThen],
+      [within(minute), locale.secondsAgo(secondsOf(delta))],
+      [within(2 * minute), locale.oneMinuteAgo],
+      [within(hour), locale.minutesAgo(wholeMinutes(delta))],
+      [isExactlyOneHour, locale.oneHourAgo],
+      [within(day), locale.hoursAgo(wholeHours(delta))],
+      [within(day * 2), locale.yesterday],
+    ];
 
-    return locale.daysAgo(Math.floor(delta / day));
+    return firstMatchingStep(steps, delta) ?? locale.daysAgo(wholeDays(delta));
   }
 
   const isFuture = delta < 0;
+
+  // Both formatters work in a magnitude. The direction has already been chosen by the sign, so
+  // handing either of them the signed delta would make every future interval answer as if it had
+  // just happened.
+  const magnitude = Math.abs(delta);
   const format = isFuture ? formatFutureDate : formatPastDate;
 
-  return format(locale, delta);
+  return format(locale, magnitude);
+}
+
+/** One question about an interval, and the phrasing to use when the answer is yes. */
+type RelativeStep = readonly [(seconds: number) => boolean, phrase: string];
+
+/**
+ * The phrasing for the first step the seconds satisfy.
+ *
+ * The steps are read in order and the first match wins, which is what keeps the intervals disjoint.
+ * A step is a predicate rather than a threshold because one of them cannot be a threshold: "in one
+ * hour" and "in N hours" are separate locale methods, and an interval that means "exactly one
+ * hour" is not a range.
+ */
+function firstMatchingStep(
+  steps: ReadonlyArray<RelativeStep>,
+  seconds: number,
+): string | undefined {
+  for (const [isInInterval, phrase] of steps) {
+    if (isInInterval(seconds)) {
+      return phrase;
+    }
+  }
+
+  return undefined;
 }
 
 export function getMillisecondsAsHMSUComponents(milliseconds?: number) {
