@@ -23,12 +23,20 @@ import { ru, ruDates } from '@/locales/ru';
 export const supportedLocales = ['en', 'ru'] as const;
 
 /**
+ * One of the locales the library ships data for.
+ *
+ * Distinct from {@link LocaleName}, which is also every locale a consumer may ask for: this is the
+ * set the library can answer for, and it is the key of the built-in data tables.
+ */
+export type BuiltinLocaleName = (typeof supportedLocales)[number];
+
+/**
  * The date data each shipped locale carries.
  *
  * Held here rather than in `src/locales/dates.ts` because the strings belong to the locale that
  * speaks them, and a locale without messages would then have no file of its own to put them in.
  */
-const builtinDates: Readonly<Record<string, LocaleDates>> = {
+const builtinDates: Readonly<Record<BuiltinLocaleName, LocaleDates>> = {
   en: enDates,
   ru: ruDates,
 };
@@ -83,9 +91,19 @@ export const builtinCatalogues: Readonly<Record<string, MessageCatalogue>> = { e
 export function getLocaleDates(locale: LocaleName): LocaleDates {
   // The fallback chain is explicit: first the requested locale, then the fallback, then English as a
   // last resort. `en` is the only one of the builtin sets that is guaranteed to exist.
-  const dates = builtinDates[locale] ?? builtinDates[fallbackLocale] ?? builtinDates['en'];
+  return getBuiltinDates(locale) ?? getBuiltinDates(fallbackLocale) ?? builtinDates.en;
+}
 
-  return dates as LocaleDates;
+/** The built-in dates for a locale, or `undefined` for one the library ships no data for. */
+function getBuiltinDates(locale: LocaleName): LocaleDates | undefined {
+  // A consumer may ask for any locale name at all, so the table is looked up through a guard rather
+  // than indexed. Typing it `Record<string, LocaleDates>` would answer for every string, including
+  // the ones that ship nothing.
+  return isBuiltinLocaleName(locale) ? builtinDates[locale] : undefined;
+}
+
+function isBuiltinLocaleName(locale: string): locale is BuiltinLocaleName {
+  return supportedLocales.some((name) => name === locale);
 }
 
 /** The key the chosen locale is persisted under. Configurable so two libraries can coexist. */

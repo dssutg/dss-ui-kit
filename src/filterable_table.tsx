@@ -16,6 +16,7 @@ import { downloadStringAsPlainTextFile } from '@/lib/file';
 import { formatHexNumber } from '@/lib/format_number';
 import { handleKeyMapKeyDown, type KeyMapActions } from '@/lib/key_map';
 import { clamp, cmp } from '@/lib/math';
+import { unreachable } from '@/lib/unreachable';
 import { useEventListener } from '@/lib/use_event_listener';
 import { useFullScreenChange } from '@/lib/use_fullscreen_change';
 import { getLocaleDates, type LocaleName, useLocale } from '@/locale';
@@ -409,6 +410,11 @@ export function FilterableTableTopPanel<T>({
                   return t('yes');
                 }
                 return t('no');
+
+              // The switch covers every member of `SearchPropertySchema`, and this says so: adding one
+              // is a type error here rather than a blank cell in the exported CSV.
+              default:
+                return unreachable(property);
             }
           }),
         )

@@ -26,6 +26,29 @@ const KEYCODE_BACK_QUOTE = 192;
 const HISTORY_LIMIT = 100;
 const HISTORY_TIME_GAP = 3000;
 
+/**
+ * Whether a keydown is the redo shortcut for the platform: Cmd+Shift+Z on a Mac, Ctrl+Y on Windows,
+ * and Ctrl+Shift+Z everywhere else.
+ *
+ * Key codes are used rather than key names because the editor reports its own key codes throughout,
+ * and `event.key` is `'z'` on a layout where the shortcut letter is elsewhere.
+ */
+function isRedoShortcut(
+  event: React.KeyboardEvent<HTMLTextAreaElement>,
+  isMacLike: boolean,
+  isWindows: boolean,
+): boolean {
+  if (isMacLike) {
+    return event.metaKey && event.keyCode === KEYCODE_Z && event.shiftKey;
+  }
+
+  if (isWindows) {
+    return event.ctrlKey && event.keyCode === KEYCODE_Y;
+  }
+
+  return event.ctrlKey && event.keyCode === KEYCODE_Z && event.shiftKey;
+}
+
 const lineHeight = 20;
 
 const isWindows =
@@ -432,14 +455,7 @@ export const Editor = forwardRef(
         event.preventDefault();
 
         undoEdit();
-      } else if (
-        (isMacLike
-          ? event.metaKey && event.keyCode === KEYCODE_Z && event.shiftKey
-          : isWindows
-            ? event.ctrlKey && event.keyCode === KEYCODE_Y
-            : event.ctrlKey && event.keyCode === KEYCODE_Z && event.shiftKey) &&
-        !event.altKey
-      ) {
+      } else if (isRedoShortcut(event, isMacLike, isWindows) && !event.altKey) {
         event.preventDefault();
 
         redoEdit();
@@ -511,9 +527,11 @@ export const Editor = forwardRef(
     const lineNumberColumnWidth = Math.max(4, totalLineCount.toString().length) * 12 + 4;
     const textFieldXOffset = lineNumberColumnWidth + 8;
 
+    // biome-ignore lint/style/useNamingConvention: `__html` is the property name React defines on `dangerouslySetInnerHTML`.
     const styleComponent = <style dangerouslySetInnerHTML={{ __html: cssText }} />;
 
     const injectedHighlighted = {
+      // biome-ignore lint/style/useNamingConvention: `__html` is the property name React defines on `dangerouslySetInnerHTML`.
       dangerouslySetInnerHTML: { __html: `${highlighted}<br />` },
     };
 

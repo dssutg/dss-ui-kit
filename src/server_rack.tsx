@@ -1770,6 +1770,7 @@ function useGLCtx(canvas: HTMLCanvasElement | null) {
     setContext({ gl, programInfo });
 
     return () => {
+      // biome-ignore lint/correctness/useHookAtTopLevel: `gl` is a WebGL context, not a React component. `useProgram` is WebGL's.
       gl.useProgram(null);
       gl.deleteProgram(shaderProgram);
     };
@@ -1815,6 +1816,7 @@ function renderScene(
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, sceneCtx.buffers.indices);
 
   // Tell OpenGL to use our program when drawing
+  // biome-ignore lint/correctness/useHookAtTopLevel: `gl` is a WebGL context, not a React component. `useProgram` is WebGL's.
   gl.useProgram(programInfo.program);
 
   // Set the shader uniforms

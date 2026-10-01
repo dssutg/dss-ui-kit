@@ -44,6 +44,13 @@ export interface CrashReport {
   };
 }
 
+/** The non-standard `performance.memory` extension, narrowed to the three fields read here. */
+interface PerformanceMemory {
+  readonly totalJSHeapSize: number;
+  readonly usedJSHeapSize: number;
+  readonly jsHeapSizeLimit: number;
+}
+
 /** Where an operator should send a report. Supplied by the caller; the library has no address. */
 export interface CrashReportContact {
   readonly email?: string | undefined;
@@ -115,6 +122,12 @@ function DefaultCrashFallback({
   const { t } = useLocale();
   const [report, setReport] = useState<CrashReport | null>(null);
 
+  // The effect runs once per crash, and the report describes the crash rather than the current
+  // render: `version` and `startDate` are the facts of the session that failed, and `getContext` and
+  // `onCrash` are caller callbacks that are new functions on every render. Depending on any of them
+  // would rebuild and re-report a report that has not changed, so the dependency list is the crash
+  // itself.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the effect reports one crash, keyed by the error it was handed.
   useEffect(() => {
     const built = buildCrashReport({ error, componentStack, version, startDate, getContext });
     setReport(built);
@@ -208,10 +221,9 @@ function buildCrashReport({
   readonly startDate: Date | undefined;
   readonly getContext: (() => unknown) | undefined;
 }): CrashReport {
-  // `performance.memory` is a non-standard extension, so it is read through a widening cast rather
+  // `performance.memory` is a non-standard extension, so it is read through a narrowing cast rather
   // than by declaring the property exists.
-  const memory = (globalThis.performance as { memory?: Record<string, number> } | undefined)
-    ?.memory;
+  const memory = (globalThis.performance as { memory?: PerformanceMemory } | undefined)?.memory;
 
   // A `getContext` that throws still yields a report: the failure becomes part of the context
   // rather than costing the operator the whole thing.
@@ -241,9 +253,9 @@ function buildCrashReport({
     componentStack,
     context,
     memory: {
-      totalJSHeapSize: memory?.['totalJSHeapSize'] ?? null,
-      usedJSHeapSize: memory?.['usedJSHeapSize'] ?? null,
-      jsHeapSizeLimit: memory?.['jsHeapSizeLimit'] ?? null,
+      totalJSHeapSize: memory?.totalJSHeapSize ?? null,
+      usedJSHeapSize: memory?.usedJSHeapSize ?? null,
+      jsHeapSizeLimit: memory?.jsHeapSizeLimit ?? null,
     },
   };
 }

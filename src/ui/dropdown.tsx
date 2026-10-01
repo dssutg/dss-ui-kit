@@ -82,6 +82,20 @@ export function DropDownMenu({
     });
   }, [menu]);
 
+  // Only the dots variant carries a hover title. Resolving it here keeps the fallback out of a
+  // nested ternary at the call site.
+  const dotsTriggerTitle =
+    variant === 'dots' ? (triggerHoverTitle ?? t('DropDownMenu.trigger.title')) : undefined;
+
+  // The dots variant marks the open state with its own background. Resolving it here keeps the
+  // `open` test out of a nested ternary inside the class string. An unopened trigger is given an
+  // explicit transparent background rather than nothing, because the dots variant also sets a
+  // border and the two have to agree about what sits under it.
+  let openDotsBackground = '';
+  if (variant === 'dots') {
+    openDotsBackground = open ? 'bg-bse' : 'bg-transparent';
+  }
+
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   const onClose = useCallback(() => setOpen(false), []);
@@ -248,12 +262,10 @@ export function DropDownMenu({
           relative box-border flex shrink-0 select-none place-items-center overflow-hidden
           ${variant === 'dots' ? 'aspect-square rounded-full border-none p-2 hover:bg-bse' : ''}
           ${variant === 'button' ? 'rounded-lg bg-bbp px-2 hover:brightness-150' : ''}
-          ${variant === 'dots' ? (open ? 'bg-bse' : 'bg-transparent') : ''}
+          ${openDotsBackground}
         `}
         style={triggerStyle}
-        title={
-          variant === 'dots' ? (triggerHoverTitle ?? t('DropDownMenu.trigger.title')) : undefined
-        }
+        title={dotsTriggerTitle}
         onClick={(e) => {
           setOpen((open) => !open);
           onTriggerClick?.(e);

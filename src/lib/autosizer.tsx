@@ -183,12 +183,14 @@ function createDetectElementResize(nonce?: string): DetectElementResize {
         if (checkTriggers(element)) {
           element.__resizeLast__.width = element.offsetWidth;
           element.__resizeLast__.height = element.offsetHeight;
-          element.__resizeListeners__.forEach(
-            // biome-ignore lint: lint/suspicious/noExplicitAny
-            (fn: { call: (arg0: any, arg1: any) => void }) => {
-              fn.call(element, e);
-            },
-          );
+          // The listeners are this module's own bookkeeping on the element. `element` is `any`
+          // because `scrollListener` takes an `any`, so the list is annotated rather than inferred,
+          // and the listeners are invoked with the element as their receiver.
+          const listeners: Array<(this: HTMLElement, e: Event) => void> =
+            element.__resizeListeners__;
+          for (const listener of listeners) {
+            listener.call(element, e);
+          }
         }
       });
     };
@@ -354,15 +356,15 @@ export class AutoSizer extends Component<Props, State> {
     width: (this.props as HeightAndWidthProps).defaultWidth || 0,
   };
 
-  _autoSizer: HTMLElement | null = null;
-  _detectElementResize: DetectElementResize | null = null;
-  _parentNode: HTMLElement | null = null;
-  _resizeObserver: ResizeObserver | null = null;
-  _timeoutId: number | null = null;
+  private autoSizer: HTMLElement | null = null;
+  private detectElementResize: DetectElementResize | null = null;
+  private parentNode: HTMLElement | null = null;
+  private resizeObserver: ResizeObserver | null = null;
+  private timeoutId: number | null = null;
 
   public override componentDidMount() {
     const { nonce } = this.props;
-    const parentNode = this._autoSizer ? this._autoSizer.parentNode : null;
+    const parentNode = this.autoSizer ? this.autoSizer.parentNode : null;
 
     if (
       parentNode?.ownerDocument?.defaultView &&
@@ -371,43 +373,43 @@ export class AutoSizer extends Component<Props, State> {
       // Delay access of parentNode until mount.
       // This handles edge-cases where the component has already been unmounted before its ref has been set,
       // As well as libraries like react-lite which have a slightly different lifecycle.
-      this._parentNode = parentNode;
+      this.parentNode = parentNode;
 
       // Use ResizeObserver from the same context where parentNode (which we will observe) was defined
       // Using just global can result into onResize events not being emitted in cases with multiple realms
       const ResizeObserverInstance = parentNode.ownerDocument.defaultView.ResizeObserver;
 
       if (ResizeObserverInstance != null) {
-        this._resizeObserver = new ResizeObserverInstance(() => {
+        this.resizeObserver = new ResizeObserverInstance(() => {
           // Guard against "ResizeObserver loop limit exceeded" error;
           // could be triggered if the state update causes the ResizeObserver handler to run long.
           // See https://github.com/bvaughn/react-virtualized-auto-sizer/issues/55
-          this._timeoutId = setTimeout(this._onResize, 0);
+          this.timeoutId = setTimeout(this.onResize, 0);
         });
-        this._resizeObserver.observe(parentNode);
+        this.resizeObserver.observe(parentNode);
       } else {
         // Defer requiring resize handler in order to support server-side rendering.
         // See issue #41
-        this._detectElementResize = createDetectElementResize(nonce);
-        this._detectElementResize.addResizeListener(parentNode, this._onResize);
+        this.detectElementResize = createDetectElementResize(nonce);
+        this.detectElementResize.addResizeListener(parentNode, this.onResize);
       }
 
-      this._onResize();
+      this.onResize();
     }
   }
 
   public override componentWillUnmount() {
-    if (this._parentNode) {
-      if (this._detectElementResize) {
-        this._detectElementResize.removeResizeListener(this._parentNode, this._onResize);
+    if (this.parentNode) {
+      if (this.detectElementResize) {
+        this.detectElementResize.removeResizeListener(this.parentNode, this.onResize);
       }
 
-      if (this._timeoutId !== null) {
-        clearTimeout(this._timeoutId);
+      if (this.timeoutId !== null) {
+        clearTimeout(this.timeoutId);
       }
 
-      if (this._resizeObserver) {
-        this._resizeObserver.disconnect();
+      if (this.resizeObserver) {
+        this.resizeObserver.disconnect();
       }
     }
   }
@@ -460,7 +462,7 @@ export class AutoSizer extends Component<Props, State> {
     return React.createElement(
       tagName,
       {
-        ref: this._setRef,
+        ref: this.setRef,
         style: {
           ...outerStyle,
           ...style,
@@ -471,28 +473,28 @@ export class AutoSizer extends Component<Props, State> {
     );
   }
 
-  _onResize = () => {
-    this._timeoutId = null;
+  private onResize = () => {
+    this.timeoutId = null;
 
     const { disableHeight, disableWidth, onResize } = this.props as HeightAndWidthProps;
 
-    if (this._parentNode) {
+    if (this.parentNode) {
       // Guard against AutoSizer component being removed from the DOM immediately after being added.
       // This can result in invalid style values which can result in NaN values if we don't handle them.
       // See issue #150 for more context.
 
-      const style = window.getComputedStyle(this._parentNode) || {};
+      const style = window.getComputedStyle(this.parentNode) || {};
       const paddingLeft = parseFloat(style.paddingLeft || '0');
       const paddingRight = parseFloat(style.paddingRight || '0');
       const paddingTop = parseFloat(style.paddingTop || '0');
       const paddingBottom = parseFloat(style.paddingBottom || '0');
 
-      const rect = this._parentNode.getBoundingClientRect();
+      const rect = this.parentNode.getBoundingClientRect();
       const scaledHeight = rect.height - paddingTop - paddingBottom;
       const scaledWidth = rect.width - paddingLeft - paddingRight;
 
-      const height = this._parentNode.offsetHeight - paddingTop - paddingBottom;
-      const width = this._parentNode.offsetWidth - paddingLeft - paddingRight;
+      const height = this.parentNode.offsetHeight - paddingTop - paddingBottom;
+      const width = this.parentNode.offsetWidth - paddingLeft - paddingRight;
 
       if (
         (!disableHeight &&
@@ -513,7 +515,7 @@ export class AutoSizer extends Component<Props, State> {
     }
   };
 
-  _setRef = (autoSizer: HTMLElement | null) => {
-    this._autoSizer = autoSizer;
+  private setRef = (autoSizer: HTMLElement | null) => {
+    this.autoSizer = autoSizer;
   };
 }

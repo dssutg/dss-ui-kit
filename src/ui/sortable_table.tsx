@@ -285,8 +285,8 @@ export function SortableTable<T, C extends string>({
                   ...column.style,
                 }}
               >
-                // A button, because clicking the header sorts by that column. Enter and Space sort
-                // too, which they did not before.
+                {/* A button, because clicking the header sorts by that column. Enter and Space sort
+                    too, which they did not before. */}
                 <button
                   type="button"
                   className="hover:bg-bse relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden border-none bg-transparent px-2 py-1"

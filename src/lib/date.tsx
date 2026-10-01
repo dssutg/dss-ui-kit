@@ -146,7 +146,9 @@ export function minstrftime(
         isDefault: false,
       }),
 
-      // Pad with spaces
+      // Pad with spaces. `%_d` is a real GNU strftime specifier, so this key is the character
+      // itself rather than a name for it.
+      // biome-ignore lint/style/useNamingConvention: this key is the GNU strftime `_` padding specifier, which `%_d` looks up by its character.
       _: () => ({
         readPadChar: formatSpecifier,
         padChar: ' ',

@@ -7,6 +7,17 @@ interface State<ListItemDataType> {
   updatedOrder: ListItemDataType[];
 }
 
+/**
+ * The index a list item was rendered at, read off its `data-position`.
+ *
+ * `dataset` is an index signature, and the two rules that govern it disagree:
+ * `noPropertyAccessFromIndexSignature` wants bracket access, `useLiteralKeys` wants a dot for a key
+ * the type knows. The claim here is provable because `getListItemProps` writes the attribute itself.
+ */
+function getItemPosition(element: HTMLElement): number {
+  return Number((element.dataset as { position: string }).position);
+}
+
 export function useDragNDropOrderedList<ListItemDataType>(
   items: ListItemDataType[],
   onChange?: (updatedItems: ListItemDataType[]) => void,
@@ -19,7 +30,7 @@ export function useDragNDropOrderedList<ListItemDataType>(
   });
 
   const onDragStart = (event: TargetedEvent<HTMLElement, DragEvent>) => {
-    const initialPosition = Number(event.currentTarget.dataset['position']);
+    const initialPosition = getItemPosition(event.currentTarget);
 
     setDragAndDrop({
       ...dragAndDrop,
@@ -43,7 +54,7 @@ export function useDragNDropOrderedList<ListItemDataType>(
       return;
     }
 
-    const draggedTo = Number(event.currentTarget.dataset['position']);
+    const draggedTo = getItemPosition(event.currentTarget);
     const itemDragged = updatedOrder[draggedFrom];
     const remainingItems = updatedOrder.filter(
       (_: ListItemDataType, index: number) => index !== draggedFrom,

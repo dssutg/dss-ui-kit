@@ -221,16 +221,14 @@ function hexToHsva(hex: string): HsvaColor {
 }
 
 function hexToRgba(hex: string): RgbaColor {
-  if (hex[0] === '#') {
-    hex = hex.slice(1);
-  }
+  const digits = hex.startsWith('#') ? hex.slice(1) : hex;
 
-  if (hex.length < 6) {
+  if (digits.length < 6) {
     // Shorthand: `#abc` is `#aabbcc`, so each digit is doubled before it is read. A shorter string
     // than that is not a colour at all, and `charAt` reports the absence as an empty string, which
     // `parseInt` turns into 0 rather than into a crash.
     const doubled = (index: number) => {
-      const digit = hex.charAt(index);
+      const digit = digits.charAt(index);
 
       return parseInt(digit + digit, 16);
     };
@@ -239,15 +237,15 @@ function hexToRgba(hex: string): RgbaColor {
       r: doubled(0),
       g: doubled(1),
       b: doubled(2),
-      a: hex.length === 4 ? round(doubled(3) / 255, 2) : 1,
+      a: digits.length === 4 ? round(doubled(3) / 255, 2) : 1,
     };
   }
 
   return {
-    r: parseInt(hex.slice(0, 2), 16),
-    g: parseInt(hex.slice(2, 4), 16),
-    b: parseInt(hex.slice(4, 6), 16),
-    a: hex.length === 8 ? round(parseInt(hex.slice(6, 8), 16) / 255, 2) : 1,
+    r: parseInt(digits.slice(0, 2), 16),
+    g: parseInt(digits.slice(2, 4), 16),
+    b: parseInt(digits.slice(4, 6), 16),
+    a: digits.length === 8 ? round(parseInt(digits.slice(6, 8), 16) / 255, 2) : 1,
   };
 }
 
@@ -373,14 +371,18 @@ function rgbaToHsva({ r, g, b, a }: RgbaColor): HsvaColor {
   const max = Math.max(r, g, b);
   const delta = max - Math.min(r, g, b);
 
-  // Prettier-ignore
-  const hh = delta
-    ? max === r
-      ? (g - b) / delta
-      : max === g
-        ? 2 + (b - r) / delta
-        : 4 + (r - g) / delta
-    : 0;
+  // Which of the six hue sectors the colour falls in, named after the channel that is largest.
+  let sector = 0;
+  if (delta !== 0) {
+    if (max === r) {
+      sector = (g - b) / delta;
+    } else if (max === g) {
+      sector = 2 + (b - r) / delta;
+    } else {
+      sector = 4 + (r - g) / delta;
+    }
+  }
+  const hh = sector;
 
   return {
     h: round(60 * (hh < 0 ? hh + 6 : hh)),
@@ -551,6 +553,25 @@ function getTouchPoint(touches: TouchList, touchId: null | number): Touch | null
   return touches.item(0);
 }
 
+/** How far one arrow-key press moves the handle, as a fraction of the handle's track. */
+const ARROW_KEY_DELTA = 0.05;
+
+/**
+ * How far an arrow key moves the handle along one axis: `negativeKeyCode` moves it back, the
+ * positive one forward, and any other key moves it not at all.
+ */
+function getAxisDelta(keyCode: number, negativeKeyCode: number, positiveKeyCode: number): number {
+  if (keyCode === positiveKeyCode) {
+    return ARROW_KEY_DELTA;
+  }
+
+  if (keyCode === negativeKeyCode) {
+    return -ARROW_KEY_DELTA;
+  }
+
+  return 0;
+}
+
 // Finds the proper window object to fix iframe embedding issues
 function getParentWindow(node?: HTMLDivElement | null): Window {
   return node?.ownerDocument.defaultView || self;
@@ -670,12 +691,14 @@ const InteractiveBase = ({ onMove, onKey, ariaValueNow, ...rest }: InteractiveBa
       }
       // Do not scroll page by arrow keys when document is focused on the element
       event.preventDefault();
-      // Send relative offset to the parent component.
-      // We use codes (37←, 38↑, 39→, 40↓) instead of keys ('ArrowRight', 'ArrowDown', etc)
-      // to reduce the size of the library
+      // Send a relative offset to the parent component. Key codes (37 left, 38 up, 39 right,
+      // 40 down) are used instead of key names ('ArrowRight', 'ArrowDown', and so on) to reduce
+      // the size of the library.
+      const leftDelta = getAxisDelta(keyCode, 37, 39);
+      const topDelta = getAxisDelta(keyCode, 38, 40);
       onKeyCallback({
-        left: keyCode === 39 ? 0.05 : keyCode === 37 ? -0.05 : 0,
-        top: keyCode === 40 ? 0.05 : keyCode === 38 ? -0.05 : 0,
+        left: leftDelta,
+        top: topDelta,
       });
     };
 

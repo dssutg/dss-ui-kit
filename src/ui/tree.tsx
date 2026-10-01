@@ -30,6 +30,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AutoSizer } from '@/lib/autosizer';
 import { clamp } from '@/lib/math';
+import { unreachable } from '@/lib/unreachable';
 import { useGranularEffect } from '@/lib/use_granular_effect';
 import { builtinCatalogues, getLocaleName, translate, useLocale } from '@/locale';
 import { IconButton } from './button';
@@ -291,7 +292,7 @@ export function TreeView({
       setTree(updateTreeToToggleItemExpansion(tree, item.id));
       onItemExpansionChange?.(item.id, !item.expanded);
     },
-    [tree, onItemExpansionChange],
+    [tree, setTree, onItemExpansionChange],
   );
 
   const handleItemDoubleClick = useCallback(
@@ -1093,6 +1094,11 @@ function MenuTreeItem({
                       />
                     );
                   }
+
+                  // Every connector type above is handled, and this says so: a new one is a type
+                  // error here rather than an item that draws no indentation at all.
+                  default:
+                    return unreachable(type);
                 }
               },
             )}
