@@ -107,7 +107,7 @@ Bring the inherited configuration over, so that from here on every stage is meas
 ### What the inherited rules found
 
 `deno run -A npm:@biomejs/biome ci .` on the copy, before any reformat: **849 errors and 24 warnings**
-across 277 files. Three rules did not fit this library and are turned off or narrowed; everything
+across 277 files. Four rules did not fit this library and are turned off or narrowed; everything
 else is left as an error for stage 3 to fix in the code.
 
 | Rule | Hits | Decision |
@@ -115,6 +115,7 @@ else is left as an error for stage 3 to fix in the code.
 | `noSvgWithoutTitle` | 142 | **Off for `src/ui/icons/**`.** Those files are generated path data, not images: `ui/icons/index.tsx` reads the `d` attribute out of each and the `Icon` component builds the `<svg>` itself, with `aria-hidden` set and the accessible name coming from the control around it. A `<title>` in these files would never reach the accessibility tree. |
 | `noRestrictedImports` | 35 | **Narrowed to `../**` inside `src/`.** Every hit is a sibling import (`./button`, `./icon`) inside `src/ui/`, which [`AGENTS.md`](./AGENTS.md) permits. Only walking up the tree is forbidden. |
 | `noDefaultExport` | 2 | **Off for `**/*.d.ts`.** `src/tsimport.d.ts` declares `*.glsl?raw` and `*.txt?raw`, and an ambient module declaration has no way to say anything else. |
+| `useComponentExportOnlyModules` | 43 | **Off for the whole repository.** The rule protects Fast Refresh: a module that exports a component alongside a constant cannot be hot-replaced without losing its state, so it asks for the two to be split. This repository has no `index.html` and no dev entry point — `build.lib` is `src/index.ts` and a consumer imports the built package pre-bundled — so there is no dev server on which Fast Refresh could run against this source. Splitting twenty files would make the source harder to follow for a benefit that cannot be reached. |
 
 Two rules were expected to need a decision and did not get one, which is the outcome worth recording:
 

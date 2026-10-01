@@ -74,10 +74,12 @@ Biome is the **only** formatter and linter. Deno's `deno fmt` / `deno lint` are 
 
 Fixed by `biome.json`. Do not hand-maintain any of it; the formatter owns it.
 
-Three rules are turned off or narrowed for this code base, each with its reason recorded in
+Four rules are turned off or narrowed for this code base, each with its reason recorded in
 [`TODO.md`](./TODO.md#what-the-inherited-rules-found): `noSvgWithoutTitle` for the generated path
-data under `src/ui/icons/`, `noDefaultExport` for `*.d.ts`, and `noRestrictedImports` narrowed to
-`../**`. A rule that turns out not to fit is a decision to record, not one to make silently.
+data under `src/ui/icons/`, `noDefaultExport` for `*.d.ts`, `noRestrictedImports` narrowed to
+`../**`, and `useComponentExportOnlyModules` off because a library with no dev entry point has no
+Fast Refresh to protect. A rule that turns out not to fit is a decision to record, not one to make
+silently.
 
 - **Semicolons: always.** Every JavaScript and TypeScript statement ends with `;`.
 - **Indentation: 2 spaces**, never tabs. Enforced in `biome.json` and `.editorconfig`.
