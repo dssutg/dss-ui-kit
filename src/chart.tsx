@@ -1,7 +1,7 @@
-import { AutoSizer } from '@/lib/autosizer';
+import { AutoSizer } from '@/lib/AutoSizer.tsx';
 import type { KeyMap } from '@/lib/key_map';
 import { useLocale } from '@/locale';
-import { ZoomableCanvas, type ZoomableCanvasTransform } from '@/ui/zoomable_canvas';
+import { ZoomableCanvas, type ZoomableCanvasTransform } from '@/ui/ZoomableCanvas.tsx';
 
 /**
  * The horizontal distance between two adjacent chart columns, in chart coordinates.

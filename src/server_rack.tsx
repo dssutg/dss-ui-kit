@@ -7,8 +7,8 @@
 // route, or fetches anything.
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
+import { AutoSizer } from '@/lib/AutoSizer.tsx';
 import { groupArrayByProperty, removeDuplicateObjectsFromArray } from '@/lib/array';
-import { AutoSizer } from '@/lib/autosizer';
 import { parseHexColor } from '@/lib/color';
 import { parseCSV } from '@/lib/dsv';
 import { downloadStringAsPlainTextFile, openFileDialog } from '@/lib/file';
@@ -47,8 +47,8 @@ import { Button, ButtonGroup, IconButton } from '@/ui/button';
 import { ToggleSwitch } from '@/ui/checkbox';
 import { DropDownButton, type DropDownMenuItem } from '@/ui/dropdown';
 import { TextInput } from '@/ui/input';
-import { Modal } from '@/ui/modal';
-import { UploadConfig } from '@/ui/upload_config';
+import { Modal } from '@/ui/Modal.tsx';
+import { UploadConfig } from '@/ui/UploadConfig.tsx';
 
 /**
  * Which face of the cabinet a device is mounted on. A rack is described as two panels because that

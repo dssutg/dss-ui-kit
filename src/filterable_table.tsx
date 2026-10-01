@@ -30,9 +30,9 @@ import {
   SearchInput,
   TextInput,
 } from '@/ui/input';
-import { Modal } from '@/ui/modal';
-import { mapToShares, PieChart } from '@/ui/piechart';
-import { Select } from '@/ui/select';
+import { Modal } from '@/ui/Modal.tsx';
+import { mapToShares, PieChart } from '@/ui/PieChart.tsx';
+import { Select } from '@/ui/Select.tsx';
 import {
   makeSortableTableCellRenderer,
   SortableTable,
@@ -42,7 +42,7 @@ import {
   type SortableTableComparatorFunction,
   type SortableTableDescriptor,
 } from '@/ui/sortable_table';
-import type { ZoomableCanvasTransform } from '@/ui/zoomable_canvas';
+import type { ZoomableCanvasTransform } from '@/ui/ZoomableCanvas.tsx';
 import {
   type ActionKey,
   Chart,

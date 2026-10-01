@@ -1,5 +1,5 @@
 import { createPortal, useCallback, useEffect, useId, useRef, useState } from 'react';
-import { Editor } from '@/lib/editor';
+import { Editor } from '@/lib/Editor.tsx';
 import { highlightText } from '@/lib/highlight';
 import { ipv4Regex } from '@/lib/ipv4';
 import { clamp, cmp } from '@/lib/math';

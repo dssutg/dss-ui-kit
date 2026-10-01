@@ -2,9 +2,9 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useScrollbarWidth } from '@/lib/use_scrollbar_width';
 import { uuidv4 } from '@/lib/uuid';
 import { useLocale } from '@/locale';
+import { Ripple } from '@/ui/Ripple.tsx';
 import { Button, IconButton } from './button';
 import { Icon } from './icon';
-import { Ripple } from './ripple';
 
 export function Accordion({
   expanded,

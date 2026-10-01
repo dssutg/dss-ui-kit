@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { HexAlphaColorPicker, HslaStringColorPicker } from '@/lib/color_picker';
 import { useDebounce } from '@/lib/use_debounce';
-import { Popover } from './popover';
+import { Popover } from '@/ui/Popover.tsx';
 
 export function HexAlphaColorPickerPopover({
   trigger,

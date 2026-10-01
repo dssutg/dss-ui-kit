@@ -66,7 +66,7 @@ export type {
 export { ServerRackView, SeverRackEditor } from '@/server_rack';
 export type { EditableAccordionListItem } from '@/ui/accordion';
 export { Accordion, EditableAccordionList, useAccordion } from '@/ui/accordion';
-export { BitField } from '@/ui/bitfield';
+export { BitField } from '@/ui/BitField.tsx';
 export type {
   ButtonGroupItem,
   ButtonGroupItemChangeHandler,
@@ -84,20 +84,20 @@ export {
   ToggleButton,
   ToTop,
 } from '@/ui/button';
+export { ColorfulYesNo } from '@/ui/ColorfulYesNo.tsx';
 export { MiniCalendar, StaticCalendar } from '@/ui/calendar';
 export { Checkbox, LockableToggleSwitch, ToggleSwitch } from '@/ui/checkbox';
 export {
   HexAlphaColorPickerPopover,
   HslaStringColorPickerPopover,
 } from '@/ui/color_popover';
-export { ColorfulYesNo } from '@/ui/colorful_yes_no';
 export type { DropDownButtonVariant, DropDownMenuItem } from '@/ui/dropdown';
 export { DropDownButton, DropDownMenu } from '@/ui/dropdown';
-export type { FeedbackTooltipType } from '@/ui/feedback_tooltip';
-export { FeedbackTooltip, showFeedbackTooltip } from '@/ui/feedback_tooltip';
+export type { FeedbackTooltipType } from '@/ui/FeedbackTooltip.tsx';
+export { FeedbackTooltip, showFeedbackTooltip } from '@/ui/FeedbackTooltip.tsx';
+export { IconedSectionTitle } from '@/ui/IconedSectionTitle.tsx';
 export type { IconName } from '@/ui/icon';
 export { Icon, IconViewer } from '@/ui/icon';
-export { IconedSectionTitle } from '@/ui/iconed_section_title';
 export type { DecimalIntegerInputValue } from '@/ui/input';
 export {
   ByteFractionInput,
@@ -117,18 +117,18 @@ export {
   TextInput,
   UnsignedIntegerInput,
 } from '@/ui/input';
-export { Modal } from '@/ui/modal';
-export { OrderPanel } from '@/ui/order_panel';
-export type { PieChartShare } from '@/ui/piechart';
-export { getShareColor, getSharePercent, mapToShares, PieChart } from '@/ui/piechart';
-export { Popover } from '@/ui/popover';
-export { ResizableSplit } from '@/ui/resizer';
-export { RingProgress } from '@/ui/ring_progress';
-export { Ripple } from '@/ui/ripple';
-export { ScrollProgressBar } from '@/ui/scroll_progress_bar';
-export { Select } from '@/ui/select';
-export { SimpleLineChart } from '@/ui/simple_line_chart';
-export { Slider } from '@/ui/slider';
+export { Modal } from '@/ui/Modal.tsx';
+export { OrderPanel } from '@/ui/OrderPanel.tsx';
+export type { PieChartShare } from '@/ui/PieChart.tsx';
+export { getShareColor, getSharePercent, mapToShares, PieChart } from '@/ui/PieChart.tsx';
+export { Popover } from '@/ui/Popover.tsx';
+export { ResizableSplit } from '@/ui/ResizableSplit.tsx';
+export { RingProgress } from '@/ui/RingProgress.tsx';
+export { Ripple } from '@/ui/Ripple.tsx';
+export { ScrollProgressBar } from '@/ui/ScrollProgressBar.tsx';
+export { Select } from '@/ui/Select.tsx';
+export { SimpleLineChart } from '@/ui/SimpleLineChart.tsx';
+export { Slider } from '@/ui/Slider.tsx';
 export type {
   SortableTableCellDescriptor,
   SortableTableCellRenderer,
@@ -154,14 +154,14 @@ export type {
   TreeViewItem,
 } from '@/ui/tree';
 export { MenuTree, TreeView } from '@/ui/tree';
-export type { UploadConfigProps } from '@/ui/upload_config';
-export { UploadConfig } from '@/ui/upload_config';
+export type { UploadConfigProps } from '@/ui/UploadConfig.tsx';
+export { UploadConfig } from '@/ui/UploadConfig.tsx';
 export { minDesktopWidth, useIsMobileScreen } from '@/ui/use_is_mobile_screen';
 export type {
   ZoomableCanvasDrawCallbackProps,
   ZoomableCanvasTransform,
-} from '@/ui/zoomable_canvas';
-export { ZoomableCanvas } from '@/ui/zoomable_canvas';
+} from '@/ui/ZoomableCanvas.tsx';
+export { ZoomableCanvas } from '@/ui/ZoomableCanvas.tsx';
 
 /* -------------------------------------------------------------------------------------------- */
 /* Infrastructure                                                                                */
@@ -240,7 +240,7 @@ export {
 /* Hooks and framework-agnostic helpers                                                          */
 /* -------------------------------------------------------------------------------------------- */
 
-export { AutoSizer } from '@/lib/autosizer';
+export { AutoSizer } from '@/lib/AutoSizer.tsx';
 export { tryCatch, tryCatchAsync } from '@/lib/catch';
 export { getCSSVariableValue } from '@/lib/color';
 export { formatRelativeDate, getDateComponents } from '@/lib/date';

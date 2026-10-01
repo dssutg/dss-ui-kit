@@ -3,9 +3,9 @@ import { copyToClipboard } from '@/lib/dom';
 import { wrapIndex } from '@/lib/math';
 import { useEventListener } from '@/lib/use_event_listener';
 import { useLocale } from '@/locale';
-import { FeedbackTooltip, showFeedbackTooltip } from './feedback_tooltip';
+import { FeedbackTooltip, showFeedbackTooltip } from '@/ui/FeedbackTooltip.tsx';
+import { Ripple } from '@/ui/Ripple.tsx';
 import { Icon, type IconName } from './icon';
-import { Ripple } from './ripple';
 
 export function PlayPauseButton({
   playing,

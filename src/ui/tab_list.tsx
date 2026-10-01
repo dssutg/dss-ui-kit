@@ -2,7 +2,7 @@ import { useCallback, useId, useRef, useState } from 'react';
 import { wrapIndex } from '@/lib/math';
 import { useForceUpdate } from '@/lib/use_force_update';
 import { useGranularEffect } from '@/lib/use_granular_effect';
-import { Ripple } from './ripple';
+import { Ripple } from '@/ui/Ripple.tsx';
 
 export interface MUITabDescriptor<ID extends string> {
   id: ID;

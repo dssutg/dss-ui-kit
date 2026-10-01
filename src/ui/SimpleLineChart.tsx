@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { AutoSizer } from '@/lib/autosizer';
+import { AutoSizer } from '@/lib/AutoSizer.tsx';
 import { getCSSVariableValue } from '@/lib/color';
 import { clamp } from '@/lib/math';
 import { useGranularEffect } from '@/lib/use_granular_effect';

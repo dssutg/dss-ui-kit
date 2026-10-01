@@ -7,8 +7,8 @@ import { useGranularEffect } from '@/lib/use_granular_effect';
 import { useInterval } from '@/lib/use_interval';
 import { useWindowSize } from '@/lib/use_window_size';
 import { useLocale } from '@/locale';
+import { Ripple } from '@/ui/Ripple.tsx';
 import { Icon, type IconName } from './icon';
-import { Ripple } from './ripple';
 
 export type DropDownButtonVariant = 'regular' | 'danger';
 

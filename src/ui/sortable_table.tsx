@@ -2,9 +2,9 @@ import { useCallback, useMemo, useState } from 'react';
 import { useForceUpdate } from '@/lib/use_force_update';
 import { useTimeout } from '@/lib/use_timeout';
 import { useLocale } from '@/locale';
+import { Ripple } from '@/ui/Ripple.tsx';
+import { useVirtualizedList, type VirtualizedListRowRendererProps } from '@/ui/VirtualizedList.tsx';
 import { Icon } from './icon';
-import { useVirtualizedList, type VirtualizedListRowRendererProps } from './list';
-import { Ripple } from './ripple';
 
 /** How far an arrow key moves a column edge, in pixels. */
 const KEYBOARD_RESIZE_STEP = 8;

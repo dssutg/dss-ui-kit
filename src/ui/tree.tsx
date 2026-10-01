@@ -28,17 +28,17 @@
 //       for performance reasons.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AutoSizer } from '@/lib/autosizer';
+import { AutoSizer } from '@/lib/AutoSizer.tsx';
 import { clamp } from '@/lib/math';
 import { unreachable } from '@/lib/unreachable';
 import { useGranularEffect } from '@/lib/use_granular_effect';
 import { builtinCatalogues, getLocaleName, translate, useLocale } from '@/locale';
+import { Ripple } from '@/ui/Ripple.tsx';
+import { VirtualizedList } from '@/ui/VirtualizedList.tsx';
 import { IconButton } from './button';
 import { Checkbox } from './checkbox';
 import { Icon, type IconName } from './icon';
 import { SearchInput } from './input';
-import { VirtualizedList } from './list';
-import { Ripple } from './ripple';
 import { useIsMobileScreen } from './use_is_mobile_screen';
 
 export interface TreeViewItem {

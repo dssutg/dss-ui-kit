@@ -1,5 +1,5 @@
 import { useId, useState } from 'react';
-import { FeedbackTooltip, showFeedbackTooltip } from './feedback_tooltip';
+import { FeedbackTooltip, showFeedbackTooltip } from '@/ui/FeedbackTooltip.tsx';
 import { Icon } from './icon';
 
 export function Checkbox({
