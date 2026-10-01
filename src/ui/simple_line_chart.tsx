@@ -129,8 +129,16 @@ function Canvas({
       const xOffset = Math.max(0, yPoints.length * xScale - width);
 
       for (let x = yPoints.length - 1; x >= 0; x--) {
+        const y = yPoints[x];
+
+        // A hole in the series is skipped rather than drawn as a point at the baseline: the line
+        // should break where the data does, not invent a value to bridge the gap.
+        if (y === undefined) {
+          continue;
+        }
+
         const xp = x * xScale - xOffset;
-        const yp = (1 - clamp(yPoints[x]!, 0, 1)) * height;
+        const yp = (1 - clamp(y, 0, 1)) * height;
 
         context.lineTo(xp, yp);
 

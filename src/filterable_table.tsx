@@ -188,7 +188,13 @@ function Table<T, C extends string>({
   historyId,
   getItemId,
 }: FilterableTableProps<T, C>) {
-  const { searchText, setSearchText } = useContext(FilterableTableContext)!;
+  const context = useContext(FilterableTableContext);
+
+  if (context === null) {
+    throw new Error('FilterableTable must be rendered inside a FilterableTableProvider.');
+  }
+
+  const { searchText, setSearchText } = context;
 
   return (
     <ControlledTable
@@ -452,7 +458,11 @@ export function FilterableTableTopPanel<T>({
 
     const pdfContentElement = printWindow.document.querySelector('#pdf-content');
 
-    const root = createRoot(pdfContentElement!);
+    if (pdfContentElement === null) {
+      throw new Error('Export failed: the print window has no #pdf-content element.');
+    }
+
+    const root = createRoot(pdfContentElement);
 
     const columnProperties = extraSearchSchema.properties.filter((prop) =>
       Boolean(prop.hiddenInTable),
@@ -733,8 +743,12 @@ function FilterableTableStatsModal<T>({
 }) {
   const { t } = useLocale();
 
-  const [statsPropertyName, setStatsPropertyName] = useState<SearchPropertySchemaName<T>>(
-    searchSchema.properties[0]!.name,
+  const [statsPropertyName, setStatsPropertyName] = useState<
+    SearchPropertySchemaName<T> | undefined
+  >(
+    // A schema with no properties has no property to report stats on, so the selection starts empty
+    // rather than naming one that is not there.
+    () => searchSchema.properties[0]?.name,
   );
 
   const id = useId();
@@ -757,7 +771,7 @@ function FilterableTableStatsModal<T>({
             </label>
             <Select
               id={`${id}-property-select`}
-              value={statsPropertyName}
+              value={statsPropertyName ?? ''}
               onChange={(e) =>
                 setStatsPropertyName(e.currentTarget.value as typeof statsPropertyName)
               }
@@ -789,8 +803,12 @@ function TimelineViewerModal<T>({
 }) {
   const { t } = useLocale();
 
-  const [statsPropertyName, setStatsPropertyName] = useState<SearchPropertySchemaName<T>>(
-    () => searchSchema.properties.find((p) => p.type !== 'dateAndTime')!.name,
+  const [statsPropertyName, setStatsPropertyName] = useState<
+    SearchPropertySchemaName<T> | undefined
+  >(
+    // The first property that is not a time, since a timeline built from timestamps has no series to
+    // show. A schema of nothing but times leaves nothing selected, which the modal renders as empty.
+    () => searchSchema.properties.find((p) => p.type !== 'dateAndTime')?.name,
   );
 
   const id = useId();
@@ -800,7 +818,7 @@ function TimelineViewerModal<T>({
   }, [searchSchema, statsPropertyName]);
 
   const timeProperty = useMemo(() => {
-    return searchSchema.properties.find((p) => p.type === 'dateAndTime')!;
+    return searchSchema.properties.find((p) => p.type === 'dateAndTime');
   }, [searchSchema]);
 
   return (
@@ -818,7 +836,7 @@ function TimelineViewerModal<T>({
             </label>
             <Select
               id={`${id}-property-select`}
-              value={statsPropertyName}
+              value={statsPropertyName ?? ''}
               onChange={(e) =>
                 setStatsPropertyName(e.currentTarget.value as typeof statsPropertyName)
               }
@@ -832,7 +850,7 @@ function TimelineViewerModal<T>({
                 ))}
             </Select>
           </div>
-          {property !== undefined && (
+          {property !== undefined && timeProperty !== undefined && (
             <TimelineViewer items={items} property={property} timeProperty={timeProperty} />
           )}
         </div>
@@ -911,10 +929,11 @@ function TimelineViewer<T>({
 
       timeSet.add(time);
       propSet.add(prop);
-      if (timeSetPerProp[prop] === undefined) {
-        timeSetPerProp[prop] = new Set();
-      }
-      timeSetPerProp[prop]!.add(time);
+      // Initialised here rather than read back, so the set being filled is the one stored.
+      const timesForProp = timeSetPerProp[prop] ?? new Set<number>();
+
+      timesForProp.add(time);
+      timeSetPerProp[prop] = timesForProp;
     }
 
     const sortedTimePoints = [...timeSet].sort(cmp);
@@ -949,7 +968,7 @@ function TimelineViewer<T>({
             return undefined;
           }
 
-          if (!timeSetPerProp[prop]!.has(timestamp)) {
+          if (timeSetPerProp[prop]?.has(timestamp) !== true) {
             return undefined;
           }
 

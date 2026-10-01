@@ -33,17 +33,36 @@ function getWeekday(year: number, month: number, monthDay: number) {
       Math.floor(normalizedYear / 4) -
       Math.floor(normalizedYear / 100) +
       Math.floor(normalizedYear / 400) +
-      monthValues[month]! +
+      monthEntry(monthValues, month) +
       monthDay) %
     7
   );
 }
 
+/**
+ * Reads one month out of a table of twelve.
+ *
+ * `Date#getMonth` reports 0 to 11 and the loop that builds a calendar counts to twelve, so every
+ * caller here has a month and not merely a number. It arrives as a `number`, and a twelve-entry table
+ * read with one yields `undefined` under a strict compiler without ever being wrong — which turns a
+ * bad month into a `NaN` weekday several frames later instead of a message. One accessor keeps that
+ * from happening and keeps the reason in one place rather than beside each table.
+ */
+function monthEntry<T>(table: readonly T[], month: number): T {
+  const entry = table[month];
+
+  if (entry === undefined) {
+    throw new RangeError(`Month ${month} is not one of the twelve.`);
+  }
+
+  return entry;
+}
+
 function getDaysInMonth(year: number, month: number) {
   if (isLeapYear(year)) {
-    return daysPerLeapMonth[month]!;
+    return monthEntry(daysPerLeapMonth, month);
   }
-  return daysPerMonth[month]!;
+  return monthEntry(daysPerMonth, month);
 }
 
 interface MonthCalendar {
@@ -99,9 +118,11 @@ function getCalendar(
 
     const numberOfDays = getDaysInMonth(definedYear, month);
 
+    const monthName = monthEntry(calendarLocale.monthNames, month);
+
     const monthCalendar: MonthCalendar = {
-      fullName: calendarLocale.monthNames[month]!,
-      name: calendarLocale.monthNames[month]!.slice(0, 3),
+      fullName: monthName,
+      name: monthName.slice(0, 3),
       dayTable: [],
       numberOfDays,
       firstWeekday,
@@ -220,11 +241,20 @@ export function StaticCalendar({ date }: { readonly date: Date }) {
   const year = date.getFullYear();
   const monthIndex = date.getMonth();
 
-  const month = calendar.months[monthIndex]!;
+  const month = calendar.months[monthIndex];
+
+  // `getCalendar` builds a month for every index `Date#getMonth` can report, so this cannot be
+  // reached. It is spelled out because the compiler cannot, and rendering nothing beats crashing on
+  // a property read of `undefined` part way through the tree.
+  if (month === undefined) {
+    return null;
+  }
 
   const { dayTable } = month;
 
-  function getDayClass(rowIndex: number, columnIndex: number) {
+  // An arrow, not a declaration: a hoisted function could be read as callable before the check above,
+  // so the narrowing of `month` would not survive into it.
+  const getDayClass = (rowIndex: number, columnIndex: number) => {
     const row = dayTable[rowIndex];
 
     if (row === undefined) {
@@ -240,7 +270,7 @@ export function StaticCalendar({ date }: { readonly date: Date }) {
     }
 
     return dayClass;
-  }
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -271,7 +301,7 @@ export function StaticCalendar({ date }: { readonly date: Date }) {
           <div key={rowIndex} className="flex justify-between first:mb-2">
             {Array.from({ length: WEEK_DAYS }).map((_, columnIndex: number) => (
               <Day key={columnIndex} dayClass={getDayClass(rowIndex, columnIndex)}>
-                {dayTable[rowIndex]![columnIndex]}
+                {dayTable[rowIndex]?.[columnIndex] ?? ''}
               </Day>
             ))}
           </div>

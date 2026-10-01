@@ -56,7 +56,11 @@ export async function decompressJSON(base64Str: string) {
   }
 
   // Create a stream from the ArrayBuffer
-  const compressedStream = new Response(buffer).body!;
+  const compressedStream = new Response(buffer).body;
+
+  if (compressedStream === null) {
+    throw new Error('decompressJSON: the response has no readable body.');
+  }
 
   // Pipe through the gzip decompressor
   const ds = new DecompressionStream('gzip');
@@ -436,13 +440,22 @@ export abstract class WComponent extends HTMLElement {
 
   protected static props: string[] = [];
 
+  /**
+   * The shadow root attached in the constructor.
+   *
+   * Held here rather than read back off `this.shadowRoot` at each use, because the property is
+   * `ShadowRoot | null` for a host that has not attached one and every reader then has to prove the
+   * attachment happened. It did, in the constructor below, so it is captured once.
+   */
+  private readonly root: ShadowRoot;
+
   constructor() {
     super();
-    this.attachShadow({ mode: 'open' });
+    this.root = this.attachShadow({ mode: 'open' });
   }
 
   protected set template(templateElement: HTMLTemplateElement) {
-    this.shadowRoot?.appendChild(templateElement.content.cloneNode(true));
+    this.root.appendChild(templateElement.content.cloneNode(true));
   }
 
   static get observedAttributes(): string[] {
@@ -504,12 +517,12 @@ export abstract class WComponent extends HTMLElement {
       const styleEl = document.createElement('style');
       styleEl.setAttribute('data-wc-styles', '');
       styleEl.textContent = styles;
-      this.shadowRoot.prepend(styleEl);
+      this.root.prepend(styleEl);
     } else if (Array.isArray(styles)) {
       for (const sheet of styles) {
         if (sheet instanceof CSSStyleSheet) {
           // Adopted stylesheets (modern browsers)
-          this.shadowRoot!.adoptedStyleSheets = [...this.shadowRoot!.adoptedStyleSheets, sheet];
+          this.root.adoptedStyleSheets = [...this.root.adoptedStyleSheets, sheet];
         }
       }
     }
@@ -518,11 +531,19 @@ export abstract class WComponent extends HTMLElement {
   protected render() {}
 
   protected el(selector: string) {
-    return this.shadowRoot!.querySelector(selector);
+    return this.root.querySelector(selector);
   }
 
   protected on(selector: string, eventName: string, callback: EventCallback) {
-    const element = this.shadowRoot!.querySelector(selector)!;
+    const element = this.root.querySelector(selector);
+
+    // A listener registered on a selector that matches nothing would never fire, and the component
+    // would look broken rather than wrong. Naming what was missing is the only useful report.
+    if (element === null) {
+      throw new Error(
+        `${this.constructor.name}: nothing in the shadow root matches "${selector}".`,
+      );
+    }
 
     element.addEventListener(eventName, callback.bind(this));
   }

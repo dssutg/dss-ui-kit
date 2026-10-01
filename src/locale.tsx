@@ -81,7 +81,11 @@ export const builtinCatalogues: Readonly<Record<string, MessageCatalogue>> = { e
  * whole set rather than assembling it from a key lookup.
  */
 export function getLocaleDates(locale: LocaleName): LocaleDates {
-  return builtinDates[locale] ?? builtinDates[fallbackLocale]!;
+  // The fallback chain is explicit: first the requested locale, then the fallback, then English as a
+  // last resort. `en` is the only one of the builtin sets that is guaranteed to exist.
+  const dates = builtinDates[locale] ?? builtinDates[fallbackLocale] ?? builtinDates['en'];
+
+  return dates as LocaleDates;
 }
 
 /** The key the chosen locale is persisted under. Configurable so two libraries can coexist. */

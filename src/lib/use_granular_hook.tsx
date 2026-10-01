@@ -8,14 +8,18 @@ export function useGranularHook<T extends HookWithDependencies<C, ReturnType<T>>
   primaryDeps: unknown[],
   secondaryDeps: unknown[],
 ) {
-  const ref = useRef<unknown[]>();
+  const ref = useRef<unknown[] | undefined>(undefined);
+  const current = ref.current;
 
   if (
-    !ref.current ||
-    !primaryDeps.every((dependency, index) => Object.is(dependency, ref.current![index]))
+    current === undefined ||
+    !primaryDeps.every((dependency, index) => Object.is(dependency, current[index]))
   ) {
-    ref.current = [...primaryDeps, ...secondaryDeps];
+    const next = [...primaryDeps, ...secondaryDeps];
+    ref.current = next;
+
+    return hook(callback, next);
   }
 
-  return hook(callback, ref.current);
+  return hook(callback, current);
 }
