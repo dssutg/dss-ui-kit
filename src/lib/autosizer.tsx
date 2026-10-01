@@ -125,11 +125,111 @@ function createFrameScheduler(): FrameScheduler {
   };
 }
 
+/**
+ * The size of a parent element with its padding taken out, in both scales.
+ *
+ * `height`/`width` come from `offsetHeight`/`offsetWidth`, which are whole pixels and already
+ * include the padding. `scaledHeight`/`scaledWidth` come from `getBoundingClientRect`, which
+ * includes the border as well and answers in fractional pixels, so a caller can position a
+ * transformed child against it. Padding is a computed style rather than a measured offset because
+ * that is the only way to learn it for an element whose padding is a percentage.
+ */
+function measureSizeWithinPadding(parentNode: HTMLElement): Size {
+  const style = window.getComputedStyle(parentNode) || {};
+  const paddingLeft = parseFloat(style.paddingLeft || '0');
+  const paddingRight = parseFloat(style.paddingRight || '0');
+  const paddingTop = parseFloat(style.paddingTop || '0');
+  const paddingBottom = parseFloat(style.paddingBottom || '0');
+
+  const rect = parentNode.getBoundingClientRect();
+
+  return {
+    height: parentNode.offsetHeight - paddingTop - paddingBottom,
+    width: parentNode.offsetWidth - paddingLeft - paddingRight,
+    scaledHeight: rect.height - paddingTop - paddingBottom,
+    scaledWidth: rect.width - paddingLeft - paddingRight,
+  };
+}
+
+/**
+ * Whether a measurement is a change the caller should hear about.
+ *
+ * An axis that is disabled is never a change, which is how a caller asks for a height and leaves
+ * the width to something else. The comparison is on every field rather than on the axis as a whole
+ * because the two scales can move independently: a fractional scale change from a CSS transform is
+ * a real resize even when the whole-pixel size has not moved.
+ */
+function hasSizeChanged(
+  current: Size,
+  measured: Size,
+  disableHeight: boolean | undefined,
+  disableWidth: boolean | undefined,
+): boolean {
+  const heightChanged =
+    !disableHeight &&
+    (current.height !== measured.height || current.scaledHeight !== measured.scaledHeight);
+  const widthChanged =
+    !disableWidth &&
+    (current.width !== measured.width || current.scaledWidth !== measured.scaledWidth);
+
+  return heightChanged || widthChanged;
+}
+
+/** The name of the animation that reports an element being re-attached without resizing. */
+const RESIZE_ANIMATION_NAME = 'resizeanim';
+
 const { requestFrame, cancelFrame } = createFrameScheduler();
+
+/** How a browser spells the CSS animation a re-attached element is detected by. */
+interface CssAnimationSupport {
+  /** The `animationstart` event as this browser names it, which the prefixed ones do not match. */
+  readonly animationStartEvent: string;
+  /** The vendor prefix to write into `@keyframes` and `animation`, empty for the standard spelling. */
+  readonly keyframePrefix: string;
+}
+
+/**
+ * Which spelling of a CSS animation this browser understands.
+ *
+ * The detection needs the animation at all, because an element that is detached and re-attached
+ * without changing its size does not fire `ResizeObserver`, and restarting a one-millisecond
+ * animation is the only thing that reports it. Prefixes are tried in turn because a browser that
+ * supports animations under a vendor prefix does not necessarily support the unprefixed property
+ * it is tested for first.
+ *
+ * Prefixes are paired with the event each one reports rather than kept as two parallel lists
+ * indexed by position, because a prefix and its event have to agree and nothing else here keeps
+ * them in step.
+ */
+function detectCssAnimationSupport(): CssAnimationSupport {
+  const prefixesWithEvents: ReadonlyArray<readonly [prefix: string, event: string]> = [
+    ['Webkit', 'webkitAnimationStart'],
+    ['Moz', 'animationstart'],
+    ['O', 'oAnimationStart'],
+    ['ms', 'MSAnimationStart'],
+  ];
+
+  const probe = document.createElement('fakeelement');
+
+  if (probe.style.animationName !== undefined) {
+    return { animationStartEvent: 'animationstart', keyframePrefix: '' };
+  }
+
+  for (const [prefix, event] of prefixesWithEvents) {
+    // The prefixed property is not in the style type for every prefix this probes.
+    // @ts-expect-error
+    if (probe.style[`${prefix}AnimationName`] !== undefined) {
+      return { animationStartEvent: event, keyframePrefix: `-${prefix.toLowerCase()}-` };
+    }
+  }
+
+  // No animation support at all: the standard event name is still what a listener can be bound to,
+  // and the CSS below it is simply inert.
+  return { animationStartEvent: 'animationstart', keyframePrefix: '' };
+}
 
 function createDetectElementResize(nonce?: string): DetectElementResize {
   let animationKeyframes: string;
-  let animationName: string;
   let animationStartEvent: string;
   let animationStyle: string;
 
@@ -195,49 +295,11 @@ function createDetectElementResize(nonce?: string): DetectElementResize {
       });
     };
 
-    /* Detect CSS Animations support to detect element display/re-attach */
-    let animation = false;
-    let keyframeprefix = '';
+    const support = detectCssAnimationSupport();
 
-    animationStartEvent = 'animationstart';
-
-    // Vendor prefix paired with the animation event that prefix reports. These are held as pairs
-    // rather than as two parallel arrays indexed by position, because a prefix and its event have
-    // to agree and nothing else in this function keeps them in step.
-    const animationStartEventsByPrefix = [
-      { prefix: 'Webkit', event: 'webkitAnimationStart' },
-      { prefix: 'Moz', event: 'animationstart' },
-      { prefix: 'O', event: 'oAnimationStart' },
-      { prefix: 'ms', event: 'MSAnimationStart' },
-    ];
-
-    let pfx = '';
-    {
-      const elm = document.createElement('fakeelement');
-
-      if (elm.style.animationName !== undefined) {
-        animation = true;
-      }
-
-      if (animation === false) {
-        for (const { prefix, event } of animationStartEventsByPrefix) {
-          // @ts-expect-error
-          if (elm.style[`${prefix}AnimationName`] !== undefined) {
-            pfx = prefix;
-            keyframeprefix = `-${pfx.toLowerCase()}-`;
-            animationStartEvent = event;
-            animation = true;
-            break;
-          }
-        }
-      }
-    }
-
-    animationName = 'resizeanim';
-    animationKeyframes = `@${keyframeprefix}keyframes ${
-      animationName
-    } { from { opacity: 0; } to { opacity: 0; } } `;
-    animationStyle = `${keyframeprefix}animation: 1ms ${animationName}; `;
+    animationStartEvent = support.animationStartEvent;
+    animationKeyframes = `@${support.keyframePrefix}keyframes ${RESIZE_ANIMATION_NAME} { from { opacity: 0; } to { opacity: 0; } } `;
+    animationStyle = `${support.keyframePrefix}animation: 1ms ${RESIZE_ANIMATION_NAME}; `;
   }
 
   // biome-ignore lint: lint/suspicious/noExplicitAny
@@ -304,7 +366,7 @@ function createDetectElementResize(nonce?: string): DetectElementResize {
         /* Listen for a css animation to detect element display/re-attach */
         if (animationStartEvent) {
           element.__resizeTriggers__.__animationListener__ = (e: { animationName: string }) => {
-            if (e.animationName === animationName) {
+            if (e.animationName === RESIZE_ANIMATION_NAME) {
               resetTriggers(element);
             }
           };
@@ -477,40 +539,22 @@ export class AutoSizer extends Component<Props, State> {
     this.timeoutId = null;
 
     const { disableHeight, disableWidth, onResize } = this.props as HeightAndWidthProps;
+    const { parentNode } = this;
 
-    if (this.parentNode) {
-      // Guard against AutoSizer component being removed from the DOM immediately after being added.
-      // This can result in invalid style values which can result in NaN values if we don't handle them.
-      // See issue #150 for more context.
+    if (parentNode === null) {
+      return;
+    }
 
-      const style = window.getComputedStyle(this.parentNode) || {};
-      const paddingLeft = parseFloat(style.paddingLeft || '0');
-      const paddingRight = parseFloat(style.paddingRight || '0');
-      const paddingTop = parseFloat(style.paddingTop || '0');
-      const paddingBottom = parseFloat(style.paddingBottom || '0');
+    // Guard against AutoSizer component being removed from the DOM immediately after being added.
+    // This can result in invalid style values which can result in NaN values if we don't handle
+    // them. See issue #150 for more context.
+    const size = measureSizeWithinPadding(parentNode);
 
-      const rect = this.parentNode.getBoundingClientRect();
-      const scaledHeight = rect.height - paddingTop - paddingBottom;
-      const scaledWidth = rect.width - paddingLeft - paddingRight;
+    if (hasSizeChanged(this.state, size, disableHeight, disableWidth)) {
+      this.setState(size);
 
-      const height = this.parentNode.offsetHeight - paddingTop - paddingBottom;
-      const width = this.parentNode.offsetWidth - paddingLeft - paddingRight;
-
-      if (
-        (!disableHeight &&
-          (this.state.height !== height || this.state.scaledHeight !== scaledHeight)) ||
-        (!disableWidth && (this.state.width !== width || this.state.scaledWidth !== scaledWidth))
-      ) {
-        this.setState({
-          height,
-          width,
-          scaledHeight,
-          scaledWidth,
-        });
-
-        if (typeof onResize === 'function') {
-          onResize({ height, scaledHeight, scaledWidth, width });
-        }
+      if (typeof onResize === 'function') {
+        onResize(size);
       }
     }
   };

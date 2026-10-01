@@ -622,6 +622,39 @@ interface InteractiveBaseProperties {
   readonly children: React.ReactNode;
 }
 
+/**
+ * Which finger a touch interaction belongs to.
+ *
+ * A multi-finger gesture produces one touch event per finger, and only the one that started on the
+ * handle may move it. The identifier is what tells the later moves apart: without it, a second
+ * finger landing anywhere in the document would drag the handle while the first was released.
+ */
+function getTouchId(event: TouchEvent): number | null {
+  return event.changedTouches.item(0)?.identifier ?? null;
+}
+
+/**
+ * How far an arrow key moves the handle, as a fraction of the handle's track.
+ *
+ * Key codes (37 left, 38 up, 39 right, 40 down) are used instead of key names ('ArrowRight',
+ * 'ArrowDown', and so on) to reduce the size of the library.
+ */
+function getArrowKeyInteraction(event: KeyboardEvent): Interaction | null {
+  const keyCode = event.which || event.keyCode;
+
+  if (keyCode < 37 || keyCode > 40) {
+    return null;
+  }
+
+  // Do not scroll the page by arrow keys while the handle has the focus.
+  event.preventDefault();
+
+  return {
+    left: getAxisDelta(keyCode, 37, 39),
+    top: getAxisDelta(keyCode, 38, 40),
+  };
+}
+
 const InteractiveBase = ({ onMove, onKey, ariaValueNow, ...rest }: InteractiveBaseProperties) => {
   const container = useRef<HTMLDivElement>(null);
   const onMoveCallback = useEventCallback<Interaction>(onMove);
@@ -647,14 +680,7 @@ const InteractiveBase = ({ onMove, onKey, ariaValueNow, ...rest }: InteractiveBa
 
       if (isTouch(e)) {
         hasTouch.current = true;
-
-        const changedTouches = e.changedTouches || [];
-
-        const changedTouch = changedTouches.item(0);
-
-        if (changedTouch !== null) {
-          touchId.current = changedTouch.identifier;
-        }
+        touchId.current = getTouchId(e);
       }
 
       element.focus();
@@ -683,23 +709,11 @@ const InteractiveBase = ({ onMove, onKey, ariaValueNow, ...rest }: InteractiveBa
     const handleMoveEnd = () => toggleDocumentEvents(false);
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      const keyCode = event.which || event.keyCode;
+      const interaction = getArrowKeyInteraction(event);
 
-      // Ignore all keys except arrow ones
-      if (keyCode < 37 || keyCode > 40) {
-        return;
+      if (interaction !== null) {
+        onKeyCallback(interaction);
       }
-      // Do not scroll page by arrow keys when document is focused on the element
-      event.preventDefault();
-      // Send a relative offset to the parent component. Key codes (37 left, 38 up, 39 right,
-      // 40 down) are used instead of key names ('ArrowRight', 'ArrowDown', and so on) to reduce
-      // the size of the library.
-      const leftDelta = getAxisDelta(keyCode, 37, 39);
-      const topDelta = getAxisDelta(keyCode, 38, 40);
-      onKeyCallback({
-        left: leftDelta,
-        top: topDelta,
-      });
     };
 
     function toggleDocumentEvents(state?: boolean) {
