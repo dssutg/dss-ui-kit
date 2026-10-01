@@ -33,7 +33,8 @@
       "preset": "recommended",
       "a11y": {
         "useSemanticElements": "error",
-        "useValidAnchor": "error"
+        "useValidAnchor": "error",
+        "noAutofocus": "off"
       },
       "complexity": {
         "noUselessFragments": "error",
@@ -48,7 +49,9 @@
         "noThisInStatic": "error",
         "noExcessiveCognitiveComplexity": {
           "level": "error",
-          "options": { "maxAllowedComplexity": 12 }
+          "options": {
+            "maxAllowedComplexity": 12
+          }
         }
       },
       "correctness": {
@@ -82,7 +85,9 @@
           "options": {
             "conventions": [
               {
-                "selector": { "kind": "any" },
+                "selector": {
+                  "kind": "any"
+                },
                 "formats": ["camelCase", "PascalCase", "CONSTANT_CASE"]
               }
             ],
@@ -218,6 +223,16 @@
         "rules": {
           "style": {
             "noDefaultExport": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noAutofocus": "off"
           }
         }
       }

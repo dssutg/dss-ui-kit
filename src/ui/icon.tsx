@@ -109,8 +109,17 @@ export function IconViewer() {
       >
         {sortedIconNames.map((icon) => {
           if (normalizeQuery(icon).includes(query)) {
+            // A button, because clicking the icon copies its name. The name is the accessible name
+            // as well as the tooltip, so a screen reader announces what will be copied.
             return (
-              <div key={icon} title={icon} onClick={() => copyToClipboard(icon)}>
+              <button
+                key={icon}
+                type="button"
+                title={icon}
+                aria-label={icon}
+                className="cursor-pointer border-none bg-transparent p-0"
+                onClick={() => copyToClipboard(icon)}
+              >
                 <Icon
                   name={icon}
                   style={{
@@ -119,7 +128,7 @@ export function IconViewer() {
                     fill: 'var(--color-tpl)',
                   }}
                 />
-              </div>
+              </button>
             );
           }
           return <div key={icon} style={{ width: size, height: size }} />;

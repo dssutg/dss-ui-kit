@@ -324,7 +324,9 @@ export function MiniCalendar({
   readonly posY: number;
   readonly onClose: () => void;
 }) {
-  const windowRef = useRef<HTMLDivElement>(null);
+  const { t } = useLocale();
+
+  const windowRef = useRef<HTMLButtonElement>(null);
 
   const [curX, setCurX] = useState(posX);
   const [curY, setCurY] = useState(posY);
@@ -372,19 +374,22 @@ export function MiniCalendar({
   });
 
   return (
-    <div
+    // A button, because a click anywhere on the popup closes it. It is not a submit button and does
+    // nothing else, so `type="button"` keeps it out of any form around it.
+    <button
       ref={windowRef}
-      tabIndex={0}
-      onClick={onClose}
-      className="fixed box-border w-60 select-none rounded-2xl bg-[var(--color-mini-calendar-bg)] p-4 shadow-lg shadow-black"
+      type="button"
+      aria-label={t('Modal.close')}
+      className="fixed box-border w-60 cursor-default select-none rounded-2xl border-none bg-[var(--color-mini-calendar-bg)] p-4 text-left shadow-lg shadow-black"
       style={{
         display: visible ? 'block' : 'none',
         top: curY,
         left: curX,
       }}
+      onClick={onClose}
       onKeyDown={onKeyDown}
     >
       <StaticCalendar date={date} />
-    </div>
+    </button>
   );
 }

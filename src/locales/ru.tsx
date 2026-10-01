@@ -73,6 +73,7 @@ export const ru = {
   'ServerRack.panel.back': 'Задний вид',
   'ServerRack.panel.front': 'Передний вид',
   'SortableTable.emptyList': 'Список пуст',
+  'SortableTable.resizeColumn': 'Изменить ширину столбца',
   'TimelineViewerModal.propertySelect.label': 'Столбец: ',
   'TimelineViewerModal.title': 'Хронология',
   'UploadConfig.cancel': 'Отменить',

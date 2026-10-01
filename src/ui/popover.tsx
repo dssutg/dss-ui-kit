@@ -5,6 +5,7 @@ import { useEventListener } from '@/lib/use_event_listener';
 import { useGranularEffect } from '@/lib/use_granular_effect';
 import { useInterval } from '@/lib/use_interval';
 import { useWindowSize } from '@/lib/use_window_size';
+import { useLocale } from '@/locale';
 
 export function Popover({
   open,
@@ -41,6 +42,8 @@ export function Popover({
       (triggerRef.current?.childNodes[0] as HTMLElement | undefined)?.focus();
     }
   });
+
+  const { t } = useLocale();
 
   const [rootTriggerBox, setRootTriggerBox] = useState<DOMRect | null>(null);
 
@@ -112,26 +115,35 @@ export function Popover({
 
   return (
     <>
+      {/* biome-ignore lint/a11y/useSemanticElements: this wrapper cannot be a <button>. The trigger is whatever the caller passed in and it is usually already one, so a real <button> here would nest a button inside a button. The wrapper carries the button semantics instead. */}
       <div
         ref={triggerRef}
+        role="button"
         tabIndex={0}
+        aria-expanded={open}
         style={{ display: 'contents' }}
         onClick={() => onOpenChange(!open)}
         onKeyDown={(e) => {
-          if (e.code === 'Space') {
-            e.preventDefault();
-            onOpenChange(!open);
+          if (e.code !== 'Space' && e.key !== 'Enter') {
+            return;
           }
+
+          e.preventDefault();
+          onOpenChange(!open);
         }}
       >
         {trigger}
       </div>
       {(open || forceMount) &&
         createPortal(
+          // The backdrop is a button, because clicking it closes the popover and a keyboard user
+          // needs the same. `opacity-0` keeps it in the accessibility tree.
           <div className="fixed top-0 left-0" style={{ display: open ? 'block' : 'hidden' }}>
             {hasBackDrop && (
-              <div
-                className="fixed top-0 left-0 w-screen h-screen bg-black opacity-0"
+              <button
+                type="button"
+                aria-label={t('Modal.close')}
+                className="fixed top-0 left-0 h-screen w-screen cursor-default border-none bg-black p-0 opacity-0"
                 style={backDropStyle}
                 onClick={() => onOpenChange(false)}
               />
@@ -233,9 +245,12 @@ function PopoverPanel({
   }, 500);
 
   return (
+    // A dialog: it is the thing that opened. `tabIndex={-1}` makes it focusable by the effect above
+    // without putting it in the tab order, which is what a dialog container wants.
     <div
       ref={panelRef}
-      tabIndex={0}
+      role="dialog"
+      tabIndex={-1}
       className={`
         fixed top-0 left-0 shrink-0
         ${panelPosX === null || panelPosY === null ? 'pointer-events-none opacity-0' : ''}

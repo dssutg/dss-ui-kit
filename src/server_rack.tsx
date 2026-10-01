@@ -3012,8 +3012,9 @@ function ImportDatabaseModal({
             />
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <label>{t('RackDatabaseEditor.rackId')}</label>
+            <label htmlFor="rack-database-editor-rackId">{t('RackDatabaseEditor.rackId')}</label>
             <TextInput
+              id="rack-database-editor-rackId"
               value={dbFieldAliasMap.rackIdAlias}
               onChange={(e) =>
                 setDBFieldAliasMap((map) => ({
@@ -3028,8 +3029,11 @@ function ImportDatabaseModal({
                 }))
               }
             />
-            <label>{t('RackDatabaseEditor.posLabel')}</label>
+            <label htmlFor="rack-database-editor-posLabel">
+              {t('RackDatabaseEditor.posLabel')}
+            </label>
             <TextInput
+              id="rack-database-editor-posLabel"
               value={dbFieldAliasMap.posLabelAlias}
               onChange={(e) =>
                 setDBFieldAliasMap((map) => ({
@@ -3044,8 +3048,11 @@ function ImportDatabaseModal({
                 }))
               }
             />
-            <label>{t('RackDatabaseEditor.deviceType')}</label>
+            <label htmlFor="rack-database-editor-deviceType">
+              {t('RackDatabaseEditor.deviceType')}
+            </label>
             <TextInput
+              id="rack-database-editor-deviceType"
               value={dbFieldAliasMap.rackDeviceTypeAlias}
               onChange={(e) =>
                 setDBFieldAliasMap((map) => ({
@@ -3060,8 +3067,11 @@ function ImportDatabaseModal({
                 }))
               }
             />
-            <label>{t('RackDatabaseEditor.serialNumber')}</label>
+            <label htmlFor="rack-database-editor-serialNumber">
+              {t('RackDatabaseEditor.serialNumber')}
+            </label>
             <TextInput
+              id="rack-database-editor-serialNumber"
               value={dbFieldAliasMap.rackDeviceSerialNumberAlias}
               onChange={(e) =>
                 setDBFieldAliasMap((map) => ({

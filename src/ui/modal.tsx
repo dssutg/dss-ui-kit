@@ -67,8 +67,13 @@ export function Modal({
     open &&
     createPortal(
       <div className="fixed" style={style}>
-        <div
-          className="fixed left-0 top-0 h-screen w-screen bg-black opacity-25 transition-opacity duration-300"
+        {/* A button, because clicking it does exactly what clicking a button does, and a keyboard
+            user gets the same close. A `div` here would put a control in front of the dialog that
+            only the mouse could reach. */}
+        <button
+          type="button"
+          aria-label={t('Modal.close')}
+          className="fixed left-0 top-0 h-screen w-screen cursor-default border-none bg-black p-0 opacity-25 transition-opacity duration-300"
           onClick={close}
         />
         <div>

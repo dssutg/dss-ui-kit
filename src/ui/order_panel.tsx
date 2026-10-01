@@ -91,9 +91,12 @@ export function OrderPanel<T extends number>({
       </div>
       <ul className="m-0 flex max-h-80 list-none flex-col overflow-y-scroll p-0">
         {items.map((item, index) => (
+          // No click handler on the row. It had one that toggled visibility, which the eye button
+          // inside already does, and the same element is the drag handle — so a drag ended with a
+          // click and toggled the item the user was only trying to move. Visibility is the eye
+          // button's job now, and it is reachable by keyboard because it is a button.
           <li
             key={item}
-            onClick={() => toggleItemVisibility(item)}
             className={`
               m-0 box-border flex select-none items-center gap-2 bg-bpd p-1 text-tpl hover:brightness-150
               border-b-2 border-t-2 border-b-[transparent]

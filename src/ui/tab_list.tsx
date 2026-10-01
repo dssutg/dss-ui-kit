@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useId, useRef, useState } from 'react';
 import { wrapIndex } from '@/lib/math';
 import { useForceUpdate } from '@/lib/use_force_update';
 import { useGranularEffect } from '@/lib/use_granular_effect';
@@ -61,6 +61,10 @@ export function ControlledMUITabList<ID extends string>({
   readonly setTabId: (tabId: ID | null) => void;
 }) {
   const triggerListRef = useRef<HTMLDivElement>(null);
+
+  // The id prefix that ties each tab to its panel. `useId` rather than a prop, because the pairing is
+  // an implementation detail of this widget and a caller should not have to invent unique ids for it.
+  const idPrefix = useId();
 
   const forceUpdate = useForceUpdate();
 
@@ -143,11 +147,26 @@ export function ControlledMUITabList<ID extends string>({
         style={tabTriggerListStyle}
       >
         <div>
-          <div tabIndex={0} ref={triggerListRef} className="flex" onKeyDown={onKeyDown}>
+          {/* `role="tablist"` with `role="tab"` children and `aria-selected` is what makes this a set
+              of tabs rather than a row of buttons. It also carries the container's `tabIndex={0}`:
+              a composite widget takes focus once and then moves within itself with the arrow keys,
+              which is what `onKeyDown` implements. */}
+          <div
+            tabIndex={0}
+            ref={triggerListRef}
+            role="tablist"
+            aria-orientation="horizontal"
+            className="flex"
+            onKeyDown={onKeyDown}
+          >
             {tabs.map((tab) => (
               <button
                 type="button"
                 key={tab.id}
+                id={`${idPrefix}-tab-${tab.id}`}
+                role="tab"
+                aria-selected={tab.id === tabId}
+                aria-controls={`${idPrefix}-panel-${tab.id}`}
                 data-tab={tab.id}
                 className={`
                   relative overflow-hidden truncate p-4 select-none
@@ -177,6 +196,9 @@ export function ControlledMUITabList<ID extends string>({
           (tab.id === tabId || tab.forceMount) && (
             <div
               key={tab.id}
+              id={`${idPrefix}-panel-${tab.id}`}
+              role="tabpanel"
+              aria-labelledby={`${idPrefix}-tab-${tab.id}`}
               className="flex-grow overflow-hidden"
               style={{ display: tab.id === tabId ? 'flex' : 'none' }}
               data-state={tab.id === tabId ? 'active' : 'inactive'}

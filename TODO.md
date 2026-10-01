@@ -107,7 +107,7 @@ Bring the inherited configuration over, so that from here on every stage is meas
 ### What the inherited rules found
 
 `deno run -A npm:@biomejs/biome ci .` on the copy, before any reformat: **849 errors and 24 warnings**
-across 277 files. Four rules did not fit this library and are turned off or narrowed; everything
+across 277 files. Five rules did not fit this library and are turned off or narrowed; everything
 else is left as an error for stage 3 to fix in the code.
 
 > **`biome.json` must not contain a comment.** Biome 2.5.14 accepts JSON with comments in
@@ -124,6 +124,8 @@ else is left as an error for stage 3 to fix in the code.
 | `noRestrictedImports` | 35 | **Narrowed to `../**` inside `src/`.** Every hit is a sibling import (`./button`, `./icon`) inside `src/ui/`, which [`AGENTS.md`](./AGENTS.md) permits. Only walking up the tree is forbidden. |
 | `noDefaultExport` | 2 | **Off for `**/*.d.ts`.** `src/tsimport.d.ts` declares `*.glsl?raw` and `*.txt?raw`, and an ambient module declaration has no way to say anything else. |
 | `useComponentExportOnlyModules` | 43 | **Off for the whole repository.** The rule protects Fast Refresh: a module that exports a component alongside a constant cannot be hot-replaced without losing its state, so it asks for the two to be split. This repository has no `index.html` and no dev entry point — `build.lib` is `src/index.ts` and a consumer imports the built package pre-bundled — so there is no dev server on which Fast Refresh could run against this source. Splitting twenty files would make the source harder to follow for a benefit that cannot be reached. |
+
+| `noAutofocus` | 5 | **Off for `src/**`.** All five are a component forwarding the caller's `autoFocus` prop: `TextInput`, `SearchInput`, `NumberInput`, the CodeMirror editor wrapper and the tree's rename field. The rule catches an author stealing focus on page load, which is the defect it was written for; it cannot tell that a dialog is asking for its first field to take focus when it opens, or that a rename field has to be ready to type into. A component library that refuses to express the decision cannot be used in a dialog at all, so the prop stays and the rule is off for the library source. It is not off for `scripts/`. |
 
 Two rules were expected to need a decision and did not get one, which is the outcome worth recording:
 

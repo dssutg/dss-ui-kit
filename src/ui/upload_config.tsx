@@ -52,7 +52,7 @@ export function UploadConfig({
   const [status, setStatus] = useState<Status>('empty');
   const [file, setFile] = useState<File>();
 
-  const dropAreaRef = useRef<HTMLDivElement>(null);
+  const dropAreaRef = useRef<HTMLButtonElement>(null);
 
   const [hasDragEntered, setHasDragEntered] = useState(false);
 
@@ -156,8 +156,11 @@ export function UploadConfig({
           </div>
         )}
       </div>
-      <div
+      {/* A button, because clicking the area opens the file picker: dropping a file on it is one way
+          in and clicking it is the other, and a keyboard user needs the second. */}
+      <button
         ref={dropAreaRef}
+        type="button"
         className={`
           flex w-60 cursor-pointer flex-col items-center justify-center gap-4 overflow-hidden rounded-lg border-2 border-dashed p-4 hover:brightness-150
           ${hasDragEntered || status === 'complete' ? 'border-tok' : 'border-tpl'}
@@ -241,7 +244,7 @@ export function UploadConfig({
             </div>
           </>
         )}
-      </div>
+      </button>
       {!onlyDrop &&
         (status === 'inProgress' ? (
           <Button

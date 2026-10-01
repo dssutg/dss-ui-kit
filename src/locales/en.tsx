@@ -72,6 +72,7 @@ export const en = {
   'ServerRack.panel.back': 'Back',
   'ServerRack.panel.front': 'Front',
   'SortableTable.emptyList': 'Empty list',
+  'SortableTable.resizeColumn': 'Resize column',
   'TimelineViewerModal.propertySelect.label': 'Column: ',
   'TimelineViewerModal.title': 'Timeline',
   'UploadConfig.cancel': 'Cancel',

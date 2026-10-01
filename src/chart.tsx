@@ -321,10 +321,13 @@ function AxisLabels({
   const columnCount = width === undefined ? 0 : Math.floor(width / gridGap);
   const rowCount = height === undefined ? 0 : Math.floor(height / gridGap);
 
+  // A <fieldset> is what `role="group"` was standing in for, and it carries the group's accessible
+  // name natively. The browser's own fieldset styling is reset here, since this one groups labels
+  // rather than inputs.
   return (
-    <div
+    <fieldset
       aria-label={label}
-      className="pointer-events-none absolute inset-0 overflow-hidden text-tpd text-xs"
+      className="pointer-events-none absolute inset-0 m-0 overflow-hidden border-none p-0 text-tpd text-xs"
     >
       {Array.from({ length: rowCount }, (_, row) => {
         const text = getYLabel(row);
@@ -352,6 +355,6 @@ function AxisLabels({
           </div>
         );
       })}
-    </div>
+    </fieldset>
   );
 }

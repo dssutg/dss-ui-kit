@@ -285,9 +285,32 @@ export function TreeView({
     ],
   );
 
+  // Shared by the double click and the expansion button, so the tree update is written once.
+  const toggleExpansion = useCallback(
+    (item: TreeViewItem) => {
+      setTree(updateTreeToToggleItemExpansion(tree, item.id));
+      onItemExpansionChange?.(item.id, !item.expanded);
+    },
+    [tree, onItemExpansionChange],
+  );
+
+  const handleItemDoubleClick = useCallback(
+    (item: TreeViewItem, event: React.MouseEvent<HTMLDivElement>) => {
+      event.stopPropagation();
+      event.preventDefault();
+
+      toggleExpansion(item);
+    },
+    [toggleExpansion],
+  );
+
   return (
+    // `role="tree"` with a single `tabIndex={0}` is the composite-widget pattern: the tree takes
+    // focus once and the arrow keys move between items inside it, which is what `handleKeyDown`
+    // implements against `selectedItemId`.
     <div
       tabIndex={0}
+      role="tree"
       className={`flex flex-col flex-grow gap-2 overflow-hidden ${className}`}
       style={style}
       onKeyDown={handleKeyDown}
@@ -331,14 +354,30 @@ export function TreeView({
                         ref={(element) => {
                           itemIdToElementMap.current[item.id] = element;
                         }}
+                        role="treeitem"
+                        // Roving tabindex: the selected item is the one in the tab order, so Tab
+                        // enters the tree once and the arrow keys move within it.
+                        tabIndex={selectedItemId === item.id ? 0 : -1}
+                        aria-level={item.level ?? 0}
+                        aria-selected={selectedItemId === item.id}
+                        aria-expanded={item.children !== undefined ? item.expanded : undefined}
                         onClick={() => {
                           onSelectedItemIdChange(item.id);
                         }}
                         onDblClick={(e) => {
-                          e.stopPropagation();
+                          handleItemDoubleClick(item, e);
+                        }}
+                        onKeyDown={(e) => {
+                          // The arrow keys and typeahead belong to the tree as a whole and are handled
+                          // by the root. Activation is per item, so it is handled here and kept from
+                          // bubbling: `handleKeyDown` treats any single character as typeahead.
+                          if (e.key !== 'Enter' && e.key !== ' ') {
+                            return;
+                          }
+
                           e.preventDefault();
-                          setTree(updateTreeToToggleItemExpansion(tree, item.id));
-                          onItemExpansionChange?.(item.id, !item.expanded);
+                          e.stopPropagation();
+                          onSelectedItemIdChange(item.id);
                         }}
                         onDragOver={item.onDragOver}
                         onDrop={item.onDrop}
@@ -768,7 +807,8 @@ export type MenuTreeItemClickCallback = ({
 }: {
   readonly menuItem: TMenuTreeItem;
   readonly subitemsShown: boolean;
-  readonly event: React.MouseEvent<HTMLDivElement>;
+  /** A keyboard event when the item was activated with Enter or Space, a mouse event otherwise. */
+  readonly event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>;
 }) => MenuTreeItemClickHandlerResult;
 
 export type MenuTreeItemContextMenuCallback = ({
@@ -883,7 +923,9 @@ function MenuTreeItem({
     id === currentItemId ||
     (isOnPathToCurrentItem(id, currentItemId) && (!subitemsShown || !expanded || isEmptyList));
 
-  function handleClick(event: React.MouseEvent<HTMLDivElement>) {
+  function handleClick(
+    event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>,
+  ) {
     if (inactive) {
       return;
     }
@@ -968,6 +1010,7 @@ function MenuTreeItem({
   return (
     <>
       <div
+        role="menuitem"
         tabIndex={0}
         className={`
           relative flex select-none items-center overflow-hidden text-left
@@ -982,6 +1025,14 @@ function MenuTreeItem({
         }}
         onClick={handleClick}
         onContextMenu={handleContextMenu}
+        onKeyDown={(event) => {
+          if (event.key !== 'Enter' && event.key !== ' ') {
+            return;
+          }
+
+          event.preventDefault();
+          handleClick(event);
+        }}
       >
         {!inactive && <Ripple color="var(--color-ripple-button)" />}
         <div className="absolute left-0 top-0 h-full">

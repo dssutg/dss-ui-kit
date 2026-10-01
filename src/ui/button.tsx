@@ -54,7 +54,9 @@ export function ButtonGroup<T extends string>({
   readonly buttonStyle?: React.CSSProperties | undefined;
   readonly transparentBG?: boolean | undefined;
 }) {
-  function onKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+  // Handled on each segment rather than on the wrapper: the segments are already focusable, so a
+  // focusable wrapper would only add a tab stop that does nothing on Enter or Space.
+  function onKeyDown(event: React.KeyboardEvent<HTMLButtonElement>) {
     if (event.code !== 'ArrowLeft' && event.code !== 'ArrowRight') {
       return;
     }
@@ -75,12 +77,13 @@ export function ButtonGroup<T extends string>({
   }
 
   return (
-    <div tabIndex={0} className={`flex ${className}`} style={style} onKeyDown={onKeyDown}>
+    <div className={`flex ${className}`} style={style}>
       {items.map((item) => (
         <button
           key={item.id}
           type="button"
           onClick={() => onItemChange(item.id)}
+          onKeyDown={onKeyDown}
           className={`
             justify-content relative flex shrink-0 select-none items-center justify-center overflow-hidden border-2 px-4 py-2 outline-2 outline-white transition-colors duration-200 first:rounded-l-lg last:rounded-r-lg hover:brightness-150
             ${transparentBG ? 'bg-transparent' : 'bg-bpd'}
@@ -126,8 +129,11 @@ export function CopyToClipboardButton({
     showFeedbackTooltip(setFeedbackShown);
   }, [contentToCopy]);
 
+  // Only the positioning wrapper. It carried `role="button"` and `tabIndex={0}`, which put a second
+  // button inside a button in the accessibility tree and a focus stop in the tab order that Enter
+  // and Space did nothing on. The button below is the control.
   return (
-    <div tabIndex={0} role="button" className={`relative ${className}`} style={style}>
+    <div className={`relative ${className}`} style={style}>
       <button
         ref={triggerRef}
         type="button"

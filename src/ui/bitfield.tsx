@@ -146,6 +146,7 @@ export function BitField({
                 lineHeight: `${lineHeight}px`,
               }}
             >
+              {/* biome-ignore lint/a11y/noStaticElementInteractions: hovering a row cross-highlights the bit it names in the diagram above. The row carries the bit's own description as text, so nothing is reachable by hover alone. */}
               <div className="flex gap-2" onMouseEnter={() => setHighlightedBitIndex(bit)}>
                 <div
                   className={`

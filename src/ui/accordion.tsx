@@ -83,9 +83,10 @@ export function Accordion({
         </button>
         {afterTriggerComponent}
       </div>
-      <div
+      {/* A <section> is what `role="region"` was standing in for, and it needs no role of its own.
+          The trigger points at this element through `aria-controls`. */}
+      <section
         id={id}
-        role="region"
         ref={contentRef}
         className="flex flex-col"
         style={{
@@ -94,7 +95,7 @@ export function Accordion({
         }}
       >
         {(forceMount || expanded) && children}
-      </div>
+      </section>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { createPortal, useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal, useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Editor } from '@/lib/editor';
 import { highlightText } from '@/lib/highlight';
 import { ipv4Regex } from '@/lib/ipv4';
@@ -103,6 +103,7 @@ export function UnsignedIntegerInput({
 }
 
 export function TextInput({
+  id,
   type,
   shouldRender = true,
   textColor = 'var(--color-tpl)',
@@ -137,6 +138,7 @@ export function TextInput({
   clearIconInnerStyle,
   inputStyle,
 }: {
+  readonly id?: string | undefined;
   readonly type?: React.HTMLInputTypeAttribute | undefined;
   readonly shouldRender?: boolean | undefined;
   readonly textColor?: string | undefined;
@@ -178,6 +180,7 @@ export function TextInput({
       <div className="box-border flex h-fit" style={{ width, minWidth }}>
         <input
           ref={inputRef}
+          id={id}
           type={type ?? (hiddenText ? 'password' : 'text')}
           placeholder={placeholder}
           value={value}
@@ -473,79 +476,41 @@ export function SearchInput({
 
   const isMobile = useIsMobileScreen();
 
+  // The id both the combobox and its options are named by, so `aria-activedescendant` can point at
+  // one and the browser can resolve it.
+  const listboxId = useId();
+
   const historyItemCount = historyItems.length;
 
   const shouldShowHistoryPopover =
     componentBoundingBox !== null && historyShown && historyItems.length !== 0;
 
   return (
+    // Not focusable. It used to carry `tabIndex={0}` and an `onFocus` that called
+    // `inputRef.current?.focus()`, which put a phantom tab stop in front of the real one. The input
+    // below reports its own focus now, and measures the wrapper for the history popover.
     <div
       ref={outerRef ?? null}
       className="relative bg-bin flex flex-grow items-center rounded-lg px-2 py-1"
       style={style}
-      tabIndex={0}
-      onFocus={(e) => {
-        inputRef.current?.focus();
-
-        setComponentBoundingBox(e.currentTarget.getBoundingClientRect());
-      }}
-      onBlur={() => {
-        setSelectedHistoryItemIndex(null);
-
-        setTimeout(() => {
-          setHistoryShown(false);
-        }, 300);
-
-        // Try to add value to history
-        if (historyId === undefined) {
-          return;
-        }
-
-        const trimmedValue = value.trim().slice(0, MAX_HISTORY_ITEM_LENGTH);
-
-        if (trimmedValue === '') {
-          return;
-        }
-
-        const existingItemIndex = historyItems.findIndex((item) => item.content === trimmedValue);
-
-        function mergeItems() {
-          const existingItem =
-            existingItemIndex === -1 ? undefined : historyItems[existingItemIndex];
-
-          if (existingItem !== undefined) {
-            const newItems = [...historyItems];
-
-            newItems[existingItemIndex] = {
-              ...existingItem,
-              content: existingItem.content,
-              timestamp: Date.now(),
-              usageCount: existingItem.usageCount + 1,
-            };
-
-            return newItems;
-          }
-
-          return [
-            ...historyItems,
-            {
-              content: trimmedValue,
-              timestamp: Date.now(),
-              usageCount: 0,
-            },
-          ];
-        }
-
-        const newItems = sortHistoryItems(mergeItems()).slice(0, MAX_HISTORY_ITEMS);
-
-        setHistoryItems(newItems);
-        saveHistory({ id: historyId, items: newItems });
-      }}
     >
       <Icon name="search" style={{ fill: 'var(--color-tpl)', width: '1rem', height: '1rem' }} />
+      {/* A combobox: the input keeps the focus the whole time and `aria-activedescendant` names the
+          suggestion the arrow keys have reached. That is why the suggestions are not focusable and
+          why Enter is handled up here rather than on each one. */}
       <input
         ref={inputRef}
+        id={listboxId}
         type="text"
+        role="combobox"
+        aria-expanded={shouldShowHistoryPopover}
+        aria-controls={listboxId}
+        aria-autocomplete="list"
+        aria-activedescendant={
+          selectedHistoryItemIndex === null
+            ? undefined
+            : `${listboxId}-option-${selectedHistoryItemIndex}`
+        }
         className="text-tpl placeholder-tpd ml-4 flex-grow bg-transparent outline-none"
         style={inputStyle}
         placeholder={placeholder ?? t('SearchInput.search')}
@@ -555,6 +520,62 @@ export function SearchInput({
         spellcheck={false}
         autoFocus={autoFocus}
         value={value}
+        onFocus={() => {
+          // The popover is positioned against the wrapper, so that is what is measured here.
+          setComponentBoundingBox(outerRef?.current?.getBoundingClientRect() ?? null);
+        }}
+        onBlur={() => {
+          setSelectedHistoryItemIndex(null);
+
+          setTimeout(() => {
+            setHistoryShown(false);
+          }, 300);
+
+          // Try to add value to history
+          if (historyId === undefined) {
+            return;
+          }
+
+          const trimmedValue = value.trim().slice(0, MAX_HISTORY_ITEM_LENGTH);
+
+          if (trimmedValue === '') {
+            return;
+          }
+
+          const existingItemIndex = historyItems.findIndex((item) => item.content === trimmedValue);
+
+          function mergeItems() {
+            const existingItem =
+              existingItemIndex === -1 ? undefined : historyItems[existingItemIndex];
+
+            if (existingItem !== undefined) {
+              const newItems = [...historyItems];
+
+              newItems[existingItemIndex] = {
+                ...existingItem,
+                content: existingItem.content,
+                timestamp: Date.now(),
+                usageCount: existingItem.usageCount + 1,
+              };
+
+              return newItems;
+            }
+
+            return [
+              ...historyItems,
+              {
+                content: trimmedValue,
+                timestamp: Date.now(),
+                usageCount: 0,
+              },
+            ];
+          }
+
+          const newItems = sortHistoryItems(mergeItems()).slice(0, MAX_HISTORY_ITEMS);
+
+          setHistoryItems(newItems);
+          saveHistory({ id: historyId, items: newItems });
+        }}
         onChange={(e) => {
           onChange?.(e);
           onChangeText?.(e.currentTarget.value);
@@ -670,6 +691,8 @@ export function SearchInput({
       {shouldShowHistoryPopover &&
         createPortal(
           <div
+            role="listbox"
+            aria-label={t('SearchInput.search')}
             className="fixed top-0 left-0 flex flex-col gap-2 bg-bpd p-2 rounded-lg overflow-auto shadow-black shadow-lg"
             style={{
               top: componentBoundingBox.bottom,
@@ -681,6 +704,7 @@ export function SearchInput({
             {historyItems.map((item, index) => (
               <HistoryListItem
                 key={item.content}
+                id={`${listboxId}-option-${index}`}
                 item={item}
                 selected={selectedHistoryItemIndex === index}
                 onClick={() => onChangeText?.(item.content)}
@@ -695,17 +719,19 @@ export function SearchInput({
 }
 
 function HistoryListItem({
+  id,
   item,
   selected,
   onSelect,
   onClick,
 }: {
+  readonly id: string;
   readonly item: HistoryItem;
   readonly selected: boolean;
   readonly onSelect: () => void;
-  readonly onClick: React.MouseEventHandler<HTMLDivElement>;
+  readonly onClick: React.MouseEventHandler<HTMLButtonElement>;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLButtonElement>(null);
 
   useGranularEffect(
     () => {
@@ -718,19 +744,28 @@ function HistoryListItem({
     [],
   );
 
+  // A button carrying `role="option"`. It is never in the tab order — the input keeps the focus for
+  // the whole interaction and `aria-activedescendant` names the active suggestion — but a real button
+  // is what makes the click a click and Enter and Space equivalent, rather than a div with a handler
+  // that only the mouse can reach.
   return (
-    <div
+    <button
       ref={ref}
-      tabIndex={0}
+      id={id}
+      type="button"
+      role="option"
+      aria-selected={selected}
+      tabIndex={-1}
       className={`
-        flex shrink-0 p-2 w-full rounded-lg cursor-pointer border-b-2 border-b-bsp last:border-b-0
+        flex w-full cursor-pointer items-center border-none bg-transparent p-2 text-left
+        border-b-2 border-b-bsp last:border-b-0
         ${selected ? 'bg-bse' : ''}
       `}
       onClick={onClick}
       onMouseEnter={onSelect}
     >
-      <div className="truncate">{item.content}</div>
-    </div>
+      <span className="truncate">{item.content}</span>
+    </button>
   );
 }
 

@@ -284,8 +284,13 @@ export function DropDownMenu({
         // these two elements.
         createPortal(
           <div className="fixed top-0 left-0">
-            <div
-              className="fixed top-0 left-0 w-screen h-screen opacity-0"
+            {/* An invisible full-screen button: clicking anywhere outside the menu closes it, and
+                a keyboard user gets the same. `opacity-0` leaves it in the accessibility tree, which
+                is what makes the close reachable at all. */}
+            <button
+              type="button"
+              aria-label={t('Modal.close')}
+              className="fixed top-0 left-0 h-screen w-screen cursor-default border-none bg-transparent p-0 opacity-0"
               onClick={(e) => {
                 e.stopPropagation();
                 onClose();
