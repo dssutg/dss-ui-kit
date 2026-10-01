@@ -1,5 +1,4 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-
 import { useGranularEffect } from '@/lib/use_granular_effect';
 
 type Padding<T> = T | { top?: T; right?: T; bottom?: T; left?: T };

@@ -2,8 +2,8 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { openFileDialog } from '@/lib/file';
 import { clamp } from '@/lib/math';
 import { useLocale } from '@/locale';
-import { Button } from './button';
-import { Icon, type IconName } from './icon';
+import { Button } from '@/ui/Button';
+import { Icon, type IconName } from '@/ui/Icon';
 
 export interface UploadConfigProps {
   /**

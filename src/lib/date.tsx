@@ -343,10 +343,7 @@ type RelativeStep = readonly [(seconds: number) => boolean, phrase: string];
  * hour" and "in N hours" are separate locale methods, and an interval that means "exactly one
  * hour" is not a range.
  */
-function firstMatchingStep(
-  steps: ReadonlyArray<RelativeStep>,
-  seconds: number,
-): string | undefined {
+function firstMatchingStep(steps: readonly RelativeStep[], seconds: number): string | undefined {
   for (const [isInInterval, phrase] of steps) {
     if (isInInterval(seconds)) {
       return phrase;

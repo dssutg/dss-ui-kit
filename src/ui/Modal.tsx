@@ -1,7 +1,7 @@
 import { createPortal, useCallback, useEffect, useState } from 'react';
 import { useGranularEffect } from '@/lib/use_granular_effect';
 import { useLocale } from '@/locale';
-import { IconButton } from './button';
+import { IconButton } from '@/ui/IconButton';
 
 export function Modal({
   open,

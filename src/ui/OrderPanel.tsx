@@ -2,9 +2,10 @@ import { useCallback } from 'react';
 import { moveArrayElementLeftOrRightCircularly } from '@/lib/array';
 import { useDragNDropOrderedList } from '@/lib/use_drag_n_drop_ordered_list';
 import { useLocale } from '@/locale';
-import { Button, IconButton } from './button';
-import type { IconName } from './icon';
-import { useIsMobileScreen } from './use_is_mobile_screen';
+import { Button } from '@/ui/Button';
+import type { IconName } from '@/ui/Icon';
+import { IconButton } from '@/ui/IconButton';
+import { useIsMobileScreen } from '@/ui/use_is_mobile_screen';
 
 export function OrderPanel<T extends number>({
   title = '',
