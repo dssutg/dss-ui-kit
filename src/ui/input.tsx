@@ -510,9 +510,10 @@ export function SearchInput({
         const existingItemIndex = historyItems.findIndex((item) => item.content === trimmedValue);
 
         function mergeItems() {
-          if (existingItemIndex !== -1) {
-            const existingItem = historyItems[existingItemIndex]!;
+          const existingItem =
+            existingItemIndex === -1 ? undefined : historyItems[existingItemIndex];
 
+          if (existingItem !== undefined) {
             const newItems = [...historyItems];
 
             newItems[existingItemIndex] = {

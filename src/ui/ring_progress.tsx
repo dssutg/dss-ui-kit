@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { cssColorTo6DigitHex, parseHexColor } from '@/lib/color';
+import { cssColorTo6DigitHex, getColorFromBreakPoints } from '@/lib/color';
 import { getDpr } from '@/lib/dom';
-import { cmp, degreesToRadians, lerp } from '@/lib/math';
+import { cmp, degreesToRadians } from '@/lib/math';
 import { useWindowSize } from '@/lib/use_window_size';
 
 export function RingProgress({
@@ -72,49 +72,7 @@ export function RingProgress({
       return;
     }
 
-    // Determine current color
-    let color = '';
-    {
-      let minBreakPointIndex = 0;
-      for (let index = sortedColorBreakPoints.length - 1; index >= 0; index--) {
-        const breakPoint = sortedColorBreakPoints[index]!;
-        if (intProgress >= breakPoint[0]) {
-          minBreakPointIndex = index;
-          break;
-        }
-      }
-
-      const bp0 = sortedColorBreakPoints[minBreakPointIndex]!;
-
-      if (interpolation) {
-        const nextBreakPointIndex = Math.min(
-          minBreakPointIndex + 1,
-          sortedColorBreakPoints.length - 1,
-        );
-        const bp1 = sortedColorBreakPoints[nextBreakPointIndex]!;
-
-        const [min0] = bp0;
-        const rgb0 = parseHexColor(bp0[1]);
-        const [min1] = bp1;
-        const rgb1 = parseHexColor(bp1[1]);
-
-        const range = Math.abs(min1 - min0);
-
-        let weight = 0;
-        if (range !== 0) {
-          weight = (intProgress - min0) / range;
-        }
-
-        const r = Math.trunc(Math.min(Math.max(0, lerp(rgb0.r, rgb1.r, weight)), 255));
-        const g = Math.trunc(Math.min(Math.max(0, lerp(rgb0.g, rgb1.g, weight)), 255));
-        const b = Math.trunc(Math.min(Math.max(0, lerp(rgb0.b, rgb1.b, weight)), 255));
-
-        color = `rgb(${r} ${g} ${b})`;
-      } else {
-        const { r, g, b } = parseHexColor(bp0[1]);
-        color = `rgb(${r} ${g} ${b})`;
-      }
-    }
+    const color = getColorFromBreakPoints(sortedColorBreakPoints, intProgress, interpolation);
 
     // Draw the ring progress
     {

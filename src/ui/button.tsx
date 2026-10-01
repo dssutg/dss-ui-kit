@@ -292,13 +292,16 @@ export function ToggleButton<TValue extends string>({
   iconClassName,
 }: ToggleButtonProps<TValue>) {
   const currentIndex = options.findIndex((option) => option.value === value);
+  const current = options[currentIndex];
 
-  if (currentIndex === -1) {
+  // A toggle whose value is not one of its own options has nothing to show and nowhere to switch to,
+  // so this is a mistake in the call rather than a state worth rendering.
+  if (current === undefined) {
     throw new Error(`ToggleButton: "${value}" is not one of its options.`);
   }
 
-  const current = options[currentIndex]!;
-  const next = options[(currentIndex + 1) % options.length]!;
+  // `current` came out of `options`, so the list is not empty and this index is inside it.
+  const next = options[(currentIndex + 1) % options.length] ?? current;
 
   return (
     <IconButton

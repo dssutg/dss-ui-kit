@@ -173,9 +173,12 @@ export function TreeView({
         case 'ArrowUp': {
           e.preventDefault();
 
-          const next = clamp(currentIndex - 1, 0, visibleItemFlatList.length);
+          const nextIndex = clamp(currentIndex - 1, 0, visibleItemFlatList.length - 1);
+          const nextItem = visibleItemFlatList[nextIndex];
 
-          onSelectedItemIdChange(visibleItemFlatList[next]!.id);
+          if (nextItem !== undefined) {
+            onSelectedItemIdChange(nextItem.id);
+          }
 
           break;
         }
@@ -183,9 +186,12 @@ export function TreeView({
         case 'ArrowDown': {
           e.preventDefault();
 
-          const next = clamp(currentIndex + 1, 0, visibleItemFlatList.length);
+          const nextIndex = clamp(currentIndex + 1, 0, visibleItemFlatList.length - 1);
+          const nextItem = visibleItemFlatList[nextIndex];
 
-          onSelectedItemIdChange(visibleItemFlatList[next]!.id);
+          if (nextItem !== undefined) {
+            onSelectedItemIdChange(nextItem.id);
+          }
 
           break;
         }

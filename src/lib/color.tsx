@@ -207,3 +207,71 @@ export function darkenColor(color: string, percent: number) {
 
   return `#${stringR}${stringG}${stringB}`;
 }
+
+/** A position in a scale and the hex colour that applies from it upwards. */
+export type HexColorBreakPoint = readonly [position: number, color: string];
+
+/**
+ * The colour for a value, chosen from breakpoints already ordered by position.
+ *
+ * The value picks the last breakpoint at or below it, and interpolating blends that one towards the
+ * next. The blend weight is deliberately not clamped, so the scale is one continuous ramp: a value
+ * below the first breakpoint is still partway along it rather than held at its endpoint, and only
+ * extrapolating far enough to run a channel out of range settles on the endpoint colour. Above the
+ * last breakpoint there is no next breakpoint to blend towards, so the value holds that colour.
+ *
+ * Returns an empty string when there are no breakpoints at all. A caller asked for a colour it was
+ * never given has nothing to draw, and saying so by producing no colour beats throwing part way
+ * through a paint — this is reached from a canvas draw, where an exception leaves nothing on screen.
+ */
+export function getColorFromBreakPoints(
+  breakPoints: readonly HexColorBreakPoint[],
+  value: number,
+  interpolate: boolean,
+): string {
+  const firstBreakPoint = breakPoints[0];
+
+  if (firstBreakPoint === undefined) {
+    return '';
+  }
+
+  let index = 0;
+
+  for (let i = breakPoints.length - 1; i >= 0; i--) {
+    const breakPoint = breakPoints[i];
+
+    if (breakPoint !== undefined && value >= breakPoint[0]) {
+      index = i;
+      break;
+    }
+  }
+
+  // Both indexes come from the array's own bounds, so these fallbacks cannot be reached for a list
+  // that got past the empty check above. They are spelled out because the compiler cannot see that,
+  // and an assertion would trade a question for a claim.
+  const below = breakPoints[index] ?? firstBreakPoint;
+
+  if (!interpolate) {
+    const { r, g, b } = parseHexColor(below[1]);
+
+    return `rgb(${r} ${g} ${b})`;
+  }
+
+  const nextIndex = Math.min(index + 1, breakPoints.length - 1);
+  const above = breakPoints[nextIndex] ?? below;
+
+  const [belowPosition, belowColor] = below;
+  const [abovePosition, aboveColor] = above;
+
+  const rgbBelow = parseHexColor(belowColor);
+  const rgbAbove = parseHexColor(aboveColor);
+
+  const range = Math.abs(abovePosition - belowPosition);
+  const weight = range === 0 ? 0 : (value - belowPosition) / range;
+
+  // Clamped per channel rather than across the weight, and truncated because a canvas `fillStyle`
+  // ignores the fraction and `rgb(127.5 255 0)` is not a colour a renderer is required to accept.
+  const channel = (from: number, to: number) => Math.trunc(clamp(lerp(from, to, weight), 0, 255));
+
+  return `rgb(${channel(rgbBelow.r, rgbAbove.r)} ${channel(rgbBelow.g, rgbAbove.g)} ${channel(rgbBelow.b, rgbAbove.b)})`;
+}

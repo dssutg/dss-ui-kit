@@ -197,8 +197,13 @@ export function DropDownMenu({
       return undefined;
     }
 
+    // The element is captured in a closure below, which ends the narrowing the check above did.
     function updateRootTriggerBox() {
-      setRootTriggerBox(trigger!.getBoundingClientRect());
+      if (trigger === null) {
+        return;
+      }
+
+      setRootTriggerBox(trigger.getBoundingClientRect());
     }
 
     const resizeObserver = new ResizeObserver(updateRootTriggerBox);
@@ -353,12 +358,11 @@ function getPanelMenuItemsByPath(path: readonly string[], rootPanel: readonly Dr
     const subpath = path.slice(0, partIndex + 1);
 
     const itemIndex = panel.findIndex((item) => compareArrays(item.path, subpath) === 0);
+    const item = itemIndex === -1 ? undefined : panel[itemIndex];
 
-    if (itemIndex === -1) {
+    if (item === undefined) {
       return null;
     }
-
-    const item = panel[itemIndex]!;
 
     // Final item?
     if (partIndex === path.length - 1) {

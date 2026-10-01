@@ -18,6 +18,9 @@ export const defaultPieChartColors: readonly string[] = [
   '#ff00ff',
 ];
 
+/** Used only if a caller supplies a palette that is empty even after the default is applied. */
+const NO_SHARE_COLOR = '#d4d4d4';
+
 export function getShareColor({
   shareIndex,
   totalShares,
@@ -27,15 +30,21 @@ export function getShareColor({
   readonly totalShares: number;
   readonly colors?: readonly string[] | undefined;
 }) {
-  const curColor = colors[shareIndex % colors.length]!;
+  // An empty palette falls back to the default one rather than to nothing: a caller who passes no
+  // colours still expects every wedge of the pie to be painted.
+  const palette = colors.length === 0 ? defaultPieChartColors : colors;
+  const curColor = palette[shareIndex % palette.length] ?? NO_SHARE_COLOR;
 
-  if (shareIndex === totalShares - 1 && curColor === colors[0]) {
+  if (shareIndex === totalShares - 1 && curColor === palette[0]) {
     // Last share has the same color as the first share,
     // so if we can, pick a different color.
-    if (colors[1] === undefined) {
+    const alternative = palette[1];
+
+    if (alternative === undefined) {
       return curColor;
     }
-    return colors[1];
+
+    return alternative;
   }
 
   return curColor;
@@ -129,7 +138,7 @@ export function PieChart({
       ctx.arc(centerX, centerY, shareRadius, startAngle, endAngle);
       ctx.lineTo(centerX, centerY);
       ctx.closePath();
-      ctx.fillStyle = share!.color;
+      ctx.fillStyle = share.color;
       ctx.fill();
 
       startAngle = endAngle;

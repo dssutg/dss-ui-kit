@@ -97,7 +97,11 @@ export function Popover({
       return;
     }
 
-    const box = getTriggerBox()!;
+    const box = getTriggerBox();
+
+    if (box === null) {
+      return;
+    }
 
     if (rootTriggerBox !== null && areDOMRectsEqual(rootTriggerBox, box)) {
       return;

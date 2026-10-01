@@ -103,8 +103,9 @@ export function SortableTable<T, C extends string>({
   const { t } = useLocale();
 
   const [isResizing, setIsResizing] = useState(false);
-  const [currentSortColumnId, setCurrentSortColumnId] = useState(
-    sortColumnId ?? descriptor.headerColumns[0]!.id,
+  const [currentSortColumnId, setCurrentSortColumnId] = useState<string | undefined>(
+    // A table with no columns has nothing to sort by, so the default is the first one if there is one.
+    sortColumnId ?? descriptor.headerColumns[0]?.id,
   );
   const [currentReversedSort, setCurrentReversedSort] = useState(reversedSort);
 
@@ -158,12 +159,24 @@ export function SortableTable<T, C extends string>({
   const columnComparators = descriptor.columnComparators;
 
   const orderedColumnComparators = useMemo(() => {
-    return Object.values({
-      ...(columnComparators[currentSortColumnId] !== undefined && {
-        [currentSortColumnId]: columnComparators[currentSortColumnId],
-      }),
-      ...columnComparators,
-    });
+    // The currently sorted column is hoisted to the front so its comparator wins; the rest keep the
+    // order the descriptor gave them. Excluded by column id rather than by comparator identity,
+    // because two columns are allowed to compare with the same function.
+    //
+    // The element type is named on `entries` because the comparator table is keyed by a generic
+    // column id, and without it `Object.entries` cannot tell what it is iterating.
+    const entries = Object.entries<SortableTableComparatorFunction<T>>(columnComparators);
+    const current =
+      currentSortColumnId === undefined
+        ? undefined
+        : entries.find(([columnId]) => columnId === currentSortColumnId);
+
+    return [
+      ...(current === undefined ? [] : [current[1]]),
+      ...entries
+        .filter(([columnId]) => columnId !== currentSortColumnId)
+        .map(([, comparator]) => comparator),
+    ];
   }, [columnComparators, currentSortColumnId]);
 
   const rows = descriptor.rows;
