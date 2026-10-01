@@ -226,11 +226,20 @@ function hexToRgba(hex: string): RgbaColor {
   }
 
   if (hex.length < 6) {
+    // Shorthand: `#abc` is `#aabbcc`, so each digit is doubled before it is read. A shorter string
+    // than that is not a colour at all, and `charAt` reports the absence as an empty string, which
+    // `parseInt` turns into 0 rather than into a crash.
+    const doubled = (index: number) => {
+      const digit = hex.charAt(index);
+
+      return parseInt(digit + digit, 16);
+    };
+
     return {
-      r: parseInt(hex[0]! + hex[0]!, 16),
-      g: parseInt(hex[1]! + hex[1]!, 16),
-      b: parseInt(hex[2]! + hex[2]!, 16),
-      a: hex.length === 4 ? round(parseInt(hex[3]! + hex[3]!, 16) / 255, 2) : 1,
+      r: doubled(0),
+      g: doubled(1),
+      b: doubled(2),
+      a: hex.length === 4 ? round(doubled(3) / 255, 2) : 1,
     };
   }
 
@@ -242,8 +251,8 @@ function hexToRgba(hex: string): RgbaColor {
   };
 }
 
-function parseHue(value: string, unit = 'deg'): number {
-  return Number(value) * (angleUnits[unit] || 1);
+function parseHue(value: string, unit?: string): number {
+  return Number(value) * (angleUnits[unit ?? 'deg'] || 1);
 }
 
 function hslaStringToHsva(hslString: string): HsvaColor {
@@ -256,7 +265,7 @@ function hslaStringToHsva(hslString: string): HsvaColor {
   }
 
   return hslaToHsva({
-    h: parseHue(match[1]!, match[2]),
+    h: parseHue(match[1] ?? '0', match[2]),
     s: Number(match[3]),
     l: Number(match[4]),
     a: match[5] === undefined ? 1 : Number(match[5]) / (match[6] ? 100 : 1),
@@ -310,12 +319,17 @@ function hsvaToRgba({ h, s, v, a }: HsvaColor): RgbaColor {
   const b = v * (1 - s);
   const c = v * (1 - (h - hh) * s);
   const d = v * (1 - (1 - h + hh) * s);
-  const module = hh % 6;
+  // Six sectors, one per 60 degrees of hue, and each channel takes its value from the sector's own
+  // column. The sector is wrapped into range because a hue of 360 or -30 is the same colour as one
+  // inside the circle, and picking a sector outside the table would have no value to read.
+  const sector = ((hh % 6) + 6) % 6;
+
+  const channel = (values: readonly number[]) => round((values[sector] ?? 0) * 255);
 
   return {
-    r: round([v, c, b, b, d, v][module]! * 255),
-    g: round([d, v, v, c, b, b][module]! * 255),
-    b: round([b, b, d, v, v, c][module]! * 255),
+    r: channel([v, c, b, b, d, v]),
+    g: channel([d, v, v, c, b, b]),
+    b: channel([b, b, d, v, v, c]),
     a: round(a, 2),
   };
 }
@@ -511,20 +525,30 @@ interface Interaction {
   top: number;
 }
 
+/** The position reported for a pointer event that carries no usable coordinates. */
+const NO_INTERACTION: Interaction = { left: 0, top: 0 };
+
 // Check if an event was triggered by touch
 function isTouch(event: MouseEvent | TouchEvent): event is TouchEvent {
   return 'touches' in event;
 }
 
-// Finds a proper touch point by its identifier
-function getTouchPoint(touches: TouchList, touchId: null | number): Touch {
+/**
+ * The touch carrying `touchId`, or the first touch when none does.
+ *
+ * A drag can start on one finger and continue with another still resting on the panel, so the touch
+ * that began it is tracked by identifier rather than assumed to still be the one moving. Returning
+ * `null` when the list is empty lets the caller skip a move rather than read a coordinate from
+ * nothing; every move handler here already has to tolerate a touch ending under it.
+ */
+function getTouchPoint(touches: TouchList, touchId: null | number): Touch | null {
   for (const touch of touches) {
-    if (touch!.identifier === touchId) {
-      return touch!;
+    if (touch.identifier === touchId) {
+      return touch;
     }
   }
 
-  return touches[0]!;
+  return touches.item(0);
 }
 
 // Finds the proper window object to fix iframe embedding issues
@@ -541,7 +565,13 @@ const getRelativePosition = (
   const rect = node.getBoundingClientRect();
 
   // Get user's pointer position from `touches` array if it's a `TouchEvent`
-  const pointer = isTouch(event) ? getTouchPoint(event.touches, touchId) : (event as MouseEvent);
+  const pointer = isTouch(event) ? getTouchPoint(event.touches, touchId) : event;
+
+  // A move with no touch to read is a touch that ended between events. There is no position to
+  // report, and returning the last one would drag the handle to where the finger left off.
+  if (pointer === null) {
+    return NO_INTERACTION;
+  }
 
   const parent = getParentWindow(node);
 
@@ -599,8 +629,10 @@ const InteractiveBase = ({ onMove, onKey, ariaValueNow, ...rest }: InteractiveBa
 
         const changedTouches = e.changedTouches || [];
 
-        if (changedTouches.length) {
-          touchId.current = changedTouches[0]!.identifier;
+        const changedTouch = changedTouches.item(0);
+
+        if (changedTouch !== null) {
+          touchId.current = changedTouch.identifier;
         }
       }
 
@@ -904,7 +936,8 @@ function useEventCallback<T>(handler?: (value: T) => void): (value: T) => void {
 
 function validHex(value: string, alpha?: boolean): boolean {
   const match = /^#?([\da-f]{3,8})$/i.exec(value);
-  const length = match ? match[1]!.length : 0;
+  // No match means no capture, which is the same as a length no format accepts.
+  const length = match?.[1]?.length ?? 0;
 
   return (
     // '#rgb' format

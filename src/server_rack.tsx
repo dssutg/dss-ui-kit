@@ -2226,9 +2226,9 @@ function createSceneRenderContext(scene: Scene, gl: WebGLRenderingContext): Scen
           const x = col * fontSize;
           const y = row * fontSize + (row + 1) * toleranceY;
 
-          ctx!.fillText(c, x, y);
+          ctx.fillText(c, x, y);
 
-          const { width } = ctx!.measureText(c);
+          const { width } = ctx.measureText(c);
 
           charMap[c] = {
             textureCoordX: x,
@@ -2642,7 +2642,11 @@ export function SeverRackEditor({
 
                 for (let row = 0; row < rows; row++) {
                   for (let col = 0; col < columns; col++) {
-                    const cell = tableRows[row]![col]!;
+                    const cell = tableRows[row]?.[col];
+
+                    if (cell === undefined) {
+                      continue;
+                    }
 
                     const device = rackDevicesByPosLabelMap[cell.posLabel]?.[0];
 
@@ -2891,9 +2895,14 @@ function convertCsvRowsToObjectRecords(rows: readonly string[][]) {
   for (const row of bodyRows) {
     const record: Record<string, string> = {};
 
-    for (const [columnIndex, element] of row.entries()) {
-      const property = headerRow[columnIndex]!;
-      const value = element!;
+    for (const [columnIndex, value] of row.entries()) {
+      const property = headerRow[columnIndex];
+
+      // A row longer than its header carries a cell with no property to record it under.
+      if (property === undefined) {
+        continue;
+      }
+
       record[property] = value;
     }
 
@@ -3269,10 +3278,20 @@ function PosLabelTable({
                               const value = e.currentTarget.value.trim().replace(/\s+/g, ' ');
 
                               setRows((rows) => {
-                                const newRows = [...rows];
+                                const cell = rows[rowIndex]?.[columnIndex];
 
-                                newRows[rowIndex] = [...newRows[rowIndex]!];
-                                newRows[rowIndex]![columnIndex]!.posLabel = value;
+                                if (cell === undefined) {
+                                  return rows;
+                                }
+
+                                // The cell is copied as well as the row and the list. Copying only the
+                                // two containers would leave the cell object shared with the state being
+                                // replaced, so editing it would change the previous render's data too.
+                                const newRows = [...rows];
+                                const newRow = [...(rows[rowIndex] ?? [])];
+
+                                newRow[columnIndex] = { ...cell, posLabel: value };
+                                newRows[rowIndex] = newRow;
 
                                 return newRows;
                               });
