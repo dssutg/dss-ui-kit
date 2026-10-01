@@ -219,6 +219,93 @@ export function naturalCmp(a: string, b: string): number {
   return 0;
 }
 
+/**
+ * A 4x4 matrix, column-major, as OpenGL expects it.
+ *
+ * The sixteen elements are named in the type rather than left to an index signature, because
+ * `number[]` says nothing about how many elements there are: `a[3]` on one is possibly absent,
+ * so every one of the four hundred reads in the functions below would need an assertion to silence.
+ * A tuple of sixteen says all sixteen are present, which is what the code already assumed.
+ *
+ * A plain array of sixteen numbers is the type rather than a `Float32Array`, because these
+ * functions do arithmetic and the buffer is only needed where WebGL is handed the result. A
+ * `Float32Array` cannot name its length, so the same problem comes back. Call `toFloat32Array`
+ * at the point of upload.
+ */
+export type Vec3 = readonly [number, number, number];
+
+export type Vec4 = readonly [number, number, number, number];
+
+/** The form of a vector that a matrix-vector product writes its result into. */
+export type MutableVec4 = [number, number, number, number];
+
+export type Vec3Or4 = readonly [number, number, number, number?];
+
+export type Mat4 = [
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+];
+
+/** The buffer form of a matrix, which is what `uniformMatrix4fv` and `vertexAttribPointer` take. */
+export function toFloat32Array(matrix: Mat4): Float32Array {
+  return new Float32Array(matrix);
+}
+
+/**
+ * A matrix written out as sixteen numbers in column-major order.
+ *
+ * The length is checked rather than asserted, so a matrix written with too few or too many
+ * components is a mistake the caller is told about instead of one that reads as `undefined`
+ * somewhere inside a projection.
+ */
+export function mat4From(values: readonly number[]): Mat4 {
+  if (values.length !== 16) {
+    throw new RangeError(`a matrix has 16 components, got ${values.length}`);
+  }
+
+  return [
+    values[0] ?? 0,
+    values[1] ?? 0,
+    values[2] ?? 0,
+    values[3] ?? 0,
+    values[4] ?? 0,
+    values[5] ?? 0,
+    values[6] ?? 0,
+    values[7] ?? 0,
+    values[8] ?? 0,
+    values[9] ?? 0,
+    values[10] ?? 0,
+    values[11] ?? 0,
+    values[12] ?? 0,
+    values[13] ?? 0,
+    values[14] ?? 0,
+    values[15] ?? 0,
+  ];
+}
+
+/** A four-component vector, used for a homogeneous position and for a matrix-vector product. */
+export function vec4From(values: readonly number[]): Vec4 {
+  if (values.length !== 4) {
+    throw new RangeError(`a vector has 4 components, got ${values.length}`);
+  }
+
+  return [values[0] ?? 0, values[1] ?? 0, values[2] ?? 0, values[3] ?? 0];
+}
+
 export interface Range {
   start: number;
   end: number;
@@ -248,19 +335,18 @@ export function mergeRanges<T extends Range>(ranges: readonly T[]): T[] {
 
 export function mergeIntegers(array: readonly number[]): Range[] {
   const sorted = array.toSorted((a, b) => cmp(a, b));
+  const [first, ...rest] = sorted;
 
-  if (sorted.length === 0) {
+  if (first === undefined) {
     return [];
   }
 
   let merged: Range[] = [];
 
-  let start = sorted[0]!;
-  let end = sorted[0]!;
+  let start = first;
+  let end = first;
 
-  for (let i = 1; i < sorted.length; i++) {
-    const element = sorted[i]!;
-
+  for (const element of rest) {
     if (element !== end + 1) {
       merged = [...merged, { start, end }];
       start = element;
@@ -276,8 +362,8 @@ export function mergeIntegers(array: readonly number[]): Range[] {
 
 // IMPORTANT: OpenGL stores matrices and vectors in COLUMN-major order
 // so namely columns are stored contiguously in memory.
-export function glMat4Identity() {
-  return new Float32Array([
+export function glMat4Identity(): Mat4 {
+  return [
     1, 0, 0, 0,
 
     0, 1, 0, 0,
@@ -285,11 +371,11 @@ export function glMat4Identity() {
     0, 0, 1, 0,
 
     0, 0, 0, 1,
-  ]);
+  ];
 }
 
 export function glMat4Perspective(
-  out: Float32Array,
+  out: Mat4,
   fovY: number,
   aspect: number,
   near: number,
@@ -339,7 +425,7 @@ export function glMat4Perspective(
 // @param {number} far Far bound of the frustum
 // @returns {mat4} out
 export function gltMat4Ortho(
-  out: Float32Array,
+  out: Mat4,
   {
     left,
     right,
@@ -383,77 +469,71 @@ export function gltMat4Ortho(
   return out;
 }
 
-export function transpose(out: Float32Array, a: Float32Array) {
+export function transpose(out: Mat4, a: Mat4) {
   // If we are transposing ourselves we can skip a few steps but have to cache some values
   if (out === a) {
-    const a01 = a[1]!;
-    const a02 = a[2]!;
-    const a03 = a[3]!;
-    const a12 = a[6]!;
-    const a13 = a[7]!;
-    const a23 = a[11]!;
+    const a01 = a[1];
+    const a02 = a[2];
+    const a03 = a[3];
+    const a12 = a[6];
+    const a13 = a[7];
+    const a23 = a[11];
 
-    out[1] = a[4]!;
-    out[2] = a[8]!;
-    out[3] = a[12]!;
+    out[1] = a[4];
+    out[2] = a[8];
+    out[3] = a[12];
     out[4] = a01;
-    out[6] = a[9]!;
-    out[7] = a[13]!;
+    out[6] = a[9];
+    out[7] = a[13];
     out[8] = a02;
     out[9] = a12;
-    out[11] = a[14]!;
+    out[11] = a[14];
     out[12] = a03;
     out[13] = a13;
     out[14] = a23;
   } else {
-    out[0] = a[0]!;
-    out[1] = a[4]!;
-    out[2] = a[8]!;
-    out[3] = a[12]!;
-    out[4] = a[1]!;
-    out[5] = a[5]!;
-    out[6] = a[9]!;
-    out[7] = a[13]!;
-    out[8] = a[2]!;
-    out[9] = a[6]!;
-    out[10] = a[10]!;
-    out[11] = a[14]!;
-    out[12] = a[3]!;
-    out[13] = a[7]!;
-    out[14] = a[11]!;
-    out[15] = a[15]!;
+    out[0] = a[0];
+    out[1] = a[4];
+    out[2] = a[8];
+    out[3] = a[12];
+    out[4] = a[1];
+    out[5] = a[5];
+    out[6] = a[9];
+    out[7] = a[13];
+    out[8] = a[2];
+    out[9] = a[6];
+    out[10] = a[10];
+    out[11] = a[14];
+    out[12] = a[3];
+    out[13] = a[7];
+    out[14] = a[11];
+    out[15] = a[15];
   }
 
   return out;
 }
 
-export function glMat4Translate(
-  out: Float32Array,
-  a: Readonly<Float32Array>,
-  v: Readonly<Float32Array>,
-): Float32Array {
-  const x = v[0]!;
-  const y = v[1]!;
-  const z = v[2]!;
+export function glMat4Translate(out: Mat4, a: Mat4, v: Vec3): Mat4 {
+  const [x = 0, y = 0, z = 0] = v;
 
   if (a === out) {
-    out[12] = a[0]! * x + a[4]! * y + a[8]! * z + a[12]!;
-    out[13] = a[1]! * x + a[5]! * y + a[9]! * z + a[13]!;
-    out[14] = a[2]! * x + a[6]! * y + a[10]! * z + a[14]!;
-    out[15] = a[3]! * x + a[7]! * y + a[11]! * z + a[15]!;
+    out[12] = a[0] * x + a[4] * y + a[8] * z + a[12];
+    out[13] = a[1] * x + a[5] * y + a[9] * z + a[13];
+    out[14] = a[2] * x + a[6] * y + a[10] * z + a[14];
+    out[15] = a[3] * x + a[7] * y + a[11] * z + a[15];
   } else {
-    const a00 = a[0]!;
-    const a01 = a[1]!;
-    const a02 = a[2]!;
-    const a03 = a[3]!;
-    const a10 = a[4]!;
-    const a11 = a[5]!;
-    const a12 = a[6]!;
-    const a13 = a[7]!;
-    const a20 = a[8]!;
-    const a21 = a[9]!;
-    const a22 = a[10]!;
-    const a23 = a[11]!;
+    const a00 = a[0];
+    const a01 = a[1];
+    const a02 = a[2];
+    const a03 = a[3];
+    const a10 = a[4];
+    const a11 = a[5];
+    const a12 = a[6];
+    const a13 = a[7];
+    const a20 = a[8];
+    const a21 = a[9];
+    const a22 = a[10];
+    const a23 = a[11];
 
     out[0] = a00;
     out[1] = a01;
@@ -470,24 +550,19 @@ export function glMat4Translate(
     out[10] = a22;
     out[11] = a23;
 
-    out[12] = a00 * x + a10 * y + a20 * z + a[12]!;
-    out[13] = a01 * x + a11 * y + a21 * z + a[13]!;
-    out[14] = a02 * x + a12 * y + a22 * z + a[14]!;
-    out[15] = a03 * x + a13 * y + a23 * z + a[15]!;
+    out[12] = a00 * x + a10 * y + a20 * z + a[12];
+    out[13] = a01 * x + a11 * y + a21 * z + a[13];
+    out[14] = a02 * x + a12 * y + a22 * z + a[14];
+    out[15] = a03 * x + a13 * y + a23 * z + a[15];
   }
 
   return out;
 }
 
-export function glMat4Rotate(
-  out: Float32Array,
-  a: Readonly<Float32Array>,
-  rad: number,
-  axis: Readonly<[number, number, number]>,
-): Float32Array | null {
-  let x = axis[0]!;
-  let y = axis[1]!;
-  let z = axis[2]!;
+export function glMat4Rotate(out: Mat4, a: Mat4, rad: number, axis: Vec3): Mat4 | null {
+  let x = axis[0];
+  let y = axis[1];
+  let z = axis[2];
 
   let length = Math.hypot(x, y, z);
 
@@ -507,20 +582,20 @@ export function glMat4Rotate(
   const c = Math.cos(rad);
   const t = 1 - c;
 
-  const a00 = a[0]!;
-  const a01 = a[1]!;
-  const a02 = a[2]!;
-  const a03 = a[3]!;
+  const a00 = a[0];
+  const a01 = a[1];
+  const a02 = a[2];
+  const a03 = a[3];
 
-  const a10 = a[4]!;
-  const a11 = a[5]!;
-  const a12 = a[6]!;
-  const a13 = a[7]!;
+  const a10 = a[4];
+  const a11 = a[5];
+  const a12 = a[6];
+  const a13 = a[7];
 
-  const a20 = a[8]!;
-  const a21 = a[9]!;
-  const a22 = a[10]!;
-  const a23 = a[11]!;
+  const a20 = a[8];
+  const a21 = a[9];
+  const a22 = a[10];
+  const a23 = a[11];
 
   // Construct the elements of the rotation matrix
   const b00 = x * x * t + c;
@@ -551,92 +626,82 @@ export function glMat4Rotate(
 
   if (a !== out) {
     // If the source and destination differ, copy the unchanged last row
-    out[12] = a[12]!;
-    out[13] = a[13]!;
-    out[14] = a[14]!;
-    out[15] = a[15]!;
+    out[12] = a[12];
+    out[13] = a[13];
+    out[14] = a[14];
+    out[15] = a[15];
   }
 
   return out;
 }
 
-export function glMat4Scale(
-  out: Float32Array,
-  a: Readonly<Float32Array>,
-  v: Readonly<[number, number, number]>,
-) {
-  const x = v[0]!;
-  const y = v[1]!;
-  const z = v[2]!;
+export function glMat4Scale(out: Mat4, a: Mat4, v: Vec3) {
+  const [x = 0, y = 0, z = 0] = v;
 
-  out[0] = a[0]! * x;
-  out[1] = a[1]! * x;
-  out[2] = a[2]! * x;
-  out[3] = a[3]! * x;
+  out[0] = a[0] * x;
+  out[1] = a[1] * x;
+  out[2] = a[2] * x;
+  out[3] = a[3] * x;
 
-  out[4] = a[4]! * y;
-  out[5] = a[5]! * y;
-  out[6] = a[6]! * y;
-  out[7] = a[7]! * y;
+  out[4] = a[4] * y;
+  out[5] = a[5] * y;
+  out[6] = a[6] * y;
+  out[7] = a[7] * y;
 
-  out[8] = a[8]! * z;
-  out[9] = a[9]! * z;
-  out[10] = a[10]! * z;
-  out[11] = a[11]! * z;
+  out[8] = a[8] * z;
+  out[9] = a[9] * z;
+  out[10] = a[10] * z;
+  out[11] = a[11] * z;
 
-  out[12] = a[12]!;
-  out[13] = a[13]!;
-  out[14] = a[14]!;
-  out[15] = a[15]!;
+  out[12] = a[12];
+  out[13] = a[13];
+  out[14] = a[14];
+  out[15] = a[15];
 
   return out;
 }
 
 // Multiply two 4x4 matrices
-export function glMat4Multiply(
-  out: Float32Array,
-  a: Readonly<Float32Array>,
-  b: Readonly<Float32Array>,
-) {
-  const a00 = a[0]!;
-  const a01 = a[1]!;
-  const a02 = a[2]!;
-  const a03 = a[3]!;
+export function glMat4Multiply(out: Mat4, a: Mat4, b: Mat4) {
+  const a00 = a[0];
+  const a01 = a[1];
+  const a02 = a[2];
+  const a03 = a[3];
 
-  const a10 = a[4]!;
-  const a11 = a[5]!;
-  const a12 = a[6]!;
-  const a13 = a[7]!;
+  const a10 = a[4];
+  const a11 = a[5];
+  const a12 = a[6];
+  const a13 = a[7];
 
-  const a20 = a[8]!;
-  const a21 = a[9]!;
-  const a22 = a[10]!;
-  const a23 = a[11]!;
+  const a20 = a[8];
+  const a21 = a[9];
+  const a22 = a[10];
+  const a23 = a[11];
 
-  const a30 = a[12]!;
-  const a31 = a[13]!;
-  const a32 = a[14]!;
-  const a33 = a[15]!;
+  const a30 = a[12];
+  const a31 = a[13];
+  const a32 = a[14];
+  const a33 = a[15];
 
-  const b00 = b[0]!;
-  const b01 = b[1]!;
-  const b02 = b[2]!;
-  const b03 = b[3]!;
+  const b00 = b[0];
+  const b01 = b[1];
+  const b02 = b[2];
+  const b03 = b[3];
 
-  const b10 = b[4]!;
-  const b11 = b[5]!;
-  const b12 = b[6]!;
-  const b13 = b[7]!;
+  const b10 = b[4];
+  const b11 = b[5];
+  const b12 = b[6];
+  const b13 = b[7];
 
-  const b20 = b[8]!;
-  const b21 = b[9]!;
-  const b22 = b[10]!;
-  const b23 = b[11]!;
+  const b20 = b[8];
+  const b21 = b[9];
+  const b22 = b[10];
+  const b23 = b[11];
 
-  const b30 = b[12]!;
-  const b31 = b[13]!;
-  const b32 = b[14]!;
-  const b33 = b[15]!;
+  const b30 = b[12];
+  const b31 = b[13];
+  const b32 = b[14];
+  const b33 = b[15];
 
   out[0] = b00 * a00 + b01 * a10 + b02 * a20 + b03 * a30;
   out[1] = b00 * a01 + b01 * a11 + b02 * a21 + b03 * a31;
@@ -662,35 +727,31 @@ export function glMat4Multiply(
 }
 
 // Multiply 4x4 matrix by 4x1 column-vector
-export function glMat4MultiplyMatrixAndVector(
-  out: Float32Array,
-  a: Readonly<Float32Array>,
-  vec: Readonly<Float32Array>,
-) {
-  const a00 = a[0]!;
-  const a01 = a[1]!;
-  const a02 = a[2]!;
-  const a03 = a[3]!;
+export function glMat4MultiplyMatrixAndVector(out: MutableVec4, a: Mat4, vec: Vec4): MutableVec4 {
+  const a00 = a[0];
+  const a01 = a[1];
+  const a02 = a[2];
+  const a03 = a[3];
 
-  const a10 = a[4]!;
-  const a11 = a[5]!;
-  const a12 = a[6]!;
-  const a13 = a[7]!;
+  const a10 = a[4];
+  const a11 = a[5];
+  const a12 = a[6];
+  const a13 = a[7];
 
-  const a20 = a[8]!;
-  const a21 = a[9]!;
-  const a22 = a[10]!;
-  const a23 = a[11]!;
+  const a20 = a[8];
+  const a21 = a[9];
+  const a22 = a[10];
+  const a23 = a[11];
 
-  const a30 = a[12]!;
-  const a31 = a[13]!;
-  const a32 = a[14]!;
-  const a33 = a[15]!;
+  const a30 = a[12];
+  const a31 = a[13];
+  const a32 = a[14];
+  const a33 = a[15];
 
-  const b0 = vec[0]!;
-  const b1 = vec[1]!;
-  const b2 = vec[2]!;
-  const b3 = vec[3]!;
+  const b0 = vec[0];
+  const b1 = vec[1];
+  const b2 = vec[2];
+  const b3 = vec[3];
 
   out[0] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
   out[1] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
@@ -701,23 +762,23 @@ export function glMat4MultiplyMatrixAndVector(
 }
 
 // Invert 4x4 matrix
-export function glMat4Invert(out: Float32Array, a: Readonly<Float32Array>) {
-  const a00 = a[0]!;
-  const a01 = a[1]!;
-  const a02 = a[2]!;
-  const a03 = a[3]!;
-  const a10 = a[4]!;
-  const a11 = a[5]!;
-  const a12 = a[6]!;
-  const a13 = a[7]!;
-  const a20 = a[8]!;
-  const a21 = a[9]!;
-  const a22 = a[10]!;
-  const a23 = a[11]!;
-  const a30 = a[12]!;
-  const a31 = a[13]!;
-  const a32 = a[14]!;
-  const a33 = a[15]!;
+export function glMat4Invert(out: Mat4, a: Mat4) {
+  const a00 = a[0];
+  const a01 = a[1];
+  const a02 = a[2];
+  const a03 = a[3];
+  const a10 = a[4];
+  const a11 = a[5];
+  const a12 = a[6];
+  const a13 = a[7];
+  const a20 = a[8];
+  const a21 = a[9];
+  const a22 = a[10];
+  const a23 = a[11];
+  const a30 = a[12];
+  const a31 = a[13];
+  const a32 = a[14];
+  const a33 = a[15];
 
   const b00 = a00 * a11 - a01 * a10;
   const b01 = a00 * a12 - a02 * a10;
@@ -774,9 +835,9 @@ export function multiplyMatrices(
   }
 
   const rowsA = a.length;
-  const colsA = a[0]!.length;
+  const colsA = a[0]?.length ?? 0;
   const rowsB = b.length;
-  const colsB = b[0]!.length;
+  const colsB = b[0]?.length ?? 0;
 
   if (colsA !== rowsB) {
     throw new Error(

@@ -27,10 +27,14 @@ import {
   isPointWithinNormalizedDeviceCoordinates,
   lerp,
   lerpRange,
+  type Mat4,
+  mat4From,
   modulo,
   naturalCmp,
   normalizeRadians,
+  type Vec4,
   Vector3D,
+  vec4From,
 } from '@/lib/math';
 import { getListAsCountMap } from '@/lib/record';
 import { useEventListener } from '@/lib/use_event_listener';
@@ -277,19 +281,21 @@ function naiveRaycast<T>({
   return null;
 }
 
-function isPointInsideBox(currentPos: Vector3Array, invertedBoxTransformMatrix: Float32Array) {
-  const homogeneousPos = new Float32Array([currentPos[0], currentPos[1], currentPos[2], 1]);
+function isPointInsideBox(currentPos: Vector3Array, invertedBoxTransformMatrix: Mat4) {
+  const homogeneousPos = vec4From([currentPos[0], currentPos[1], currentPos[2], 1]);
 
   // Cancel box transformation to get normalized coords
   const normalizedBoxCoords = glMat4MultiplyMatrixAndVector(
-    new Float32Array([0, 0, 0, 0]),
+    [0, 0, 0, 0],
     invertedBoxTransformMatrix,
     homogeneousPos,
   );
 
   const insideBox = isPointWithinNormalizedDeviceCoordinates([
-    ...normalizedBoxCoords,
-  ] as Vector3Array);
+    normalizedBoxCoords[0],
+    normalizedBoxCoords[1],
+    normalizedBoxCoords[2],
+  ]);
 
   return insideBox;
 }
@@ -885,7 +891,7 @@ function makeTransformationMatrix(object: Readonly<SceneObject>) {
   // IMPORTANT: OpenGL stores matrices in COLUMN-major order
 
   // Create the scaling matrix
-  const scaleMat = new Float32Array([
+  const scaleMat = mat4From([
     scale[0],
     0,
     0,
@@ -908,96 +914,16 @@ function makeTransformationMatrix(object: Readonly<SceneObject>) {
   ]);
 
   // Create the rotation matrix for Z
-  const zRot = new Float32Array([
-    zRotCos,
-    zRotSin,
-    0,
-    0,
-
-    -zRotSin,
-    zRotCos,
-    0,
-    0,
-
-    0,
-    0,
-    1,
-    0,
-
-    0,
-    0,
-    0,
-    1,
-  ]);
+  const zRot = mat4From([zRotCos, zRotSin, 0, 0, -zRotSin, zRotCos, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
 
   // Create the rotation matrix for Y
-  const yRot = new Float32Array([
-    yRotCos,
-    0,
-    -yRotSin,
-    0,
-
-    0,
-    1,
-    0,
-    0,
-
-    yRotSin,
-    0,
-    yRotCos,
-    0,
-
-    0,
-    0,
-    0,
-    1,
-  ]);
+  const yRot = mat4From([yRotCos, 0, -yRotSin, 0, 0, 1, 0, 0, yRotSin, 0, yRotCos, 0, 0, 0, 0, 1]);
 
   // Create the rotation matrix for X
-  const xRot = new Float32Array([
-    1,
-    0,
-    0,
-    0,
-
-    0,
-    xRotCos,
-    xRotSin,
-    0,
-
-    0,
-    -xRotSin,
-    xRotCos,
-    0,
-
-    0,
-    0,
-    0,
-    1,
-  ]);
+  const xRot = mat4From([1, 0, 0, 0, 0, xRotCos, xRotSin, 0, 0, -xRotSin, xRotCos, 0, 0, 0, 0, 1]);
 
   // Create the translation matrix
-  const translation = new Float32Array([
-    1,
-    0,
-    0,
-    0,
-
-    0,
-    1,
-    0,
-    0,
-
-    0,
-    0,
-    1,
-    0,
-
-    pos[0],
-    pos[1],
-    pos[2],
-    1,
-  ]);
+  const translation = mat4From([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, pos[0], pos[1], pos[2], 1]);
 
   // Combine the matrices: Translation * Rotation * Scaling
   const transform = glMat4Identity();
@@ -1330,7 +1256,7 @@ function generateTransformMatrices({
 
   // Now move the drawing position a bit to where we want to
   // start drawing the square.
-  glMat4Translate(modelViewMatrix, modelViewMatrix, new Float32Array(camera.pos));
+  glMat4Translate(modelViewMatrix, modelViewMatrix, camera.pos);
 
   glMat4Rotate(modelViewMatrix, modelViewMatrix, camera.rotation[2], [0, 0, 1]);
   glMat4Rotate(modelViewMatrix, modelViewMatrix, camera.rotation[1], [0, 1, 0]);
@@ -1555,7 +1481,7 @@ export function ServerRackView({
         const ndcY = lerpRange(0, viewportHeight, 1, -1, mouseY);
 
         // Convert Normalized Device Coords To Clip Coords
-        const clipCoords = [ndcX, ndcY, -1, 1];
+        const clipCoords: Vec4 = [ndcX, ndcY, -1, 1];
 
         const aspect = viewportWidth / viewportHeight;
 
@@ -1569,20 +1495,20 @@ export function ServerRackView({
 
         // Convert Clip Coordinates to Eye Coordinates
         const eyeCoords = glMat4MultiplyMatrixAndVector(
-          new Float32Array([0, 0, 0, 0]),
+          [0, 0, 0, 0],
           invertedProjectionMatrix,
-          new Float32Array(clipCoords),
+          clipCoords,
         );
         eyeCoords[2] = -1;
         eyeCoords[3] = 0;
 
-        const rayDirection = new Vector3D(eyeCoords[0]!, eyeCoords[1]!, -1).normalize();
+        const rayDirection = new Vector3D(eyeCoords[0], eyeCoords[1], -1).normalize();
 
         const flatObjects = flattenSceneObjects(scene.objects);
 
         interface CheckedBox {
           box: BoxSceneObject;
-          invertedBoxTransformMatrix: Float32Array<ArrayBufferLike> | null;
+          invertedBoxTransformMatrix: Mat4 | null;
         }
 
         const checkedBoxes: CheckedBox[] = [];
