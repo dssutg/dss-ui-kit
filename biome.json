@@ -73,12 +73,6 @@
         "noInferrableTypes": "error",
         "useConsistentArrayType": "error",
         "useExportType": "error",
-        // Off for the whole repository, and the reason is that the rule protects Fast Refresh:
-        // a module that exports a component alongside a constant cannot be hot-replaced without
-        // losing its state. This repository has no `index.html` and no dev entry point — it builds
-        // as a library and is consumed pre-bundled — so there is no dev server on which Fast
-        // Refresh could ever run. Splitting twenty files to satisfy it would make the source
-        // worse for a benefit that cannot be reached. Recorded in TODO.md.
         "useComponentExportOnlyModules": "off",
         "noNestedTernary": "error",
         "useCollapsedIf": "error",

@@ -110,6 +110,14 @@ Bring the inherited configuration over, so that from here on every stage is meas
 across 277 files. Four rules did not fit this library and are turned off or narrowed; everything
 else is left as an error for stage 3 to fix in the code.
 
+> **`biome.json` must not contain a comment.** Biome 2.5.14 accepts JSON with comments in
+> `biome.json` and then silently discards the whole `overrides` array, so every rule listed in the
+> table below stops being turned off and the reason given for it quietly stops being true. It fails
+> without a warning, which is why it is worth knowing: a `//` written next to a setting to explain
+> it turns the three overrides beneath it into no-ops. The reasons therefore live here and in
+> [`AGENTS.md`](./AGENTS.md), not in the config. `scripts/lint-overrides.test.ts` fails on a comment
+> in `biome.json` so this cannot come back unnoticed.
+
 | Rule | Hits | Decision |
 | ---- | ---: | -------- |
 | `noSvgWithoutTitle` | 142 | **Off for `src/ui/icons/**`.** Those files are generated path data, not images: `ui/icons/index.tsx` reads the `d` attribute out of each and the `Icon` component builds the `<svg>` itself, with `aria-hidden` set and the accessible name coming from the control around it. A `<title>` in these files would never reach the accessibility tree. |
