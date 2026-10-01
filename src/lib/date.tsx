@@ -294,7 +294,7 @@ export function formatRelativeDate(
   const isExactlyOneHour = (seconds: number) => wholeHours(seconds) === 1;
 
   function formatFutureDate(locale: DateLocale, delta: number) {
-    const steps: ReadonlyArray<RelativeStep> = [
+    const steps: readonly RelativeStep[] = [
       [within(30), locale.justThen],
       [within(minute), locale.inSeconds(secondsOf(delta))],
       [within(2 * minute), locale.inOneMinute],
@@ -308,7 +308,7 @@ export function formatRelativeDate(
   }
 
   function formatPastDate(locale: DateLocale, delta: number) {
-    const steps: ReadonlyArray<RelativeStep> = [
+    const steps: readonly RelativeStep[] = [
       [within(30), locale.justThen],
       [within(minute), locale.secondsAgo(secondsOf(delta))],
       [within(2 * minute), locale.oneMinuteAgo],
