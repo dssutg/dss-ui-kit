@@ -168,7 +168,10 @@ export const Editor = forwardRef(
               .slice(-1)[0]
               ?.match(regex);
 
-            if (previous?.[1] && current?.[1]?.startsWith(previous![1]!)) {
+            const previousWord = previous?.[1];
+            const currentWord = current?.[1];
+
+            if (previousWord !== undefined && currentWord?.startsWith(previousWord)) {
               // The last word of the previous line and current line match
               // Overwrite previous entry so that undo will remove whole word
               historyRef.current.stack[historyRef.current.offset] = {
@@ -319,7 +322,7 @@ export const Editor = forwardRef(
             // Move the start cursor by number of characters added in first line of selection
             // Don't move it if it there was no text before cursor
             selectionStart:
-              startLineText && /\S/.test(startLineText!)
+              startLineText !== undefined && /\S/.test(startLineText)
                 ? selectionStart + tabCharacter.length
                 : selectionStart,
             // Move the end cursor by total number of characters added
@@ -364,13 +367,13 @@ export const Editor = forwardRef(
         if (selectionStart === selectionEnd) {
           // Get the current line
           const [line] = getLines(value, selectionStart).slice(-1);
-          const matches = line?.match(/^\s+/);
+          const indentation = line?.match(/^\s+/)?.[0] ?? '';
 
-          if (matches?.[0] !== undefined && matches?.[0] !== null && matches?.[0] !== '') {
+          if (indentation !== '') {
             event.preventDefault();
 
             // Preserve indentation on inserting a new line
-            const indent = `\n${matches![0]!}`;
+            const indent = `\n${indentation}`;
             const updatedSelection = selectionStart + indent.length;
 
             applyEdits({

@@ -62,11 +62,6 @@ interface State {
 
 const windowObject = window;
 
-// biome-ignore lint: lint/suspicious/noExplicitAny
-let cancelFrame: (([animationFrameID, timeoutID]: [any, any]) => void) | null = null;
-// biome-ignore lint: lint/suspicious/noExplicitAny
-let requestFrame: ((arg0: () => void) => any) | null = null;
-
 const TIMEOUT_DURATION = 20;
 
 const clearTimeoutFn = windowObject.clearTimeout;
@@ -76,34 +71,61 @@ const cancelAnimationFrameFn = windowObject.cancelAnimationFrame;
 
 const requestAnimationFrameFn = windowObject.requestAnimationFrame;
 
-if (cancelAnimationFrameFn == null || requestAnimationFrameFn == null) {
-  // For environments that don't support animation frame,
-  // fallback to a setTimeout based approach.
-  //@ts-expect-error
-  cancelFrame = clearTimeoutFn;
-  requestFrame = (callback) => setTimeoutFn(callback, TIMEOUT_DURATION);
-} else {
-  // Counter intuitively, environments that support animation frames can be trickier.
-  // Chrome's "Throttle non-visible cross-origin iframes" flag can prevent rAFs from being called.
-  // In this case, we should fallback to a setTimeout() implementation.
-  cancelFrame = ([animationFrameID, timeoutID]) => {
-    cancelAnimationFrameFn(animationFrameID);
-    clearTimeoutFn(timeoutID);
-  };
-  requestFrame = (callback) => {
-    const animationFrameID = requestAnimationFrameFn(() => {
-      clearTimeoutFn(timeoutID);
-      callback();
-    });
+/** A scheduled frame: the animation frame id, and the timeout that guards it. */
+type FrameHandle = readonly [animationFrameID: number, timeoutID: number];
 
-    const timeoutID = setTimeoutFn(() => {
+interface FrameScheduler {
+  /** Schedules `callback` for the next frame, returning a handle `cancelFrame` understands. */
+  requestFrame: (callback: () => void) => FrameHandle;
+  /** Cancels a scheduled frame, whether it is still waiting for its frame or for its timeout. */
+  cancelFrame: (handle: FrameHandle) => void;
+}
+
+/**
+ * Builds the frame scheduler.
+ *
+ * Two environments have to be handled and they fail in opposite ways. One has no animation frames at
+ * all, so a timeout is the only thing left. The other *does* have them and is the harder case: under
+ * Chrome's "Throttle non-visible cross-origin iframes" flag an animation frame can simply never be
+ * called, so the callback is scheduled both ways and whichever arrives first wins. That is why a
+ * handle carries two ids and why cancelling has to undo both.
+ */
+function createFrameScheduler(): FrameScheduler {
+  if (cancelAnimationFrameFn == null || requestAnimationFrameFn == null) {
+    return {
+      cancelFrame: ([, timeoutID]) => {
+        clearTimeoutFn(timeoutID);
+      },
+      requestFrame: (callback) => [0, setTimeoutFn(callback, TIMEOUT_DURATION)],
+    };
+  }
+
+  return {
+    cancelFrame: ([animationFrameID, timeoutID]) => {
       cancelAnimationFrameFn(animationFrameID);
-      callback();
-    }, TIMEOUT_DURATION);
+      clearTimeoutFn(timeoutID);
+    },
+    requestFrame: (callback) => {
+      // The frame can be called before `timeoutID` is assigned, so the animation frame callback
+      // closes over the variable rather than the value it will hold.
+      let timeoutID = 0;
 
-    return [animationFrameID, timeoutID];
+      const animationFrameID = requestAnimationFrameFn(() => {
+        clearTimeoutFn(timeoutID);
+        callback();
+      });
+
+      timeoutID = setTimeoutFn(() => {
+        cancelAnimationFrameFn(animationFrameID);
+        callback();
+      }, TIMEOUT_DURATION);
+
+      return [animationFrameID, timeoutID];
+    },
   };
 }
+
+const { requestFrame, cancelFrame } = createFrameScheduler();
 
 function createDetectElementResize(nonce?: string): DetectElementResize {
   let animationKeyframes: string;
@@ -154,10 +176,10 @@ function createDetectElementResize(nonce?: string): DetectElementResize {
       const element = e?.currentTarget;
 
       resetTriggers(element);
-      if (element.__resizeRAF__) {
-        cancelFrame!(element.__resizeRAF__);
+      if (element.__resizeRAF__ !== undefined) {
+        cancelFrame(element.__resizeRAF__);
       }
-      element.__resizeRAF__ = requestFrame!(() => {
+      element.__resizeRAF__ = requestFrame(() => {
         if (checkTriggers(element)) {
           element.__resizeLast__.width = element.offsetWidth;
           element.__resizeLast__.height = element.offsetHeight;
@@ -177,9 +199,16 @@ function createDetectElementResize(nonce?: string): DetectElementResize {
 
     animationStartEvent = 'animationstart';
 
-    const domPrefixes = 'Webkit Moz O ms'.split(' ');
-    const startEvents =
-      'webkitAnimationStart animationstart oAnimationStart MSAnimationStart'.split(' ');
+    // Vendor prefix paired with the animation event that prefix reports. These are held as pairs
+    // rather than as two parallel arrays indexed by position, because a prefix and its event have
+    // to agree and nothing else in this function keeps them in step.
+    const animationStartEventsByPrefix = [
+      { prefix: 'Webkit', event: 'webkitAnimationStart' },
+      { prefix: 'Moz', event: 'animationstart' },
+      { prefix: 'O', event: 'oAnimationStart' },
+      { prefix: 'ms', event: 'MSAnimationStart' },
+    ];
+
     let pfx = '';
     {
       const elm = document.createElement('fakeelement');
@@ -189,12 +218,12 @@ function createDetectElementResize(nonce?: string): DetectElementResize {
       }
 
       if (animation === false) {
-        for (const [i, domPrefix] of domPrefixes.entries()) {
+        for (const { prefix, event } of animationStartEventsByPrefix) {
           // @ts-expect-error
-          if (elm.style[`${domPrefix}AnimationName`] !== undefined) {
-            pfx = domPrefix!;
+          if (elm.style[`${prefix}AnimationName`] !== undefined) {
+            pfx = prefix;
             keyframeprefix = `-${pfx.toLowerCase()}-`;
-            animationStartEvent = startEvents[i]!;
+            animationStartEvent = event;
             animation = true;
             break;
           }

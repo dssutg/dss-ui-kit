@@ -36,7 +36,7 @@ export function parseDSV(input: string, delimiter: string) {
   let column: string | null = null;
 
   while (length < input.length) {
-    const c = input[length]!;
+    const c = input.charAt(length);
 
     if (c === '\\') {
       column = (column ?? '') + (input[length + 1] ?? '');
@@ -75,77 +75,88 @@ export function serializeCSV(rows: readonly (readonly string[])[]): string {
 // https://stackoverflow.com/questions/1293147/how-to-parse-csv-data
 
 export function parseCSV(csv: string) {
-  const array: string[][] = [];
+  const rows: string[][] = [];
 
-  // Iterate over each character, keep track of current row and column (of the returned array)
   let insideQuotedField = false;
-  let row = 0;
-  let column = 0;
+  let row: string[] = [];
+  let field = '';
   let characterIndex = 0;
 
+  // Whether any character has been read in the current cell and in the current row. A delimiter
+  // read as the very last character leaves a cell that no character was ever read in, and such a
+  // cell is not a field: `a,b,` is three fields but `a,` is two. Tracking it is what keeps that
+  // distinction without indexing a row that may not exist yet.
+  let cellStarted = false;
+  let rowStarted = false;
+
+  /** Commits the field being read to the row being built, and starts the next field. */
+  function endField() {
+    row.push(field);
+    field = '';
+    cellStarted = false;
+  }
+
+  /** Commits the row being built to the result, and starts the next row. */
+  function endRow() {
+    endField();
+    rows.push(row);
+    row = [];
+    rowStarted = false;
+  }
+
   while (characterIndex < csv.length) {
-    const currentCharacter = csv[characterIndex];
-    const nextCharacter = csv[characterIndex + 1];
+    const currentCharacter = csv[characterIndex] ?? '';
+    const nextCharacter = csv[characterIndex + 1] ?? '';
 
-    // Create a new row if necessary
-    array[row] ??= [];
+    cellStarted = true;
+    rowStarted = true;
 
-    // Create a new column (start with empty string) if necessary
-    array[row]![column] ??= '';
-
-    // If the current character is a quotation mark, and we're inside a
-    // quoted field, and the next character is also a quotation mark,
-    // add a quotation mark to the current column and skip the next character
+    // A doubled quotation mark inside a quoted field is one literal quotation mark, and the pair is
+    // consumed together so the second half is not mistaken for the end of the field.
     if (currentCharacter === '"' && insideQuotedField && nextCharacter === '"') {
-      array[row]![column] += currentCharacter;
+      field += currentCharacter;
       characterIndex += 2;
       continue;
     }
 
-    // If it's just one quotation mark, begin/end quoted field
+    // A single quotation mark opens or closes a quoted field. Anything inside one is literal, which
+    // is what lets a field contain the delimiter, a newline, or a quotation mark of its own.
     if (currentCharacter === '"') {
       insideQuotedField = !insideQuotedField;
       characterIndex++;
       continue;
     }
 
-    // If it's a comma and we're not in a quoted field, move on to the next column
     if (currentCharacter === ',' && !insideQuotedField) {
-      column++;
+      endField();
       characterIndex++;
       continue;
     }
 
-    // If it's a newline (CRLF) and we're not in a quoted field, skip the next character
-    // and move on to the next row and move to column 0 of that new row
-    if (currentCharacter === '\r' && nextCharacter === '\n' && !insideQuotedField) {
-      row++;
-      column = 0;
-      characterIndex += 2;
+    // A line ending ends the row. A CRLF pair is one ending, not two, so the LF is consumed with
+    // the CR rather than starting an empty row of its own.
+    if (!insideQuotedField && (currentCharacter === '\r' || currentCharacter === '\n')) {
+      endRow();
+      characterIndex += currentCharacter === '\r' && nextCharacter === '\n' ? 2 : 1;
       continue;
     }
 
-    // If it's a newline (LF or CR) and we're not in a quoted field,
-    // move on to the next row and move to column 0 of that new row
-    if (currentCharacter === '\n' && !insideQuotedField) {
-      row++;
-      column = 0;
-      characterIndex++;
-      continue;
-    }
-    if (currentCharacter === '\r' && !insideQuotedField) {
-      row++;
-      column = 0;
-      characterIndex++;
-      continue;
-    }
-
-    // Otherwise, append the current character to the current column
-    array[row]![column]! += currentCharacter;
+    field += currentCharacter;
     characterIndex++;
   }
 
-  return array;
+  // Input that does not end in a delimiter or a line ending still has a cell and a row to commit.
+  // Input that does end in one does not: the delimiter already committed the field before it, and
+  // the cell it opened holds no character, so committing again would add a field that is not there.
+  if (cellStarted) {
+    endField();
+  }
+
+  if (rowStarted) {
+    rows.push(row);
+  }
+
+  return rows;
 }
 
 export function formatObjectToCommaSeparatedString(fields: Readonly<Record<string, unknown>>) {

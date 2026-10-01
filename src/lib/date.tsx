@@ -92,6 +92,23 @@ export interface DateFormatLocale {
 //   https://man7.org/linux/man-pages/man1/date.1.html
 //
 
+/**
+ * The name of a weekday, or an empty string if `DateNames` does not carry one for that day.
+ *
+ * `Date#getDay` returns 0 to 6 and `DateNames` is documented as starting at Sunday, so a name is
+ * there for every day a `Date` can report. A name array too short to cover a real date is a
+ * malformed locale object, and the question is what a formatter should do about one: throwing turns
+ * a missing translation into an application that cannot render a clock, so the name degrades to
+ * empty instead. The same answer serves for months.
+ */
+function getWeekdayName(names: DateNames, date: Date): string {
+  return names.weekdayNames[date.getDay()] ?? '';
+}
+
+function getMonthName(names: DateNames, date: Date): string {
+  return names.monthNames[date.getMonth()] ?? '';
+}
+
 export function minstrftime(
   format = '',
   date: Date = new Date(),
@@ -204,10 +221,10 @@ export function minstrftime(
       p: () => hours24to12(date.getHours()).ampm.toUpperCase(),
       s: () => Math.floor(date.getTime() / 1000).toString(),
       u: () => date.getTime().toString(),
-      A: () => names.weekdayNames[date.getDay()]!,
-      a: () => names.weekdayNames[date.getDay()]!.slice(0, 3),
-      B: () => names.monthNames[date.getMonth()]!,
-      b: () => names.monthNames[date.getMonth()]!.slice(0, 3),
+      A: () => getWeekdayName(names, date),
+      a: () => getWeekdayName(names, date).slice(0, 3),
+      B: () => getMonthName(names, date),
+      b: () => getMonthName(names, date).slice(0, 3),
       '%': () => '%',
       t: () => '\t',
     };
