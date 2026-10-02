@@ -41,6 +41,24 @@ export default defineConfig({
       fileName: (format) => (format === 'umd' ? 'dss-ui-kit.umd.cjs' : 'dss-ui-kit.js'),
     },
     rollupOptions: {
+      // The globals the UMD build reads off `window` for each external. Rollup guesses at these
+      // from the module id and warns when it does, which would leave a script-tag consumer with a
+      // global named `preact_jsx_runtime` that nothing sets. One Preact on the page is what every
+      // format here expects: Preact's own UMD builds expose `preact`, `preactHooks` and
+      // `preactCompat`.
+      output: {
+        globals: {
+          react: 'preact',
+          'react-dom': 'preactCompat',
+          'react-dom/client': 'preactCompat',
+          'react/jsx-runtime': 'preact',
+          'react/jsx-dev-runtime': 'preact',
+          preact: 'preact',
+          'preact/hooks': 'preactHooks',
+          'preact/compat': 'preactCompat',
+          'preact/jsx-runtime': 'preact',
+        },
+      },
       // The whole `react` family is external for the same reason as `preact`: the library is
       // written against the React API and resolved through `preact/compat` at the consumer's end.
       external: [
