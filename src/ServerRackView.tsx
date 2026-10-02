@@ -9,34 +9,45 @@ import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { AutoSizer } from '@/lib/AutoSizer';
 import { groupArrayByProperty } from '@/lib/array';
-import { parseHexColor } from '@/lib/color';
 import {
   clamp,
   cmp,
   degreesToRadians,
   glMat4Identity,
   glMat4Invert,
-  glMat4Multiply,
   glMat4MultiplyMatrixAndVector,
-  glMat4Perspective,
-  glMat4Rotate,
-  glMat4Scale,
-  glMat4Translate,
-  isPointWithinNormalizedDeviceCoordinates,
   lerp,
   lerpRange,
   type Mat4,
-  mat4From,
   modulo,
   normalizeRadians,
   type Vec4,
   Vector3D,
-  vec4From,
 } from '@/lib/math';
 import { useEventListener } from '@/lib/use_event_listener';
 import { useGranularEffect } from '@/lib/use_granular_effect';
 import { useMouseDrag } from '@/lib/use_mouse_drag';
 import { useLocale } from '@/locale';
+import {
+  convertHexColorToGL,
+  flattenSceneObjects,
+  generateTransformMatrices,
+  getCameraWorldPos,
+  getMaterialByHexColor,
+  isPointInsideBox,
+  makeTransformationMatrix,
+  naiveRaycast,
+  rackColorMap,
+  rackDeepColor,
+} from '@/server_rack_geometry';
+import {
+  createSceneRenderContext,
+  deleteSceneCtx,
+  renderScene,
+  type SceneRenderContext,
+  useGLCtx,
+} from '@/server_rack_render';
+import type { BoxSceneObject, Camera, Scene, SceneObject, Vector3Array } from '@/server_rack_scene';
 import type {
   DeviceTypeLookup,
   Rack,
@@ -45,8 +56,6 @@ import type {
   RackDeviceVariant,
   RackPanelName,
 } from '@/server_rack_types';
-import fragmentShaderSource from '@/shaders/rack_fragment.glsl?raw';
-import vertexShaderSource from '@/shaders/rack_vertex.glsl?raw';
 import { ButtonGroup } from '@/ui/ButtonGroup';
 
 function getRackDeviceRenderInfo(
@@ -87,73 +96,6 @@ function isRackDeviceTag(tag: unknown): tag is RackDeviceTag {
 
 const rackBackPadding = 2;
 
-const rackDeepColor = '#656561';
-
-const rackColorMap: Readonly<
-  Record<
-    RackDeviceVariant,
-    {
-      background: string;
-      frontBackground: string;
-      deviceTypeText: string;
-      posLabelColor: string;
-    }
-  >
-> = {
-  lightSaladGreen: {
-    background: '#a2e3a8',
-    frontBackground: '#8ca18e',
-    deviceTypeText: '#000000',
-    posLabelColor: '#ffffff',
-  },
-  lightGreen: {
-    background: '#bed800',
-    frontBackground: '#dcf66e',
-    deviceTypeText: '#000000',
-    posLabelColor: '#ffffff',
-  },
-  lightGray: {
-    background: '#939598',
-    frontBackground: '#c7c8ca',
-    deviceTypeText: '#000000',
-    posLabelColor: '#ffffff',
-  },
-  lightBlue: {
-    background: '#7aa8e2',
-    frontBackground: '#b8d2f0',
-    deviceTypeText: '#000000',
-    posLabelColor: '#ffffff',
-  },
-  darkBlue: {
-    background: '#4e6c91',
-    frontBackground: '#b8d2f0',
-    deviceTypeText: '#000000',
-    posLabelColor: '#ffffff',
-  },
-  lightYellow: {
-    background: '#fed459',
-    frontBackground: '#fdf0b5',
-    deviceTypeText: '#000000',
-    posLabelColor: '#ffffff',
-  },
-  darkMagenta: {
-    background: '#9b5392',
-    frontBackground: '#aa5da0',
-    deviceTypeText: '#000000',
-    posLabelColor: '#ffffff',
-  },
-  lightRed: {
-    background: '#ba1032',
-    frontBackground: '#ce1439',
-    deviceTypeText: '#ffffff',
-    posLabelColor: '#ffffff',
-  },
-};
-
-type Vector2Array = [number, number];
-type Vector3Array = [number, number, number];
-type Vector4Array = [number, number, number, number];
-
 function getRackTextScale(
   text: string,
   {
@@ -171,59 +113,100 @@ function getRackTextScale(
   return lerp(maxScale, minScale, progress);
 }
 
-function naiveRaycast<T>({
-  rayStartPos,
-  maxRayLength,
-  rayLengthDelta,
-  rayDirection,
-  camera,
-  stepAction,
+/**
+ * How far a door panel is swung open: an angled leaf where the panel exists, a flat one against the
+ * cabinet side where it does not.
+ */
+function getRackDoorPanelAngle({
+  sideExists,
+  flip,
 }: {
-  readonly rayStartPos: Vector3Array;
-  readonly maxRayLength: number;
-  readonly rayLengthDelta: number;
-  readonly rayDirection: Vector3D;
-  readonly camera: Camera;
-  readonly stepAction: (currentPos: Vector3Array) => T;
+  readonly sideExists: boolean;
+  readonly flip: boolean;
 }) {
-  const direction = rayDirection.normalize();
-
-  for (let length = 0; length < maxRayLength; length += rayLengthDelta) {
-    const currentPos = Vector3D.fromArray([
-      rayStartPos[0] + direction.x * length,
-      rayStartPos[1] + direction.y * length,
-      rayStartPos[2] + direction.z * length,
-    ])
-      .rotate(-camera.rotation[1], 'y')
-      .toArray();
-
-    const foundObject = stepAction(currentPos);
-
-    if (foundObject !== null) {
-      return foundObject;
-    }
+  if (sideExists) {
+    return flip ? Math.PI / 4 : -Math.PI / 4;
   }
 
-  return null;
+  return flip ? -Math.PI / 2 : Math.PI / 2;
 }
 
-function isPointInsideBox(currentPos: Vector3Array, invertedBoxTransformMatrix: Mat4) {
-  const homogeneousPos = vec4From([currentPos[0], currentPos[1], currentPos[2], 1]);
+/** The leaf hinge next to a door panel that exists: one box, drawn only when there is a panel. */
+function buildRackDoorPanelSide({
+  doorPanelDepth,
+}: {
+  readonly doorPanelDepth: number;
+}): SceneObject[] {
+  return [
+    {
+      type: 'box',
+      pos: [0, 0, doorPanelDepth],
+      scale: [0.125, 0.25, 0.125 / 2],
+      material: getMaterialByHexColor('#111111'),
+    },
+  ];
+}
 
-  // Cancel box transformation to get normalized coords
-  const normalizedBoxCoords = glMat4MultiplyMatrixAndVector(
-    [0, 0, 0, 0],
-    invertedBoxTransformMatrix,
-    homogeneousPos,
-  );
+function buildRackDoorPanel({
+  index,
+  hasFront,
+  hasBack,
+  width,
+  outerSideWidth,
+  outerSideHeight,
+  shelfHeight,
+  bothSideShelfDepth,
+  doorPanelWidth,
+  doorPanelHeight,
+  doorPanelDepth,
+}: {
+  readonly index: number;
+  readonly hasFront: boolean;
+  readonly hasBack: boolean;
+  readonly width: number;
+  readonly outerSideWidth: number;
+  readonly outerSideHeight: number;
+  readonly shelfHeight: number;
+  readonly bothSideShelfDepth: number;
+  readonly doorPanelWidth: number;
+  readonly doorPanelHeight: number;
+  readonly doorPanelDepth: number;
+}): SceneObject {
+  const front = index < 2;
+  const flip = index % 2 === 1;
 
-  const insideBox = isPointWithinNormalizedDeviceCoordinates([
-    normalizedBoxCoords[0],
-    normalizedBoxCoords[1],
-    normalizedBoxCoords[2],
-  ]);
+  const sideExists = (front && hasFront) || (!front && hasBack);
 
-  return insideBox;
+  const angle = getRackDoorPanelAngle({ sideExists, flip });
+
+  let rotY = angle;
+  if (!front) {
+    rotY = Math.PI - angle;
+  }
+
+  const sides: SceneObject[] = sideExists ? buildRackDoorPanelSide({ doorPanelDepth }) : [];
+
+  const group: SceneObject = {
+    type: 'group',
+
+    pos: [
+      -(width + outerSideWidth / 2 + rackBackPadding / 2) * (flip ? -1 : 1),
+      -outerSideHeight / 2 + shelfHeight / 2,
+      (bothSideShelfDepth / 2) * (front ? 1 : -1),
+    ],
+    rotation: [0, rotY, 0],
+    children: [
+      {
+        type: 'box',
+        pos: [0, 0, doorPanelDepth / 2],
+        scale: [doorPanelWidth / 2, doorPanelHeight / 2, doorPanelDepth / 2],
+        material: getMaterialByHexColor(rackDeepColor),
+      },
+      ...sides,
+    ],
+  };
+
+  return group;
 }
 
 function buildServerRackModel({
@@ -356,64 +339,21 @@ function buildServerRackModel({
         material: getMaterialByHexColor(rackDeepColor),
       },
       // Left Front Door Panel
-      ...Array.from({ length: 4 }).map((_, index) => {
-        const front = index < 2;
-        const flip = index % 2 === 1;
-
-        const sideExists = (front && hasFront) || (!front && hasBack);
-
-        let angle = 0;
-        if (sideExists) {
-          if (flip) {
-            angle = Math.PI / 4;
-          } else {
-            angle = -Math.PI / 4;
-          }
-        } else if (flip) {
-          angle = -Math.PI / 2;
-        } else {
-          angle = Math.PI / 2;
-        }
-
-        let rotY = angle;
-        if (!front) {
-          rotY = Math.PI - angle;
-        }
-
-        let sides: SceneObject[] = [];
-        if (sideExists) {
-          sides = [
-            {
-              type: 'box',
-              pos: [0, 0, doorPanelDepth],
-              scale: [0.125, 0.25, 0.125 / 2],
-              material: getMaterialByHexColor('#111111'),
-            },
-          ];
-        }
-
-        const group: SceneObject = {
-          type: 'group',
-
-          pos: [
-            -(width + outerSideWidth / 2 + rackBackPadding / 2) * (flip ? -1 : 1),
-            -outerSideHeight / 2 + shelfHeight / 2,
-            (bothSideShelfDepth / 2) * (front ? 1 : -1),
-          ],
-          rotation: [0, rotY, 0],
-          children: [
-            {
-              type: 'box',
-              pos: [0, 0, doorPanelDepth / 2],
-              scale: [doorPanelWidth / 2, doorPanelHeight / 2, doorPanelDepth / 2],
-              material: getMaterialByHexColor(rackDeepColor),
-            },
-            ...sides,
-          ],
-        };
-
-        return group;
-      }),
+      ...Array.from({ length: 4 }).map((_, index) =>
+        buildRackDoorPanel({
+          index,
+          hasFront,
+          hasBack,
+          width,
+          outerSideWidth,
+          outerSideHeight,
+          shelfHeight,
+          bothSideShelfDepth,
+          doorPanelWidth,
+          doorPanelHeight,
+          doorPanelDepth,
+        }),
+      ),
       ...Array.from({ length: rowCount }).map(
         (_, rowIndex): SceneObject => ({
           type: 'group',
@@ -648,549 +588,42 @@ function getRackShelfPosByRowIndex(rowIndex: number) {
   return -rowIndex * rowHeight;
 }
 
-type BoxFaceName = 'front' | 'back' | 'right' | 'left' | 'top' | 'bottom';
-
-type GLQuadUV = [
-  [number, number], // bottom left vertex
-  [number, number], // bottom right vertex
-  [number, number], // top right vertex
-  [number, number], // top left vertex
-];
-
-interface GLQuad {
-  bottomLeft: Vector3Array;
-  bottomRight: Vector3Array;
-  topRight: Vector3Array;
-  topLeft: Vector3Array;
-
-  modulator?: Vector4Array | undefined;
-
-  bottomLeftColor?: Vector4Array | undefined;
-  bottomRightColor?: Vector4Array | undefined;
-  topRightColor?: Vector4Array | undefined;
-  topLeftColor?: Vector4Array | undefined;
-
-  uv?: GLQuadUV | undefined;
+/** A box the click ray is tested against, together with the transform that undoes its own. */
+interface CheckedBox {
+  box: BoxSceneObject;
+  invertedBoxTransformMatrix: Mat4 | null;
 }
 
-interface ObjectMaterial {
-  type: 'simpleBoxFaceColors';
-  frontFaceColor: Vector4Array;
-  backFaceColor: Vector4Array;
-  topFaceColor: Vector4Array;
-  bottomFaceColor: Vector4Array;
-  rightFaceColor: Vector4Array;
-  leftFaceColor: Vector4Array;
+/** The drawn box the ray passes through at `currentPos`, or `null` where it passes through empty air. */
+function findBoxAtPosition(
+  checkedBoxes: readonly CheckedBox[],
+  currentPos: Vector3Array,
+): BoxSceneObject | null {
+  for (const boxInfo of checkedBoxes) {
+    const { box, invertedBoxTransformMatrix } = boxInfo;
+
+    if (
+      invertedBoxTransformMatrix !== null &&
+      isPointInsideBox(currentPos, invertedBoxTransformMatrix)
+    ) {
+      return box;
+    }
+  }
+
+  return null;
 }
 
-interface QuadSceneObject {
-  type: 'quad';
-  pos?: Vector3Array | undefined;
-  scale?: Vector3Array | undefined;
-  rotation?: Vector3Array | undefined;
-  material: ObjectMaterial;
-}
-
-interface BoxSceneObject {
-  type: 'box';
-  pos?: Vector3Array | undefined;
-  scale?: Vector3Array | undefined;
-  rotation?: Vector3Array | undefined;
-  material: ObjectMaterial;
-  frontUV?: GLQuadUV | undefined;
-  backUV?: GLQuadUV | undefined;
-  topUV?: GLQuadUV | undefined;
-  bottomUV?: GLQuadUV | undefined;
-  rightUV?: GLQuadUV | undefined;
-  leftUV?: GLQuadUV | undefined;
-  tag?: unknown | undefined;
-}
-
-interface TextSceneObject {
-  type: 'text';
-  text: string;
-  pos?: Vector3Array | undefined;
-  scale?: Vector3Array | undefined;
-  rotation?: Vector3Array | undefined;
-  material?: ObjectMaterial | undefined;
-  color?: Vector4Array | undefined;
-}
-
-interface GroupSceneObject {
-  type: 'group';
-  pos?: Vector3Array | undefined;
-  scale?: Vector3Array | undefined;
-  rotation?: Vector3Array | undefined;
-  children: SceneObject[];
-}
-
-type SceneObject = QuadSceneObject | BoxSceneObject | TextSceneObject | GroupSceneObject;
-
-interface Scene {
-  objects: SceneObject[];
-}
-
-interface ProgramInfo {
-  program: WebGLProgram;
-  attribLocations: {
-    vertexPos: number;
-    vertexTextureCoord: number;
-    vertexNormal: number;
-    vertexColor: number;
-    vertexColorModulator: number;
-  };
-  uniformLocations: {
-    projectionMatrix: WebGLUniformLocation | null;
-    modelViewMatrix: WebGLUniformLocation | null;
-    cameraPos: WebGLUniformLocation | null;
-    texture: WebGLUniformLocation | null;
-  };
-}
-
-interface FontCharacterInfo {
-  textureCoordX: number;
-  textureCoordY: number;
-  width: number;
-}
-
-type FontCharacterMap = Record<string, FontCharacterInfo>;
-
-interface FontRenderInfo {
-  characterMap: FontCharacterMap;
-  fontSize: number;
-  toleranceY: number;
-  texture: WebGLTexture;
-}
-
-interface SceneRenderContext {
-  buffers: {
-    pos: WebGLBuffer | null;
-    textureCoord: WebGLBuffer | null;
-    normal: WebGLBuffer | null;
-    color: WebGLBuffer | null;
-    colorModulator: WebGLBuffer | null;
-    indices: WebGLBuffer | null;
-  };
-  vertexCount: number;
-  fontRenderInfo: FontRenderInfo | null;
-}
-
-interface Camera {
-  pos: Vector3Array;
-  scale: Vector3Array;
-  rotation: Vector3Array;
-}
-
-function convertHexColorToGL(hex: string): [number, number, number, number] {
-  const { r, g, b } = parseHexColor(hex);
-  return [r / 255, g / 255, b / 255, 1];
-}
-
-function getMaterialByHexColor(hexColor: string): ObjectMaterial {
-  const glColor = convertHexColorToGL(hexColor);
+/** One drawn step of the ray trail; the first step is drawn in the highlight colour. */
+function buildRayTrailBox(currentPos: Vector3Array, isFirstStep: boolean): SceneObject {
+  const materialColor = isFirstStep ? '#ffff00' : '#0000ff';
 
   return {
-    type: 'simpleBoxFaceColors',
-    frontFaceColor: glColor,
-    backFaceColor: glColor,
-    topFaceColor: glColor,
-    bottomFaceColor: glColor,
-    rightFaceColor: glColor,
-    leftFaceColor: glColor,
+    type: 'box',
+    tag: 'ray',
+    pos: currentPos,
+    scale: [1 / 16, 1 / 16, 1 / 16],
+    material: getMaterialByHexColor(materialColor),
   };
-}
-
-function makeTransformationMatrix(object: Readonly<SceneObject>) {
-  const pos = object.pos ?? [0, 0, 0];
-  const scale = object.scale ?? [1, 1, 1];
-  const rot = object.rotation ?? [0, 0, 0];
-
-  const xRotCos = Math.cos(rot[0]);
-  const xRotSin = Math.sin(rot[0]);
-
-  const yRotCos = Math.cos(rot[1]);
-  const yRotSin = Math.sin(rot[1]);
-
-  const zRotCos = Math.cos(rot[2]);
-  const zRotSin = Math.sin(rot[2]);
-
-  // IMPORTANT: OpenGL stores matrices in COLUMN-major order
-
-  // Create the scaling matrix
-  const scaleMat = mat4From([
-    scale[0],
-    0,
-    0,
-    0,
-
-    0,
-    scale[1],
-    0,
-    0,
-
-    0,
-    0,
-    scale[2],
-    0,
-
-    0,
-    0,
-    0,
-    1,
-  ]);
-
-  // Create the rotation matrix for Z
-  const zRot = mat4From([zRotCos, zRotSin, 0, 0, -zRotSin, zRotCos, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
-
-  // Create the rotation matrix for Y
-  const yRot = mat4From([yRotCos, 0, -yRotSin, 0, 0, 1, 0, 0, yRotSin, 0, yRotCos, 0, 0, 0, 0, 1]);
-
-  // Create the rotation matrix for X
-  const xRot = mat4From([1, 0, 0, 0, 0, xRotCos, xRotSin, 0, 0, -xRotSin, xRotCos, 0, 0, 0, 0, 1]);
-
-  // Create the translation matrix
-  const translation = mat4From([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, pos[0], pos[1], pos[2], 1]);
-
-  // Combine the matrices: Translation * Rotation * Scaling
-  const transform = glMat4Identity();
-
-  glMat4Multiply(transform, transform, translation);
-  glMat4Multiply(transform, transform, zRot);
-  glMat4Multiply(transform, transform, yRot);
-  glMat4Multiply(transform, transform, xRot);
-  glMat4Multiply(transform, transform, scaleMat);
-
-  return transform;
-}
-
-function makeTransformedVertex(
-  normX: number,
-  normY: number,
-  normZ: number,
-  {
-    pos,
-    scale,
-    xRotCos,
-    xRotSin,
-    yRotCos,
-    yRotSin,
-    zRotCos,
-    zRotSin,
-  }: {
-    readonly pos: Vector3Array;
-    readonly scale: Vector3Array;
-    readonly xRotCos: number;
-    readonly xRotSin: number;
-    readonly yRotCos: number;
-    readonly yRotSin: number;
-    readonly zRotCos: number;
-    readonly zRotSin: number;
-  },
-): Vector3Array {
-  // Scale
-  const sx = normX * scale[0];
-  const sy = normY * scale[1];
-  const sz = normZ * scale[2];
-
-  // Rotate by Z
-  const rzx = sx * zRotCos - sy * zRotSin;
-  const rzy = sx * zRotSin + sy * zRotCos;
-  const rzz = sz;
-
-  // Rotate by Y
-  const ryx = rzx * yRotCos + rzz * yRotSin;
-  const ryy = rzy;
-  const ryz = -rzx * yRotSin + rzz * yRotCos;
-
-  // Rotate by X
-  const rxx = ryx;
-  const rxy = ryy * xRotCos - ryz * xRotSin;
-  const rxz = ryy * xRotSin + ryz * xRotCos;
-
-  // Translate
-  const tx = rxx + pos[0];
-  const ty = rxy + pos[1];
-  const tz = rxz + pos[2];
-
-  return [tx, ty, tz];
-}
-
-function flattenSceneObjects(
-  objects: readonly SceneObject[],
-  parentObject?: SceneObject,
-): SceneObject[] {
-  const parentPos: Vector3Array = parentObject?.pos ?? [0, 0, 0];
-  const parentScale: Vector3Array = parentObject?.scale ?? [1, 1, 1];
-  const parentRot: Vector3Array = parentObject?.rotation ?? [0, 0, 0];
-
-  const t = {
-    xRotCos: Math.cos(parentRot[0]),
-    xRotSin: Math.sin(parentRot[0]),
-    yRotCos: Math.cos(parentRot[1]),
-    yRotSin: Math.sin(parentRot[1]),
-    zRotCos: Math.cos(parentRot[2]),
-    zRotSin: Math.sin(parentRot[2]),
-    pos: parentPos,
-    scale: parentScale,
-  };
-
-  function flattenObject(object: SceneObject, parentObject: SceneObject | undefined) {
-    if (!parentObject) {
-      return object;
-    }
-
-    let pos: Vector3Array | null = null;
-    if (object.pos) {
-      pos = makeTransformedVertex(object.pos[0], object.pos[1], object.pos[2], t);
-    } else {
-      pos = makeTransformedVertex(0, 0, 0, t);
-    }
-
-    let scale: Vector3Array = parentScale;
-    if (object.scale) {
-      scale = [
-        object.scale[0] * parentScale[0],
-        object.scale[1] * parentScale[1],
-        object.scale[2] * parentScale[2],
-      ];
-    }
-
-    let rotation: Vector3Array = parentRot;
-    if (object.rotation) {
-      rotation = [
-        object.rotation[0] + parentRot[0],
-        object.rotation[1] + parentRot[1],
-        object.rotation[2] + parentRot[2],
-      ];
-    }
-
-    return { ...object, pos, scale, rotation };
-  }
-
-  return objects.flatMap((object) => {
-    if (object.type === 'group') {
-      return flattenSceneObjects(object.children, flattenObject(object, parentObject));
-    }
-    return [flattenObject(object, parentObject)];
-  });
-}
-
-function getBoxCropUV({
-  cropX = 0,
-  cropY = 0,
-  cropWidth,
-  cropHeight,
-  atlasWidth,
-  atlasHeight,
-  faceName = 'front',
-}: {
-  readonly cropX?: number | undefined;
-  readonly cropY?: number | undefined;
-  readonly cropWidth: number;
-  readonly cropHeight: number;
-  readonly atlasWidth: number;
-  readonly atlasHeight: number;
-  readonly faceName?: BoxFaceName | undefined;
-}): GLQuadUV {
-  const x0 = cropX / atlasWidth;
-  const y0 = cropY / atlasHeight;
-  const x1 = (cropX + cropWidth) / atlasWidth;
-  const y1 = (cropY + cropHeight) / atlasHeight;
-
-  const bottomLeft: Vector2Array = [x0, y1];
-  const bottomRight: Vector2Array = [x1, y1];
-  const topRight: Vector2Array = [x1, y0];
-  const topLeft: Vector2Array = [x0, y0];
-
-  if (faceName === 'top') {
-    return [topLeft, bottomLeft, bottomRight, topRight];
-  }
-
-  if (faceName === 'back' || faceName === 'right') {
-    return [bottomRight, topRight, topLeft, bottomLeft];
-  }
-
-  return [bottomLeft, bottomRight, topRight, topLeft];
-}
-
-function calcNormal(v0: Vector3Array, v1: Vector3Array, v2: Vector3Array) {
-  // Vector A from v0 to v1
-  const ax = v1[0] - v0[0];
-  const ay = v1[1] - v0[1];
-  const az = v1[2] - v0[2];
-
-  // Vector B from v0 to v2
-  const bx = v2[0] - v0[0];
-  const by = v2[1] - v0[1];
-  const bz = v2[2] - v0[2];
-
-  // Normal vector between vectors A and B
-  let nx = ay * bz - az * by;
-  let ny = az * bx - ax * bz;
-  let nz = ax * by - ay * bx;
-
-  // Normalize the normal vector
-  const length = Math.hypot(nx, ny, nz);
-  if (length === 0) {
-    nx = 0;
-    ny = 0;
-    nz = 0;
-  } else {
-    nx /= length;
-    ny /= length;
-    nz /= length;
-  }
-
-  // Return the normal unit vector
-  return [nx, ny, nz];
-}
-
-function convertBoxToQuads(box: BoxSceneObject): GLQuad[] {
-  const [xRot, yRot, zRot] = box.rotation ?? [0, 0, 0];
-
-  const t = {
-    xRotCos: Math.cos(xRot),
-    xRotSin: Math.sin(xRot),
-    yRotCos: Math.cos(yRot),
-    yRotSin: Math.sin(yRot),
-    zRotCos: Math.cos(zRot),
-    zRotSin: Math.sin(zRot),
-    pos: box.pos ?? [0, 0, 0],
-    scale: box.scale ?? [1, 1, 1],
-  };
-
-  return [
-    // Front
-    {
-      bottomLeft: makeTransformedVertex(-1, -1, 1, t),
-      bottomRight: makeTransformedVertex(1, -1, 1, t),
-      topRight: makeTransformedVertex(1, 1, 1, t),
-      topLeft: makeTransformedVertex(-1, 1, 1, t),
-
-      bottomLeftColor: box.material.frontFaceColor,
-      bottomRightColor: box.material.frontFaceColor,
-      topRightColor: box.material.frontFaceColor,
-      topLeftColor: box.material.frontFaceColor,
-
-      ...(box.frontUV !== undefined ? { uv: box.frontUV } : {}),
-    },
-
-    // Back
-    {
-      bottomLeft: makeTransformedVertex(-1, -1, -1, t),
-      bottomRight: makeTransformedVertex(-1, 1, -1, t),
-      topRight: makeTransformedVertex(1, 1, -1, t),
-      topLeft: makeTransformedVertex(1, -1, -1, t),
-
-      bottomLeftColor: box.material.backFaceColor,
-      bottomRightColor: box.material.backFaceColor,
-      topRightColor: box.material.backFaceColor,
-      topLeftColor: box.material.backFaceColor,
-
-      ...(box.backUV !== undefined ? { uv: box.backUV } : {}),
-    },
-
-    // Top
-    {
-      bottomLeft: makeTransformedVertex(-1, 1, -1, t),
-      bottomRight: makeTransformedVertex(-1, 1, 1, t),
-      topRight: makeTransformedVertex(1, 1, 1, t),
-      topLeft: makeTransformedVertex(1, 1, -1, t),
-
-      bottomLeftColor: box.material.topFaceColor,
-      bottomRightColor: box.material.topFaceColor,
-      topRightColor: box.material.topFaceColor,
-      topLeftColor: box.material.topFaceColor,
-
-      ...(box.topUV !== undefined ? { uv: box.topUV } : {}),
-    },
-
-    // Bottom
-    {
-      bottomLeft: makeTransformedVertex(-1, -1, -1, t),
-      bottomRight: makeTransformedVertex(1, -1, -1, t),
-      topRight: makeTransformedVertex(1, -1, 1, t),
-      topLeft: makeTransformedVertex(-1, -1, 1, t),
-
-      bottomLeftColor: box.material.bottomFaceColor,
-      bottomRightColor: box.material.bottomFaceColor,
-      topRightColor: box.material.bottomFaceColor,
-      topLeftColor: box.material.bottomFaceColor,
-
-      ...(box.bottomUV !== undefined ? { uv: box.bottomUV } : {}),
-    },
-
-    // Right
-    {
-      bottomLeft: makeTransformedVertex(1, -1, -1, t),
-      bottomRight: makeTransformedVertex(1, 1, -1, t),
-      topRight: makeTransformedVertex(1, 1, 1, t),
-      topLeft: makeTransformedVertex(1, -1, 1, t),
-
-      bottomLeftColor: box.material.rightFaceColor,
-      bottomRightColor: box.material.rightFaceColor,
-      topRightColor: box.material.rightFaceColor,
-      topLeftColor: box.material.rightFaceColor,
-
-      ...(box.rightUV !== undefined ? { uv: box.rightUV } : {}),
-    },
-
-    // Left
-    {
-      bottomLeft: makeTransformedVertex(-1, -1, -1, t),
-      bottomRight: makeTransformedVertex(-1, -1, 1, t),
-      topRight: makeTransformedVertex(-1, 1, 1, t),
-      topLeft: makeTransformedVertex(-1, 1, -1, t),
-
-      bottomLeftColor: box.material.leftFaceColor,
-      bottomRightColor: box.material.leftFaceColor,
-      topRightColor: box.material.leftFaceColor,
-      topLeftColor: box.material.leftFaceColor,
-
-      ...(box.leftUV !== undefined ? { uv: box.leftUV } : {}),
-    },
-  ];
-}
-
-function getCameraWorldPos(camera: Camera): Vector3Array {
-  return [-camera.pos[0], -camera.pos[1], -camera.pos[2]];
-}
-
-function generateTransformMatrices({
-  camera,
-  aspect,
-}: {
-  readonly camera: Camera;
-  readonly aspect: number;
-}) {
-  // Create a perspective matrix, a special matrix that is
-  // used to simulate the distortion of perspective in a camera.
-  // Our field of view is 45 degrees, with a width/height
-  // ratio that matches the display size of the canvas
-  // and we only want to see objects between 0.1 units
-  // and 100 units away from the camera.
-  const fieldOfView = degreesToRadians(45);
-  const zNear = 0.1;
-  const zFar = 100;
-  const projectionMatrix = glMat4Identity();
-
-  glMat4Perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
-
-  // Set the drawing position to the "identity" point, which is
-  // the center of the scene.
-  const modelViewMatrix = glMat4Identity();
-
-  // Now move the drawing position a bit to where we want to
-  // start drawing the square.
-  glMat4Translate(modelViewMatrix, modelViewMatrix, camera.pos);
-
-  glMat4Rotate(modelViewMatrix, modelViewMatrix, camera.rotation[2], [0, 0, 1]);
-  glMat4Rotate(modelViewMatrix, modelViewMatrix, camera.rotation[1], [0, 1, 0]);
-  glMat4Rotate(modelViewMatrix, modelViewMatrix, camera.rotation[0], [1, 0, 0]);
-
-  glMat4Scale(modelViewMatrix, modelViewMatrix, camera.scale);
-
-  return { modelViewMatrix, projectionMatrix };
 }
 
 export interface ServerRackViewProps {
@@ -1432,11 +865,6 @@ export function ServerRackView({
 
         const flatObjects = flattenSceneObjects(scene.objects);
 
-        interface CheckedBox {
-          box: BoxSceneObject;
-          invertedBoxTransformMatrix: Mat4 | null;
-        }
-
         const checkedBoxes: CheckedBox[] = [];
         for (const object of flatObjects) {
           if (object.type !== 'box' || object.tag === 'ray') {
@@ -1465,33 +893,10 @@ export function ServerRackView({
           camera,
           stepAction(currentPos) {
             if (showRayTrail) {
-              let materialColor = '#0000ff';
-              if (rayTrail.length === 0) {
-                materialColor = '#ffff00';
-              }
-              const rayBox: SceneObject = {
-                type: 'box',
-                tag: 'ray',
-                pos: currentPos,
-                scale: [1 / 16, 1 / 16, 1 / 16],
-                material: getMaterialByHexColor(materialColor),
-              };
-
-              rayTrail = [...rayTrail, rayBox];
+              rayTrail = [...rayTrail, buildRayTrailBox(currentPos, rayTrail.length === 0)];
             }
 
-            for (const boxInfo of checkedBoxes) {
-              const { box, invertedBoxTransformMatrix } = boxInfo;
-
-              if (
-                invertedBoxTransformMatrix !== null &&
-                isPointInsideBox(currentPos, invertedBoxTransformMatrix)
-              ) {
-                return box;
-              }
-            }
-
-            return null;
+            return findBoxAtPosition(checkedBoxes, currentPos);
           },
         });
 
@@ -1640,732 +1045,4 @@ function Canvas({
   );
 
   return <canvas ref={canvasRef} width={width} height={height} className="h-full w-full" />;
-}
-
-function useGLCtx(canvas: HTMLCanvasElement | null) {
-  const [context, setContext] = useState<{
-    gl: WebGLRenderingContext;
-    programInfo: ProgramInfo;
-  } | null>(null);
-
-  useEffect(() => {
-    if (!canvas) {
-      return undefined;
-    }
-
-    // Initialize the GL context
-    const gl = canvas.getContext('webgl');
-
-    if (!gl) {
-      console.error('Unable to initialize WebGL');
-      return undefined;
-    }
-
-    gl.clearColor(0, 0, 0, 1);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-
-    // Initialize a shader program; this is where all the lighting
-    // for the vertices and so forth is established.
-    const shaderProgram = initShaderProgram(gl, vertexShaderSource, fragmentShaderSource);
-
-    if (!shaderProgram) {
-      return undefined;
-    }
-
-    // Collect all the info needed to use the shader program.
-    // Look up which attributes our shader program is using
-    // for aVertexPosition, aVertexColor and also
-    // look up uniform locations.
-    const programInfo: ProgramInfo = {
-      program: shaderProgram,
-      attribLocations: {
-        vertexPos: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-        vertexTextureCoord: gl.getAttribLocation(shaderProgram, 'aVertexTextureCoord'),
-        vertexNormal: gl.getAttribLocation(shaderProgram, 'aVertexNormal'),
-        vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
-        vertexColorModulator: gl.getAttribLocation(shaderProgram, 'aVertexColorModulator'),
-      },
-      uniformLocations: {
-        projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
-        modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
-        cameraPos: gl.getUniformLocation(shaderProgram, 'uCameraPosition'),
-        texture: gl.getUniformLocation(shaderProgram, 'uTexture'),
-      },
-    };
-
-    setContext({ gl, programInfo });
-
-    return () => {
-      // biome-ignore lint/correctness/useHookAtTopLevel: `gl` is a WebGL context, not a React component. `useProgram` is WebGL's.
-      gl.useProgram(null);
-      gl.deleteProgram(shaderProgram);
-    };
-  }, [canvas]);
-
-  return context;
-}
-
-function renderScene(
-  gl: WebGLRenderingContext,
-  programInfo: ProgramInfo,
-  sceneCtx: SceneRenderContext,
-  camera: Camera,
-) {
-  gl.clearColor(0, 0, 0, 1);
-  gl.clearDepth(1);
-
-  gl.enable(gl.DEPTH_TEST);
-  gl.enable(gl.BLEND);
-
-  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-
-  // Near things obscure far things
-  gl.depthFunc(gl.LEQUAL);
-
-  // Clear the canvas before drawing on it
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-  const { modelViewMatrix, projectionMatrix } = generateTransformMatrices({
-    camera,
-    aspect: gl.canvas.width / gl.canvas.height,
-  });
-
-  // Tell OpenGL how to pull out the positions from the position
-  // buffer into the vertexPosition attribute.
-  setPosAttribute(gl, sceneCtx, programInfo);
-  setTextureCoordAttribute(gl, sceneCtx, programInfo);
-  setNormalAttribute(gl, sceneCtx, programInfo);
-  setColorAttribute(gl, sceneCtx, programInfo);
-  setColorModulatorAttribute(gl, sceneCtx, programInfo);
-
-  // Tell OpenGL which indices to use to index the vertices
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, sceneCtx.buffers.indices);
-
-  // Tell OpenGL to use our program when drawing
-  // biome-ignore lint/correctness/useHookAtTopLevel: `gl` is a WebGL context, not a React component. `useProgram` is WebGL's.
-  gl.useProgram(programInfo.program);
-
-  // Set the shader uniforms
-  gl.uniformMatrix4fv(programInfo.uniformLocations.projectionMatrix, false, projectionMatrix);
-  gl.uniformMatrix4fv(programInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix);
-  gl.uniform3fv(programInfo.uniformLocations.cameraPos, new Float32Array(camera.pos));
-
-  if (sceneCtx.fontRenderInfo !== null) {
-    // Bind the texture to texture unit 0
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, sceneCtx.fontRenderInfo.texture);
-
-    // Set the uniform to use texture unit 0
-    gl.uniform1i(programInfo.uniformLocations.texture, 0);
-  }
-
-  const { vertexCount } = sceneCtx;
-  const type = gl.UNSIGNED_SHORT;
-  const offset = 0;
-
-  gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
-}
-
-// Tell OpenGL how to pull out the positions from the position
-// buffer into the vertexPosition attribute.
-function setPosAttribute(
-  gl: WebGLRenderingContext,
-  sceneCtx: SceneRenderContext,
-  programInfo: ProgramInfo,
-) {
-  gl.bindBuffer(gl.ARRAY_BUFFER, sceneCtx.buffers.pos);
-  gl.vertexAttribPointer(
-    programInfo.attribLocations.vertexPos,
-    3, // components
-    gl.FLOAT, // type
-    false, // normalize
-    0, // stride
-    0, // offset
-  );
-  gl.enableVertexAttribArray(programInfo.attribLocations.vertexPos);
-}
-
-function setTextureCoordAttribute(
-  gl: WebGLRenderingContext,
-  sceneCtx: SceneRenderContext,
-  programInfo: ProgramInfo,
-) {
-  gl.bindBuffer(gl.ARRAY_BUFFER, sceneCtx.buffers.textureCoord);
-  gl.vertexAttribPointer(
-    programInfo.attribLocations.vertexTextureCoord,
-    2, // components
-    gl.FLOAT, // type
-    false, // normalize
-    0, // stride
-    0, // offset
-  );
-  gl.enableVertexAttribArray(programInfo.attribLocations.vertexTextureCoord);
-}
-
-// Tell OpenGL how to pull out the normals from the normal buffer
-// into the vertexNormal attribute.
-function setNormalAttribute(
-  gl: WebGLRenderingContext,
-  sceneCtx: SceneRenderContext,
-  programInfo: ProgramInfo,
-) {
-  const components = 3;
-  const type = gl.FLOAT;
-  const normalize = false;
-
-  // How many bytes to get from one set of values to the next
-  // 0 = use type and numComponents above
-  const stride = 0;
-
-  // How many bytes inside the buffer to start from
-  const offset = 0;
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, sceneCtx.buffers.normal);
-
-  gl.vertexAttribPointer(
-    programInfo.attribLocations.vertexNormal,
-    components,
-    type,
-    normalize,
-    stride,
-    offset,
-  );
-
-  gl.enableVertexAttribArray(programInfo.attribLocations.vertexNormal);
-}
-
-// Tell OpenGL how to pull out the colors from the color buffer
-// into the vertexColor attribute.
-function setColorAttribute(
-  gl: WebGLRenderingContext,
-  sceneCtx: SceneRenderContext,
-  programInfo: ProgramInfo,
-) {
-  const components = 4;
-  const type = gl.FLOAT;
-  const normalize = false;
-  const stride = 0;
-  const offset = 0;
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, sceneCtx.buffers.color);
-
-  gl.vertexAttribPointer(
-    programInfo.attribLocations.vertexColor,
-    components,
-    type,
-    normalize,
-    stride,
-    offset,
-  );
-
-  gl.enableVertexAttribArray(programInfo.attribLocations.vertexColor);
-}
-
-// Tell OpenGL how to pull out the color modulator from the color buffer
-// into the vertexColorModulator attribute.
-function setColorModulatorAttribute(
-  gl: WebGLRenderingContext,
-  sceneCtx: SceneRenderContext,
-  programInfo: ProgramInfo,
-) {
-  const components = 4;
-  const type = gl.FLOAT;
-  const normalize = false;
-  const stride = 0;
-  const offset = 0;
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, sceneCtx.buffers.colorModulator);
-
-  gl.vertexAttribPointer(
-    programInfo.attribLocations.vertexColorModulator,
-    components,
-    type,
-    normalize,
-    stride,
-    offset,
-  );
-
-  gl.enableVertexAttribArray(programInfo.attribLocations.vertexColorModulator);
-}
-
-// Initialize a shader program, so OpenGL knows how to draw our data
-function initShaderProgram(gl: WebGLRenderingContext, vsSource: string, fsSource: string) {
-  const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
-  const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
-
-  if (!vertexShader || !fragmentShader) {
-    return null;
-  }
-
-  // Create the shader program
-  const shaderProgram = gl.createProgram();
-
-  if (shaderProgram === null) {
-    console.error("Couldn't create the shader program");
-    return null;
-  }
-
-  gl.attachShader(shaderProgram, vertexShader);
-  gl.attachShader(shaderProgram, fragmentShader);
-  gl.linkProgram(shaderProgram);
-
-  // If creating the shader program failed, alert
-  if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-    console.error(`Couldn't initialize the shader program: ${gl.getProgramInfoLog(shaderProgram)}`);
-    return null;
-  }
-
-  return shaderProgram;
-}
-
-// Create a shader of the given type, upload its source and compile it
-function loadShader(gl: WebGLRenderingContext, type: GLenum, source: string) {
-  const shader = gl.createShader(type);
-
-  if (!shader) {
-    console.error('An error occurred creating shader');
-    return null;
-  }
-
-  // Send the source to the shader object
-  gl.shaderSource(shader, source);
-
-  // Compile the shader program
-  gl.compileShader(shader);
-
-  // See if it compiled successfully
-  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    console.error(`An error occurred compiling the shaders: ${gl.getShaderInfoLog(shader)}`);
-    gl.deleteShader(shader);
-    return null;
-  }
-
-  return shader;
-}
-
-function createSceneRenderContext(scene: Scene, gl: WebGLRenderingContext): SceneRenderContext {
-  const objs = flattenSceneObjects(scene.objects);
-
-  let quads: GLQuad[] = [];
-
-  const textObjs: TextSceneObject[] = [];
-  const usedChars = new Set<string>();
-
-  for (const object of objs) {
-    if (object.type === 'box') {
-      quads = [...quads, ...convertBoxToQuads(object)];
-    } else if (object.type === 'text') {
-      const chars = object.text.replace(/\s+/g, '');
-      for (const c of chars) {
-        usedChars.add(c);
-      }
-      textObjs.push(object);
-    }
-  }
-
-  function createPosBuf() {
-    const poses = quads.map((q) => [q.bottomLeft, q.bottomRight, q.topRight, q.topLeft]).flat(2);
-
-    const posBuf = gl.createBuffer();
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
-
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(poses), gl.STATIC_DRAW);
-
-    return posBuf;
-  }
-
-  function createTextureCoordBuffer() {
-    const textureCoords = quads
-      .map(
-        (q) =>
-          q.uv ?? [
-            [0, 0],
-            [0, 0],
-            [0, 0],
-            [0, 0],
-          ],
-      )
-      .flat(2);
-
-    const texCoordBuf = gl.createBuffer();
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuf);
-
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
-
-    return texCoordBuf;
-  }
-
-  function createNormalBuffer() {
-    const normals = quads
-      .map((q) => {
-        const n = calcNormal(q.bottomLeft, q.bottomRight, q.topRight);
-        return [n, n, n, n];
-      })
-      .flat(2);
-
-    const normBuf = gl.createBuffer();
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, normBuf);
-
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
-
-    return normBuf;
-  }
-
-  function createColorBuf() {
-    const colors = quads
-      .map((q) => [
-        q.bottomLeftColor ?? [0, 0, 0, 0],
-        q.bottomRightColor ?? [0, 0, 0, 0],
-        q.topRightColor ?? [0, 0, 0, 0],
-        q.topLeftColor ?? [0, 0, 0, 0],
-      ])
-      .flat(2);
-
-    const colorBuf = gl.createBuffer();
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuf);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
-
-    return colorBuf;
-  }
-
-  function createColorModBuf() {
-    const colors = quads
-      .map((q) => {
-        const m = q.modulator ?? [1, 1, 1, 1];
-        return [m, m, m, m];
-      })
-      .flat(2);
-
-    const colorModBuf = gl.createBuffer();
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorModBuf);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
-
-    return colorModBuf;
-  }
-
-  function createIndexBuf() {
-    // This array defines each quad as two triangles, using the
-    // indices into the vertex array to specify each triangle's
-    // position.
-    const indices = quads
-      .map((_, quadIndex) => {
-        const quadVertices = 4;
-        const offset = quadIndex * quadVertices;
-
-        return [
-          // First triangle
-          offset + 0,
-          offset + 1,
-          offset + 2,
-
-          // Second triangle
-          offset + 0,
-          offset + 2,
-          offset + 3,
-        ];
-      })
-      .flat(2);
-
-    const indexBuf = gl.createBuffer();
-
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuf);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
-
-    return indexBuf;
-  }
-
-  function createFontRenderInfo(usedChars: string[]) {
-    if (usedChars.length === 0) {
-      return null;
-    }
-
-    const fontSize = 24;
-    const fontName = 'Arial';
-
-    // Without vertical tolerance, diacritic characters or
-    // the characters with bottom tails are displayed cut off
-    const toleranceY = 4;
-
-    const atlas = createFontAtlas();
-
-    if (atlas === null) {
-      return null;
-    }
-
-    const { texture, atlasWidth, atlasHeight, characterMap } = atlas;
-
-    return {
-      texture,
-      characterMap,
-      fontSize,
-      atlasWidth,
-      atlasHeight,
-      toleranceY,
-    };
-
-    function determineFontAtlasSize() {
-      let cols = 0;
-      let rows = 0;
-      let atlasSize = 1;
-
-      const charH = fontSize + toleranceY;
-
-      const maxAtlasSize = Math.max(2 ** 12, gl.getParameter(gl.MAX_TEXTURE_SIZE));
-
-      while (atlasSize <= maxAtlasSize) {
-        cols = Math.trunc(atlasSize / fontSize);
-        rows = Math.trunc(atlasSize / charH);
-
-        if (cols * rows >= usedChars.length) {
-          break;
-        }
-
-        atlasSize = atlasSize * 2;
-      }
-
-      if (cols * rows < usedChars.length) {
-        console.error(
-          `Could not allocate texture atlas for text. Character set size (${usedChars.length}) or font size (${fontSize}) is too large. Multiple texture atlases are not supported yet.`,
-        );
-        return null;
-      }
-
-      return { atlasSize, rows, cols };
-    }
-
-    function renderChars(ctx: CanvasRenderingContext2D, rows: number, cols: number) {
-      const charMap: FontCharacterMap = {};
-
-      const handledChars = new Set<string>();
-
-      for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-          const c = usedChars[col + row * cols];
-
-          if (c === undefined) {
-            return charMap;
-          }
-
-          const x = col * fontSize;
-          const y = row * fontSize + (row + 1) * toleranceY;
-
-          ctx.fillText(c, x, y);
-
-          const { width } = ctx.measureText(c);
-
-          charMap[c] = {
-            textureCoordX: x,
-            textureCoordY: y,
-            width,
-          };
-
-          handledChars.add(c);
-        }
-      }
-
-      if (handledChars.size !== usedChars.length) {
-        console.error('Could not add all used characters to font atlas', {
-          added: handledChars,
-          all: usedChars,
-        });
-      }
-
-      return charMap;
-    }
-
-    function createFontAtlas() {
-      const sizeResult = determineFontAtlasSize();
-
-      if (sizeResult === null) {
-        return null;
-      }
-
-      const { atlasSize, rows, cols } = sizeResult;
-
-      const canvas2D = document.createElement('canvas');
-
-      canvas2D.width = atlasSize;
-      canvas2D.height = atlasSize;
-
-      const ctx = canvas2D.getContext('2d');
-
-      if (ctx === null) {
-        canvas2D.remove();
-        return null;
-      }
-
-      ctx.fillStyle = '#ffffff';
-      ctx.strokeStyle = '#ffffff';
-      ctx.font = `${fontSize}px ${fontName}`;
-      ctx.textBaseline = 'top';
-
-      const characterMap = renderChars(ctx, rows, cols);
-
-      const imageData = ctx.getImageData(0, 0, atlasSize, atlasSize);
-
-      canvas2D.remove();
-
-      const texture = gl.createTexture();
-
-      if (texture === null) {
-        return null;
-      }
-
-      gl.bindTexture(gl.TEXTURE_2D, texture);
-
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, imageData);
-      gl.generateMipmap(gl.TEXTURE_2D);
-
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-      return {
-        texture,
-        atlasWidth: atlasSize,
-        atlasHeight: atlasSize,
-        characterMap,
-      };
-    }
-  }
-
-  function renderTextObject(object: TextSceneObject) {
-    if (!fontRenderInfo) {
-      return;
-    }
-
-    const pos = object.pos ?? [0, 0, 0];
-    const scale = object.scale ?? [1, 1, 1];
-    const rot = object.rotation ?? [0, 0, 0];
-    const { text, color } = object;
-
-    const { characterMap, fontSize, toleranceY, atlasWidth, atlasHeight } = fontRenderInfo;
-
-    const charSpacing = 0;
-    const spaceW = fontSize / 4;
-
-    const t = {
-      xRotCos: Math.cos(rot[0]),
-      xRotSin: Math.sin(rot[0]),
-      yRotCos: Math.cos(rot[1]),
-      yRotSin: Math.sin(rot[1]),
-      zRotCos: Math.cos(rot[2]),
-      zRotSin: Math.sin(rot[2]),
-      pos,
-      scale,
-    };
-
-    let x = 0;
-    let y = 0;
-
-    for (const c of text) {
-      if (c === '\n') {
-        x = 0;
-        y--;
-        continue;
-      }
-
-      const characterInfo = characterMap[c];
-
-      let width = spaceW;
-      if (characterInfo !== undefined) {
-        width = characterInfo.width;
-      }
-
-      const characterWidthRatio = width / fontSize;
-      const sizeX = scale[0] * characterWidthRatio;
-
-      x += sizeX;
-
-      if (characterInfo !== undefined) {
-        const quadScale: Vector3Array = [sizeX, scale[1], scale[2]];
-        const quadPos = makeTransformedVertex(x, y, 0, {
-          ...t,
-          scale: [1, 1, 1],
-          pos,
-        });
-
-        const qt = { ...t, pos: quadPos, scale: quadScale };
-
-        quads.push({
-          bottomLeft: makeTransformedVertex(-1, -1, 0, qt),
-          bottomRight: makeTransformedVertex(1, -1, 0, qt),
-          topRight: makeTransformedVertex(1, 1, 0, qt),
-          topLeft: makeTransformedVertex(-1, 1, 0, qt),
-          modulator: color ?? [1, 1, 1, 1],
-          uv: getBoxCropUV({
-            cropX: characterInfo.textureCoordX,
-            cropY: characterInfo.textureCoordY - toleranceY,
-            cropWidth: width,
-            cropHeight: fontSize + toleranceY,
-            atlasWidth,
-            atlasHeight,
-            faceName: 'front',
-          }),
-        });
-      }
-
-      x += sizeX + (charSpacing / fontSize) * scale[0] * 2;
-    }
-  }
-
-  const fontRenderInfo = createFontRenderInfo([...usedChars]);
-
-  for (const object of textObjs) {
-    renderTextObject(object);
-  }
-
-  const quadTriangles = 2;
-  const totalTriangles = quads.length * quadTriangles;
-
-  const triangleVertices = 3;
-  const vertexCount = totalTriangles * triangleVertices;
-
-  return {
-    buffers: {
-      pos: createPosBuf(),
-      textureCoord: createTextureCoordBuffer(),
-      normal: createNormalBuffer(),
-      color: createColorBuf(),
-      colorModulator: createColorModBuf(),
-      indices: createIndexBuf(),
-    },
-    vertexCount,
-    fontRenderInfo,
-  };
-}
-
-function deleteSceneCtx(sceneCtx: SceneRenderContext, gl: WebGLRenderingContext) {
-  if (sceneCtx.buffers.pos) {
-    gl.deleteBuffer(sceneCtx.buffers.pos);
-    sceneCtx.buffers.pos = null;
-  }
-  if (sceneCtx.buffers.textureCoord) {
-    gl.deleteBuffer(sceneCtx.buffers.textureCoord);
-    sceneCtx.buffers.textureCoord = null;
-  }
-  if (sceneCtx.buffers.normal) {
-    gl.deleteBuffer(sceneCtx.buffers.normal);
-    sceneCtx.buffers.normal = null;
-  }
-  if (sceneCtx.buffers.indices) {
-    gl.deleteBuffer(sceneCtx.buffers.indices);
-    sceneCtx.buffers.indices = null;
-  }
-  if (sceneCtx.buffers.color) {
-    gl.deleteBuffer(sceneCtx.buffers.color);
-    sceneCtx.buffers.color = null;
-  }
-  if (sceneCtx.buffers.colorModulator) {
-    gl.deleteBuffer(sceneCtx.buffers.colorModulator);
-    sceneCtx.buffers.colorModulator = null;
-  }
-  if (sceneCtx.fontRenderInfo !== null) {
-    gl.deleteTexture(sceneCtx.fontRenderInfo.texture);
-    sceneCtx.fontRenderInfo = null;
-  }
 }

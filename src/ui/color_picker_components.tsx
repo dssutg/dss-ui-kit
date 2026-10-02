@@ -45,7 +45,7 @@ export function AlphaColorPicker<T extends AnyColor>({
   return (
     <div {...rest} ref={nodeRef} className={nodeClassName}>
       <Saturation hsva={hsva} onChange={updateHsva} />
-      <Hue hue={hsva.h} onChange={updateHsva} className="color-picker-cn__last-control" />
+      <Hue hue={hsva.h} onChange={updateHsva} />
       <Alpha hsva={hsva} onChange={updateHsva} className="color-picker-cn__last-control" />
     </div>
   );
