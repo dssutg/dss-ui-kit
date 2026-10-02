@@ -1,0 +1,177 @@
+# Strict code quality pipeline for the DSS UI Kit.
+#
+# Every job installs with `deno install --frozen`, so a job fails outright when package.json and
+# deno.lock disagree, or when a dependency version was bumped without refreshing the lockfile. All
+# dependency versions are pinned exactly.
+#
+# Locally, the same gate is `deno task ci` (or `npm run ci`).
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+concurrency:
+  # One pipeline per ref. A new push supersedes the run in flight for the same branch; a tag keeps
+  # its own so a release is never cancelled by the branch commit that precedes it.
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+env:
+  # Keep in sync with `engines.deno` in package.json.
+  DENO_VERSION: 2.9.6
+  DENO_DIR: ${{ github.workspace }}/.deno
+  # The release-preview job reads tags and the full history to derive the version.
+  GIT_DEPTH: 0
+
+jobs:
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # `deno task release` reads the tags to derive the next version.
+          fetch-depth: 0
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: ${{ env.DENO_VERSION }}
+          cache: true
+
+      - name: Verify
+        run: |
+          deno --version
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          deno install --frozen
+
+  format:
+    name: Format
+    needs: [setup]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: ${{ env.DENO_VERSION }}
+          cache: true
+      # Formatting is not negotiable: `biome ci` reports unformatted files as errors.
+      - run: deno task format:check
+
+  lint:
+    name: Lint
+    needs: [setup]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: ${{ env.DENO_VERSION }}
+          cache: true
+      - run: deno task lint:biome
+
+  typecheck:
+    name: Typecheck
+    needs: [setup]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: ${{ env.DENO_VERSION }}
+          cache: true
+      - run: deno task typecheck
+
+  test:
+    name: Test
+    needs: [setup]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: ${{ env.DENO_VERSION }}
+          cache: true
+      - run: deno task test
+
+  commit-message:
+    name: Commit message
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: ${{ env.DENO_VERSION }}
+          cache: true
+      # Rejects a commit message that is not Conventional Commits. The local commit-msg hook covers
+      # day-to-day work; this keeps the rule enforced on history that reaches the repository by
+      # other means.
+      - name: Check
+        run: deno task commitlint --message "$PR_TITLE"
+
+  # A library is judged on what it hands a consumer: the bundle, the type declarations and the
+  # stylesheet. `deno task build` produces all three, and `deno task pack` proves the manifest points
+  # at files that exist — a package that publishes with a broken `exports` map installs and then
+  # fails at import time in someone else's project.
+  build:
+    name: Build
+    needs: [setup]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: ${{ env.DENO_VERSION }}
+          cache: true
+      - run: deno task build
+      - run: deno task pack
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  # The API reference is generated from the source. Building it here means it cannot drift from the
+  # code, and a change that breaks the public surface (a bad @link, an unresolvable type) fails the
+  # pipeline.
+  #
+  # TypeDoc warns rather than fails when the `origin` remote is not configured, which only affects
+  # the "view source" links, so this job gates on errors, not on warnings.
+  docs:
+    name: Docs
+    needs: [setup]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: ${{ env.DENO_VERSION }}
+          cache: true
+      - run: deno task docs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: api-docs
+          path: docs/api/
+          retention-days: 7
+
+  # Shows what `deno task release` would produce for the current history, without touching the
+  # working tree.
+  release-preview:
+    name: Release preview
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [setup]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: ${{ env.DENO_VERSION }}
+          cache: true
+      - run: deno task release --dry-run --skip-lint
