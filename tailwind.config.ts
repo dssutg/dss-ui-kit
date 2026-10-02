@@ -26,9 +26,13 @@ import type { Config } from 'tailwindcss';
 export default {
   content: [
     './src/**/*.{ts,tsx}',
-    // The library ships its source so that a consumer's Tailwind can discover the classes the
-    // components render. `TODO.md` stage 4 records the final answer for this; until then both
-    // globs are scanned.
+    // Both this repository's source and the bundle are scanned, and the bundle is what a consumer
+    // gets. Tailwind only sees a class name if it appears literally in a file it scans, so the
+    // built package has to be scanned for the classes to reach a consumer's stylesheet: scanning
+    // only `src/` would work here and generate nothing for anyone who installs the package.
+    //
+    // This is why no component builds a class name by concatenating pieces of one. Every class is
+    // written out whole somewhere in the source, which is what keeps the scanner honest.
     './dist/**/*.{js,cjs}',
   ],
   theme: {

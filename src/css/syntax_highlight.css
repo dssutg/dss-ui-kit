@@ -112,13 +112,6 @@
   padding: 12px 10px;
 }
 
-.shj-lang-http.shj-oneline .shj-syn-kwd {
-  background: #25f;
-  color: #fff;
-  padding: 5px 7px;
-  border-radius: 5px;
-}
-
 [class*="shj-lang-"] {
   color: #f8f8f2;
   background: #1a1a1c;
@@ -165,4 +158,17 @@
 
 .shj-syn-str {
   color: #4dacfa;
+}
+
+/*
+ * The HTTP method badge is the one token that is styled rather than merely coloured: it is a blue
+ * chip with white text. It needs the higher specificity of `.shj-lang-http.shj-oneline` to keep
+ * that white against the keyword colour above, so it is declared last — the cascade resolves the
+ * same either way, and reading it here says which of the two is meant to win.
+ */
+.shj-lang-http.shj-oneline .shj-syn-kwd {
+  background: #25f;
+  color: #fff;
+  padding: 5px 7px;
+  border-radius: 5px;
 }

@@ -25,7 +25,7 @@
 
 // The one global stylesheet: the Tailwind entry point, the themes, and the base resets. Shipped as
 // `dss-ui-kit/style.css` rather than imported here, so the caller controls when it applies.
-import '@/css/index.css';
+import '@/index.css';
 
 /* -------------------------------------------------------------------------------------------- */
 /* Components                                                                                     */
