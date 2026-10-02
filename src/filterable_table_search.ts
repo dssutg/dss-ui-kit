@@ -90,6 +90,75 @@ export function buildFilterableTableSearchText(keyValueMap: Record<string, unkno
     .join(' ');
 }
 
+/** A search term matched to the property it constrains, and the value that property compares against. */
+interface ParsedSearchProperty<T> {
+  property: SearchPropertySchema<T>;
+  value: unknown;
+}
+
+/**
+ * Converts the text written after `name=` into the value its property compares against.
+ *
+ * The property decides what its own text means, so the conversion travels with the property rather
+ * than with the schema. `null` means the text is not a value this property can hold — a `boolean`
+ * written as anything but `true` or `false` — which the caller reads exactly as it reads a term that
+ * names no property: the text stays a free-text search term instead of filtering on nothing.
+ */
+function parsePropertyValue<T>(
+  property: SearchPropertySchema<T>,
+  valueString: string,
+): ParsedSearchProperty<T> | null {
+  switch (property.type) {
+    case 'string': {
+      if (property.trim) {
+        return { property, value: valueString.trim() };
+      }
+      return { property, value: valueString };
+    }
+
+    case 'enum':
+    case 'dateAndTime': {
+      return { property, value: valueString };
+    }
+
+    case 'ip': {
+      return {
+        property,
+        value: valueString.replace(/[^\d.]+/g, ''),
+      };
+    }
+
+    case 'boolean': {
+      if (valueString === 'true' || valueString === 'false') {
+        return { property, value: valueString === 'true' };
+      }
+      return null;
+    }
+
+    case 'decimalInteger': {
+      return {
+        property,
+        value: clamp(
+          Math.floor(Number(valueString) || 0),
+          Math.max(Number.MIN_SAFE_INTEGER, property.min ?? Number.MIN_SAFE_INTEGER),
+          Math.min(Number.MAX_SAFE_INTEGER, property.max ?? Number.MAX_SAFE_INTEGER),
+        ),
+      };
+    }
+
+    case 'unsignedHex': {
+      return {
+        property,
+        value: clamp(
+          Math.floor(parseInt(valueString, 16) || 0),
+          Math.max(0, property.min ?? 0),
+          Math.min(Number.MAX_SAFE_INTEGER, property.max ?? Number.MAX_SAFE_INTEGER),
+        ),
+      };
+    }
+  }
+}
+
 export function useFilteredItems<T>({
   items,
   searchText,
@@ -113,7 +182,67 @@ export function useFilteredItems<T>({
     return cleanupWhitespace(s.toLowerCase());
   }
 
-  function parsePart(part: string) {
+  /**
+   * Whether one item satisfies one parsed term.
+   *
+   * Text-valued properties are compared on their normalized text, so a term matches wherever it
+   * appears in the value rather than only as the whole of it. The remaining properties are compared
+   * against the value as written, which is why a `boolean` term written as anything but `true` or
+   * `false` never reaches here.
+   */
+  function matchesProperty(item: T, { property, value }: ParsedSearchProperty<T>) {
+    switch (property.type) {
+      case 'string':
+      case 'ip': {
+        const itemValue = normalize(property.extractValue(item));
+        const stringValue = normalize((value ?? '').toString());
+
+        return itemValue.includes(stringValue);
+      }
+
+      case 'enum': {
+        const itemValue = normalize(getEnumLabel(property, property.extractValue(item)));
+        const stringValue = normalize((value ?? '').toString());
+
+        return itemValue.includes(stringValue);
+      }
+
+      case 'dateAndTime': {
+        const itemValue = formatDateAndTime(property.extractValue(item), lang);
+
+        const stringValue = normalize((value ?? '').toString());
+
+        return itemValue.includes(stringValue);
+      }
+
+      default: {
+        return property.extractValue(item) === value;
+      }
+    }
+  }
+
+  /**
+   * The text a free-text term is matched against: every property of the item, normalized once here
+   * rather than in each caller.
+   */
+  function getItemSearchText(item: T) {
+    return normalize(
+      searchSchema.properties
+        .map((property) => {
+          switch (property.type) {
+            case 'enum':
+              return getEnumLabel(property, property.extractValue(item));
+            case 'dateAndTime':
+              return formatDateAndTime(property.extractValue(item), lang);
+            default:
+              return property.extractValue(item);
+          }
+        })
+        .join(' '),
+    );
+  }
+
+  function parsePart(part: string): ParsedSearchProperty<T> | null {
     for (const property of searchSchema.properties) {
       const prefix = `${property.name}=`;
       const valueString = part.slice(prefix.length);
@@ -122,65 +251,16 @@ export function useFilteredItems<T>({
         continue;
       }
 
-      switch (property.type) {
-        case 'string': {
-          if (property.trim) {
-            return { property, value: valueString.trim() };
-          }
-          return { property, value: valueString };
-        }
-
-        case 'enum':
-        case 'dateAndTime': {
-          return { property, value: valueString };
-        }
-
-        case 'ip': {
-          return {
-            property,
-            value: valueString.replace(/[^\d.]+/g, ''),
-          };
-        }
-
-        case 'boolean': {
-          if (valueString === 'true' || valueString === 'false') {
-            return { property, value: valueString === 'true' };
-          }
-          return null;
-        }
-
-        case 'decimalInteger': {
-          return {
-            property,
-            value: clamp(
-              Math.floor(Number(valueString) || 0),
-              Math.max(Number.MIN_SAFE_INTEGER, property.min ?? Number.MIN_SAFE_INTEGER),
-              Math.min(Number.MAX_SAFE_INTEGER, property.max ?? Number.MAX_SAFE_INTEGER),
-            ),
-          };
-        }
-
-        case 'unsignedHex': {
-          return {
-            property,
-            value: clamp(
-              Math.floor(parseInt(valueString, 16) || 0),
-              Math.max(0, property.min ?? 0),
-              Math.min(Number.MAX_SAFE_INTEGER, property.max ?? Number.MAX_SAFE_INTEGER),
-            ),
-          };
-        }
-      }
+      // The first property the term names owns it, so its conversion — or its refusal to convert —
+      // decides the term. The loop only runs on when no property claimed it.
+      return parsePropertyValue(property, valueString);
     }
 
     return null;
   }
 
   const fuzzyParts: string[] = [];
-  const props: {
-    property: SearchPropertySchema<T>;
-    value: unknown;
-  }[] = [];
+  const props: ParsedSearchProperty<T>[] = [];
 
   // Match sequences of:
   //  - backslash + any char (escaped char),
@@ -203,66 +283,12 @@ export function useFilteredItems<T>({
   const fuzzy = normalize(fuzzyParts.join(' '));
 
   return items.filter((item) => {
-    for (const { property, value } of props) {
-      switch (property.type) {
-        case 'string':
-        case 'ip': {
-          const itemValue = normalize(property.extractValue(item));
-          const stringValue = normalize((value ?? '').toString());
-
-          if (!itemValue.includes(stringValue)) {
-            return false;
-          }
-
-          break;
-        }
-
-        case 'enum': {
-          const itemValue = normalize(getEnumLabel(property, property.extractValue(item)));
-          const stringValue = normalize((value ?? '').toString());
-
-          if (!itemValue.includes(stringValue)) {
-            return false;
-          }
-
-          break;
-        }
-
-        case 'dateAndTime': {
-          const itemValue = formatDateAndTime(property.extractValue(item), lang);
-
-          const stringValue = normalize((value ?? '').toString());
-
-          if (!itemValue.includes(stringValue)) {
-            return false;
-          }
-
-          break;
-        }
-
-        default: {
-          if (property.extractValue(item) !== value) {
-            return false;
-          }
-
-          break;
-        }
+    for (const property of props) {
+      if (!matchesProperty(item, property)) {
+        return false;
       }
     }
 
-    return normalize(
-      searchSchema.properties
-        .map((property) => {
-          switch (property.type) {
-            case 'enum':
-              return getEnumLabel(property, property.extractValue(item));
-            case 'dateAndTime':
-              return formatDateAndTime(property.extractValue(item), lang);
-            default:
-              return property.extractValue(item);
-          }
-        })
-        .join(' '),
-    ).includes(fuzzy);
+    return getItemSearchText(item).includes(fuzzy);
   });
 }

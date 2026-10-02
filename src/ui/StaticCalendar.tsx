@@ -76,6 +76,142 @@ interface MonthCalendar {
   ): 'adjacent' | 'weekend' | 'weekday';
 }
 
+/**
+ * Where a month starts in the flat day table, when the week does not begin on Sunday.
+ *
+ * Sunday is drawn in the last column rather than the first, so a month that begins on a Sunday needs
+ * a whole week of the previous month in front of it.
+ */
+function getFirstWeekdayShift(isSundayFirstWeekDay: boolean, firstWeekday: number) {
+  if (!isSundayFirstWeekDay && firstWeekday === 0) {
+    return WEEK_DAYS;
+  }
+
+  return 0;
+}
+
+/** How many days the month before this one had, which its leading days are counted back from. */
+function getPreviousMonthDays(year: number, month: number) {
+  if (month === 0) {
+    return getDaysInMonth(year - 1, 11);
+  }
+
+  return getDaysInMonth(year, month - 1);
+}
+
+/**
+ * The day number one cell of a month's table holds.
+ *
+ * An index before the month belongs to the month before it and an index past its end belongs to the
+ * month after it, which is why the trailing days are the month's own numbering shifted back rather
+ * than counted from anything: they are the same numbers the next month will print.
+ */
+function getMonthDay(
+  index: number,
+  monthStart: number,
+  numberOfDays: number,
+  previousDays: number,
+) {
+  const dayOfMonth = index - monthStart + 1;
+
+  if (index < monthStart) {
+    return previousDays - monthStart + index + 1;
+  }
+
+  if (index >= monthStart + numberOfDays) {
+    return dayOfMonth - numberOfDays;
+  }
+
+  return dayOfMonth;
+}
+
+/**
+ * The six rows of seven day numbers a month is drawn as.
+ *
+ * `monthStart` is the index at which the month's first day sits, so every index can be placed
+ * relative to it on its own.
+ */
+function buildDayTable(
+  monthStart: number,
+  numberOfDays: number,
+  previousDays: number,
+  isSundayFirstWeekDay: boolean,
+) {
+  const dayTable: number[][] = [];
+
+  for (let row = 0; row < MONTH_ROWS; row++) {
+    const days: number[] = [];
+
+    for (let column = 0; column < WEEK_DAYS; column++) {
+      let index = column + row * WEEK_DAYS;
+
+      if (!isSundayFirstWeekDay) {
+        index++;
+      }
+
+      days.push(getMonthDay(index, monthStart, numberOfDays, previousDays));
+    }
+
+    dayTable.push(days);
+  }
+
+  return dayTable;
+}
+
+function buildMonthCalendar(
+  year: number,
+  month: number,
+  isSundayFirstWeekDay: boolean,
+  calendarLocale: CalendarLocale,
+): MonthCalendar {
+  const firstWeekday = getWeekday(year, month, 1);
+  const firstWeekdayShift = getFirstWeekdayShift(isSundayFirstWeekDay, firstWeekday);
+  const numberOfDays = getDaysInMonth(year, month);
+
+  const monthName = monthEntry(calendarLocale.monthNames, month);
+
+  return {
+    fullName: monthName,
+    name: monthName.slice(0, 3),
+    dayTable: buildDayTable(
+      firstWeekday + firstWeekdayShift,
+      numberOfDays,
+      getPreviousMonthDays(year, month),
+      isSundayFirstWeekDay,
+    ),
+    numberOfDays,
+    firstWeekday,
+    firstWeekdayShift,
+    isDayTableIndexMonthDay(index: number) {
+      return (
+        index >= firstWeekday + firstWeekdayShift &&
+        index < firstWeekday + firstWeekdayShift + numberOfDays
+      );
+    },
+    getDayTableIndexClass(index: number, isSundayFirstWeekDay = true) {
+      let indexOffset = 1;
+      if (isSundayFirstWeekDay) {
+        indexOffset = 0;
+      }
+
+      const x = Math.floor(index % WEEK_DAYS);
+
+      if (
+        index + indexOffset < firstWeekday + firstWeekdayShift ||
+        index + indexOffset >= firstWeekday + firstWeekdayShift + numberOfDays
+      ) {
+        return 'adjacent';
+      }
+
+      if (x === 0 || x === WEEK_DAYS - 1) {
+        return 'weekend';
+      }
+
+      return 'weekday';
+    },
+  };
+}
+
 // NOTE September, 1752 is NOT considered in the code below
 // because it was a long time ago, so pointless to print out the
 // calendar for that month when there were only 19 days in September.
@@ -106,87 +242,10 @@ function getCalendar(
   };
 
   for (let month = 0; month < 12; month++) {
-    const firstWeekday = getWeekday(definedYear, month, 1);
-
-    let firstWeekdayShift = 0;
-    if (!isSundayFirstWeekDay && firstWeekday === 0) {
-      firstWeekdayShift = WEEK_DAYS;
-    }
-
-    const numberOfDays = getDaysInMonth(definedYear, month);
-
-    const monthName = monthEntry(calendarLocale.monthNames, month);
-
-    const monthCalendar: MonthCalendar = {
-      fullName: monthName,
-      name: monthName.slice(0, 3),
-      dayTable: [],
-      numberOfDays,
-      firstWeekday,
-      firstWeekdayShift,
-      isDayTableIndexMonthDay(index: number) {
-        return (
-          index >= firstWeekday + firstWeekdayShift &&
-          index < firstWeekday + firstWeekdayShift + numberOfDays
-        );
-      },
-      getDayTableIndexClass(index: number, isSundayFirstWeekDay = true) {
-        let indexOffset = 1;
-        if (isSundayFirstWeekDay) {
-          indexOffset = 0;
-        }
-
-        const x = Math.floor(index % WEEK_DAYS);
-
-        if (
-          index + indexOffset < firstWeekday + firstWeekdayShift ||
-          index + indexOffset >= firstWeekday + firstWeekdayShift + numberOfDays
-        ) {
-          return 'adjacent';
-        }
-
-        if (x === 0 || x === WEEK_DAYS - 1) {
-          return 'weekend';
-        }
-
-        return 'weekday';
-      },
-    };
-
-    let previousDays = 0;
-    if (month === 0) {
-      previousDays = getDaysInMonth(definedYear - 1, 11);
-    } else {
-      previousDays = getDaysInMonth(definedYear, month - 1);
-    }
-
-    for (let y = 0; y < MONTH_ROWS; y++) {
-      const row: number[] = [];
-      for (let x = 0; x < WEEK_DAYS; x++) {
-        let index = x + y * WEEK_DAYS;
-        if (!calendar.isSundayFirstWeekDay) {
-          index++;
-        }
-        let monthDay: number =
-          index - (monthCalendar.firstWeekday + monthCalendar.firstWeekdayShift) + 1;
-        if (index < monthCalendar.firstWeekday + monthCalendar.firstWeekdayShift) {
-          monthDay =
-            previousDays -
-            (monthCalendar.firstWeekday + monthCalendar.firstWeekdayShift) +
-            index +
-            1;
-        } else if (
-          index >=
-          monthCalendar.firstWeekday + monthCalendar.firstWeekdayShift + monthCalendar.numberOfDays
-        ) {
-          monthDay = monthDay - monthCalendar.numberOfDays;
-        }
-        row.push(monthDay);
-      }
-      monthCalendar.dayTable = [...monthCalendar.dayTable, row];
-    }
-
-    calendar.months = [...calendar.months, monthCalendar];
+    calendar.months = [
+      ...calendar.months,
+      buildMonthCalendar(definedYear, month, isSundayFirstWeekDay, calendarLocale),
+    ];
   }
 
   return calendar;

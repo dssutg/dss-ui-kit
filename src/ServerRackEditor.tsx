@@ -206,6 +206,42 @@ export function SeverRackEditor({
               const frontSize = getPosLabelTableSize(frontPosLabelTableRows);
               const backSize = getPosLabelTableSize(backPosLabelTableRows);
 
+              function buildDeviceFromCell(row: number, col: number, cell: PosLabelTableCellInfo) {
+                const device = rackDevicesByPosLabelMap[cell.posLabel]?.[0];
+
+                if (device === undefined) {
+                  return null;
+                }
+
+                const pos = cell.posLabel;
+                const type = device.rackDeviceType;
+                const sn = device.rackDeviceSerialNumber;
+
+                return { row, col, pos, type, sn };
+              }
+
+              function addCellDevice(
+                devices: {
+                  row: number;
+                  col: number;
+                  pos: string;
+                  type: string;
+                  sn: number;
+                }[],
+                row: number,
+                col: number,
+                cell: PosLabelTableCellInfo | undefined,
+              ) {
+                if (cell === undefined) {
+                  return;
+                }
+
+                const device = buildDeviceFromCell(row, col, cell);
+                if (device !== null) {
+                  devices.push(device);
+                }
+              }
+
               function getFlatPanel(tableRows: readonly PosLabelTableCellInfo[][]) {
                 const { rows, columns } = getPosLabelTableSize(tableRows);
 
@@ -220,23 +256,7 @@ export function SeverRackEditor({
                 for (let row = 0; row < rows; row++) {
                   for (let col = 0; col < columns; col++) {
                     const cell = tableRows[row]?.[col];
-
-                    if (cell === undefined) {
-                      continue;
-                    }
-
-                    const device = rackDevicesByPosLabelMap[cell.posLabel]?.[0];
-
-                    if (device === undefined) {
-                      continue;
-                    }
-
-                    const pos = cell.posLabel;
-
-                    const type = device.rackDeviceType;
-                    const sn = device.rackDeviceSerialNumber;
-
-                    devices.push({ row, col, pos, type, sn });
+                    addCellDevice(devices, row, col, cell);
                   }
                 }
 
@@ -388,6 +408,82 @@ function normalizeVal(value: unknown) {
   return (value ?? '').toString().trim().replace(/\s+/g, ' ');
 }
 
+function normalizeRecord(record: Record<string, string>) {
+  return Object.fromEntries(
+    Object.entries(record).map(([key, value]) => [normalizeProp(key), normalizeVal(value)]),
+  );
+}
+
+function resolveFieldNames(
+  record: Record<string, string>,
+  {
+    isAutoDetection,
+    rackIdAlias,
+    posLabelAlias,
+    rackDeviceTypeAlias,
+    rackDeviceSerialNumberAlias,
+    columns,
+  }: {
+    readonly isAutoDetection: boolean;
+    readonly rackIdAlias: string;
+    readonly posLabelAlias: string;
+    readonly rackDeviceTypeAlias: string;
+    readonly rackDeviceSerialNumberAlias: string;
+    readonly columns: RackDatabaseColumns;
+  },
+) {
+  let rackIdFieldName = rackIdAlias;
+  let posLabelFiledName = posLabelAlias;
+  let rackDeviceTypeFieldName = rackDeviceTypeAlias;
+  let rackDeviceSerialNumberFieldName = rackDeviceSerialNumberAlias;
+
+  if (isAutoDetection) {
+    rackIdFieldName = Object.keys(record).filter(columns.matchRackId)[0] ?? '';
+    posLabelFiledName = Object.keys(record).filter(columns.matchPosLabel)[0] ?? '';
+    rackDeviceTypeFieldName = Object.keys(record).filter(columns.matchDeviceType)[0] ?? '';
+    rackDeviceSerialNumberFieldName =
+      Object.keys(record).filter(columns.matchSerialNumber)[0] ?? '';
+  }
+
+  return {
+    rackIdFieldName,
+    posLabelFiledName,
+    rackDeviceTypeFieldName,
+    rackDeviceSerialNumberFieldName,
+  };
+}
+
+function buildParsedRecord(
+  record: Record<string, string>,
+  fieldNames: {
+    readonly rackIdFieldName: string;
+    readonly posLabelFiledName: string;
+    readonly rackDeviceTypeFieldName: string;
+    readonly rackDeviceSerialNumberFieldName: string;
+  },
+) {
+  const rackDeviceSerialNumber =
+    record[fieldNames.rackDeviceSerialNumberFieldName] !== undefined
+      ? Number(record[fieldNames.rackDeviceSerialNumberFieldName]) || 0
+      : 0;
+
+  return {
+    rackId: record[fieldNames.rackIdFieldName] ?? '',
+    posLabel: record[fieldNames.posLabelFiledName] ?? '',
+    rackDeviceType: record[fieldNames.rackDeviceTypeFieldName] ?? '',
+    rackDeviceSerialNumber,
+  };
+}
+
+function isValidParsedRecord(parsedRecord: RackDeviceInfo) {
+  return (
+    parsedRecord.posLabel !== '' &&
+    parsedRecord.posLabel !== '-' &&
+    parsedRecord.rackDeviceType !== '' &&
+    parsedRecord.rackDeviceType !== '-'
+  );
+}
+
 function parseRows(
   rows: readonly string[][],
   {
@@ -398,11 +494,7 @@ function parseRows(
     readonly columns: RackDatabaseColumns;
   },
 ) {
-  const records = convertCsvRowsToObjectRecords(rows).map((record) =>
-    Object.fromEntries(
-      Object.entries(record).map(([key, value]) => [normalizeProp(key), normalizeVal(value)]),
-    ),
-  );
+  const records = convertCsvRowsToObjectRecords(rows).map(normalizeRecord);
 
   const isAutoDetection = databaseFieldAliasMap === null;
 
@@ -416,39 +508,25 @@ function parseRows(
   const validRecords: RackDeviceInfo[] = [];
 
   for (const record of records) {
-    let rackIdFieldName = rackIdAlias;
-    let posLabelFiledName = posLabelAlias;
-    let rackDeviceTypeFieldName = rackDeviceTypeAlias;
-    let rackDeviceSerialNumberFieldName = rackDeviceSerialNumberAlias;
+    const fieldNames = resolveFieldNames(record, {
+      isAutoDetection,
+      rackIdAlias,
+      posLabelAlias,
+      rackDeviceTypeAlias,
+      rackDeviceSerialNumberAlias,
+      columns,
+    });
 
-    if (isAutoDetection) {
-      rackIdFieldName = Object.keys(record).filter(columns.matchRackId)[0] ?? '';
-      posLabelFiledName = Object.keys(record).filter(columns.matchPosLabel)[0] ?? '';
-      rackDeviceTypeFieldName = Object.keys(record).filter(columns.matchDeviceType)[0] ?? '';
-      rackDeviceSerialNumberFieldName =
-        Object.keys(record).filter(columns.matchSerialNumber)[0] ?? '';
-    }
-
-    if (posLabelFiledName === undefined || rackDeviceTypeFieldName === undefined) {
+    if (
+      fieldNames.posLabelFiledName === undefined ||
+      fieldNames.rackDeviceTypeFieldName === undefined
+    ) {
       continue;
     }
 
-    const parsedRecord = {
-      rackId: record[rackIdFieldName] ?? '',
-      posLabel: record[posLabelFiledName] ?? '',
-      rackDeviceType: record[rackDeviceTypeFieldName] ?? '',
-      rackDeviceSerialNumber:
-        record[rackDeviceSerialNumberFieldName] !== undefined
-          ? Number(record[rackDeviceSerialNumberFieldName]) || 0
-          : 0,
-    };
+    const parsedRecord = buildParsedRecord(record, fieldNames);
 
-    if (
-      parsedRecord.posLabel === '' ||
-      parsedRecord.posLabel === '-' ||
-      parsedRecord.rackDeviceType === '' ||
-      parsedRecord.rackDeviceType === '-'
-    ) {
+    if (!isValidParsedRecord(parsedRecord)) {
       continue;
     }
 

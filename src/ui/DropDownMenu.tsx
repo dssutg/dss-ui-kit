@@ -116,62 +116,70 @@ export function DropDownMenu({
     [path, menu],
   );
 
+  /**
+   * Enter activates the highlighted item, which is only a choice when it has no submenu of its own:
+   * otherwise it is a step down a level, which is what ArrowRight does.
+   */
+  const onEnter = () => {
+    const panelInfo = getPanelMenuItemsByPath(path, menu);
+
+    if (panelInfo !== null && panelInfo.item.submenu === undefined) {
+      onClose();
+      panelInfo.item.onSelect?.();
+    }
+  };
+
+  /** ArrowLeft goes up one level, and stops at the root rather than at nothing. */
+  const onArrowLeft = () => {
+    setPath((path) => {
+      if (path.length > 1) {
+        return path.slice(0, -1);
+      }
+      return path;
+    });
+  };
+
+  /** ArrowRight steps into the highlighted item's submenu, and does nothing if it has none. */
+  const onArrowRight = () => {
+    const panelInfo = getPanelMenuItemsByPath(path, menu);
+
+    const newPath = panelInfo?.item.submenu?.[0]?.path;
+
+    if (newPath !== undefined) {
+      setPath(newPath);
+    }
+  };
+
+  /**
+   * What each key does while the menu is open. Every one of them calls `preventDefault` and then a
+   * single action, so listing them here keeps the listener below from growing a branch per key.
+   */
+  const keyActions: Readonly<Record<string, () => void>> = {
+    Escape: onClose,
+    Space: () => setOpen((isOpen) => !isOpen),
+    ArrowUp: () => moveUpOrDown('up'),
+    ArrowDown: () => moveUpOrDown('down'),
+    ArrowLeft: onArrowLeft,
+    ArrowRight: onArrowRight,
+  };
+
   useEventListener('keydown', (event: KeyboardEvent) => {
     if (!open) {
       return;
     }
 
-    if (event.code === 'Escape') {
-      event.preventDefault();
-      onClose();
-    }
-
-    if (event.code === 'Space') {
-      event.preventDefault();
-      setOpen((open) => !open);
-    }
-
+    // Enter is matched on `key` where every other key here is matched on `code`.
     if (event.key === 'Enter') {
       event.preventDefault();
-
-      const panelInfo = getPanelMenuItemsByPath(path, menu);
-
-      if (panelInfo !== null && panelInfo.item.submenu === undefined) {
-        onClose();
-        panelInfo.item.onSelect?.();
-      }
+      onEnter();
+      return;
     }
 
-    if (event.code === 'ArrowUp') {
+    const action = keyActions[event.code];
+
+    if (action !== undefined) {
       event.preventDefault();
-      moveUpOrDown('up');
-    }
-
-    if (event.code === 'ArrowDown') {
-      event.preventDefault();
-      moveUpOrDown('down');
-    }
-
-    if (event.code === 'ArrowLeft') {
-      event.preventDefault();
-      setPath((path) => {
-        if (path.length > 1) {
-          return path.slice(0, -1);
-        }
-        return path;
-      });
-    }
-
-    if (event.code === 'ArrowRight') {
-      event.preventDefault();
-
-      const panelInfo = getPanelMenuItemsByPath(path, menu);
-
-      const newPath = panelInfo?.item.submenu?.[0]?.path;
-
-      if (newPath !== undefined) {
-        setPath(newPath);
-      }
+      action();
     }
   });
 

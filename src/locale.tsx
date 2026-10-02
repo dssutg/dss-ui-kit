@@ -238,36 +238,56 @@ export interface LocaleProviderProps {
   readonly storageKey?: string | null | undefined;
 }
 
-function detectInitialLocale(storageKey: string | null): LocaleName {
-  if (storageKey !== null) {
-    try {
-      const stored = localStorage.getItem(storageKey);
-      if (stored !== null && stored !== '') {
-        return stored;
-      }
-    } catch {
-      // Storage may be unavailable; the browser preference below is still usable.
-    }
+function readStoredLocale(storageKey: string | null): string | null {
+  if (storageKey === null) {
+    return null;
   }
+  try {
+    const stored = localStorage.getItem(storageKey);
+    if (stored !== null && stored !== '') {
+      return stored;
+    }
+    return null;
+  } catch {
+    // Storage may be unavailable; the browser preference below is still usable.
+    return null;
+  }
+}
 
+function matchLocaleFromCandidate(candidate: string): LocaleName | null {
+  const exact = supportedLocales.find((locale) => locale === candidate);
+  if (exact !== undefined) {
+    return exact;
+  }
+  const byLanguage = supportedLocales.find(
+    (locale) => primaryLanguageSubtag(locale) === primaryLanguageSubtag(candidate),
+  );
+  if (byLanguage !== undefined) {
+    return byLanguage;
+  }
+  return null;
+}
+
+function detectLocaleFromPreferences(): LocaleName {
   const preferred = globalThis.navigator?.languages ?? [globalThis.navigator?.language];
   for (const candidate of preferred) {
     if (candidate === undefined) {
       continue;
     }
-    const exact = supportedLocales.find((locale) => locale === candidate);
-    if (exact !== undefined) {
-      return exact;
-    }
-    const byLanguage = supportedLocales.find(
-      (locale) => primaryLanguageSubtag(locale) === primaryLanguageSubtag(candidate),
-    );
-    if (byLanguage !== undefined) {
-      return byLanguage;
+    const matched = matchLocaleFromCandidate(candidate);
+    if (matched !== null) {
+      return matched;
     }
   }
-
   return fallbackLocale;
+}
+
+function detectInitialLocale(storageKey: string | null): LocaleName {
+  const stored = readStoredLocale(storageKey);
+  if (stored !== null) {
+    return stored;
+  }
+  return detectLocaleFromPreferences();
 }
 
 /**

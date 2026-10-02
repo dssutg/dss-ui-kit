@@ -13,7 +13,40 @@ export interface ZoomableCanvasTransform {
   offsetY: number;
 }
 
-// Canvas that can be zoomed and moved
+/** The distance between the first two touches, or 0 when there are not two of them. */
+function getTouchPointDistance(touches: TouchList) {
+  if (touches[0] === undefined || touches[1] === undefined) {
+    return 0;
+  }
+
+  const dx = touches[0].clientX - touches[1].clientX;
+  const dy = touches[0].clientY - touches[1].clientY;
+
+  return Math.hypot(dx, dy);
+}
+
+/**
+ * Clear the context the canvas was asked for, ready to be drawn into. A 2D context is cleared to
+ * transparent, a WebGL one to black; anything else is left alone and reported as unusable.
+ */
+function clearForDrawing(context: RenderingContext): boolean {
+  if (context instanceof CanvasRenderingContext2D) {
+    context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+
+    return true;
+  }
+
+  if (context instanceof WebGLRenderingContext) {
+    context.clearColor(0, 0, 0, 1);
+    context.clear(context.COLOR_BUFFER_BIT);
+
+    return true;
+  }
+
+  return false;
+}
+
+/** Canvas that can be zoomed and moved */
 export function ZoomableCanvas({
   width,
   height,
@@ -80,14 +113,11 @@ export function ZoomableCanvas({
           return;
         }
 
-        let context: RenderingContext | null = null;
-        if (usingWebGL) {
-          context = canvas.getContext('webgl');
-        } else {
-          context = canvas.getContext('2d');
-        }
+        const context: RenderingContext | null = usingWebGL
+          ? canvas.getContext('webgl')
+          : canvas.getContext('2d');
 
-        if (!context) {
+        if (!context || !clearForDrawing(context)) {
           return;
         }
 
@@ -98,14 +128,7 @@ export function ZoomableCanvas({
           mouseY: pointerStartYRef.current - canvasY,
         };
 
-        if (context instanceof CanvasRenderingContext2D) {
-          context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-          drawCallback(context, transform, props);
-        } else if (context instanceof WebGLRenderingContext) {
-          context.clearColor(0, 0, 0, 1);
-          context.clear(context.COLOR_BUFFER_BIT);
-          drawCallback(context, transform, props);
-        }
+        drawCallback(context, transform, props);
       }
 
       draw();
@@ -156,17 +179,6 @@ export function ZoomableCanvas({
       function endDragging() {
         setIsDragging(false);
         onCanvasDragEnd?.();
-      }
-
-      function getTouchPointDistance(touches: TouchList) {
-        if (touches[0] === undefined || touches[1] === undefined) {
-          return 0;
-        }
-
-        const dx = touches[0].clientX - touches[1].clientX;
-        const dy = touches[0].clientY - touches[1].clientY;
-
-        return Math.hypot(dx, dy);
       }
 
       function zoomToPos(zoomDirection: number, x: number, y: number) {
@@ -239,44 +251,53 @@ export function ZoomableCanvas({
         }
       }
 
+      /**
+       * Two fingers down: the distance between them is the zoom level, and their midpoint is the
+       * point that stays put while the canvas scales under them.
+       */
+      function zoomForTouchPinch(canvas: HTMLCanvasElement, e: TouchEvent) {
+        e.preventDefault();
+
+        const currentDistance = getTouchPointDistance(e.touches);
+
+        const minDistance = 1;
+
+        if (startDistance >= minDistance) {
+          const firstTouch = e.touches.item(0);
+          const secondTouch = e.touches.item(1);
+
+          if (firstTouch !== null && secondTouch !== null) {
+            const canvasRect = canvas.getBoundingClientRect();
+
+            const pinchX = (firstTouch.clientX + secondTouch.clientX) / 2;
+            const pinchY = (firstTouch.clientY + secondTouch.clientY) / 2;
+
+            const offsetX = pinchX - canvasRect.x;
+            const offsetY = pinchY - canvasRect.y;
+
+            zoomToPos(startDistance - currentDistance, offsetX, offsetY);
+          }
+        }
+
+        setStartDistance(currentDistance);
+
+        draw();
+      }
+
       function handleTouchMove(e: TouchEvent) {
         if (canvas === null) {
           return;
         }
         if (e.touches.length === 2) {
-          e.preventDefault();
+          zoomForTouchPinch(canvas, e);
+          return;
+        }
 
-          const currentDistance = getTouchPointDistance(e.touches);
+        const first = e.touches.item(0);
 
-          const minDistance = 1;
-
-          if (startDistance >= minDistance) {
-            const firstTouch = e.touches.item(0);
-            const secondTouch = e.touches.item(1);
-
-            if (firstTouch !== null && secondTouch !== null) {
-              const canvasRect = canvas.getBoundingClientRect();
-
-              const pinchX = (firstTouch.clientX + secondTouch.clientX) / 2;
-              const pinchY = (firstTouch.clientY + secondTouch.clientY) / 2;
-
-              const offsetX = pinchX - canvasRect.x;
-              const offsetY = pinchY - canvasRect.y;
-
-              zoomToPos(startDistance - currentDistance, offsetX, offsetY);
-            }
-          }
-
-          setStartDistance(currentDistance);
-
-          draw();
-        } else {
-          const first = e.touches.item(0);
-
-          if (first !== null) {
-            onSingleTouchMove?.(e);
-            handlePointerMove(e, first.clientX, first.clientY);
-          }
+        if (first !== null) {
+          onSingleTouchMove?.(e);
+          handlePointerMove(e, first.clientX, first.clientY);
         }
       }
 

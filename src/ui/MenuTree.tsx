@@ -186,6 +186,101 @@ type TreeLevelBlockType =
 const branchEndConnector: TreeLevelBlockType = 'branchEndConnector';
 const branchConnector: TreeLevelBlockType = 'branchConnector';
 
+/** How far one level of a menu tree indents its item, in pixels. */
+const levelXFactor = 36;
+
+/**
+ * The horizontal offset of one block of a menu item's indentation.
+ *
+ * The block at the item's own level sits at that level's offset; the blocks above it sit one factor
+ * further right, which is what puts a corner one column in from the left edge.
+ */
+function treeLevelBlockOffset(index: number, level: number): number {
+  return index === level ? index * levelXFactor : (index + 1) * levelXFactor;
+}
+
+/**
+ * The blocks that draw a menu item's indentation: one per level above it, ending in the corner that
+ * joins the item to the branch it hangs from.
+ *
+ * An item at the top level has no branch above it, and draws none.
+ */
+function renderTreeLevelBlocks(
+  treeLevelBlockTypes: readonly TreeLevelBlockType[],
+  last: boolean,
+  level: number,
+  isList: boolean,
+): React.ReactNode {
+  if (level <= 0) {
+    return null;
+  }
+
+  const blockTypes = [...treeLevelBlockTypes, last ? branchEndConnector : branchConnector];
+  const fullWidth = !isList;
+
+  return blockTypes.map((type, index) =>
+    renderTreeLevelBlock(type, index, treeLevelBlockOffset(index, level), fullWidth),
+  );
+}
+
+/**
+ * One block of a menu item's indentation: the corner that joins the item to its branch, the branch
+ * itself, the line that carries that branch down through the levels above, or padding that leaves a
+ * gap and draws nothing.
+ */
+function renderTreeLevelBlock(
+  type: TreeLevelBlockType,
+  index: number,
+  left: number,
+  fullWidth: boolean,
+): React.ReactNode {
+  const style: React.CSSProperties = { left };
+
+  switch (type) {
+    case 'branchEndConnector': {
+      return (
+        <div
+          key={index}
+          className={`
+                        border-b-tpd border-l-tpd absolute top-0 h-3/6 border-b-2 border-l-2
+                        ${fullWidth ? 'w-7' : 'w-2'}
+                      `}
+          style={style}
+        />
+      );
+    }
+
+    case 'branchConnector': {
+      return (
+        <div key={index} className="absolute top-0 h-full" style={style}>
+          <div
+            className={`
+                          border-b-tpd border-l-tpd h-3/6 border-b-2 border-l-2
+                          ${fullWidth ? 'w-7' : 'w-2'}
+                        `}
+          />
+          <div className="border-l-tpd h-3/6 border-l-2" />
+        </div>
+      );
+    }
+
+    case 'spacePadding': {
+      return null;
+    }
+
+    case 'verticalConnector': {
+      return (
+        <div key={index} className="border-l-tpd absolute top-0 h-full border-l-2" style={style} />
+      );
+    }
+
+    // Every connector type above is handled, and this says so: a new one is a type
+    // error here rather than an item that draws no indentation at all.
+    default:
+      return unreachable(type);
+  }
+}
+
 export type MenuTreeItemClickHandlerResult = 'default' | 'deny';
 
 export type MenuTreeItemClickCallback = ({
@@ -208,6 +303,163 @@ export type MenuTreeItemContextMenuCallback = ({
   readonly subitemsShown: boolean;
   readonly event: React.MouseEvent<HTMLDivElement>;
 }) => void;
+
+/**
+ * Whether a menu item draws a list: it has subitems of its own, or it asks to be drawn as a list
+ * even with none.
+ */
+function menuTreeItemIsList(item: TMenuTreeItem): boolean {
+  return item.subitems.length > 0 || item.onlyList === true;
+}
+
+/**
+ * Whether a menu item is not drawn at all: it is hidden, it is mobile-only and the screen is not a
+ * mobile one, or it is a list that would show the operator nothing.
+ */
+function menuTreeItemIsHidden(
+  item: TMenuTreeItem,
+  isList: boolean,
+  isMobileScreen: boolean,
+): boolean {
+  return (
+    item.hidden === true ||
+    (item.onlyMobile === true && !isMobileScreen) ||
+    (item.hideListIfEmpty === true && isList && item.subitems.length === 0)
+  );
+}
+
+/**
+ * Whether the list a menu item draws shows the operator nothing: it has no subitems of its own, or
+ * every one of them is a list that is empty and hides itself.
+ */
+function menuTreeItemListIsEmpty(item: TMenuTreeItem, isList: boolean): boolean {
+  const subitems = item.subitems;
+
+  return isList && (subitems.length === 0 || subitems.every(menuTreeSubitemIsEmptyList));
+}
+
+/** Whether a subitem is a list that is empty and hides itself rather than drawing a dead row. */
+function menuTreeSubitemIsEmptyList(subitem: TMenuTreeItem): boolean {
+  return (
+    Boolean(subitem.onlyList) && Boolean(subitem.hideListIfEmpty) && subitem.subitems.length === 0
+  );
+}
+
+/** How much of a menu item is on screen, which decides whether it highlights itself. */
+interface MenuTreeItemVisibility {
+  readonly subitemsShown: boolean;
+  readonly expanded: boolean;
+  readonly isEmptyList: boolean;
+}
+
+/**
+ * Whether a menu item is drawn as the current one.
+ *
+ * An item that is only on the path to the current one counts while its own subitems are not
+ * showing: the parent of a selected item is what an operator navigates back from, and it stops
+ * being highlighted as soon as it is open. A list with nothing in it is always highlighted, because
+ * there is nothing to open.
+ */
+function menuTreeItemIsSelected(
+  id: string,
+  currentItemId: string,
+  isOnPathToCurrentItem: IsOnPathToCurrentItem,
+  { subitemsShown, expanded, isEmptyList }: MenuTreeItemVisibility,
+): boolean {
+  return (
+    id === currentItemId ||
+    (isOnPathToCurrentItem(id, currentItemId) && (!subitemsShown || !expanded || isEmptyList))
+  );
+}
+
+/**
+ * The collapse marker of a menu item: the triangle that says whether its list is open, or an
+ * invisible spacer that keeps a leaf item's label where a list item's would be.
+ */
+function renderCollapseStatusIcon(
+  isList: boolean,
+  level: number,
+  subitemsShown: boolean,
+): React.ReactNode {
+  if (!isList) {
+    return <div className="ml-2 size-4 shrink-0" />;
+  }
+
+  return (
+    <Icon
+      name="triangleDown"
+      style={{
+        fill: 'var(--color-tpd)',
+        width: '1rem',
+        height: '1rem',
+        flexShrink: 0,
+        marginLeft: level > 0 ? '0.75rem' : '0.5rem',
+        ...(!subitemsShown && { transform: 'rotate(-90deg)' }),
+      }}
+    />
+  );
+}
+
+/**
+ * The leading icon of a menu item, which carries the item's status while the menu is collapsed down
+ * to icons and is otherwise the item's own icon.
+ */
+function renderMenuTreeItemIcon(
+  icon: IconName | undefined,
+  expanded: boolean,
+  colorIndicator: ColorIndicator | undefined,
+  menuItemIconStyle: React.CSSProperties | undefined,
+): React.ReactNode {
+  if (icon === undefined) {
+    return null;
+  }
+
+  return (
+    <Icon
+      name={icon}
+      style={{
+        marginLeft: '0.5rem',
+        width: '1.75rem',
+        height: '1.75rem',
+        flexShrink: 0,
+        fill:
+          !expanded && colorIndicator !== undefined
+            ? colorIndicatorColorMap[colorIndicator]
+            : 'var(--color-tpl)',
+        ...menuItemIconStyle,
+      }}
+    />
+  );
+}
+
+/**
+ * The status stripe at the end of a menu item's label: a coloured border when the item reports a
+ * status, and an empty stripe of the same size when it does not, so that labels stay aligned.
+ */
+function renderMenuTreeItemColorIndicator(
+  expanded: boolean,
+  colorIndicator: ColorIndicator | undefined,
+): React.ReactNode {
+  if (!expanded) {
+    return null;
+  }
+
+  if (colorIndicator === undefined) {
+    return <div className="ml-0.25 h-3/6 w-2 shrink-0" />;
+  }
+
+  return (
+    <div
+      className="ml-0.25 h-3/6 w-2 shrink-0 border-r-4"
+      style={{ borderRightColor: colorIndicatorColorMap[colorIndicator] }}
+    />
+  );
+}
+
+/** Whether a key activates a menu item the way a click does. */
+function isActivationKey(key: string): boolean {
+  return key === 'Enter' || key === ' ';
+}
 
 function MenuTreeItem({
   item,
@@ -266,11 +518,7 @@ function MenuTreeItem({
     id,
     route,
     subitems,
-    onlyList,
-    hidden,
-    onlyMobile,
     inactive,
-    hideListIfEmpty,
     colorIndicator,
     icon,
     title,
@@ -292,24 +540,15 @@ function MenuTreeItem({
 
   const level = getMenuItemDepth(item);
 
-  const hasSubitems = subitems.length > 0;
-  const isList = hasSubitems || onlyList;
-  const isHidden =
-    hidden || (onlyMobile && !isMobileScreen) || (hideListIfEmpty && isList && !hasSubitems);
+  const isList = menuTreeItemIsList(item);
+  const isHidden = menuTreeItemIsHidden(item, isList, isMobileScreen);
+  const isEmptyList = menuTreeItemListIsEmpty(item, isList);
 
-  const isEmptyList =
-    isList &&
-    (!hasSubitems ||
-      subitems.every(
-        (subitem) =>
-          Boolean(subitem.onlyList) &&
-          Boolean(subitem.hideListIfEmpty) &&
-          subitem.subitems.length === 0,
-      ));
-
-  const selected =
-    id === currentItemId ||
-    (isOnPathToCurrentItem(id, currentItemId) && (!subitemsShown || !expanded || isEmptyList));
+  const selected = menuTreeItemIsSelected(id, currentItemId, isOnPathToCurrentItem, {
+    subitemsShown,
+    expanded,
+    isEmptyList,
+  });
 
   function handleClick(
     event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>,
@@ -331,8 +570,25 @@ function MenuTreeItem({
     // Fire individual onClick only when the item passed the common onClick
     item.onClick?.();
 
+    activate(route ?? id);
+  }
+
+  /**
+   * Whether a list may reveal its subitems: always where the full menu is drawn, and on a narrow
+   * screen only while the menu is open.
+   */
+  function mayToggleSubitems(): boolean {
+    return !shouldSaveSpace || (shouldSaveSpace && expanded);
+  }
+
+  /**
+   * What a click that nothing denied does: a list reveals or hides its subitems and reports that
+   * the menu has to be open; anything else navigates, and reports that the menu has to close when
+   * it is open on a narrow screen.
+   */
+  function activate(destination: string) {
     if (isList) {
-      if (!shouldSaveSpace || (shouldSaveSpace && expanded)) {
+      if (mayToggleSubitems()) {
         setSubitemsShown((shown) => !shown);
       }
 
@@ -341,7 +597,8 @@ function MenuTreeItem({
       return;
     }
 
-    onNavigate?.(route ?? id);
+    onNavigate?.(destination);
+
     if (shouldSaveSpace && expanded) {
       onMenuExpansionChange?.(false);
     }
@@ -359,27 +616,21 @@ function MenuTreeItem({
     });
   }
 
+  function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (!isActivationKey(event.key)) {
+      return;
+    }
+
+    event.preventDefault();
+
+    handleClick(event);
+  }
+
   if (isHidden) {
     return null;
   }
 
-  let listCollapseStatusIcon = <div className="ml-2 size-4 shrink-0" />;
-
-  if (isList) {
-    listCollapseStatusIcon = (
-      <Icon
-        name="triangleDown"
-        style={{
-          fill: 'var(--color-tpd)',
-          width: '1rem',
-          height: '1rem',
-          flexShrink: 0,
-          marginLeft: level > 0 ? '0.75rem' : '0.5rem',
-          ...(!subitemsShown && { transform: 'rotate(-90deg)' }),
-        }}
-      />
-    );
-  }
+  const listCollapseStatusIcon = renderCollapseStatusIcon(isList, level, subitemsShown);
 
   function getStyle(): React.CSSProperties {
     if (!menuItemStyle) {
@@ -393,7 +644,92 @@ function MenuTreeItem({
     return menuItemStyle(item);
   }
 
-  const levelXFactor = 36;
+  /** The item's label: its own title between whatever the caller puts before and after it. */
+  function renderLabel() {
+    if (!expanded) {
+      return null;
+    }
+
+    return (
+      <div className="mx-2" style={menuItemLabelStyle}>
+        {titlePrefix}
+        {resolveItemTitle(tRaw, title, titleKey)}
+        {titleSuffix}
+      </div>
+    );
+  }
+
+  /**
+   * The button that refreshes the item, or an invisible spacer of the same size so that the labels
+   * of items with and without one stay aligned.
+   */
+  function renderRefreshButton() {
+    if (!expanded) {
+      return null;
+    }
+
+    if (!hasRefresh) {
+      return <div className="ml-auto size-3 shrink-0" />;
+    }
+
+    return (
+      <IconButton
+        icon="refresh"
+        iconClassName="fill-tpd size-3"
+        className="ml-auto shrink-0 rounded-full p-1"
+        rippleColor="var(--color-ripple-icon-button)"
+        title={t('MenuTree.MenuTreeItem.refreshMenuItem')}
+        onClick={(e) => {
+          e.stopPropagation();
+          onRefresh?.(item);
+        }}
+      />
+    );
+  }
+
+  /** The item's subitems, drawn below it while its list is open. */
+  function renderSubitems() {
+    if (!expanded || !subitemsShown || subitems.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="flex flex-col">
+        {subitems.map((subitem, index) => renderSubitem(subitem, index))}
+      </div>
+    );
+  }
+
+  /** One subitem, carrying the levels above it down to itself. */
+  function renderSubitem(subitem: TMenuTreeItem, index: number) {
+    const isLast = index === subitems.length - 1;
+
+    return (
+      <MenuTreeItem
+        key={subitem.id}
+        item={subitem}
+        last={isLast}
+        currentItemId={currentItemId}
+        expanded
+        getMenuItemDepth={getMenuItemDepth}
+        onClick={onClick}
+        onContextMenu={onContextMenu}
+        onRefresh={onRefresh}
+        onMenuExpansionChange={onMenuExpansionChange}
+        onNavigate={onNavigate}
+        isOnPathToCurrentItem={isOnPathToCurrentItem}
+        menuItemClassName={menuItemClassName}
+        menuItemStyle={menuItemStyle}
+        menuItemIconStyle={menuItemIconStyle}
+        menuItemLabelStyle={menuItemLabelStyle}
+        alwaysFullVersion={alwaysFullVersion}
+        treeLevelBlockTypes={[
+          ...treeLevelBlockTypes,
+          isLast ? 'spacePadding' : 'verticalConnector',
+        ]}
+      />
+    );
+  }
 
   return (
     <>
@@ -413,213 +749,108 @@ function MenuTreeItem({
         }}
         onClick={handleClick}
         onContextMenu={handleContextMenu}
-        onKeyDown={(event) => {
-          if (event.key !== 'Enter' && event.key !== ' ') {
-            return;
-          }
-
-          event.preventDefault();
-          handleClick(event);
-        }}
+        onKeyDown={handleKeyDown}
       >
         {!inactive && <Ripple color="var(--color-ripple-button)" />}
         <div className="absolute left-0 top-0 h-full">
-          {level > 0 &&
-            [...treeLevelBlockTypes, last ? branchEndConnector : branchConnector].map(
-              (type, index) => {
-                const fullWidth = !isList;
-
-                let left = 0;
-                if (index !== level) {
-                  left = (index + 1) * levelXFactor;
-                } else {
-                  left = (index + 0) * levelXFactor;
-                }
-
-                const style: React.CSSProperties = {
-                  left,
-                };
-
-                switch (type) {
-                  case 'branchEndConnector': {
-                    return (
-                      <div
-                        key={index}
-                        className={`
-                        border-b-tpd border-l-tpd absolute top-0 h-3/6 border-b-2 border-l-2
-                        ${fullWidth ? 'w-7' : 'w-2'}
-                      `}
-                        style={style}
-                      />
-                    );
-                  }
-
-                  case 'branchConnector': {
-                    return (
-                      <div key={index} className="absolute top-0 h-full" style={style}>
-                        <div
-                          className={`
-                          border-b-tpd border-l-tpd h-3/6 border-b-2 border-l-2
-                          ${fullWidth ? 'w-7' : 'w-2'}
-                        `}
-                        />
-                        <div className="border-l-tpd h-3/6 border-l-2" />
-                      </div>
-                    );
-                  }
-
-                  case 'spacePadding': {
-                    return null;
-                  }
-
-                  case 'verticalConnector': {
-                    return (
-                      <div
-                        key={index}
-                        className="border-l-tpd absolute top-0 h-full border-l-2"
-                        style={style}
-                      />
-                    );
-                  }
-
-                  // Every connector type above is handled, and this says so: a new one is a type
-                  // error here rather than an item that draws no indentation at all.
-                  default:
-                    return unreachable(type);
-                }
-              },
-            )}
+          {renderTreeLevelBlocks(treeLevelBlockTypes, last, level, isList)}
         </div>
         {expanded && listCollapseStatusIcon}
-        {icon !== undefined && (
-          <Icon
-            name={icon}
-            style={{
-              marginLeft: '0.5rem',
-              width: '1.75rem',
-              height: '1.75rem',
-              flexShrink: 0,
-              fill:
-                !expanded && colorIndicator !== undefined
-                  ? colorIndicatorColorMap[colorIndicator]
-                  : 'var(--color-tpl)',
-              ...menuItemIconStyle,
-            }}
-          />
-        )}
-        {expanded && (
-          <div className="mx-2" style={menuItemLabelStyle}>
-            {titlePrefix}
-            {resolveItemTitle(tRaw, title, titleKey)}
-            {titleSuffix}
-          </div>
-        )}
+        {renderMenuTreeItemIcon(icon, expanded, colorIndicator, menuItemIconStyle)}
+        {renderLabel()}
         {expanded && afterTitleComponent}
-        {expanded &&
-          (hasRefresh ? (
-            <IconButton
-              icon="refresh"
-              iconClassName="fill-tpd size-3"
-              className="ml-auto shrink-0 rounded-full p-1"
-              rippleColor="var(--color-ripple-icon-button)"
-              title={t('MenuTree.MenuTreeItem.refreshMenuItem')}
-              onClick={(e) => {
-                e.stopPropagation();
-                onRefresh?.(item);
-              }}
-            />
-          ) : (
-            <div className="ml-auto size-3 shrink-0" />
-          ))}
-        {expanded &&
-          (colorIndicator !== undefined ? (
-            <div
-              className="ml-0.25 h-3/6 w-2 shrink-0 border-r-4"
-              style={{
-                borderRightColor: colorIndicatorColorMap[colorIndicator],
-              }}
-            />
-          ) : (
-            <div className="ml-0.25 h-3/6 w-2 shrink-0" />
-          ))}
+        {renderRefreshButton()}
+        {renderMenuTreeItemColorIndicator(expanded, colorIndicator)}
       </div>
-      {expanded && subitemsShown && subitems.length !== 0 && (
-        <div className="flex flex-col">
-          {subitems.map((subitem, index) => (
-            <MenuTreeItem
-              key={subitem.id}
-              item={subitem}
-              last={index === subitems.length - 1}
-              currentItemId={currentItemId}
-              expanded
-              getMenuItemDepth={getMenuItemDepth}
-              onClick={onClick}
-              onContextMenu={onContextMenu}
-              onRefresh={onRefresh}
-              onMenuExpansionChange={onMenuExpansionChange}
-              onNavigate={onNavigate}
-              isOnPathToCurrentItem={isOnPathToCurrentItem}
-              menuItemClassName={menuItemClassName}
-              menuItemStyle={menuItemStyle}
-              menuItemIconStyle={menuItemIconStyle}
-              menuItemLabelStyle={menuItemLabelStyle}
-              alwaysFullVersion={alwaysFullVersion}
-              treeLevelBlockTypes={[
-                ...treeLevelBlockTypes,
-                index === subitems.length - 1 ? 'spacePadding' : 'verticalConnector',
-              ]}
-            />
-          ))}
-        </div>
-      )}
+      {renderSubitems()}
     </>
   );
 }
 
+/**
+ * Whether a node of either kind is a menu item, told by the children it carries: a menu item always
+ * has a `subitems` array, a tree view item only ever has `children`.
+ */
+function isMenuTreeItem(item: TMenuTreeItem | TreeViewItem): item is TMenuTreeItem {
+  return (item as TMenuTreeItem).subitems !== undefined;
+}
+
+/**
+ * A menu item's title as this library resolves it: its literal title, or the message it names
+ * through the library's own catalogue — the only catalogue a title keyed for a consuming
+ * application's own menu can be resolved against.
+ */
+function menuTreeItemTitle(menuTreeItem: TMenuTreeItem): string {
+  return resolveItemTitle(
+    (key) => translate(builtinCatalogues, getLocaleName(), key),
+    menuTreeItem.title,
+    menuTreeItem.titleKey,
+  );
+}
+
+/**
+ * The titles of the items above a menu item and of the item itself, or null when the menu has no
+ * such item at or below this one.
+ */
+function menuTreeItemTitleByItsId(
+  menuTreeItem: TMenuTreeItem,
+  id: string,
+  path: readonly string[],
+): string[] | null {
+  const title = menuTreeItemTitle(menuTreeItem);
+
+  if (menuTreeItem.id === id) {
+    return [...path, title];
+  }
+
+  if (menuTreeItem.subitems.length === 0) {
+    return null;
+  }
+
+  return buildMenuItemFullTitleByItsId(menuTreeItem.subitems, id, [...path, title]);
+}
+
+/**
+ * The titles of the items above a tree view item and of the item itself, or null when the tree has
+ * no such item at or below this one.
+ */
+function treeViewItemTitleByItsId(
+  treeViewItem: TreeViewItem,
+  id: string,
+  path: readonly string[],
+): string[] | null {
+  const title = treeViewItem.label;
+
+  if (treeViewItem.id === id) {
+    return [...path, title];
+  }
+
+  if (treeViewItem.children === undefined || treeViewItem.children.length === 0) {
+    return null;
+  }
+
+  return buildMenuItemFullTitleByItsId(treeViewItem.children, id, [...path, title]);
+}
+
+/**
+ * The titles of the items above the one with this id, and of the item itself, or null when neither
+ * kind of tree holds it.
+ *
+ * A menu item names its titles by message key and a tree view item carries its label as it is, so
+ * the two are walked separately and share nothing but the path they are found along.
+ */
 export function buildMenuItemFullTitleByItsId(
   menuItems: readonly TMenuTreeItem[] | TreeViewItem[],
   id: string,
   path: readonly string[] = [],
 ): string[] | null {
   for (const item of menuItems) {
-    if ((item as TMenuTreeItem).subitems !== undefined) {
-      const menuTreeItem = item as TMenuTreeItem;
+    const found = isMenuTreeItem(item)
+      ? menuTreeItemTitleByItsId(item, id, path)
+      : treeViewItemTitleByItsId(item, id, path);
 
-      const title = resolveItemTitle(
-        (key) => translate(builtinCatalogues, getLocaleName(), key),
-        menuTreeItem.title,
-        menuTreeItem.titleKey,
-      );
-
-      if (menuTreeItem.id === id) {
-        return [...path, title];
-      }
-
-      if (menuTreeItem.subitems.length === 0) {
-        continue;
-      }
-
-      const found = buildMenuItemFullTitleByItsId(menuTreeItem.subitems, id, [...path, title]);
-      if (found) {
-        return found;
-      }
-    } else {
-      const treeViewItem = item as TreeViewItem;
-
-      const title = treeViewItem.label;
-
-      if (treeViewItem.id === id) {
-        return [...path, title];
-      }
-
-      if (treeViewItem.children === undefined || treeViewItem.children.length === 0) {
-        continue;
-      }
-
-      const found = buildMenuItemFullTitleByItsId(treeViewItem.children, id, [...path, title]);
-      if (found) {
-        return found;
-      }
+    if (found) {
+      return found;
     }
   }
 

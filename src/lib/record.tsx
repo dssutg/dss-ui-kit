@@ -87,21 +87,33 @@ export function deepClone<T>(value: T, seen = new WeakMap()): T {
     return cloned as T;
   }
   if (value instanceof Set) {
-    const cloned = new Set();
-    seen.set(value, cloned);
-    for (const v of value) {
-      cloned.add(deepClone(v, seen));
-    }
-    return cloned as T;
+    return cloneSet(value, seen) as T;
   }
   if (Array.isArray(value)) {
-    const cloned: unknown[] = [];
-    seen.set(value, cloned);
-    for (const [index, item] of value.entries()) {
-      cloned[index] = deepClone(item, seen);
-    }
-    return cloned as T;
+    return cloneArray(value, seen) as T;
   }
+  return cloneObject(value, seen) as T;
+}
+
+function cloneSet<T>(value: Set<T>, seen: WeakMap<object, unknown>) {
+  const cloned = new Set<T>();
+  seen.set(value, cloned);
+  for (const v of value) {
+    cloned.add(deepClone(v, seen));
+  }
+  return cloned;
+}
+
+function cloneArray<T>(value: readonly T[], seen: WeakMap<object, unknown>) {
+  const cloned: unknown[] = [];
+  seen.set(value, cloned);
+  for (const [index, item] of value.entries()) {
+    cloned[index] = deepClone(item, seen);
+  }
+  return cloned;
+}
+
+function cloneObject<T extends object>(value: T, seen: WeakMap<object, unknown>) {
   const cloned = {} as Record<string, unknown>;
   seen.set(value, cloned);
   // Copy own enumerable properties (including symbol keys)
@@ -119,5 +131,5 @@ export function deepClone<T>(value: T, seen = new WeakMap()): T {
       }
     }
   }
-  return cloned as T;
+  return cloned;
 }

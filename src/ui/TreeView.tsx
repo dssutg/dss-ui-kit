@@ -142,17 +142,7 @@ export function TreeView({
     (e: KeyboardEvent) => {
       onKeyDown?.(e);
 
-      // Reset typeahead timer after a delay
-      function resetTypeAhead() {
-        if (typeAheadTimeoutRef.current !== null) {
-          clearTimeout(typeAheadTimeoutRef.current);
-        }
-        typeAheadTimeoutRef.current = setTimeout(() => setTypeAheadBuffer(''), 500);
-      }
-
-      const targetTagName = (e.target as HTMLElement | undefined)?.tagName;
-
-      if (targetTagName === 'INPUT' || targetTagName === 'TEXTAREA') {
+      if (isEventFromAnotherInput(e)) {
         // Don't intervene with another input's events
         return;
       }
@@ -164,107 +154,139 @@ export function TreeView({
       const currentIndex = visibleItemFlatList.findIndex((item) => item.id === selectedItemId);
       const currentItem = visibleItemFlatList[currentIndex];
 
+      // Reset typeahead timer after a delay
+      const resetTypeAhead = () => {
+        if (typeAheadTimeoutRef.current !== null) {
+          clearTimeout(typeAheadTimeoutRef.current);
+        }
+        typeAheadTimeoutRef.current = setTimeout(() => setTypeAheadBuffer(''), 500);
+      };
+
+      const selectItemAtIndex = (index: number) => {
+        const item = visibleItemFlatList[index];
+
+        if (item !== undefined) {
+          onSelectedItemIdChange(item.id);
+        }
+      };
+
+      const moveSelectionUp = () => {
+        e.preventDefault();
+
+        selectItemAtIndex(clamp(currentIndex - 1, 0, visibleItemFlatList.length - 1));
+      };
+
+      const moveSelectionDown = () => {
+        e.preventDefault();
+
+        selectItemAtIndex(clamp(currentIndex + 1, 0, visibleItemFlatList.length - 1));
+      };
+
+      // Collapse if possible; if already collapsed, move to parent
+      const collapseOrSelectParent = () => {
+        if (selectedItemId === null) {
+          return;
+        }
+
+        if (
+          currentItem !== undefined &&
+          currentItem.children !== undefined &&
+          currentItem.expanded
+        ) {
+          // Try collapsing current item if expanded
+          setTree(updateTreeToCollapseItem(tree, selectedItemId));
+          onItemExpansionChange?.(selectedItemId, false);
+
+          return;
+        }
+
+        // If already collapsed, select parent
+        const parent = findParentItem(tree, selectedItemId);
+
+        if (parent !== null) {
+          onSelectedItemIdChange(parent.id);
+        }
+      };
+
+      const expandSelectedItem = () => {
+        if (selectedItemId === null) {
+          return;
+        }
+
+        // Expand if possible
+        setTree(updateTreeToExpandItem(tree, selectedItemId));
+        onItemExpansionChange?.(selectedItemId, true);
+      };
+
+      // Typeahead: if a character is an alphanumeric letter, accumulate it and search
+      const searchByTypeAhead = (key: string) => {
+        if (!isTypeAheadCharacter(key)) {
+          return;
+        }
+
+        const newTypeAhead = `${typeAheadBuffer}${key.toLowerCase()}`;
+
+        setTypeAheadBuffer(newTypeAhead);
+
+        const trySelectNextFoundItem = (aheadFlatList: TreeViewItem[]) => {
+          // Look for the first item starting with the typeahead buffer
+          const found = aheadFlatList.find((item) =>
+            item.label.trim().toLowerCase().startsWith(newTypeAhead),
+          );
+
+          const success = found !== undefined;
+
+          if (success) {
+            onSelectedItemIdChange(found.id);
+          }
+
+          return success;
+        };
+
+        if (currentIndex === -1) {
+          trySelectNextFoundItem(visibleItemFlatList);
+        } else {
+          const success = trySelectNextFoundItem(visibleItemFlatList.slice(currentIndex + 1));
+
+          if (!success) {
+            trySelectNextFoundItem(visibleItemFlatList);
+          }
+        }
+
+        resetTypeAhead();
+      };
+
       resetTypeAhead();
 
       switch (e.key) {
         case 'ArrowUp': {
-          e.preventDefault();
-
-          const nextIndex = clamp(currentIndex - 1, 0, visibleItemFlatList.length - 1);
-          const nextItem = visibleItemFlatList[nextIndex];
-
-          if (nextItem !== undefined) {
-            onSelectedItemIdChange(nextItem.id);
-          }
+          moveSelectionUp();
 
           break;
         }
 
         case 'ArrowDown': {
-          e.preventDefault();
-
-          const nextIndex = clamp(currentIndex + 1, 0, visibleItemFlatList.length - 1);
-          const nextItem = visibleItemFlatList[nextIndex];
-
-          if (nextItem !== undefined) {
-            onSelectedItemIdChange(nextItem.id);
-          }
+          moveSelectionDown();
 
           break;
         }
 
         case 'ArrowLeft': {
           e.preventDefault();
-
-          // Collapse if possible; if already collapsed, move to parent
-          if (selectedItemId !== null) {
-            if (
-              currentItem !== undefined &&
-              currentItem.children !== undefined &&
-              currentItem.expanded
-            ) {
-              // Try collapsing current item if expanded
-              setTree(updateTreeToCollapseItem(tree, selectedItemId));
-              onItemExpansionChange?.(selectedItemId, false);
-            } else {
-              // If already collapsed, select parent
-              const parent = findParentItem(tree, selectedItemId);
-
-              if (parent !== null) {
-                onSelectedItemIdChange(parent.id);
-              }
-            }
-          }
+          collapseOrSelectParent();
 
           break;
         }
 
         case 'ArrowRight': {
           e.preventDefault();
-
-          if (selectedItemId !== null) {
-            // Expand if possible
-            setTree(updateTreeToExpandItem(tree, selectedItemId));
-            onItemExpansionChange?.(selectedItemId, true);
-          }
+          expandSelectedItem();
 
           break;
         }
 
         default: {
-          // Typeahead: if a character is an alphanumeric letter, accumulate it and search
-          if (e.key.length === 1 && /\S/.test(e.key)) {
-            const newTypeAhead = `${typeAheadBuffer}${e.key.toLowerCase()}`;
-
-            setTypeAheadBuffer(newTypeAhead);
-
-            function trySelectNextFoundItem(aheadFlatList: TreeViewItem[]) {
-              // Look for the first item starting with the typeahead buffer
-              const found = aheadFlatList.find((item) =>
-                item.label.trim().toLowerCase().startsWith(newTypeAhead),
-              );
-
-              const success = found !== undefined;
-
-              if (success) {
-                onSelectedItemIdChange(found.id);
-              }
-
-              return success;
-            }
-
-            if (currentIndex === -1) {
-              trySelectNextFoundItem(visibleItemFlatList);
-            } else {
-              const success = trySelectNextFoundItem(visibleItemFlatList.slice(currentIndex + 1));
-
-              if (!success) {
-                trySelectNextFoundItem(visibleItemFlatList);
-              }
-            }
-
-            resetTypeAhead();
-          }
+          searchByTypeAhead(e.key);
 
           break;
         }
@@ -300,6 +322,94 @@ export function TreeView({
     },
     [toggleExpansion],
   );
+
+  // The arrow keys and typeahead belong to the tree as a whole and are handled
+  // by the root. Activation is per item, so it is handled here and kept from
+  // bubbling: `handleKeyDown` treats any single character as typeahead.
+  const handleTreeItemKeyDown = (item: TreeViewItem, e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'Enter' && e.key !== ' ') {
+      return;
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+    onSelectedItemIdChange(item.id);
+  };
+
+  const getTreeItemRowClassName = (item: TreeViewItem) => {
+    const loading = item.loading ?? false;
+
+    return `
+      flex p-1 select-none
+      ${!loading && selectedItemId === item.id ? 'bg-bse' : ''}
+      ${loading ? 'brightness-75 animate-pulse pointer-events-none' : 'cursor-pointer'}
+      ${itemClassName}
+    `;
+  };
+
+  // An item without children gets a spacer instead of the button, so that every label starts at
+  // the same offset.
+  const renderExpansionToggle = (item: TreeViewItem) => {
+    if (item.children === undefined) {
+      return <div className="size-4 mr-2 shrink-0" />;
+    }
+
+    return (
+      <IconButton
+        icon="triangleDown"
+        iconClassName={`
+          fill-tpd size-4
+          ${!item.expanded ? '-rotate-90' : ''}
+        `}
+        className="mr-2 shrink-0"
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleExpansion(item);
+        }}
+        onDblClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+        }}
+      />
+    );
+  };
+
+  const renderItemIcon = (item: TreeViewItem) => {
+    if (item.icon === undefined) {
+      return null;
+    }
+
+    return (
+      <Icon
+        name={item.icon}
+        style={{
+          marginLeft: '0.5rem',
+          width: '1.75rem',
+          height: '1.75rem',
+          flexShrink: 0,
+          ...itemIconStyle,
+        }}
+      />
+    );
+  };
+
+  const renderItemLabel = (item: TreeViewItem) => {
+    return (
+      <div className="truncate" style={itemLabelStyle}>
+        {item.checked !== undefined ? (
+          <Checkbox
+            checked={item.checked}
+            onChange={(checked) => {
+              setTree(updateTreeToSetItemCheck(tree, item.id, checked));
+            }}
+            label={item.label}
+          />
+        ) : (
+          item.label
+        )}
+      </div>
+    );
+  };
 
   return (
     // `role="tree"` with a single `tabIndex={0}` is the composite-widget pattern: the tree takes
@@ -343,8 +453,6 @@ export function TreeView({
                     return null;
                   }
 
-                  const loading = item.loading ?? false;
-
                   return (
                     <div key={item.id} style={style}>
                       <div
@@ -365,81 +473,20 @@ export function TreeView({
                           handleItemDoubleClick(item, e);
                         }}
                         onKeyDown={(e) => {
-                          // The arrow keys and typeahead belong to the tree as a whole and are handled
-                          // by the root. Activation is per item, so it is handled here and kept from
-                          // bubbling: `handleKeyDown` treats any single character as typeahead.
-                          if (e.key !== 'Enter' && e.key !== ' ') {
-                            return;
-                          }
-
-                          e.preventDefault();
-                          e.stopPropagation();
-                          onSelectedItemIdChange(item.id);
+                          handleTreeItemKeyDown(item, e);
                         }}
                         onDragOver={item.onDragOver}
                         onDrop={item.onDrop}
-                        className={`
-                          flex p-1 select-none
-                          ${!loading && selectedItemId === item.id ? 'bg-bse' : ''}
-                          ${
-                            loading
-                              ? 'brightness-75 animate-pulse pointer-events-none'
-                              : 'cursor-pointer'
-                          }
-                          ${itemClassName}
-                        `}
+                        className={getTreeItemRowClassName(item)}
                         style={{
                           paddingLeft: (item.level ?? 0) * levelPaddingPixels,
                           ...itemStyle,
                         }}
                       >
-                        {item.children !== undefined ? (
-                          <IconButton
-                            icon="triangleDown"
-                            iconClassName={`
-                              fill-tpd size-4
-                              ${!item.expanded ? '-rotate-90' : ''}
-                            `}
-                            className="mr-2 shrink-0"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setTree(updateTreeToToggleItemExpansion(tree, item.id));
-                              onItemExpansionChange?.(item.id, !item.expanded);
-                            }}
-                            onDblClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                            }}
-                          />
-                        ) : (
-                          <div className="size-4 mr-2 shrink-0" />
-                        )}
-                        {item.icon !== undefined && (
-                          <Icon
-                            name={item.icon}
-                            style={{
-                              marginLeft: '0.5rem',
-                              width: '1.75rem',
-                              height: '1.75rem',
-                              flexShrink: 0,
-                              ...itemIconStyle,
-                            }}
-                          />
-                        )}
+                        {renderExpansionToggle(item)}
+                        {renderItemIcon(item)}
                         {item.labelPrefix}
-                        <div className="truncate" style={itemLabelStyle}>
-                          {item.checked !== undefined ? (
-                            <Checkbox
-                              checked={item.checked}
-                              onChange={(checked) => {
-                                setTree(updateTreeToSetItemCheck(tree, item.id, checked));
-                              }}
-                              label={item.label}
-                            />
-                          ) : (
-                            item.label
-                          )}
-                        </div>
+                        {renderItemLabel(item)}
                         {item.labelSuffix}
                       </div>
                     </div>
@@ -452,6 +499,16 @@ export function TreeView({
       </div>
     </div>
   );
+}
+
+function isEventFromAnotherInput(e: KeyboardEvent) {
+  const targetTagName = (e.target as HTMLElement | undefined)?.tagName;
+
+  return targetTagName === 'INPUT' || targetTagName === 'TEXTAREA';
+}
+
+function isTypeAheadCharacter(key: string) {
+  return key.length === 1 && /\S/.test(key);
 }
 
 function getVisibleItemFlatList(items: TreeViewItem[], level = 0, parentLoading = false) {
