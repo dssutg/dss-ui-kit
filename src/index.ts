@@ -98,7 +98,7 @@ export type {
 export { useFilteredItems } from '@/filterable_table_search';
 export { AutoSizer } from '@/lib/AutoSizer';
 export { tryCatch, tryCatchAsync } from '@/lib/catch';
-export { getCSSVariableValue } from '@/lib/color';
+export { getCSSVariableValue, Rgba32Gradient } from '@/lib/color';
 export { formatRelativeDate, getDateComponents } from '@/lib/date';
 export { parseCSV, parseDSV, serializeCSV, serializeDSV } from '@/lib/dsv';
 export { downloadStringAsPlainTextFile, formatByteSize } from '@/lib/file';
@@ -194,6 +194,12 @@ export { ColumnResizer } from '@/ui/ColumnResizer';
 export { ContinuousCircleSpinner } from '@/ui/ContinuousCircleSpinner';
 export { ControlledMUITabList } from '@/ui/ControlledMUITabList';
 export { CopyToClipboardButton } from '@/ui/CopyToClipboardButton';
+export type {
+  AlphaColorPickerProperties,
+  ColorInputProperties,
+  ColorPickerProperties,
+} from '@/ui/color_picker_components';
+export { AlphaColorPicker, ColorInput, ColorPicker } from '@/ui/color_picker_components';
 export { DashedCircle } from '@/ui/DashedCircle';
 export type { DecimalIntegerInputValue } from '@/ui/DecimalIntegerInput';
 export { DecimalIntegerInput } from '@/ui/DecimalIntegerInput';
@@ -206,11 +212,16 @@ export type { EditableAccordionListItem } from '@/ui/EditableAccordionList';
 export { EditableAccordionList } from '@/ui/EditableAccordionList';
 export type { FeedbackTooltipType } from '@/ui/FeedbackTooltip';
 export { FeedbackTooltip, showFeedbackTooltip } from '@/ui/FeedbackTooltip';
-export { FloatInput } from '@/ui/FloatInput';
+export { HexAlphaColorPicker } from '@/ui/HexAlphaColorPicker';
 export { HexAlphaColorPickerPopover } from '@/ui/HexAlphaColorPickerPopover';
+export type { HexColorInputProperties } from '@/ui/HexColorInput';
+export { HexColorInput } from '@/ui/HexColorInput';
+export { HexColorPicker } from '@/ui/HexColorPicker';
 export { HighlightedJson } from '@/ui/HighlightedJson';
 export { HourMinuteSecondTimeInput } from '@/ui/HourMinuteSecondTimeInput';
 export { HourMinuteTimeInput } from '@/ui/HourMinuteTimeInput';
+export { HslaColorPicker } from '@/ui/HslaColorPicker';
+export { HslaStringColorPicker } from '@/ui/HslaStringColorPicker';
 export { HslaStringColorPickerPopover } from '@/ui/HslaStringColorPickerPopover';
 export type { IconName } from '@/ui/Icon';
 export { Icon } from '@/ui/Icon';
@@ -243,6 +254,8 @@ export type { PieChartShare } from '@/ui/PieChart';
 export { getShareColor, getSharePercent, mapToShares, PieChart } from '@/ui/PieChart';
 export { Popover } from '@/ui/Popover';
 export { ResizableSplit } from '@/ui/ResizableSplit';
+export { RgbaColorPicker } from '@/ui/RgbaColorPicker';
+export { RgbaStringColorPicker } from '@/ui/RgbaStringColorPicker';
 export { RingProgress } from '@/ui/RingProgress';
 export { Ripple } from '@/ui/Ripple';
 export { ScrollProgressBar } from '@/ui/ScrollProgressBar';

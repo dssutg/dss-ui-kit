@@ -224,6 +224,33 @@ able to compile against it, and a stale checked-in build is a silent defect.
 
 What the package exports, and what it refuses to import.
 
+> **Decided, and deferred: there will be no `src/index.ts`.** A consumer is expected to import the
+> specific component it wants — `dss-ui-kit/ui/Button` — rather than everything from one entry file.
+> `src/index.ts` exists today because the build needs an entry for Vite's library mode and the
+> `exports` map needs a `"."`; it is scaffolding for that, not the intended public surface.
+>
+> Removing it properly is a packaging change, not a deletion, and it belongs with stage 12 rather
+> than here:
+>
+> - **Ship pre-built subpath modules, not source.** Unmodified source would carry `@/`-aliased
+>   imports into the consumer's build, and a consumer's bundler cannot resolve our alias. A
+>   `preserveModules` build emits one file per module with the `@/` imports already rewritten to
+>   relative paths, and the `exports` map exposes them as `./ui/*`.
+> - **The UMD build goes away with it.** `lib.name` produces exactly one global for one entry, so a
+>   per-component package has no UMD form. That is a real loss and a decision to revisit, not a
+>   detail to paper over.
+> - **The stylesheet stops riding along in a JS import.** `src/index.ts` is the only thing importing
+>   `@/index.css`, so with no entry file the build would emit no CSS at all. The `exports` map
+>   already has `"./style.css"` for exactly this, and the consumer is expected to import it.
+> - **TypeDoc is unaffected.** It already uses `entryPointStrategy: "expand"` over `src/**` and has
+>   never gone through the entry file.
+>
+> What is settled now, because it does not depend on the packaging: the symbols to expose. The
+> colour pickers are the headline feature of a design-system package and are currently absent from
+> the surface. Also decided: `ControlledTable`, `GeneralizedSearchModal`, `FilterableTableStatsModal`,
+> `TimelineViewerModal` and `CountLabel` stay internal — `FilterableTableTopPanel` is the entry to
+> the table, and the rest are its implementation.
+
 - [ ] Write `src/index.ts` as the single public surface.
   - [ ] Re-export every component and hook in `src/ui/` and `src/lib/` that stage 3 kept.
   - [ ] Named exports only, per [`AGENTS.md`](./AGENTS.md); export the props interface of each
