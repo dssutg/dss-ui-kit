@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 // For registering event listeners
-type EventListenerCallback<E> = (event: E) => void;
+export type EventListenerCallback<E> = (event: E) => void;
 
 export function useEventListener<E>(
   eventType: string,

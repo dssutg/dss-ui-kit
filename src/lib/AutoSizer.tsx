@@ -7,26 +7,26 @@ interface DetectElementResize {
   removeResizeListener: ResizeHandler;
 }
 
-interface HorizontalSize {
+export interface HorizontalSize {
   width: number;
   scaledWidth: number;
 }
 
-interface VerticalSize {
+export interface VerticalSize {
   height: number;
   scaledHeight: number;
 }
 
-type Size = HorizontalSize & VerticalSize;
+export type Size = HorizontalSize & VerticalSize;
 
-interface BaseProps extends HTMLAttributes<HTMLDivElement> {
+export interface BaseProps extends HTMLAttributes<HTMLDivElement> {
   doNotBailOutOnEmptyChildren?: boolean | undefined;
   nonce?: string | undefined;
   tagName?: string | undefined;
   style?: React.CSSProperties | undefined;
 }
 
-type HeightOnlyProps = BaseProps & {
+export type HeightOnlyProps = BaseProps & {
   children: (size: VerticalSize) => ReactNode;
   defaultHeight?: number | undefined;
   disableHeight?: false | undefined;
@@ -34,7 +34,7 @@ type HeightOnlyProps = BaseProps & {
   onResize?: (size: VerticalSize) => void;
 };
 
-type WidthOnlyProps = BaseProps & {
+export type WidthOnlyProps = BaseProps & {
   children: (size: HorizontalSize) => ReactNode;
   defaultWidth?: number | undefined;
   disableHeight: true;
@@ -42,7 +42,7 @@ type WidthOnlyProps = BaseProps & {
   onResize?: (size: HorizontalSize) => void;
 };
 
-type HeightAndWidthProps = BaseProps & {
+export type HeightAndWidthProps = BaseProps & {
   children: (size: Size) => ReactNode;
   defaultHeight?: number | undefined;
   defaultWidth?: number | undefined;
@@ -51,9 +51,9 @@ type HeightAndWidthProps = BaseProps & {
   onResize?: (size: Size) => void;
 };
 
-type Props = HeightOnlyProps | WidthOnlyProps | HeightAndWidthProps;
+export type AutoSizerProps = HeightOnlyProps | WidthOnlyProps | HeightAndWidthProps;
 
-interface State {
+export interface AutoSizerState {
   height: number;
   scaledHeight: number;
   scaledWidth: number;
@@ -410,8 +410,8 @@ function createDetectElementResize(nonce?: string): DetectElementResize {
   };
 }
 
-export class AutoSizer extends Component<Props, State> {
-  public override state: State = {
+export class AutoSizer extends Component<AutoSizerProps, AutoSizerState> {
+  public override state: AutoSizerState = {
     height: (this.props as HeightAndWidthProps).defaultHeight || 0,
     scaledHeight: (this.props as HeightAndWidthProps).defaultHeight || 0,
     scaledWidth: (this.props as HeightAndWidthProps).defaultWidth || 0,

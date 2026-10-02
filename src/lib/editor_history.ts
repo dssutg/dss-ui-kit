@@ -11,7 +11,7 @@ export interface EditorHistory {
   offset: number;
 }
 
-interface EditorHistoryRefs {
+export interface EditorHistoryRefs {
   readonly historyRef: { current: EditorHistory };
   readonly inputRef: { current: HTMLTextAreaElement | null };
   readonly onValueChange: ((value: string) => void) | undefined;

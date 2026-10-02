@@ -5,7 +5,7 @@ import { handleEditorKeyDown } from '@/lib/editor_keybindings';
 import { cssText, editorStyles, lineHeight } from '@/lib/editor_style';
 import { useGranularEffect } from '@/lib/use_granular_effect';
 
-type Padding<T> = T | { top?: T; right?: T; bottom?: T; left?: T };
+export type Padding<T> = T | { top?: T; right?: T; bottom?: T; left?: T };
 
 export const Editor = forwardRef(
   (

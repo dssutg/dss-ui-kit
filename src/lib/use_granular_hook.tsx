@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 
-type HookWithDependencies<C, R> = (callback: C, deps: unknown[]) => R;
+export type HookWithDependencies<C, R> = (callback: C, deps: unknown[]) => R;
 
 export function useGranularHook<T extends HookWithDependencies<C, ReturnType<T>>, C>(
   hook: T,

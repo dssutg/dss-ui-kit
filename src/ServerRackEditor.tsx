@@ -567,7 +567,7 @@ function convertCsvRowsToObjectRecords(rows: readonly string[][]) {
   return records;
 }
 
-interface RackDeviceAliasMap {
+export interface RackDeviceAliasMap {
   rackIdAlias: string;
   posLabelAlias: string;
   rackDeviceTypeAlias: string;

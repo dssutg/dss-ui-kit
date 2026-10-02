@@ -1,7 +1,7 @@
 /**
  * The slack two components are allowed to differ by and still compare equal.
  *
- * Shared with {@link Vector3D}, whose `equals`, `isZero` and `isUnit` have to mean the same thing.
+ * Shared with `Vector3D`, whose `equals`, `isZero` and `isUnit` have to mean the same thing.
  * It is not part of the package's public surface: `src/lib/math.tsx` does not re-export it.
  */
 export const DEFAULT_EQUALITY_TOLERANCE = 1e-10;

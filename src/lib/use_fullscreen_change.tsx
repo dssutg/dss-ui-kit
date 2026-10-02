@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-type OnFullScreenChangeCallback = (isFullScreen: boolean) => void;
+export type OnFullScreenChangeCallback = (isFullScreen: boolean) => void;
 
 export function useFullScreenChange(onFullScreenChange: OnFullScreenChangeCallback) {
   const callbackRef = useRef<OnFullScreenChangeCallback>(onFullScreenChange);

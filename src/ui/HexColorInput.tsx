@@ -1,7 +1,7 @@
 import { type JSX, useCallback } from 'react';
 import { ColorInput, type ColorInputBaseProperties } from '@/ui/color_picker_internal';
 
-interface HexColorInputProperties extends ColorInputBaseProperties {
+export interface HexColorInputProperties extends ColorInputBaseProperties {
   /** Enables `#` prefix displaying */
   readonly prefixed?: boolean | undefined;
 

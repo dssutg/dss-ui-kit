@@ -28,7 +28,8 @@ export interface RackDevice {
    */
   readonly posLabel: string;
   /**
-   * The caller's key for this kind of device. Matched against {@link ServerRackViewProps.deviceTypes}
+   * The caller's key for this kind of device. Matched against the `deviceTypes` prop of
+   * `ServerRackViewProps`.
    * to decide the label and the palette; the module never interprets it.
    */
   readonly deviceType: string;
@@ -50,7 +51,7 @@ export interface Rack {
 }
 
 /**
- * How a caller describes one of its device types to {@link ServerRackView}.
+ * How a caller describes one of its device types to `ServerRackView`.
  *
  * `title` is the label as the caller wants it drawn, already resolved into the caller's language,
  * because the wording of a device type is the caller's vocabulary and not a key this library owns.
@@ -65,7 +66,7 @@ export interface RackDeviceTypeDescriptor {
 /** Device types keyed by the `deviceType` a {@link RackDevice} carries. */
 export type DeviceTypeLookup = Readonly<Record<string, RackDeviceTypeDescriptor>>;
 
-/** Identifies one device in {@link ServerRackViewProps.onDeviceClick}. */
+/** Identifies one device passed to the `onDeviceClick` prop of `ServerRackViewProps`. */
 export interface RackDeviceRef {
   readonly deviceType: string;
   readonly serialNumber: number;

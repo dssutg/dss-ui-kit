@@ -75,7 +75,7 @@ function toSpan(str: string, token: unknown) {
   return str;
 }
 
-type Lang = 'lua' | 'json';
+export type Lang = 'lua' | 'json';
 
 const langTokenMap = {
   lua: luaTokenPatterns,

@@ -10,7 +10,7 @@ export class HttpError extends Error {
   }
 }
 
-interface UseFetchResult<T> {
+export interface UseFetchResult<T> {
   data: T | null; // hot data (null on refetch)
   savedData: T | null; // data since latest fetch (not null on refetch)
   loading: boolean;
