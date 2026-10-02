@@ -186,15 +186,15 @@ The copy is formatted with tabs, double quotes and a line width of 319. the cons
 two spaces, single quotes and a width of 100. Every stage after this one would otherwise be a diff
 against a moving target.
 
-- [ ] Reformat `src/` and settle the resulting lint findings.
-  - [ ] Run `deno task format` over the copy; commit as its own change so the reformat diff is
+- [x] Reformat `src/` and settle the resulting lint findings.
+  - [x] Run `deno task format` over the copy; commit as its own change so the reformat diff is
         readable on its own.
-  - [ ] Then fix what `deno task lint:biome` reports, file by file, and record every rule that had to
+  - [x] Then fix what `deno task lint:biome` reports, file by file, and record every rule that had to
         be relaxed rather than fixed — a suppressed rule is a decision that needs a reason.
-  - [ ] Move `src/lib/color_picker.tsx` to `src/ui/`. It is 1 024 lines exporting seven React
+  - [x] Move `src/lib/color_picker.tsx` to `src/ui/`. It is 1 024 lines exporting seven React
         components and is imported by exactly one file, `ui/color_popover.tsx`, so it is the one
         file in `src/lib/` that breaks the layer rule in [`AGENTS.md`](./AGENTS.md).
-  - [ ] Drop the four modules the original application no longer imports either:
+  - [x] Drop the four modules the original application no longer imports either:
         `base64_response_parser`, `primitive`, `simplex`, `use_mouse_drag_on_element`.
 
 ## 4. Tailwind pipeline
@@ -203,12 +203,12 @@ The library ships a **checked-in Tailwind build**, `src/css/utility.css` — 4 8
 output, produced by the original application's esbuild step and never regenerated. A consumer's build must be
 able to compile against it, and a stale checked-in build is a silent defect.
 
-- [ ] Replace the checked-in build with a real Tailwind CSS 3 pipeline.
-  - [ ] Add `src/index.css` with the three directives, and delete `src/css/utility.css`.
-  - [ ] `tailwind.config.ts` declaring all 119 tokens as colours of the form
+- [x] Replace the checked-in build with a real Tailwind CSS 3 pipeline.
+  - [x] Add `src/index.css` with the three directives, and delete `src/css/utility.css`.
+  - [x] `tailwind.config.ts` declaring all 119 tokens as colours of the form
         `bda: 'var(--color-bda)'`, so `bg-bda` and `text-tpl` resolve in the consumer too.
-  - [ ] Keep `@tailwindcss/forms`, which the `Input` component's styling assumes.
-  - [ ] The `content` globs must cover a consumer that imports the built package, not just this
+  - [x] Keep `@tailwindcss/forms`, which the `Input` component's styling assumes.
+  - [x] The `content` globs must cover a consumer that imports the built package, not just this
         repository's own source — decide whether that means shipping the classes as CSS or as a
         published Tailwind preset, and record the choice.
 - [ ] Split the themes so a consumer imports the one it uses.
@@ -231,7 +231,7 @@ What the package exports, and what it refuses to import.
   - [ ] An application shell demo is **not** part of the entry point. A playground exists so the
         components can be seen running, and it lives outside the package's public surface.
 - [ ] Enforce the boundary, because a rule that is only written down is a rule that gets broken.
-  - [ ] A test that walks `src/` and fails if any file under `src/ui/` or `src/lib/` imports a module
+  - [x] A test that walks `src/` and fails if any file under `src/ui/` or `src/lib/` imports a module
         outside `src/lib/`, `src/ui/` and the four infrastructure modules.
   - [ ] Move the no-bare-JavaScript and no-Russian-text rules onto the same footing as
         the consuming application, which has `scripts/no-bare-javascript.test.ts` and
