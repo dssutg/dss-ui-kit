@@ -75,7 +75,8 @@ export type {
   FilterableTableProps,
 } from '@/FilterableTable';
 export { FilterableTable } from '@/FilterableTable';
-export type { EnumOption, FilterableTableTopPanel } from '@/FilterableTableTopPanel';
+export type { EnumOption } from '@/FilterableTableTopPanel';
+export { FilterableTableTopPanel } from '@/FilterableTableTopPanel';
 export type { FeatureDescriptor, FeatureName, FeatureToggleEvent } from '@/feature_flag';
 export {
   getAllFeatureFlags,
@@ -154,20 +155,6 @@ export {
   translate,
   useLocale,
 } from '@/locale';
-export type { RackDatabaseColumns, ServerRackEditorProps } from '@/ServerRackEditor';
-export { SeverRackEditor } from '@/ServerRackEditor';
-export type { ServerRackViewProps } from '@/ServerRackView';
-export { ServerRackView } from '@/ServerRackView';
-export type {
-  DeviceTypeLookup,
-  Rack,
-  RackDevice,
-  RackDeviceRef,
-  RackDeviceTypeDescriptor,
-  RackDeviceVariant,
-  RackPanel,
-  RackPanelName,
-} from '@/server_rack_types';
 export type { BuiltinThemeName, ThemeDescriptor, ThemeName } from '@/theme';
 export {
   builtinThemeNames,
