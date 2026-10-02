@@ -101,7 +101,7 @@ export function TreeView({
 
   const itemIdToElementMap = useRef<Record<string, HTMLDivElement | null>>({});
 
-  const typeAheadTimeoutRef = useRef<number | null>(null);
+  const typeAheadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const listRef = useRef<HTMLDivElement>(null);
 
