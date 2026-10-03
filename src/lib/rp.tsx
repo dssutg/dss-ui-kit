@@ -1,4 +1,4 @@
-import { clamp } from '@/lib/math';
+import { clamp } from './math';
 
 export const rp = {
   string: (x: unknown): string => {

@@ -1,4 +1,4 @@
-import type { Point2D } from '@/lib/math';
+import type { Point2D } from './math';
 
 /**
  * The first active touch of a pointer event, or `null` when there is none.

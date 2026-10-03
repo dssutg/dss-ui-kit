@@ -1,5 +1,5 @@
-import type { EditorRecord } from '@/lib/editor_history';
-import { getLines } from '@/lib/editor_history';
+import type { EditorRecord } from './editor_history';
+import { getLines } from './editor_history';
 
 /**
  * The character sequence one Tab press inserts: spaces by default, a tab character when

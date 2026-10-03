@@ -1,16 +1,16 @@
-export { copyToClipboard } from '@/lib/dom_clipboard';
-export { DragHandler } from '@/lib/dom_drag';
-export { decompressJSON } from '@/lib/dom_encoding';
-export { hasUserFocusedInput, onBackdropClick } from '@/lib/dom_focus';
+export { copyToClipboard } from './dom_clipboard';
+export { DragHandler } from './dom_drag';
+export { decompressJSON } from './dom_encoding';
+export { hasUserFocusedInput, onBackdropClick } from './dom_focus';
 export {
   areDOMRectsEqual,
   DOMRectContainsPoint,
   inViewport,
   scrollToElement,
-} from '@/lib/dom_geometry';
-export { escapeHTMLValue, html, sanitizeHTMLString, templ } from '@/lib/dom_html';
-export { firstTouch, getPointerPosition } from '@/lib/dom_pointer';
-export { getDpr, getResponsiveSize } from '@/lib/dom_sizing';
-export { debounce } from '@/lib/dom_timing';
-export type { EventCallback, WCAttrChange } from '@/lib/dom_web_component';
-export { WComponent } from '@/lib/dom_web_component';
+} from './dom_geometry';
+export { escapeHTMLValue, html, sanitizeHTMLString, templ } from './dom_html';
+export { firstTouch, getPointerPosition } from './dom_pointer';
+export { getDpr, getResponsiveSize } from './dom_sizing';
+export { debounce } from './dom_timing';
+export type { EventCallback, WCAttrChange } from './dom_web_component';
+export { WComponent } from './dom_web_component';

@@ -13,7 +13,7 @@ import {
   modeInArray,
   moveArrayElement,
   sumArray,
-} from '@/lib/array';
+} from './array';
 
 describe('compareArrays', () => {
   test('returns zero for two equal arrays', () => {

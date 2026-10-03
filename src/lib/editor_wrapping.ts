@@ -1,4 +1,4 @@
-import type { EditorRecord } from '@/lib/editor_history';
+import type { EditorRecord } from './editor_history';
 
 /**
  * Surround the selected text with a pair of characters, the way an editor does when a bracket or a

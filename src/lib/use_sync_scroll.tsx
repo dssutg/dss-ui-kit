@@ -1,4 +1,4 @@
-import { useEventListener } from '@/lib/use_event_listener';
+import { useEventListener } from './use_event_listener';
 
 export function useSyncScroll<T extends HTMLElement>({
   container1,

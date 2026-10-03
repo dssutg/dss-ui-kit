@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
-import { emitEvent, useEvent } from '@/event';
 import { useForceUpdate } from '@/lib/use_force_update';
+import { emitEvent, useEvent } from './event';
 
 /**
  * The name of a feature flag.

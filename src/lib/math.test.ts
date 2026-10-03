@@ -12,7 +12,7 @@ import {
   mergeIntegers,
   toFloat32Array,
   vec4From,
-} from '@/lib/math';
+} from './math';
 
 /** Matrices hold numbers that are close but not identical, so comparisons allow for a rounding error. */
 function expectMatrixToBeCloseTo(actual: Mat4, expected: readonly number[]) {

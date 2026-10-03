@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
-import { clamp } from '@/lib/math';
-import { useEventListener } from '@/lib/use_event_listener';
-import { useGranularEffect } from '@/lib/use_granular_effect';
+import { clamp } from './math';
+import { useEventListener } from './use_event_listener';
+import { useGranularEffect } from './use_granular_effect';
 
 export function useDocumentScrollPercentage() {
   const [scrollPercentage, setScrollPercentage] = useState(0);

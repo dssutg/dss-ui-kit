@@ -13,6 +13,7 @@
 
 import { useEffect, useState } from 'react';
 import fragmentShaderSource from '@/lib/gl/fragment.glsl?raw';
+import vertexShaderSource from '@/lib/gl/vertex.glsl?raw';
 import {
   calcNormal,
   convertBoxToQuads,
@@ -21,7 +22,7 @@ import {
   generateTransformMatrices,
   getBoxCropUV,
   makeTransformedVertex,
-} from '@/lib/gl/geometry';
+} from './geometry';
 import type {
   Camera,
   FontCharacterInfo,
@@ -30,8 +31,7 @@ import type {
   Scene,
   TextSceneObject,
   Vector3Array,
-} from '@/lib/gl/scene';
-import vertexShaderSource from '@/lib/gl/vertex.glsl?raw';
+} from './scene';
 
 /**
  * The compiled shader program and the locations of everything the shaders bind.

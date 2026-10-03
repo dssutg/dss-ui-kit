@@ -39,8 +39,7 @@ describe('biome configuration', () => {
   it('has overrides that actually take effect', async () => {
     const config = JSON.parse(await Deno.readTextFile(CONFIG_PATH));
     const iconsOverride = (config.overrides ?? []).find(
-      (override: { includes?: string[] }) =>
-        override.includes?.includes('src/ui/icons/**') === true,
+      (override: { includes?: string[] }) => override.includes?.includes('src/icons/**') === true,
     );
 
     // If the overrides were being dropped, the setting below would be missing entirely, so this

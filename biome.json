@@ -175,7 +175,7 @@
       }
     },
     {
-      "includes": ["src/ui/icons/**"],
+      "includes": ["src/icons/**"],
       "linter": {
         "rules": {
           "a11y": {
@@ -195,7 +195,7 @@
                 "patterns": [
                   {
                     "group": ["../**"],
-                    "message": "Import through the '@' alias, for example '@/ui/button'. A sibling may be imported as './name' — that path is unambiguous — but nothing walks up the tree with '../'."
+                    "message": "Import through the '@' alias, for example '@/components/buttons/Button'. A sibling may be imported as './name' — that path is unambiguous — but nothing walks up the tree with '../'."
                   }
                 ]
               }

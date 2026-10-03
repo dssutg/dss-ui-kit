@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { useGranularEffect } from '@/lib/use_granular_effect';
-import { useTimeout } from '@/lib/use_timeout';
+import { useGranularEffect } from './use_granular_effect';
+import { useTimeout } from './use_timeout';
 
 // For calling a function when the tracked state stopped changing after a timeout
 export function useDebounce(

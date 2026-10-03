@@ -11,26 +11,26 @@ import { collectFiles, REPOSITORY_ROOT } from './lib/source-tree.ts';
  * this library may keep, so where a module may reach from has to be decided once and checked
  * mechanically rather than reviewed file by file. This test is that decision.
  *
- * The one direction the copy never uses is the one the rule forbids: nothing in `src/lib/` imports
- * `src/ui/`. Helpers do not know what renders them. A helper that starts needing a component is a
- * component, and it moves.
+ * The one direction nothing in the tree uses is the one the rule forbids: nothing in `src/lib/`
+ * imports `src/components/`. Helpers do not know what renders them. A helper that starts needing a
+ * component is a component, and it moves.
  */
 /** The layers the source tree is divided into. */
-type LayerName = 'lib' | 'ui' | 'infrastructure' | 'locales' | 'index' | 'top';
+type LayerName = 'lib' | 'components' | 'icons' | 'infrastructure' | 'locales' | 'index';
 
 const LAYERS: Record<LayerName, { allows: readonly LayerName[] }> = {
   /** Hooks and framework-agnostic helpers. Knows about nothing but its own directory. */
   lib: { allows: ['lib'] },
-  /** Components. May use the helpers, each other, and the four infrastructure modules. */
-  ui: { allows: ['lib', 'ui', 'infrastructure'] },
+  /** Components. May use the helpers, each other, the icon paths and the infrastructure modules. */
+  components: { allows: ['lib', 'components', 'icons', 'infrastructure'] },
+  /** Generated icon path data. Data, not code: it imports nothing. */
+  icons: { allows: ['icons'] },
   /** The four modules a component is allowed to reach the application through. */
   infrastructure: { allows: ['lib', 'infrastructure', 'locales'] },
   /** The message catalogues and the date data they carry. */
   locales: { allows: ['lib', 'locales'] },
   /** The public surface. May import anything, because that is the point of it. */
-  index: { allows: ['lib', 'ui', 'infrastructure', 'locales', 'top', 'index'] },
-  /** The retained top-level components, which sit beside the infrastructure rather than under `ui`. */
-  top: { allows: ['lib', 'ui', 'top', 'infrastructure'] },
+  index: { allows: ['lib', 'components', 'icons', 'infrastructure', 'locales', 'index'] },
 };
 
 type Layer = LayerName;
@@ -47,10 +47,11 @@ const INFRASTRUCTURE_MODULES = [
 function layerOf(path: string): Layer {
   if (path === 'src/index.ts') return 'index';
   if (path.startsWith('src/lib/')) return 'lib';
-  if (path.startsWith('src/ui/')) return 'ui';
+  if (path.startsWith('src/components/')) return 'components';
+  if (path.startsWith('src/icons/')) return 'icons';
   if (path.startsWith('src/locales/')) return 'locales';
   if (INFRASTRUCTURE_MODULES.includes(path)) return 'infrastructure';
-  return 'top';
+  return 'index';
 }
 
 /** Every source file under `src`, so a specifier can be resolved to the file it names. */
@@ -137,7 +138,7 @@ describe('module boundaries', () => {
       .filter((path) => {
         const text = readFileSync(join(REPOSITORY_ROOT, path), 'utf8');
 
-        return importSpecifiers(text).some((specifier) => specifier.startsWith('@/ui/'));
+        return importSpecifiers(text).some((specifier) => specifier.startsWith('@/components/'));
       });
 
     expect(offenders).toEqual([]);

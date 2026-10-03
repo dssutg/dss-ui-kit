@@ -1,5 +1,5 @@
 import type { KeyboardEvent } from 'react';
-import type { EditorRecord } from '@/lib/editor_history';
+import type { EditorRecord } from './editor_history';
 import {
   getTabCharacter,
   indentNewLine,
@@ -8,8 +8,8 @@ import {
   isTabCharacterBeforeCaret,
   removeTabCharacterBeforeCaret,
   unindentSelectedLines,
-} from '@/lib/editor_indentation';
-import { wrapSelectionWithPair } from '@/lib/editor_wrapping';
+} from './editor_indentation';
+import { wrapSelectionWithPair } from './editor_wrapping';
 
 const KEYCODE_Y = 89;
 const KEYCODE_Z = 90;

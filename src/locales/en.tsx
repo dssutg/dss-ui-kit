@@ -1,4 +1,4 @@
-import type { LocaleDates } from '@/locales/dates';
+import type { LocaleDates } from './dates';
 
 export const en = {
   'BitField.bitNoPrefix': 'Bit ',

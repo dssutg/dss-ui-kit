@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getColorFromBreakPoints } from '@/lib/color';
+import { getColorFromBreakPoints } from './color';
 
 /**
  * `getColorFromBreakPoints` turns a number an instrument reported into the one thing on a ring an

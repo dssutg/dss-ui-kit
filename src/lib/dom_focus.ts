@@ -1,4 +1,4 @@
-import { DOMRectContainsPoint } from '@/lib/dom_geometry';
+import { DOMRectContainsPoint } from './dom_geometry';
 
 export function hasUserFocusedInput() {
   const focusedElement = document.activeElement;

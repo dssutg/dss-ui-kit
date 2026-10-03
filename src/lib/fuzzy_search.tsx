@@ -1,4 +1,4 @@
-import { cmp } from '@/lib/math';
+import { cmp } from './math';
 
 /** The score of an item that matched at least one character of the query. */
 const HIGHEST_SCORE = Infinity;

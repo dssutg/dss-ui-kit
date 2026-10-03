@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { getPointerPosition } from '@/lib/dom';
-import type { Point2D } from '@/lib/math';
-import { useEventListener } from '@/lib/use_event_listener';
+import { getPointerPosition } from './dom';
+import type { Point2D } from './math';
+import { useEventListener } from './use_event_listener';
 
 export function useMouseDrag(
   element: Element | null,

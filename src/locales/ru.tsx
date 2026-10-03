@@ -1,5 +1,5 @@
 import { getPluralizationIndex } from '@/lib/pluralization';
-import type { LocaleDates } from '@/locales/dates';
+import type { LocaleDates } from './dates';
 
 export const ru = {
   'BitField.bitNoPrefix': 'Бит ',

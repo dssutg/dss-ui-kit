@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useGranularEffect } from '@/lib/use_granular_effect';
+import { useGranularEffect } from './use_granular_effect';
 
 export class HttpError extends Error {
   status: number;

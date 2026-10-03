@@ -10,17 +10,6 @@
  */
 
 import { parseHexColor } from '@/lib/color';
-import type {
-  BoxFaceColors,
-  BoxSceneObject,
-  Camera,
-  GLQuadUV,
-  ObjectMaterial,
-  SceneObject,
-  Vector2Array,
-  Vector3Array,
-  Vector4Array,
-} from '@/lib/gl/scene';
 import {
   degreesToRadians,
   glMat4Identity,
@@ -36,6 +25,17 @@ import {
   Vector3D,
   vec4From,
 } from '@/lib/math';
+import type {
+  BoxFaceColors,
+  BoxSceneObject,
+  Camera,
+  GLQuadUV,
+  ObjectMaterial,
+  SceneObject,
+  Vector2Array,
+  Vector3Array,
+  Vector4Array,
+} from './scene';
 
 /** One of the six faces of a box, naming a colour entry of {@link BoxFaceColors}. */
 export type BoxFaceName = 'front' | 'back' | 'right' | 'left' | 'top' | 'bottom';

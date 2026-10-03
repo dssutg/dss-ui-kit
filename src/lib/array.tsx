@@ -1,4 +1,4 @@
-import { cmp, wrapIndex } from '@/lib/math';
+import { cmp, wrapIndex } from './math';
 
 export function chunkArray<T>(array: readonly T[], chunkSize: number): T[][] {
   const step = Math.trunc(chunkSize);

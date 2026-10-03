@@ -1,5 +1,5 @@
-import { getPointerPosition } from '@/lib/dom_pointer';
-import type { Point2D } from '@/lib/math';
+import { getPointerPosition } from './dom_pointer';
+import type { Point2D } from './math';
 
 // Handle element dragging with mouse
 export class DragHandler {

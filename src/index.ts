@@ -25,7 +25,7 @@
 
 // The one global stylesheet: the Tailwind entry point, the themes, and the base resets. Shipped as
 // `dss-ui-kit/style.css` rather than imported here, so the caller controls when it applies.
-import '@/index.css';
+import './index.css';
 
 /* -------------------------------------------------------------------------------------------- */
 /* Components                                                                                     */
@@ -39,33 +39,153 @@ import '@/index.css';
 /* Hooks and framework-agnostic helpers                                                          */
 /* -------------------------------------------------------------------------------------------- */
 
+export type { ButtonType } from '@/components/buttons/Button';
+export { Button } from '@/components/buttons/Button';
+export type {
+  ButtonGroupItem,
+  ButtonGroupItemChangeHandler,
+} from '@/components/buttons/ButtonGroup';
+export { CopyToClipboardButton } from '@/components/buttons/CopyToClipboardButton';
+export type { DropDownButtonVariant } from '@/components/buttons/DropDownButton';
+export { DropDownButton } from '@/components/buttons/DropDownButton';
+export { IconButton } from '@/components/buttons/IconButton';
+export { IconedButtonGroup } from '@/components/buttons/IconedButtonGroup';
+export type { PlayPauseButtonProps } from '@/components/buttons/PlayPauseButton';
+export { PlayPauseButton } from '@/components/buttons/PlayPauseButton';
+export type { ToggleButtonOption, ToggleButtonProps } from '@/components/buttons/ToggleButton';
+export { ToggleButton } from '@/components/buttons/ToggleButton';
+export type { ActionKey } from '@/components/charts/Chart';
+export {
+  Chart,
+  type ChartProps,
+  chartViewKeyMap,
+  type PlotFunctionRangeOptions,
+} from '@/components/charts/Chart';
+export { MiniCalendar } from '@/components/charts/MiniCalendar';
+export type { PieChartShare } from '@/components/charts/PieChart';
+export {
+  getShareColor,
+  getSharePercent,
+  mapToShares,
+  PieChart,
+} from '@/components/charts/PieChart';
+export { RingProgress } from '@/components/charts/RingProgress';
+export { SimpleLineChart } from '@/components/charts/SimpleLineChart';
+export { StaticCalendar } from '@/components/charts/StaticCalendar';
+export type {
+  ZoomableCanvasDrawCallbackProps,
+  ZoomableCanvasTransform,
+} from '@/components/charts/ZoomableCanvas';
+export { ZoomableCanvas } from '@/components/charts/ZoomableCanvas';
+export type {
+  AlphaColorPickerProperties,
+  ColorInputProperties,
+  ColorPickerProperties,
+} from '@/components/color-picker/color_picker_components';
+export {
+  AlphaColorPicker,
+  ColorInput,
+  ColorPicker,
+} from '@/components/color-picker/color_picker_components';
+export { HexAlphaColorPicker } from '@/components/color-picker/HexAlphaColorPicker';
+export { HexAlphaColorPickerPopover } from '@/components/color-picker/HexAlphaColorPickerPopover';
+export type { HexColorInputProperties } from '@/components/color-picker/HexColorInput';
+export { HexColorInput } from '@/components/color-picker/HexColorInput';
+export { HexColorPicker } from '@/components/color-picker/HexColorPicker';
+export { HslaColorPicker } from '@/components/color-picker/HslaColorPicker';
+export { HslaStringColorPicker } from '@/components/color-picker/HslaStringColorPicker';
+export { HslaStringColorPickerPopover } from '@/components/color-picker/HslaStringColorPickerPopover';
+export { RgbaColorPicker } from '@/components/color-picker/RgbaColorPicker';
+export { RgbaStringColorPicker } from '@/components/color-picker/RgbaStringColorPicker';
+export { HighlightedJson } from '@/components/display/HighlightedJson';
+export type { IconName } from '@/components/display/Icon';
+export { Icon } from '@/components/display/Icon';
+export { IconedSectionTitle } from '@/components/display/IconedSectionTitle';
+export { IconViewer } from '@/components/display/IconViewer';
+export type { LinkProps } from '@/components/display/Link';
+export { Link } from '@/components/display/Link';
 export type {
   CrashGuardProps,
   CrashReport,
   CrashReportContact,
   CrashReportQueue,
   CrashReportSubmitter,
-} from '@/AppCrashGuard';
+} from '@/components/feedback/AppCrashGuard';
 export {
   AppCrashGuard,
   clearCachedCrashReports,
   crashReportCacheKey,
   crashReportQueueKey,
   readCachedCrashReports,
-} from '@/AppCrashGuard';
-export type { ActionKey } from '@/Chart';
-export { Chart, type ChartProps, chartViewKeyMap, type PlotFunctionRangeOptions } from '@/Chart';
-export type { ControlledFilterableTableProps } from '@/ControlledFilterableTable';
-export { ControlledFilterableTable } from '@/ControlledFilterableTable';
-export type { EventTypes } from '@/event';
-export {
-  emitEvent,
-  emitTypedEvent,
-  onEvent,
-  useEvent,
-  useTypedEvent,
-  useTypedEventData,
-} from '@/event';
+} from '@/components/feedback/AppCrashGuard';
+export { ContinuousCircleSpinner } from '@/components/feedback/ContinuousCircleSpinner';
+export { DashedCircle } from '@/components/feedback/DashedCircle';
+export { LogOutputTextArea } from '@/components/feedback/LogOutputTextArea';
+export { LogWidget } from '@/components/feedback/LogWidget';
+export { Ripple } from '@/components/feedback/Ripple';
+export { ScrollProgressBar } from '@/components/feedback/ScrollProgressBar';
+export { Spinner } from '@/components/feedback/Spinner';
+export { WshSpinner } from '@/components/feedback/WshSpinner';
+export { BitField } from '@/components/inputs/BitField';
+export { ByteFractionInput } from '@/components/inputs/ByteFractionInput';
+export { Checkbox } from '@/components/inputs/Checkbox';
+export { ColorfulYesNo } from '@/components/inputs/ColorfulYesNo';
+export type { DecimalIntegerInputValue } from '@/components/inputs/DecimalIntegerInput';
+export { DecimalIntegerInput } from '@/components/inputs/DecimalIntegerInput';
+export { DelayedInput } from '@/components/inputs/DelayedInput';
+export type { FloatInputProps } from '@/components/inputs/FloatInput';
+export { FloatInput } from '@/components/inputs/FloatInput';
+export { HourMinuteSecondTimeInput } from '@/components/inputs/HourMinuteSecondTimeInput';
+export { HourMinuteTimeInput } from '@/components/inputs/HourMinuteTimeInput';
+export { Input } from '@/components/inputs/Input';
+export { IPInput } from '@/components/inputs/IPInput';
+export { JsonEditor } from '@/components/inputs/JsonEditor';
+export { LockableToggleSwitch } from '@/components/inputs/LockableToggleSwitch';
+export { SearchInput } from '@/components/inputs/SearchInput';
+export { Select } from '@/components/inputs/Select';
+export { Slider } from '@/components/inputs/Slider';
+export { SocketServerAddressInput } from '@/components/inputs/SocketServerAddressInput';
+export { TextInput } from '@/components/inputs/TextInput';
+export { ToggleSwitch } from '@/components/inputs/ToggleSwitch';
+export { UnsignedIntegerInput } from '@/components/inputs/UnsignedIntegerInput';
+export type { UploadConfigProps } from '@/components/inputs/UploadConfig';
+export { UploadConfig } from '@/components/inputs/UploadConfig';
+export type {
+  UseVirtualizedListOptions,
+  UseVirtualizedListResult,
+  VirtualizedListProps,
+  VirtualizedListRowRendererProps,
+} from '@/components/inputs/VirtualizedList';
+export { useVirtualizedList, VirtualizedList } from '@/components/inputs/VirtualizedList';
+export { AutoSizer } from '@/components/layout/AutoSizer';
+export { ResizableSplit } from '@/components/layout/ResizableSplit';
+export { Accordion, useAccordion } from '@/components/navigation/Accordion';
+export { ControlledMUITabList } from '@/components/navigation/ControlledMUITabList';
+export type { EditableAccordionListItem } from '@/components/navigation/EditableAccordionList';
+export { EditableAccordionList } from '@/components/navigation/EditableAccordionList';
+export type {
+  IsOnPathToCurrentItem,
+  MenuTreeItemClickCallback,
+  MenuTreeItemClickHandlerResult,
+  MenuTreeItemContextMenuCallback,
+  TMenuTreeItem,
+} from '@/components/navigation/MenuTree';
+export { MenuTree } from '@/components/navigation/MenuTree';
+export type { MUITabDescriptor } from '@/components/navigation/MUITabList';
+export { isMUITabActive, MUITabList } from '@/components/navigation/MUITabList';
+export { OrderPanel } from '@/components/navigation/OrderPanel';
+export { ToTop } from '@/components/navigation/ToTop';
+export type { TreeViewItem } from '@/components/navigation/TreeView';
+export { TreeView } from '@/components/navigation/TreeView';
+export type { DropDownMenuItem } from '@/components/overlays/DropDownMenu';
+export { DropDownMenu } from '@/components/overlays/DropDownMenu';
+export type { FeedbackTooltipType } from '@/components/overlays/FeedbackTooltip';
+export { FeedbackTooltip, showFeedbackTooltip } from '@/components/overlays/FeedbackTooltip';
+export { Modal } from '@/components/overlays/Modal';
+export { Popover } from '@/components/overlays/Popover';
+export { ColumnResizer } from '@/components/tables/ColumnResizer';
+export type { ControlledFilterableTableProps } from '@/components/tables/ControlledFilterableTable';
+export { ControlledFilterableTable } from '@/components/tables/ControlledFilterableTable';
 export type {
   FilterableTableColumnProperty,
   FilterableTableContext,
@@ -73,39 +193,44 @@ export type {
   FilterableTableProperty,
   FilterableTablePropertyList,
   FilterableTableProps,
-} from '@/FilterableTable';
-export { FilterableTable } from '@/FilterableTable';
-export type { EnumOption } from '@/FilterableTableTopPanel';
-export { FilterableTableTopPanel } from '@/FilterableTableTopPanel';
-export type { FeatureDescriptor, FeatureName, FeatureToggleEvent } from '@/feature_flag';
-export {
-  getAllFeatureFlags,
-  isFeatureEnabled,
-  registerFeatureFlag,
-  setFeatureEnabled,
-  toggleFeature,
-  unregisterFeatureFlag,
-  useFeatureFlag,
-} from '@/feature_flag';
+} from '@/components/tables/FilterableTable';
+export { FilterableTable } from '@/components/tables/FilterableTable';
+export type { EnumOption } from '@/components/tables/FilterableTableTopPanel';
+export { FilterableTableTopPanel } from '@/components/tables/FilterableTableTopPanel';
 export type {
   FilterableTableExportFormat,
   GetExportedTableFilenameCallback,
-} from '@/filterable_table_export';
-export type { ControlledTableProps } from '@/filterable_table_internal';
-export { ControlledTable, getEnumLabel } from '@/filterable_table_internal';
+} from '@/components/tables/filterable_table_export';
+export type { ControlledTableProps } from '@/components/tables/filterable_table_internal';
+export { ControlledTable, getEnumLabel } from '@/components/tables/filterable_table_internal';
 export type {
   AnonymousSearchPropertySchema,
   SearchPropertySchema,
   SearchSchema,
-} from '@/filterable_table_search';
-export { useFilteredItems } from '@/filterable_table_search';
-export type { GeneralizedSearchModalProps } from '@/filterable_table_search_modal';
-export { GeneralizedSearchModal } from '@/filterable_table_search_modal';
-export type { CountLabelProps, FilterableTableStatsModalProps } from '@/filterable_table_stats';
-export { CountLabel, FilterableTableStatsModal } from '@/filterable_table_stats';
-export type { TimelineViewerModalProps } from '@/filterable_table_timeline';
-export { TimelineViewerModal } from '@/filterable_table_timeline';
-export { AutoSizer } from '@/lib/AutoSizer';
+} from '@/components/tables/filterable_table_search';
+export { useFilteredItems } from '@/components/tables/filterable_table_search';
+export type { GeneralizedSearchModalProps } from '@/components/tables/filterable_table_search_modal';
+export { GeneralizedSearchModal } from '@/components/tables/filterable_table_search_modal';
+export type {
+  CountLabelProps,
+  FilterableTableStatsModalProps,
+} from '@/components/tables/filterable_table_stats';
+export { CountLabel, FilterableTableStatsModal } from '@/components/tables/filterable_table_stats';
+export type { TimelineViewerModalProps } from '@/components/tables/filterable_table_timeline';
+export { TimelineViewerModal } from '@/components/tables/filterable_table_timeline';
+export type {
+  SortableTableCellDescriptor,
+  SortableTableCellRenderer,
+  SortableTableCellRendererContext,
+  SortableTableColumnComparatorTable,
+  SortableTableColumnRenderMap,
+  SortableTableComparatorFunction,
+  SortableTableDescriptor,
+  SortableTableHeaderColumn,
+  SortableTableRowDescriptor,
+} from '@/components/tables/SortableTable';
+export { makeSortableTableCellRenderer, SortableTable } from '@/components/tables/SortableTable';
+export type { SortableTableRow } from '@/components/tables/SortableTableRow';
 export { tryCatch, tryCatchAsync } from '@/lib/catch';
 export { getCSSVariableValue, Rgba32Gradient } from '@/lib/color';
 export { formatRelativeDate, getDateComponents } from '@/lib/date';
@@ -172,6 +297,7 @@ export { useFullScreenChange } from '@/lib/use_fullscreen_change';
 export { useGranularEffect } from '@/lib/use_granular_effect';
 export { useGranularHook } from '@/lib/use_granular_hook';
 export { useImmediateInterval, useInterval } from '@/lib/use_interval';
+export { minDesktopWidth, useIsMobileScreen } from '@/lib/use_is_mobile_screen';
 export { useMouseDrag } from '@/lib/use_mouse_drag';
 export { useOutsideComponentClick } from '@/lib/use_outside_component_click';
 export { usePreventAccidentalPageClose } from '@/lib/use_prevent_accidental_page_close';
@@ -183,6 +309,25 @@ export { useWindowSize } from '@/lib/use_window_size';
 export { uuidv4 } from '@/lib/uuid';
 export type { VError, VSchema, VValidator } from '@/lib/validator';
 export { vArray, vBoolean, vInt, vNumber, vString } from '@/lib/validator';
+export type { EventTypes } from './event';
+export {
+  emitEvent,
+  emitTypedEvent,
+  onEvent,
+  useEvent,
+  useTypedEvent,
+  useTypedEventData,
+} from './event';
+export type { FeatureDescriptor, FeatureName, FeatureToggleEvent } from './feature_flag';
+export {
+  getAllFeatureFlags,
+  isFeatureEnabled,
+  registerFeatureFlag,
+  setFeatureEnabled,
+  toggleFeature,
+  unregisterFeatureFlag,
+  useFeatureFlag,
+} from './feature_flag';
 export type {
   LocaleContextValue,
   LocaleDefinition,
@@ -192,7 +337,7 @@ export type {
   MessageCatalogue,
   MessageKey,
   MessageParameters,
-} from '@/locale';
+} from './locale';
 export {
   builtinCatalogues,
   fallbackLocale,
@@ -207,8 +352,8 @@ export {
   supportedLocales,
   translate,
   useLocale,
-} from '@/locale';
-export type { BuiltinThemeName, ThemeDescriptor, ThemeName } from '@/theme';
+} from './locale';
+export type { BuiltinThemeName, ThemeDescriptor, ThemeName } from './theme';
 export {
   builtinThemeNames,
   builtinThemes,
@@ -221,126 +366,4 @@ export {
   THEME_ATTRIBUTE,
   THEME_STORAGE_KEY,
   useTheme,
-} from '@/theme';
-export { Accordion, useAccordion } from '@/ui/Accordion';
-export { BitField } from '@/ui/BitField';
-export type { ButtonType } from '@/ui/Button';
-export { Button } from '@/ui/Button';
-export type { ButtonGroupItem, ButtonGroupItemChangeHandler } from '@/ui/ButtonGroup';
-export { ByteFractionInput } from '@/ui/ByteFractionInput';
-export { Checkbox } from '@/ui/Checkbox';
-export { ColorfulYesNo } from '@/ui/ColorfulYesNo';
-export { ColumnResizer } from '@/ui/ColumnResizer';
-export { ContinuousCircleSpinner } from '@/ui/ContinuousCircleSpinner';
-export { ControlledMUITabList } from '@/ui/ControlledMUITabList';
-export { CopyToClipboardButton } from '@/ui/CopyToClipboardButton';
-export type {
-  AlphaColorPickerProperties,
-  ColorInputProperties,
-  ColorPickerProperties,
-} from '@/ui/color_picker_components';
-export { AlphaColorPicker, ColorInput, ColorPicker } from '@/ui/color_picker_components';
-export { DashedCircle } from '@/ui/DashedCircle';
-export type { DecimalIntegerInputValue } from '@/ui/DecimalIntegerInput';
-export { DecimalIntegerInput } from '@/ui/DecimalIntegerInput';
-export { DelayedInput } from '@/ui/DelayedInput';
-export type { DropDownButtonVariant } from '@/ui/DropDownButton';
-export { DropDownButton } from '@/ui/DropDownButton';
-export type { DropDownMenuItem } from '@/ui/DropDownMenu';
-export { DropDownMenu } from '@/ui/DropDownMenu';
-export type { EditableAccordionListItem } from '@/ui/EditableAccordionList';
-export { EditableAccordionList } from '@/ui/EditableAccordionList';
-export type { FeedbackTooltipType } from '@/ui/FeedbackTooltip';
-export { FeedbackTooltip, showFeedbackTooltip } from '@/ui/FeedbackTooltip';
-export type { FloatInputProps } from '@/ui/FloatInput';
-export { FloatInput } from '@/ui/FloatInput';
-export { HexAlphaColorPicker } from '@/ui/HexAlphaColorPicker';
-export { HexAlphaColorPickerPopover } from '@/ui/HexAlphaColorPickerPopover';
-export type { HexColorInputProperties } from '@/ui/HexColorInput';
-export { HexColorInput } from '@/ui/HexColorInput';
-export { HexColorPicker } from '@/ui/HexColorPicker';
-export { HighlightedJson } from '@/ui/HighlightedJson';
-export { HourMinuteSecondTimeInput } from '@/ui/HourMinuteSecondTimeInput';
-export { HourMinuteTimeInput } from '@/ui/HourMinuteTimeInput';
-export { HslaColorPicker } from '@/ui/HslaColorPicker';
-export { HslaStringColorPicker } from '@/ui/HslaStringColorPicker';
-export { HslaStringColorPickerPopover } from '@/ui/HslaStringColorPickerPopover';
-export type { IconName } from '@/ui/Icon';
-export { Icon } from '@/ui/Icon';
-export { IconButton } from '@/ui/IconButton';
-export { IconedButtonGroup } from '@/ui/IconedButtonGroup';
-export { IconedSectionTitle } from '@/ui/IconedSectionTitle';
-export { IconViewer } from '@/ui/IconViewer';
-export { Input } from '@/ui/Input';
-export { IPInput } from '@/ui/IPInput';
-export { JsonEditor } from '@/ui/JsonEditor';
-export type { LinkProps } from '@/ui/Link';
-export { Link } from '@/ui/Link';
-export { LockableToggleSwitch } from '@/ui/LockableToggleSwitch';
-export { LogOutputTextArea } from '@/ui/LogOutputTextArea';
-export { LogWidget } from '@/ui/LogWidget';
-export type {
-  IsOnPathToCurrentItem,
-  MenuTreeItemClickCallback,
-  MenuTreeItemClickHandlerResult,
-  MenuTreeItemContextMenuCallback,
-  TMenuTreeItem,
-} from '@/ui/MenuTree';
-export { MenuTree } from '@/ui/MenuTree';
-export { MiniCalendar } from '@/ui/MiniCalendar';
-export { Modal } from '@/ui/Modal';
-export type { MUITabDescriptor } from '@/ui/MUITabList';
-export { isMUITabActive, MUITabList } from '@/ui/MUITabList';
-export { OrderPanel } from '@/ui/OrderPanel';
-export type { PieChartShare } from '@/ui/PieChart';
-export { getShareColor, getSharePercent, mapToShares, PieChart } from '@/ui/PieChart';
-export type { PlayPauseButtonProps } from '@/ui/PlayPauseButton';
-export { PlayPauseButton } from '@/ui/PlayPauseButton';
-export { Popover } from '@/ui/Popover';
-export { ResizableSplit } from '@/ui/ResizableSplit';
-export { RgbaColorPicker } from '@/ui/RgbaColorPicker';
-export { RgbaStringColorPicker } from '@/ui/RgbaStringColorPicker';
-export { RingProgress } from '@/ui/RingProgress';
-export { Ripple } from '@/ui/Ripple';
-export { ScrollProgressBar } from '@/ui/ScrollProgressBar';
-export { SearchInput } from '@/ui/SearchInput';
-export { Select } from '@/ui/Select';
-export { SimpleLineChart } from '@/ui/SimpleLineChart';
-export { Slider } from '@/ui/Slider';
-export { SocketServerAddressInput } from '@/ui/SocketServerAddressInput';
-export type {
-  SortableTableCellDescriptor,
-  SortableTableCellRenderer,
-  SortableTableCellRendererContext,
-  SortableTableColumnComparatorTable,
-  SortableTableColumnRenderMap,
-  SortableTableComparatorFunction,
-  SortableTableDescriptor,
-  SortableTableHeaderColumn,
-  SortableTableRowDescriptor,
-} from '@/ui/SortableTable';
-export { makeSortableTableCellRenderer, SortableTable } from '@/ui/SortableTable';
-export type { SortableTableRow } from '@/ui/SortableTableRow';
-export { Spinner } from '@/ui/Spinner';
-export { StaticCalendar } from '@/ui/StaticCalendar';
-export { TextInput } from '@/ui/TextInput';
-export type { ToggleButtonOption, ToggleButtonProps } from '@/ui/ToggleButton';
-export { ToggleButton } from '@/ui/ToggleButton';
-export { ToggleSwitch } from '@/ui/ToggleSwitch';
-export { ToTop } from '@/ui/ToTop';
-export type { TreeViewItem } from '@/ui/TreeView';
-export { TreeView } from '@/ui/TreeView';
-export { UnsignedIntegerInput } from '@/ui/UnsignedIntegerInput';
-export type { UploadConfigProps } from '@/ui/UploadConfig';
-export { UploadConfig } from '@/ui/UploadConfig';
-export { minDesktopWidth, useIsMobileScreen } from '@/ui/use_is_mobile_screen';
-export type {
-  UseVirtualizedListOptions,
-  UseVirtualizedListResult,
-  VirtualizedListProps,
-  VirtualizedListRowRendererProps,
-} from '@/ui/VirtualizedList';
-export { useVirtualizedList, VirtualizedList } from '@/ui/VirtualizedList';
-export { WshSpinner } from '@/ui/WshSpinner';
-export type { ZoomableCanvasDrawCallbackProps, ZoomableCanvasTransform } from '@/ui/ZoomableCanvas';
-export { ZoomableCanvas } from '@/ui/ZoomableCanvas';
+} from './theme';

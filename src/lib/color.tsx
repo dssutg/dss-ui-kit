@@ -1,4 +1,4 @@
-import { clamp, lerp } from '@/lib/math';
+import { clamp, lerp } from './math';
 
 export interface HslaColor {
   h: number;

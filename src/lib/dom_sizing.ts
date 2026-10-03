@@ -1,4 +1,4 @@
-import { clamp } from '@/lib/math';
+import { clamp } from './math';
 
 export function getDpr() {
   return Math.max(1, window.devicePixelRatio || 1);

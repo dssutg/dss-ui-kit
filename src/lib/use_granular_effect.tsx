@@ -1,5 +1,5 @@
 import { type EffectCallback, useEffect } from 'react';
-import { useGranularHook } from '@/lib/use_granular_hook';
+import { useGranularHook } from './use_granular_hook';
 
 export function useGranularEffect(
   effect: EffectCallback,

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { emitEvent, useEvent } from '@/event';
+import { emitEvent, useEvent } from './event';
 
 /**
  * The themes the library ships.

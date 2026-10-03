@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { type DateLocale, formatRelativeDate } from '@/lib/date';
+import { type DateLocale, formatRelativeDate } from './date';
 
 /**
  * The phrases under test. Both directions are spelled out in one locale so that the interval

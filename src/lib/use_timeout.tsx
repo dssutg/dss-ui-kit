@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { useGranularEffect } from '@/lib/use_granular_effect';
+import { useGranularEffect } from './use_granular_effect';
 
 export function useTimeout(callback: () => void, delay: number | null) {
   const callbackRef = useRef<() => void>(callback);

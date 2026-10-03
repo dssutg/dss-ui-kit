@@ -7,7 +7,7 @@ import {
   serializeCSVRow,
   serializeDSV,
   serializeDSVColumn,
-} from '@/lib/dsv';
+} from './dsv';
 
 /**
  * These are the functions a consumer reaches for when it exports a table or reads a configuration
