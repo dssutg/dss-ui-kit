@@ -6,8 +6,9 @@ and `deno task ci` passes.
 ## What this repository is
 
 `dss-ui-kit` is a component library and a design system for Preact: 88 components grouped by purpose,
-78 helper modules, a 119-token CSS custom-property contract, localisation in English and Russian with
-registration for any other language, a typed event bus, and a generic WebGL scene renderer.
+71 helper modules under `src/lib/`, a 119-token CSS custom-property contract, localisation in English
+and Russian with registration for any other language, a typed event bus, and a generic WebGL scene
+renderer.
 
 It was extracted from a single application, and that extraction is finished: there is no domain model,
 no protocol, no data layer and no router left, and `scripts/no-domain-code.test.ts` walks the tree to
