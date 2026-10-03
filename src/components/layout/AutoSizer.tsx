@@ -178,6 +178,49 @@ function hasSizeChanged(
 /** The name of the animation that reports an element being re-attached without resizing. */
 const RESIZE_ANIMATION_NAME = 'resizeanim';
 
+/**
+ * The elements the resize detector measures, carrying the bookkeeping it attaches to them.
+ *
+ * The bookkeeping is properties this module invents on a real element — there is nowhere else to keep
+ * a scroll id, a last-measured size and a listener list that outlives a call — so the interface says
+ * what they are instead of the code reaching for `any` every time it touches one. Every name is
+ * prefixed with `autoSizer` so that it cannot be mistaken for a DOM property.
+ */
+interface MeasuredElement extends HTMLElement {
+  /** The two scroll containers whose extent change reports a resize. Absent until first observed. */
+  autoSizerTriggers?: TriggersElement | undefined;
+  autoSizerLastSize?: { width: number; height: number };
+  autoSizerListeners?: Array<(this: MeasuredElement, event: Event) => void>;
+  /** The pending frame, so a second resize in the same frame cancels the first. */
+  autoSizerFrame?: number;
+}
+
+/** The hidden elements appended to a measured element, and the listener on their animation. */
+interface TriggersElement extends HTMLElement {
+  autoSizerAnimationListener?: EventListener | null | undefined;
+}
+
+/**
+ * One of the children the detector created itself, which therefore exists.
+ *
+ * The trigger elements are appended by {@link addResizeListener} below in a fixed shape, so their
+ * children are as much a part of that shape as the elements themselves.
+ */
+/** The triggers an element carries once it has been observed, which it always has at this point. */
+function requireTriggers(element: MeasuredElement): TriggersElement {
+  if (element.autoSizerTriggers === undefined) {
+    throw new Error('AutoSizer: asked to reset the resize triggers of an unobserved element.');
+  }
+  return element.autoSizerTriggers;
+}
+
+function requireChild(child: Element | null): HTMLElement {
+  if (child === null) {
+    throw new Error('AutoSizer: the resize triggers are missing a child element.');
+  }
+  return child as HTMLElement;
+}
+
 const { requestFrame, cancelFrame } = createFrameScheduler();
 
 /** How a browser spells the CSS animation a re-attached element is detected by. */
@@ -233,22 +276,19 @@ function createDetectElementResize(nonce?: string): DetectElementResize {
   let animationStartEvent: string;
   let animationStyle: string;
 
-  // biome-ignore lint: lint/suspicious/noExplicitAny
-  let checkTriggers: (arg0: any) => any;
-  // biome-ignore lint: lint/suspicious/noExplicitAny
-  let resetTriggers: (element: any) => void;
-  // biome-ignore lint: lint/suspicious/noExplicitAny
-  let scrollListener: (e: any) => void;
+  let checkTriggers: (element: MeasuredElement) => boolean;
+  let resetTriggers: (element: MeasuredElement) => void;
+  let scrollListener: (event: Event) => void;
 
-  // @ts-expect-error
-  const attachEvent = typeof document !== 'undefined' && document.attachEvent;
-
-  if (!attachEvent) {
+  // Only the modern path exists. The upstream detector this came from had an `attachEvent` branch for
+  // IE8, which no browser this library supports implements, and keeping it meant typing two APIs that
+  // cannot be exercised.
+  {
     resetTriggers = (element) => {
-      const triggers = element.__resizeTriggers__;
-      const expand = triggers.firstElementChild;
-      const contract = triggers.lastElementChild;
-      const expandChild = expand.firstElementChild;
+      const triggers = requireTriggers(element);
+      const expand = requireChild(triggers.firstElementChild);
+      const contract = requireChild(triggers.lastElementChild);
+      const expandChild = requireChild(expand.firstElementChild);
 
       contract.scrollLeft = contract.scrollWidth;
       contract.scrollTop = contract.scrollHeight;
@@ -259,40 +299,44 @@ function createDetectElementResize(nonce?: string): DetectElementResize {
     };
 
     checkTriggers = (element) =>
-      element.offsetWidth !== element.__resizeLast__.width ||
-      element.offsetHeight !== element.__resizeLast__.height;
+      element.offsetWidth !== element.autoSizerLastSize?.width ||
+      element.offsetHeight !== element.autoSizerLastSize?.height;
 
-    scrollListener = (e) => {
+    scrollListener = (event) => {
       // Don't measure (which forces) reflow for scrolls that happen inside of children!
-      if (
-        e.target.className &&
-        typeof e.target.className.indexOf === 'function' &&
-        !e.target.className.includes('contract-trigger') &&
-        !e.target.className.includes('expand-trigger')
-      ) {
+      const target = event.target;
+      const targetClassName = target instanceof Element ? target.className : '';
+      const isOwnTrigger =
+        typeof targetClassName === 'string' &&
+        (targetClassName.includes('contract-trigger') ||
+          targetClassName.includes('expand-trigger'));
+
+      if (targetClassName !== '' && !isOwnTrigger) {
         return;
       }
 
-      const element = e?.currentTarget;
-
-      resetTriggers(element);
-      if (element.__resizeRAF__ !== undefined) {
-        cancelFrame(element.__resizeRAF__);
+      const element = event.currentTarget;
+      if (!(element instanceof HTMLElement) || !('autoSizerTriggers' in element)) {
+        return;
       }
-      element.__resizeRAF__ = requestFrame(() => {
-        if (checkTriggers(element)) {
-          element.__resizeLast__.width = element.offsetWidth;
-          element.__resizeLast__.height = element.offsetHeight;
-          // The listeners are this module's own bookkeeping on the element. `element` is `any`
-          // because `scrollListener` takes an `any`, so the list is annotated rather than inferred,
-          // and the listeners are invoked with the element as their receiver.
-          const listeners: Array<(this: HTMLElement, e: Event) => void> =
-            element.__resizeListeners__;
-          for (const listener of listeners) {
-            listener.call(element, e);
+
+      const measured = element as MeasuredElement;
+
+      resetTriggers(measured);
+
+      if (measured.autoSizerFrame !== undefined) {
+        cancelFrame([measured.autoSizerFrame, 0]);
+      }
+
+      measured.autoSizerFrame = requestFrame(() => {
+        if (checkTriggers(measured) && measured.autoSizerLastSize !== undefined) {
+          measured.autoSizerLastSize.width = measured.offsetWidth;
+          measured.autoSizerLastSize.height = measured.offsetHeight;
+          for (const listener of measured.autoSizerListeners ?? []) {
+            listener.call(measured, event);
           }
         }
-      });
+      })[0];
     };
 
     const support = detectCssAnimationSupport();
@@ -302,8 +346,7 @@ function createDetectElementResize(nonce?: string): DetectElementResize {
     animationStyle = `${support.keyframePrefix}animation: 1ms ${RESIZE_ANIMATION_NAME}; `;
   }
 
-  // biome-ignore lint: lint/suspicious/noExplicitAny
-  const createStyles = (doc: any) => {
+  const createStyles = (doc: Document) => {
     if (!doc.querySelector('#detectElementResize')) {
       // Opacity:0 works around a chrome bug https://code.google.com/p/chromium/issues/detail?id=286360
       const css =
@@ -321,87 +364,84 @@ function createDetectElementResize(nonce?: string): DetectElementResize {
         style.setAttribute('nonce', nonce);
       }
 
-      if (style.styleSheet) {
-        style.styleSheet.cssText = css;
-      } else {
-        style.appendChild(doc.createTextNode(css));
-      }
-
+      style.appendChild(doc.createTextNode(css));
       head.appendChild(style);
     }
   };
 
-  // biome-ignore lint: lint/suspicious/noExplicitAny
-  const addResizeListener = (element: any, fn: any) => {
-    if (attachEvent) {
-      element.attachEvent('onresize', fn);
-    } else {
-      if (!element.__resizeTriggers__) {
-        const doc = element.ownerDocument;
-        const elementStyle = windowObject.getComputedStyle(element);
+  const addResizeListener = (element: MeasuredElement, fn: () => void) => {
+    if (element.autoSizerTriggers === undefined) {
+      const doc = element.ownerDocument;
+      const elementStyle = windowObject.getComputedStyle(element);
 
-        if (elementStyle && elementStyle.position === 'static') {
-          element.style.position = 'relative';
-        }
-        createStyles(doc);
-        element.__resizeLast__ = {};
-        element.__resizeListeners__ = [];
-        element.__resizeTriggers__ = doc.createElement('div');
-        element.__resizeTriggers__.className = 'resize-triggers';
-
-        const expandTrigger = doc.createElement('div');
-
-        expandTrigger.className = 'expand-trigger';
-        expandTrigger.appendChild(doc.createElement('div'));
-
-        const contractTrigger = doc.createElement('div');
-
-        contractTrigger.className = 'contract-trigger';
-        element.__resizeTriggers__.appendChild(expandTrigger);
-        element.__resizeTriggers__.appendChild(contractTrigger);
-        element.appendChild(element.__resizeTriggers__);
-        resetTriggers(element);
-        element.addEventListener('scroll', scrollListener, true);
-
-        /* Listen for a css animation to detect element display/re-attach */
-        if (animationStartEvent) {
-          element.__resizeTriggers__.__animationListener__ = (e: { animationName: string }) => {
-            if (e.animationName === RESIZE_ANIMATION_NAME) {
-              resetTriggers(element);
-            }
-          };
-          element.__resizeTriggers__.addEventListener(
-            animationStartEvent,
-            element.__resizeTriggers__.__animationListener__,
-          );
-        }
+      if (elementStyle && elementStyle.position === 'static') {
+        element.style.position = 'relative';
       }
-      element.__resizeListeners__.push(fn);
+
+      createStyles(doc);
+      element.autoSizerLastSize = { width: 0, height: 0 };
+      element.autoSizerListeners = [];
+
+      const triggers: TriggersElement = doc.createElement('div');
+      triggers.className = 'resize-triggers';
+
+      const expandTrigger = doc.createElement('div');
+      expandTrigger.className = 'expand-trigger';
+      expandTrigger.appendChild(doc.createElement('div'));
+
+      const contractTrigger = doc.createElement('div');
+      contractTrigger.className = 'contract-trigger';
+
+      triggers.appendChild(expandTrigger);
+      triggers.appendChild(contractTrigger);
+
+      element.autoSizerTriggers = triggers;
+      element.appendChild(triggers);
+      resetTriggers(element);
+      element.addEventListener('scroll', scrollListener, true);
+
+      /* Listen for a css animation to detect element display/re-attach */
+      if (animationStartEvent) {
+        const onAnimationStart: EventListener = (event) => {
+          if ((event as AnimationEvent).animationName === RESIZE_ANIMATION_NAME) {
+            resetTriggers(element);
+          }
+        };
+
+        triggers.autoSizerAnimationListener = onAnimationStart;
+        triggers.addEventListener(animationStartEvent, onAnimationStart);
+      }
     }
+
+    element.autoSizerListeners?.push(fn);
   };
 
-  // biome-ignore lint: lint/suspicious/noExplicitAny
-  const removeResizeListener = (element: any, fn: any) => {
-    if (attachEvent) {
-      element.detachEvent('onresize', fn);
-    } else {
-      element.__resizeListeners__.splice(element.__resizeListeners__.indexOf(fn), 1);
-      if (!element.__resizeListeners__.length) {
-        element.removeEventListener('scroll', scrollListener, true);
-        if (element.__resizeTriggers__.__animationListener__) {
-          element.__resizeTriggers__.removeEventListener(
-            animationStartEvent,
-            element.__resizeTriggers__.__animationListener__,
-          );
-          element.__resizeTriggers__.__animationListener__ = null;
-        }
-        try {
-          element.__resizeTriggers__ = !element.removeChild(element.__resizeTriggers__);
-        } catch {
-          // Preact compat; see developit/preact-compat/issues/228
-        }
-      }
+  const removeResizeListener = (element: MeasuredElement, fn: () => void) => {
+    const triggers = element.autoSizerTriggers;
+    const listeners = element.autoSizerListeners;
+
+    if (triggers === undefined || listeners === undefined) {
+      return;
     }
+
+    listeners.splice(listeners.indexOf(fn), 1);
+
+    if (listeners.length > 0) {
+      return;
+    }
+
+    element.removeEventListener('scroll', scrollListener, true);
+
+    if (triggers.autoSizerAnimationListener) {
+      triggers.removeEventListener(animationStartEvent, triggers.autoSizerAnimationListener);
+      triggers.autoSizerAnimationListener = null;
+    }
+
+    if (triggers.parentNode === element) {
+      element.removeChild(triggers);
+    }
+
+    element.autoSizerTriggers = undefined;
   };
 
   return {

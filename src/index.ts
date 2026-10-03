@@ -140,6 +140,7 @@ export { LockableToggleSwitch } from '@/components/inputs/LockableToggleSwitch';
 export { SearchInput } from '@/components/inputs/SearchInput';
 export { Select } from '@/components/inputs/Select';
 export { Slider } from '@/components/inputs/Slider';
+export type { SocketServerAddressInputProps } from '@/components/inputs/SocketServerAddressInput';
 export { SocketServerAddressInput } from '@/components/inputs/SocketServerAddressInput';
 export { TextInput } from '@/components/inputs/TextInput';
 export { ToggleSwitch } from '@/components/inputs/ToggleSwitch';
