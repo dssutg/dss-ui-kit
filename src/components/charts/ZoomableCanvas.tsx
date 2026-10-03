@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { DOMRectContainsPoint } from '@/lib/dom';
-import { useGranularEffect } from '@/lib/use_granular_effect';
+import { useGranularEffect } from '@/lib/hooks/use_granular_effect';
 
 /**
  * Where the pointer is over a canvas, in the canvas's own pixels.

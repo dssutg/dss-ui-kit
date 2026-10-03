@@ -5,7 +5,7 @@ import { DropDownMenu } from '@/components/overlays/DropDownMenu';
 import { copyToClipboard } from '@/lib/dom';
 import { serializeCSV } from '@/lib/dsv';
 import { downloadStringAsPlainTextFile } from '@/lib/file';
-import { formatHexNumber } from '@/lib/format_number';
+import { formatHexNumber } from '@/lib/format';
 import { unreachable } from '@/lib/unreachable';
 import { useLocale } from '@/locale';
 import { getEnumLabel } from './ControlledTable';

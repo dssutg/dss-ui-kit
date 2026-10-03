@@ -1,8 +1,8 @@
 import { useRef } from 'react';
 import { AutoSizer } from '@/components/layout/AutoSizer';
 import { getCSSVariableValue } from '@/lib/color';
+import { useGranularEffect } from '@/lib/hooks/use_granular_effect';
 import { clamp } from '@/lib/math';
-import { useGranularEffect } from '@/lib/use_granular_effect';
 import { useTheme } from '@/theme';
 
 /**

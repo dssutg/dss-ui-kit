@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { useGranularEffect } from '@/lib/use_granular_effect';
+import { useGranularEffect } from '@/lib/hooks/use_granular_effect';
 
 /**
  * A read-only text area for a stream of output, which follows the end as lines arrive.

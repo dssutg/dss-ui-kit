@@ -3,11 +3,11 @@ import { Icon, type IconName } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';
 import { compareArrays, isChildArrayPath } from '@/lib/array';
 import { areDOMRectsEqual } from '@/lib/dom';
+import { useEventListener } from '@/lib/hooks/use_event_listener';
+import { useGranularEffect } from '@/lib/hooks/use_granular_effect';
+import { useInterval } from '@/lib/hooks/use_interval';
+import { useWindowSize } from '@/lib/hooks/use_window_size';
 import { clamp } from '@/lib/math';
-import { useEventListener } from '@/lib/use_event_listener';
-import { useGranularEffect } from '@/lib/use_granular_effect';
-import { useInterval } from '@/lib/use_interval';
-import { useWindowSize } from '@/lib/use_window_size';
 import { useLocale } from '@/locale';
 
 /**

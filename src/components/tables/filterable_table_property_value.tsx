@@ -1,4 +1,4 @@
-import { formatHexNumber } from '@/lib/format_number';
+import { formatHexNumber } from '@/lib/format';
 import { useLocale } from '@/locale';
 import { getEnumLabel } from './ControlledTable';
 import { formatDateAndTime } from './table_export';

@@ -1,8 +1,8 @@
 import type { TargetedEvent } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useForceUpdate } from '@/lib/use_force_update';
-import { useGranularEffect } from '@/lib/use_granular_effect';
-import { useTimeout } from '@/lib/use_timeout';
+import { useForceUpdate } from '@/lib/hooks/use_force_update';
+import { useGranularEffect } from '@/lib/hooks/use_granular_effect';
+import { useTimeout } from '@/lib/hooks/use_timeout';
 
 /**
  * What a {@link VirtualizedList} row renderer is called with.

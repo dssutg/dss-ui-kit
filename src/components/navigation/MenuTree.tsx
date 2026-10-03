@@ -3,8 +3,8 @@ import { IconButton } from '@/components/buttons/IconButton';
 import { Icon, type IconName } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';
 import { SearchInput } from '@/components/inputs/SearchInput';
+import { useIsMobileScreen } from '@/lib/hooks/use_is_mobile_screen';
 import { unreachable } from '@/lib/unreachable';
-import { useIsMobileScreen } from '@/lib/use_is_mobile_screen';
 import { builtinCatalogues, getLocaleName, translate, useLocale } from '@/locale';
 import { type ColorIndicator, colorIndicatorColorMap, type TreeViewItem } from './TreeView';
 

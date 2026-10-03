@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Icon } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';
-import { useScrollbarWidth } from '@/lib/use_scrollbar_width';
+import { useScrollbarWidth } from '@/lib/hooks/use_scrollbar_width';
 
 /**
  * A titled section that expands and collapses, with the content height animated.

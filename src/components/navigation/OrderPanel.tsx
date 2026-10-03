@@ -3,8 +3,8 @@ import { Button } from '@/components/buttons/Button';
 import { IconButton } from '@/components/buttons/IconButton';
 import type { IconName } from '@/components/display/Icon';
 import { moveArrayElementLeftOrRightCircularly } from '@/lib/array';
-import { useDragNDropOrderedList } from '@/lib/use_drag_n_drop_ordered_list';
-import { useIsMobileScreen } from '@/lib/use_is_mobile_screen';
+import { useDragNDropOrderedList } from '@/lib/hooks/use_drag_n_drop_ordered_list';
+import { useIsMobileScreen } from '@/lib/hooks/use_is_mobile_screen';
 import { useLocale } from '@/locale';
 
 /**

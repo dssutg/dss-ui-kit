@@ -353,8 +353,11 @@ green pipeline and a green `deno task ci` mean the same thing.
 ```
 src/
   index.ts                the package's public surface; the only entry point consumers need
-  lib/                    hooks and framework-agnostic helpers
-  lib/gl/                 the WebGL scene renderer: geometry, shaders, scene types
+  lib/                    hooks and framework-agnostic helpers, one directory per group;
+                          an entry is index.* so the directory is the import specifier
+    array/ assert/ catch/ color/ date/ dom/ dsv/ editor/ fetch/ file/ format/
+    fuzzy_search/ gl/ highlight/ hooks/ http/ ipv4/ is_tab_active/ key_map/
+    math/ pluralization/ record/ rp/ string/ swipe/ testing/ unreachable/ uuid/ validator/
   components/             components, one directory per group
     buttons/ charts/ color-picker/ display/ feedback/
     inputs/ layout/ navigation/ overlays/ tables/
@@ -394,12 +397,12 @@ standard React convention and it makes the import statement read as the symbol i
 Everything that is not a component keeps a lowercase, dash-separated name describing what it is:
 `cn.ts` for a helper, `types.ts` for a group of types, `main.tsx` for the browser entrypoint.
 
-**A hook or a helper keeps a `snake_case` name describing what it is.** `use_event_listener.tsx` and
-`use_granular_effect.tsx` are not components, and a PascalCase filename would claim they were. The
-rename to PascalCase is done for the components; a reader who needs to know whether a file exports a
-component can tell from the name.
-
-Do not mix the two styles in one directory.
+**Non-component code lives under `src/lib/`, one directory per group.** A group that is one module
+exposes it as `index.*`, so the import specifier is the directory itself — `@/lib/date` resolves to
+`src/lib/date/index.tsx`. A group that is more than one module keeps descriptive file names beside
+its entry — `@/lib/math/scalar`, `@/lib/dom/pointer` — and a hook gets its own directory under
+`src/lib/hooks/` on the same entry convention: `@/lib/hooks/use_timeout`. The old prefix in the
+file name becomes the directory's name, so no file repeats the directory it sits in.
 
 ## Documentation
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { IconButton } from '@/components/buttons/IconButton';
-import { useEventListener } from '@/lib/use_event_listener';
+import { useEventListener } from '@/lib/hooks/use_event_listener';
 
 /**
  * A button that scrolls the window back to the top, appearing only once the page has been scrolled.

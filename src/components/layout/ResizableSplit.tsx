@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { useMouseDrag } from '@/lib/hooks/use_mouse_drag';
 import { clamp } from '@/lib/math';
-import { useMouseDrag } from '@/lib/use_mouse_drag';
 
 /**
  * Panels side by side with draggable dividers, which remember where they were put.

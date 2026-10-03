@@ -1,9 +1,9 @@
 import { createPortal, useEffect, useId, useRef, useState } from 'react';
 import { IconButton } from '@/components/buttons/IconButton';
 import { Icon } from '@/components/display/Icon';
+import { useGranularEffect } from '@/lib/hooks/use_granular_effect';
+import { useIsMobileScreen } from '@/lib/hooks/use_is_mobile_screen';
 import { clamp, cmp } from '@/lib/math';
-import { useGranularEffect } from '@/lib/use_granular_effect';
-import { useIsMobileScreen } from '@/lib/use_is_mobile_screen';
 import { useLocale } from '@/locale';
 
 const MAX_HISTORY_ITEMS = 20;

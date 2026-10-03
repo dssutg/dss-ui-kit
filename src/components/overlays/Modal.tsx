@@ -1,6 +1,6 @@
 import { createPortal, useCallback, useEffect, useState } from 'react';
 import { IconButton } from '@/components/buttons/IconButton';
-import { useGranularEffect } from '@/lib/use_granular_effect';
+import { useGranularEffect } from '@/lib/hooks/use_granular_effect';
 import { useLocale } from '@/locale';
 
 /**

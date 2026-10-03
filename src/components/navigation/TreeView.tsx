@@ -34,8 +34,8 @@ import { Checkbox } from '@/components/inputs/Checkbox';
 import { SearchInput } from '@/components/inputs/SearchInput';
 import { VirtualizedList } from '@/components/inputs/VirtualizedList';
 import { AutoSizer } from '@/components/layout/AutoSizer';
+import { useGranularEffect } from '@/lib/hooks/use_granular_effect';
 import { clamp } from '@/lib/math';
-import { useGranularEffect } from '@/lib/use_granular_effect';
 
 /**
  * One item in a {@link TreeView}.

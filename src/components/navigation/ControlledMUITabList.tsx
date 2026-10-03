@@ -1,8 +1,8 @@
 import { useCallback, useId, useRef } from 'react';
 import { Ripple } from '@/components/feedback/Ripple';
+import { useForceUpdate } from '@/lib/hooks/use_force_update';
+import { useGranularEffect } from '@/lib/hooks/use_granular_effect';
 import { wrapIndex } from '@/lib/math';
-import { useForceUpdate } from '@/lib/use_force_update';
-import { useGranularEffect } from '@/lib/use_granular_effect';
 import type { MUITabDescriptor } from './MUITabList';
 
 /**

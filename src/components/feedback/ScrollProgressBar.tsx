@@ -1,4 +1,4 @@
-import { useDocumentScrollPercentage } from '@/lib/use_document_scroll_percentage';
+import { useDocumentScrollPercentage } from '@/lib/hooks/use_document_scroll_percentage';
 
 /**
  * A two-pixel bar showing how far through the document the reader is.
