@@ -6,13 +6,10 @@ Guidance for AI coding agents (and humans) working in this repository.
 
 **The library is decoupled and builds.** `deno task ci` is green: 289 tests over 20 files, a
 production bundle, a manifest that matches the bundle and an API reference generated from the public
-surface.
-[`TODO.md`](./TODO.md) holds what is still to be done before it is published, in the order it should
-be done.
+surface. The publication-preparation work this document used to point at has been finished; what
+remains is the maintainer's release, and it is not tracked here.
 
-Read this document for the rules the library is held to, and `TODO.md` for the remaining steps. They
-are not the same thing: a rule here is why the work is done a particular way, an item there is what is
-done next.
+Read this document for the rules the library is held to.
 
 ## Project
 
@@ -566,10 +563,6 @@ Both are owned by the script.
   no existing one is renamed.
 - New UI strings are in both locale files; new code and comments are in English.
 - Public exports are named, and a component's props interface is exported beside it.
-- If you were given tasks from [`TODO.md`](./TODO.md) and implemented one, tick its box (`- [x]`) in
-  the same change as the work. A box is a claim that the task is done, so it is backed by a passing
-  `deno task ci` — or, for the stages that come before the toolchain exists, by that stage's own
-  definition of done. Never tick a box ahead of the code it claims.
 - The commit message follows Conventional Commits.
 - If the change is visible to a consumer — a component, a token, an export — say so in the commit
   body.

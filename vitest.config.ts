@@ -12,8 +12,8 @@ import viteConfig from './vite.config.ts';
  * `// @vitest-environment jsdom` line at the top of the file. That is not only a speed argument: jsdom
  * replaces the global `URL` and `document`, so a suite that walks the filesystem or builds a URL under
  * jsdom exercises a different runtime from the one it ships in, and it will pass where the same code
- * fails in node. The repository-policy tests have no business in a DOM, and the render tests in
- * `TODO.md` stage 11 get their environment declared in the file that needs it.
+ * fails in node. The repository-policy tests have no business in a DOM, and a render test asks for
+ * its environment in the file that needs it.
  */
 export default defineConfig(
   mergeConfig(viteConfig, {

@@ -10,10 +10,10 @@ import { describe, expect, it } from 'vitest';
  * warning that the config was only half read. A `//` written beside a setting to explain it is
  * enough to do it, which is exactly the thing a well-meaning edit adds.
  *
- * So the config is held to containing no comments at all, and the reasons live in TODO.md and
- * AGENTS.md where they can be written properly. The second test here is the one that matters: it
- * runs Biome and checks that a rule the overrides claim to disable really is disabled, because
- * that is the property that was actually lost.
+ * So the config is held to containing no comments at all, and the reasons live in AGENTS.md where
+ * they can be written properly. The second test here is the one that matters: it runs Biome and
+ * checks that a rule the overrides claim to disable really is disabled, because that is the
+ * property that was actually lost.
  */
 
 const CONFIG_PATH = 'biome.json';
