@@ -105,6 +105,47 @@ export { parseCSV, parseDSV, serializeCSV, serializeDSV } from '@/lib/dsv';
 export { downloadStringAsPlainTextFile, formatByteSize } from '@/lib/file';
 export { formatHexNumber } from '@/lib/format_number';
 export { fuzzySearch } from '@/lib/fuzzy_search';
+export type { BoxFaceName, GLQuad } from '@/lib/gl/geometry';
+export {
+  calcNormal,
+  convertBoxToQuads,
+  convertHexColorToGL,
+  flattenSceneObjects,
+  generateTransformMatrices,
+  getBoxCropUV,
+  getCameraWorldPos,
+  getFaceColor,
+  getMaterialByHexColor,
+  isPointInsideBox,
+  makeTransformationMatrix,
+  makeTransformedVertex,
+  naiveRaycast,
+} from '@/lib/gl/geometry';
+export type { ProgramInfo, SceneRenderContext } from '@/lib/gl/renderer';
+export {
+  createSceneRenderContext,
+  deleteSceneRenderContext,
+  renderScene,
+  useGLCtx,
+} from '@/lib/gl/renderer';
+export type {
+  BoxFaceColors,
+  BoxSceneObject,
+  Camera,
+  FontCharacterInfo,
+  FontCharacterMap,
+  FontRenderInfo,
+  GLQuadUV,
+  GroupSceneObject,
+  ObjectMaterial,
+  QuadSceneObject,
+  Scene,
+  SceneObject,
+  TextSceneObject,
+  Vector2Array,
+  Vector3Array,
+  Vector4Array,
+} from '@/lib/gl/scene';
 export { highlightText } from '@/lib/highlight';
 export { getHttpStatusCategory, getHttpStatusCategoryName, getHttpStatusName } from '@/lib/http';
 export { ipv4Regex, parseIp } from '@/lib/ipv4';

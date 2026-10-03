@@ -10,8 +10,13 @@ declare module '*.jpeg';
 // TypeScript has no way to know that from the file extension alone.
 declare module '*.css';
 
-// Text assets imported for their content rather than parsed as a module.
+// Text and shader source imported for their content rather than parsed as a module.
 declare module '*.txt?raw' {
+  const content: string;
+  export default content;
+}
+
+declare module '*.glsl?raw' {
   const content: string;
   export default content;
 }
