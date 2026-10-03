@@ -4,52 +4,41 @@ Guidance for AI coding agents (and humans) working in this repository.
 
 ## Repository state
 
-**The library is mid-decoupling.** `src/` is a file-level copy of the original application —
-261 files, 35 490 lines of TypeScript and 5 455 of CSS — that has not been adapted to anything. It
-does not compile: 22 import specifiers resolve to modules that were never copied.
-[`TODO.md`](./TODO.md) holds the plan that takes it to a published package, and the stage each piece
-of work belongs to.
+**The library is decoupled and builds.** `deno task ci` is green: 266 tracked files, 152 tests, a
+production bundle, a manifest that matches the bundle and an API reference generated from the public
+surface.
+[`TODO.md`](./TODO.md) holds what is still to be done before it is published, in the order it should
+be done.
 
-Read this document for the rules the finished library is held to, and `TODO.md` for what is still to
-be done and in what order. They are not the same thing: a rule here is why the work is done a
-particular way, a stage there is what is done next.
+Read this document for the rules the library is held to, and `TODO.md` for the remaining steps. They
+are not the same thing: a rule here is why the work is done a particular way, an item there is what is
+done next.
 
-**This document describes the target, not the current tree.** A tool, a test or an entry point it
-names may not exist yet — `src/index.ts` arrives in stage 5, the per-component tests in stage 11,
-and most of the commands do not pass until the stages that fix what they report. The toolchain
-itself landed in stage 2, so the commands listed below run, but several of them are red on purpose
-until the copy is decoupled. Each stage is named in [`TODO.md`](./TODO.md) with the work that brings
-it in, so a rule can be written down before the code that satisfies it lands. What is true *today*
-of `src/` is described in the table in
-[`TODO.md`](./TODO.md#what-was-copied-and-what-it-means-for-the-stages).
+Two things in here describe work that has not happened yet, and are marked as such: the per-component
+render tests ([Testing](#testing)) and the token map shared with a consumer's Tailwind config
+([Styling](#styling)).
 
 ## Project
 
-**DSS UI Kit** — the UI library extracted from the original application so that
-the consuming application can consume it as a dependency. It is a component
-library and a design system: presentational components, the hooks they need, and the styling
-contract that makes them look the same in every application.
+**DSS UI Kit** — a component library and a design system for Preact: presentational components, the
+hooks they need, and the styling contract that makes them look the same in every application. It is
+consumed as a dependency, by more than one application.
 
-What it **is not** matters as much, because it is what was copied out:
+What it **is not** matters as much, because that is where the coupling used to be:
 
-- **Not an application.** There is no entrypoint, no page, no router, no shell. `main.tsx`,
-  `index.html` and `prebundle.tsx` in the copy are the original application's and are removed in
-  [`TODO.md`](./TODO.md) stage 10. A library has no entrypoint; the consumer's `main.tsx` is the
-  consumer's.
-- **Not a domain model.** There is no BCP, no sensor, no zone, no configuration schema. The original application
-  types live in `def.tsx` in the original application, a 3 947-line module this library must not depend on.
+- **Not an application.** There is no entrypoint, no page, no router, no shell. A library has no
+  entrypoint; the consumer's `main.tsx` is the consumer's.
+- **Not a domain model.** No device, no sensor, no zone, no configuration schema.
 - **Not a data layer.** No WebSocket client, no protocol, no persistence. A component takes props.
 - **Not a localisation catalogue.** It ships the keys its own components render and no others; the
   consumer adds its own.
 
-The library is consumed by more than one application, which is the constraint every rule below
-follows from. Code that is convenient inside the original application and unreachable from a package is not code this
-library may keep.
+More than one application is the constraint every rule below follows from. Code that is convenient
+inside one application and unreachable from a package is not code this library may keep.
 
 ## Toolchain
 
-Inherited from the consuming application so that both repositories are worked on the same way. The
-configuration lands in [`TODO.md`](./TODO.md) stage 2; until then the commands below do not run.
+One tool per concern, and nothing else.
 
 | Concern          | Tool                                 | Command                    |
 | ---------------- | ------------------------------------ | -------------------------- |
@@ -64,8 +53,7 @@ configuration lands in [`TODO.md`](./TODO.md) stage 2; until then the commands b
 | Release          | `scripts/release.ts`                 | `deno task release`        |
 
 Everything runs through **Deno 2** — there is no npm/yarn/pnpm step, and Deno resolves
-`package.json` dependencies into `node_modules`. The the original application build this code came from was
-esbuild driven by Go scripts, with Preact vendored; none of that carries over.
+`package.json` dependencies into `node_modules`.
 
 Biome is the **only** formatter and linter. Deno's `deno fmt` / `deno lint` are disabled in
 `deno.json` — do not run them, and do not reformat files to satisfy them.
@@ -74,12 +62,20 @@ Biome is the **only** formatter and linter. Deno's `deno fmt` / `deno lint` are 
 
 Fixed by `biome.json`. Do not hand-maintain any of it; the formatter owns it.
 
-Four rules are turned off or narrowed for this code base, each with its reason recorded in
-[`TODO.md`](./TODO.md#what-the-inherited-rules-found): `noSvgWithoutTitle` for the generated path
-data under `src/ui/icons/`, `noDefaultExport` for `*.d.ts`, `noRestrictedImports` narrowed to
-`../**`, and `useComponentExportOnlyModules` off because a library with no dev entry point has no
-Fast Refresh to protect. A rule that turns out not to fit is a decision to record, not one to make
-silently.
+Five rules are turned off or narrowed for this code base:
+
+| Rule | Where | Why |
+| ---- | ----- | --- |
+| `noSvgWithoutTitle` | `src/icons/**` | Those files are generated path data, not images: `Icon` builds the `<svg>` itself, with `aria-hidden` set and the accessible name coming from the control around it. A `<title>` here would never reach the accessibility tree. |
+| `noDefaultExport` | `**/*.d.ts`, `*.config.*` | An ambient module declaration has no way to say anything else, and Vite and Tailwind both read their root config through the default export. A `*.config.*` file inside `src/` or `scripts/` is still an error. |
+| `noRestrictedImports` | `src/**` | Narrowed to `../**`, with the message naming what to write instead. A sibling import (`./Button`) names exactly one file, so only walking up the tree is forbidden. |
+| `useComponentExportOnlyModules` | repository | The rule protects Fast Refresh, and `build.lib` is `src/index.ts` — there is no dev entry point for a dev server to hot-replace. |
+| `noAutofocus` | `src/**` | Every hit is a component forwarding the caller's `autoFocus` prop. The rule catches an author stealing focus on page load, and cannot tell that a dialog is asking for its first field to take focus. A component library that cannot express the decision cannot be used in a dialog. |
+
+**`biome.json` must not contain a comment.** Biome accepts JSON with comments in `biome.json` and then
+silently discards the whole `overrides` array, so every rule in the table above stops being turned off
+and the reason given for it quietly stops being true. `scripts/lint-overrides.test.ts` fails on a
+comment in `biome.json`, so this cannot come back unnoticed. The reasons live here, not in the config.
 
 - **Semicolons: always.** Every JavaScript and TypeScript statement ends with `;`.
 - **Indentation: 2 spaces**, never tabs. Enforced in `biome.json` and `.editorconfig`.
@@ -88,9 +84,7 @@ silently.
   everywhere, no bracket spacing in object literals.
 - No `any`, no non-null assertions in library code, `import type` for type-only imports.
 
-The copy arrives in tabs and double quotes, formatted by a Biome with no formatter settings at all.
-Reformatting it is [`TODO.md`](./TODO.md) stage 3, in its own commit, so the diff that remains
-afterwards is a diff about behaviour.
+
 
 ### No bare JavaScript
 
@@ -126,8 +120,10 @@ loads them, and Vite and Tailwind both read their config through the default exp
 is scoped to the repository root: a `*.config.*` file inside `src/` or `scripts/` is still an error.
 
 Export the props interface of a component too (`export interface ButtonProps`). TypeDoc reports an
-unexported type that a public signature references, which is a signal the public surface is not fully
-documented.
+unexported type that a public signature references, and it is right to: **a type named in a public
+signature that a consumer cannot import is a defect**, because the caller has to write `X['field']`
+instead of the name. Export it from `src/index.ts` — including the shapes a props union is built from,
+which is how `AutoSizerProps` brought three of its own with it.
 
 `src/index.ts` is the single public surface of the package. A module that is not reachable from it is
 not part of the library, and adding to it is a deliberate decision about what the library promises —
@@ -136,21 +132,19 @@ not a convenience.
 ## Imports
 
 - **Anything under `src/` that leaves its own directory imports through the `@` alias**:
-  `@/ui/button`, `@/lib/math`, `@/index.css`. Never `../`, never `../../`. A relative path makes the
-  reader count directories up to the root before they know what is being imported, and it silently
-  breaks when a file moves. Biome's `noRestrictedImports` rejects `../**` inside `src/`, and nothing
-  else.
-- **A sibling may be imported as `./name`.** `./button` from inside `src/ui/` names exactly one
-  file and cannot be misread, which is why 35 of the copied components already do it. The rule is
-  about not walking *up* the tree, and `./` does not. The copy is inconsistent — `ui/icon.tsx`
-  reaches `@/lib/dom` and `./icons` in three lines — and stage 3 makes each file pick one habit.
+  `@/components/buttons/Button`, `@/lib/math`, `@/index.css`. Never `../`, never `../../`. A relative
+  path makes the reader count directories up to the root before they know what is being imported, and
+  it silently breaks when a file moves. Biome's `noRestrictedImports` rejects `../**` inside `src/`,
+  and nothing else.
+- **A sibling may be imported as `./name`.** `./ColorInput` from inside `src/components/color-picker/`
+  names exactly one file and cannot be misread. The rule is about not walking *up* the tree, and `./`
+  does not.
 - `scripts/` runs directly under Deno, outside the Vite alias, so it keeps single-level
   `./lib/conventional.ts` imports. `../**` is still rejected.
 - The `@` alias is declared twice and both halves must agree — `resolve.alias` in `vite.config.ts`
   for the bundler, and `compilerOptions.paths` in `tsconfig.json` for the type checker.
 
-The `@` prefix is inherited from the original application, which already aliased it, so the copy's internal
-imports need no rewriting. Only the imports that cross the library boundary do.
+
 
 ## Layering
 
@@ -158,33 +152,28 @@ imports need no rewriting. Only the imports that cross the library boundary do.
 
 ```
 src/lib/      hooks and framework-agnostic helpers   ← may import: src/lib/ only
-src/ui/       components                            ← may import: src/lib/, src/ui/,
+src/components/  components                         ← may import: src/lib/, src/components/,
                                                        and the infrastructure modules below
 src/locale.tsx, src/theme.tsx, src/event.tsx,
 src/feature_flag.tsx          infrastructure        ← may import: src/lib/, and each other
 src/index.ts                  the public surface    ← may import: anything above
 ```
 
-**`src/ui/` and `src/lib/` may not import anything else.** They may not import a module that reaches
-`@/def`, `@/api`, `@/contact`, `@/robject`, `@/sensor` or `@/server_nd_type` — not directly, and
-not through one hop. Fourteen components currently reach four infrastructure modules (`@/locale`,
-`@/theme`, `@/routing`, `@/locale_schema`); those four are the sanctioned way in, and
-[`TODO.md`](./TODO.md) stages 6–8 are what free them from `@/def`.
+**`src/components/` and `src/lib/` may not import anything else.** They may not import a module that
+reaches an application-only module — not directly, and not through one hop. Fourteen components reach
+four infrastructure modules (`@/locale`, `@/theme`, `@/feature_flag`, `@/event`); those four are the
+sanctioned way in.
 
-The one direction the copy never uses is the one the rule forbids: nothing in `src/lib/` imports
-`src/ui/`, while 26 files in `src/ui/` import `src/lib/`. Helpers do not know what renders them. A
-helper that starts needing a component is a component, and it moves to `src/ui/`.
-
-That is not free advice, and `src/lib/color_picker.tsx` is why: seven React components and 1 024
-lines live in the helpers directory, imported only by `ui/color_popover.tsx`. Stage 3 moves it to
-`src/ui/`; until then it is the one known exception to its own layer.
+The one direction the rule forbids is the one nothing in the tree uses: nothing in `src/lib/` imports
+`src/components/`, while 26 files in `src/components/` import `src/lib/`. Helpers do not know what
+renders them. A helper that starts needing a component is a component, and it moves.
 
 Anything a component needs from the application — a route, a locale string, the current theme — is a
 **prop** or one of those four modules. A component that reaches past them for it is a component that
 cannot ship, and the fix is to move the decision up to the caller, not to widen the layer.
 
 This is checked by a test, not by review: `scripts/module-boundary.test.ts` walks `src/` and fails
-if a file under `src/ui/` or `src/lib/` imports a module outside the layers above.
+if a file under `src/components/` or `src/lib/` imports a module outside the layers above.
 
 ## Types
 
@@ -193,16 +182,17 @@ if a file under `src/ui/` or `src/lib/` imports a module outside the layers abov
   a caught error, an event payload — declare it `unknown` and narrow it. `unknown` is not a
   loophole: assigning it to a `string` still requires the narrowing.
 - No non-null assertions (`!`) in library code. Assert what you have actually checked, or handle the
-  absence. The copy is full of them, inherited from a `biome.json` that switched the rule off.
+  absence.
 - `erasableSyntaxOnly` is on, so enums, namespaces and parameter properties are rejected. Use a
   `type` union or a `const` object instead.
 - `noPropertyAccessFromIndexSignature` is on, so a value from an index signature is read with
   brackets: `groups['type']`, not `groups.type`. When that gets noisy, narrow it once into a named
   type rather than casting at each use.
-- **No domain types.** A `BCPType`, a `TCOType`, a `RObjectState` or a `Sensor` appearing in a public
+- **No domain types.** A `DeviceType`, a `ZoneState` or a `SensorReading` appearing in a public
   signature is a defect: it names a type no consumer can satisfy. Model the shape the component
   actually renders and let the consumer adapt — which is what makes a component generic over its
-  data rather than over our protocol.
+  data rather than over one application's protocol. `scripts/no-domain-code.test.ts` walks the tree
+  and fails on one.
 
 ## Readability
 
@@ -239,9 +229,6 @@ imports by rewriting them to `preact/...`.
 - **Preact is a peer dependency, not a dependency.** The library runs on the Preact the consumer
   already has; bundling its own would put two copies in one bundle and break hooks.
 
-The copy was written against the original application's vendored Preact, which is aliased the same way. Its
-`react` imports stay exactly as they are.
-
 ## Styling
 
 ### The CSS custom-property contract
@@ -272,41 +259,37 @@ theme is a `data-theme` attribute on `<body>` and nothing is recompiled.
 Tailwind 3, compiled through PostCSS declared inside `vite.config.ts`. There is no
 `postcss.config.js`.
 
-The copy ships `src/css/utility.css` — 4 855 lines of **checked-in compiled Tailwind output**, a
-build product of the original application's esbuild step. It is deleted in [`TODO.md`](./TODO.md) stage 4 and
-replaced by a real pipeline, because a consumer's build has to be able to compile against the
-library and a stale checked-in build is a silent defect.
-
 A consumer's `tailwind.config.ts` has to scan the published package for class names, and the library
 has to make that possible: the classes it renders must be discoverable from the shipped source, not
-only from this repository.
+only from this repository. The token map is the other half of that: a utility exists in the consumer's
+output only if their config names the token, and today that means copying 119 lines out of
+`tailwind.config.ts` by hand. Publishing that map as an importable preset is
+[`TODO.md`](./TODO.md) section 2.
 
 ### Class names
 
 The copy concatenates class strings with template literals and appends a `className` prop directly,
 so a caller's `className` loses to the component's own when both set the same property. The
-components take a `cn()` helper built on `tailwind-merge`, which is what the consuming application already
-does — so `className` from the caller wins and the two do not fight.
+components take a `cn()` helper built on `tailwind-merge`, so `className` from the caller wins and the
+two do not fight.
 
 ## Localisation
 
-The interface ships in **Russian and in English**, and both versions are complete: the locale the
-browser asks for, and nothing else. A missing translation is a defect, not a degraded mode.
+The interface ships in **Russian and in English**, and both versions are complete. A missing
+translation is a defect, not a degraded mode.
 
 **The library renders no user-facing text of its own beyond what its components need.** Every string
 an operator reads comes from the locale files, and a component holds a key, never a literal.
 
-- `src/locales/en.ts` holds every message the library renders, in English; it is the source of the
+- `src/locales/en.tsx` holds every message the library renders, in English; it is the source of the
   message key set.
-- `src/locales/ru.ts` holds the same keys in Russian; it is the only file allowed to contain Russian.
+- `src/locales/ru.tsx` holds the same keys in Russian; it is the only file allowed to contain Russian.
 - `MessageKey` is **derived from the English locale**, so a key has to exist before a component can
   name it, and every other locale is typed `Record<MessageKey, string>` — a message missing from
-  `ru.ts` is a type error, not a blank label on a panel an operator is reading.
-
-The copy keeps the library's message set: 3 038 keys in the source, of which the components name 33
-as literals. Cutting it down to what the library renders is [`TODO.md`](./TODO.md) stage 7 — the rest
-belong to the consumer, and shipping them would put the original application's vocabulary in a package that has no
-business holding it.
+  `ru.tsx` is a type error, not a blank label on a panel an operator is reading.
+- **A language the library does not ship is registered, not forked**: `registerLocale(name, definition)`
+  takes messages, dates, a script and a plural rule, and `LocaleProvider` merges a caller's own
+  `messages` and `dates` over the shipped catalogues. Two files per new language, not a fork.
 
 A component that needs a literal of its own — a device identifier, a version string — renders it as
 data. Only text meant to be read by an operator belongs in a locale file.
@@ -346,19 +329,22 @@ deno task ci              # the full local gate, exactly what CI runs
 ```
 
 `deno task ci` must pass before any commit. It chains `install:frozen`, `format:check`, `lint`,
-`test`, `build` and `docs`, which is the whole of the GitLab pipeline in one command. If Biome
+`test`, `build` and `docs`, which is the whole of the GitHub Actions pipeline in one command. If Biome
 reports a fixable problem, run `deno task format` rather than editing by hand. The release commands
 are not here because they are the maintainer's alone — see [Releasing](#releasing).
 
 ## Continuous integration
 
-[`.gitlab-ci.yml`](./.gitlab-ci.yml) defines a strict pipeline: `setup` (frozen install) → `format`,
-`lint`, `typecheck`, `test`, `commit-message` → `build`, `docs`, plus a `release-preview` job on
-`v*` tags. `biome ci` treats formatting as an error, so an unformatted file fails the pipeline.
+[`.github/workflows/ci.yml`](./.github/workflows/ci.yml) defines a strict pipeline: `format`, `lint`,
+`typecheck`, `test`, `commit-message` → `build`, `docs`, plus a `release-preview` job on `v*` tags.
+`biome ci` treats formatting as an error, so an unformatted file fails the pipeline.
 
-The pipeline is inherited from the consuming application and keeps the same shape deliberately: one gate,
-run the same way locally and in CI, so a green pipeline and a green `deno task ci` mean the same
-thing.
+Every job starts from `.github/actions/setup/action.yml`, which checks out the commit, sets up Deno and
+runs `deno install --frozen`. A shared action rather than seven copies: a lockfile that has to agree
+with `package.json` is checked the same way everywhere, or not at all.
+
+The pipeline keeps one gate deliberately: every job runs the same commands `deno task ci` runs, so a
+green pipeline and a green `deno task ci` mean the same thing.
 
 ## Project layout
 
@@ -366,34 +352,36 @@ thing.
 src/
   index.ts                the package's public surface; the only entry point consumers need
   lib/                    hooks and framework-agnostic helpers
-  ui/                     components
-  ui/icons/               icon path data, generated from ui/icons/*.svg
-  locale.tsx              message lookup, locale detection, useLocale
-  locales/                en.ts and ru.ts — every message the library renders
-  theme.tsx               theme names and the current theme
+  lib/gl/                 the WebGL scene renderer: geometry, shaders, scene types
+  components/             components, one directory per group
+    buttons/ charts/ color-picker/ display/ feedback/
+    inputs/ layout/ navigation/ overlays/ tables/
+  icons/                  icon path data, generated from the source SVGs
+  locale.tsx              message lookup, locale registration and detection, useLocale
+  locales/                en.tsx and ru.tsx — every message the library renders
+  theme.tsx               theme names, registration and the current theme
   event.tsx               the event bus
   feature_flag.tsx        feature flags
   css/                    theme custom properties, global styles, Tailwind entry point
   index.css               Tailwind entry point (index.css is the only global stylesheet)
 scripts/
   commitlint.ts           Conventional Commits validator (used by the git hook)
-  lib/                    helpers for the scripts above
+  release.ts              version and changelog from the git history
+  check-package-manifest.ts  verifies every path in package.json `files` exists in dist/
+  *.test.ts               the repository-policy tests
+  lib/                    helpers for the scripts above, including the shared tree walker
 docs/
   api-intro.md            landing page for the generated API reference
   api/                    TypeDoc output, generated and not committed
 
 vite.config.ts            bundler config; also declares the PostCSS pipeline
 tailwind.config.ts        design tokens
+typedoc.json              the API reference: entry point, exclusions, output
 tsconfig.base.json        strict compiler options shared by both tsconfigs
 tsconfig.json             library compiler options and the @/ paths
 tsconfig.node.json        tooling compiler options (Vite, Tailwind, scripts/)
 biome.json                the single formatter and linter
 ```
-
-`src/lib/` and `src/ui/` are the reusable payload and are clean of domain code already — roughly
-17 000 lines that need reformatting and an entry point, not rewriting. The application screens and
-`@/def` coupling live in the top-level `src/*.tsx` files and are removed by
-[`TODO.md`](./TODO.md) stage 10.
 
 ### File naming
 
@@ -404,12 +392,10 @@ standard React convention and it makes the import statement read as the symbol i
 Everything that is not a component keeps a lowercase, dash-separated name describing what it is:
 `cn.ts` for a helper, `domain.ts` for a group of types, `main.tsx` for the browser entrypoint.
 
-**The copied modules keep their `snake_case` names.** `filterable_table.tsx`,
-`use_event_listener.tsx` and `use_granular_effect.tsx` are the names they have in
-the original application, and keeping them means a reader holding the two side by side can tell at a
-glance that a file is unchanged, which is worth a great deal while 261 files are being sorted into
-layers. Renaming them is a separate, mechanical change with its own commit, and never mixed into a
-change that moves code between layers.
+**A hook or a helper keeps a `snake_case` name describing what it is.** `use_event_listener.tsx` and
+`use_granular_effect.tsx` are not components, and a PascalCase filename would claim they were. The
+rename to PascalCase is done for the components; a reader who needs to know whether a file exports a
+component can tell from the name.
 
 Do not mix the two styles in one directory.
 
@@ -424,6 +410,13 @@ deno task docs:watch    # rebuilds on save
 
 - Entry points and output are configured in `typedoc.json`; TypeScript options live in
   `tsconfig.docs.json` so documentation never depends on the build settings.
+- **TypeDoc resolves from `src/index.ts` alone**, so the reference is the list of things a consumer
+  can import and nothing else. That is what makes it usable; expanding over `src/**` produced 186
+  pages of internal modules with the entry point somewhere in the middle.
+- Narrowing it exposed every type named in a public signature and not exported, which is the defect
+  [Exports](#exports) describes. Two symbols are listed in `intentionallyNotExported` instead:
+  `iconPaths` and `en` are the data `IconName` and `MessageKey` are derived from, and the derived
+  types are the API — a consumer needs the union of icon names, not a map of path data.
 - `docs/api/` is gitignored. The HTML is a build output, not source; committing it would guarantee
   it drifts out of date the first time a comment changes.
 - CI builds it, so a broken `@link` or an unresolvable type fails the pipeline. Edit the comment,
@@ -447,22 +440,22 @@ find that out by reading the types.
 - **Markdown documentation: English.** The glossary in this file is the one place a domain acronym
   is spelled out.
 
-The source this came from is a Russian-language product, and the component names and locale keys
-inherit that (`bcpTitleMain`, `kauConfigTab`, `zoneManager.*`). **Do not translate or rename them as
-part of the decoupling.** A key rename forces an edit in every consuming file and buys nothing but a
-cleaner-looking diff; if the vocabulary is wrong, that is a change with a migration, taken on its
-own.
+The vocabulary the components arrived with is not being translated or renamed as part of this work. A
+key rename forces an edit in every consuming file and buys nothing but a cleaner-looking diff; if a
+name is wrong, that is a change with a migration, taken on its own.
 
 ## Testing
 
 `deno task test` runs the suite. Add tests next to what they cover: `src/**/*.test.ts` beside the
 component or type, `scripts/**/*.test.ts` beside the helper. The repository-policy tests —
-`no-bare-javascript`, `module-boundary` and `no-russian-text` — are the exceptions: they guard
-repository-wide rules rather than one module, so they sit beside the tooling they protect and share
-its tree walker (`scripts/lib/source-tree.ts`).
+`no-bare-javascript`, `no-domain-code`, `module-boundary` and `no-russian-text` — are the exceptions:
+they guard repository-wide rules rather than one module, so they sit beside the tooling they protect
+and share its tree walker (`scripts/lib/source-tree.ts`).
 
-The copy arrives with no tests at all, which is why [`TODO.md`](./TODO.md) stage 11 exists: the pure
-helpers first, since they carry the most logic per line, then a render test per component.
+152 tests cover the pure helpers that carry the most logic per line, plus the four policy rules. **There
+is no render test per component yet**, which is why [`TODO.md`](./TODO.md) section 4 exists: a
+component that stops rendering is a blank page in someone else's application, and nothing here notices
+yet.
 
 ## Git and versioning
 
@@ -539,7 +532,7 @@ Both are owned by the script.
 
 - `deno task ci` passes (this is the CI gate).
 - If you touched `package.json`, `deno.lock` is refreshed and `deno task install:frozen` passes.
-- Nothing under `src/ui/` or `src/lib/` imports a module outside its layer — see
+- Nothing under `src/components/` or `src/lib/` imports a module outside its layer — see
   [Layering](#layering).
 - No new CSS custom property is introduced without its Tailwind colour in `tailwind.config.ts`, and
   no existing one is renamed.

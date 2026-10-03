@@ -1,45 +1,60 @@
 # DSS UI Kit
 
-A domain-independent component library and design system extracted from the original application.
+A domain-independent component library and design system for Preact: **88 components**, the hooks they
+need, a **119-token** CSS custom-property contract, localisation, an event bus, and a generic WebGL
+scene renderer.
 
-It is the presentational layer of that application — components, the hooks they need, and the styling
-contract that makes them look the same everywhere — with the application, the protocol and the domain
-model left behind. See [Status](#status) for how far along that is.
+Nothing here knows what application it is rendered in. There is no domain model, no data layer and no
+router: a component takes props, and anything a caller would otherwise have to reach into their own
+application for is a prop.
 
 ## Install
 
 ```sh
-deno add npm:dss-ui-kit
+deno add npm:dss-ui-kit npm:preact
 ```
 
-Preact is a peer dependency, so the library runs on the Preact your application already has:
-
-```sh
-deno add npm:preact
-```
-
-There is no npm or yarn step. This package is built and published with Deno and Vite.
+Preact is a peer dependency, so the library runs on the Preact your application already has. The code is
+written against the React API and bundled with `preact/compat`, so `react`, `react-dom` and
+`react-dom/client` all resolve to Preact inside this package.
 
 ## Use
 
-The public surface is the package root, and every export is named:
+The package root is the entire public surface, and every export is named:
 
 ```tsx
-import { Button, Icon, FilterableTable } from 'dss-ui-kit';
+import { Button, ControlledTable, LocaleProvider, setTheme } from 'dss-ui-kit';
 import 'dss-ui-kit/style.css';
 ```
 
-Nothing is imported by path. A module that is not reachable from the root export is not part of the
-library, and adding to it is a deliberate decision about what the library promises.
+A module that is not reachable from the root is not part of the library. Importing past it means
+depending on something the version number does not describe.
+
+### Components
+
+| Group                                   | What is in it                                                                                   |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `buttons`                               | `Button`, `ButtonGroup`, `DropDownButton`, `IconButton`, `ToggleButton`, `PlayPauseButton`, …    |
+| `charts`                                | `Chart`, `PieChart`, `RingProgress`, `SimpleLineChart`, `ZoomableCanvas`, `MiniCalendar`, …      |
+| `color-picker`                          | Hex, RGB, RGBA, HSLA, HSL and RGBA-string pickers and inputs, with or without an alpha channel    |
+| `display`                               | `Icon`, `Link`, `HighlightedJson`, `IconViewer`, `IconedSectionTitle`                            |
+| `feedback`                              | `Spinner`, `Ripple`, `LogWidget`, `ScrollProgressBar`, `AppCrashGuard`, …                        |
+| `inputs`                                | `TextInput`, `SearchInput`, `Select`, `Slider`, `ToggleSwitch`, `JsonEditor`, `VirtualizedList`, … |
+| `layout`                                | `AutoSizer`, `ResizableSplit`                                                                    |
+| `navigation`                            | `Accordion`, `MenuTree`, `TreeView`, `OrderPanel`, `MUITabList`, …                                |
+| `overlays`                              | `Modal`, `Popover`, `DropDownMenu`, `FeedbackTooltip`                                             |
+| `tables`                                | `ControlledTable`, `FilterableTable`, `SortableTable`, `GeneralizedSearchModal`, …                |
+
+Every component exports its props interface beside it (`ButtonProps`, `AutoSizerProps`, …), and every
+one of those props interfaces is documented in the [API reference](./docs/api-intro.md).
 
 ## Styling
 
-The design system is **119 CSS custom properties** named `--color-*`, defined per theme, and exposed as
+The design system is **119 CSS custom properties** named `--color-*`, defined per theme and exposed as
 Tailwind colour utilities — `bg-bda`, `text-bdat`, `border-tpl`, `fill-tok`. A theme is data, not a
 build artefact: switching theme sets a `data-theme` attribute on `<body>` and nothing recompiles.
 
-Both the theme files and the Tailwind colour config ship with the package. A consumer's
-`tailwind.config.ts` has to do two things for the components to look right: scan the published
+A consuming application has to do two things for the components to look right: scan the published
 package so Tailwind can see the class names the components render, and declare the same colour map,
 because a utility only exists in the output if the config names the token.
 
@@ -64,16 +79,73 @@ export default {
 } satisfies Config;
 ```
 
-The library's own `tailwind.config.ts` is the source of truth for that map. Sharing it as an importable
-preset rather than a copy is part of the consumption stage, not something this repository does yet.
+The library's own `tailwind.config.ts` is the source of truth for that map.
 
 Renaming a custom property is a breaking change. Adding one is not.
 
 ## Localisation
 
-The interface ships in English and Russian, both complete. A message missing from `ru.ts` is a type
-error rather than a blank label on a panel an operator is reading, and every string a component
-renders comes from a locale file rather than a literal.
+The library ships English and Russian, both complete, and can be given any other language. A missing
+translation is a type error rather than a blank label on a panel an operator is reading.
+
+```tsx
+import { LocaleProvider, registerLocale, type LocaleDefinition } from 'dss-ui-kit';
+
+registerLocale('de', {
+  messages: { 'button.cancel': 'Abbrechen' },
+  script: 'latin',
+} satisfies LocaleDefinition);
+
+// Or pass messages and dates straight to the provider, without registering a locale first.
+<LocaleProvider initialLocale="de" messages={{ de: { 'button.cancel': 'Abbrechen' } }}>
+  {children}
+</LocaleProvider>;
+```
+
+`MessageKey` is derived from the English catalogue, so a key has to exist before a component can name
+it, and every other catalogue is typed `Record<MessageKey, string>`. A consumer adds its own keys by
+passing `messages` to the provider.
+
+## Theming
+
+Five themes ship — `dark`, `light`, `acme`, `indigo` and `purple` — and more can be registered with
+`registerTheme`. `setTheme` writes the theme name to a `data-theme` attribute on `<body>` and remembers
+the choice; `useTheme` reads it back and re-renders when it changes, including when another tab changes
+it:
+
+```tsx
+import { setTheme, useTheme } from 'dss-ui-kit';
+
+setTheme('dark');
+const theme = useTheme();
+```
+
+## Events
+
+The event bus is typed and open at both ends. A consumer declares its own events by augmenting
+`EventTypes`, and gets both directions checked:
+
+```ts
+import { emitTypedEvent, useTypedEvent } from 'dss-ui-kit';
+
+declare module 'dss-ui-kit' {
+  interface EventTypes {
+    CART_CHANGED: { itemCount: number };
+  }
+}
+
+emitTypedEvent('CART_CHANGED', { itemCount: 3 });
+```
+
+`emitEvent` / `useEvent` are there for a name that is not declared.
+
+## WebGL
+
+`src/lib/gl` is a small scene renderer over a raw WebGL context: boxes, quads, text sprites and camera
+projection, with per-face colours or a flat material. It is generic — it has no model of anything —
+and it is exported in full (`createSceneRenderContext`, `renderScene`, `useGLCtx`,
+`convertBoxToQuads`, `generateTransformMatrices`, …) for an application that needs to draw its own
+scene in the same pipeline the components use.
 
 ## Development
 
@@ -92,35 +164,8 @@ deno task ci        # the full local gate, exactly what CI runs
 
 `deno task ci` is the gate: a green pipeline and a green `deno task ci` mean the same thing.
 
-The rules the code is held to — layering, the `@` import alias, the naming conventions, the
-no-`any` and no-non-null-assertion bans — are in [`AGENTS.md`](./AGENTS.md). The plan that takes the
-library from the copied file set to a published package, and what each stage still owes, is in
-[`TODO.md`](./TODO.md).
-
-## Status
-
-**The library is mid-decoupling, and the copy in `src/` is not yet the published package.**
-
-`src/` began as a file-level copy of the original application: 261 files of application code that still
-references an application-only type module, a WebSocket layer and a routing table. The work is to
-separate the reusable library from that application. Thirteen stages are planned; the toolchain and
-the repository constitution are in place and the separation has not started.
-
-What that means for anyone reading this repository today:
-
-- `src/` is the source of the work, not a working package. It does not compile: 22 import specifiers
-  resolve to modules that were never copied. `deno task typecheck` and `deno task build` are red
-  because of that, not because of the configuration.
-- `src/index.ts`, the entry point Vite builds, arrives with the module-boundary stage. Until then
-  there is no package to build.
-- `deno task lint` reports the copied code's own debt — 670 errors and 24 warnings, mostly
-  non-null assertions and unformatted files. Both are addressed by the house-style stage, in its own
-  commit so the reformat diff stays readable.
-
-Only the domain-independent library is intended to be published. application-specific components, the domain
-types, the event map and the data layer are removed or genericised on the way, and the manifest's
-`files` list keeps them out of the tarball until then. A consumer should treat this as a repository
-under active development, not a stable dependency.
+The rules the code is held to — layering, the `@` import alias, the naming conventions, the no-`any`
+and no-non-null-assertion bans — are in [`AGENTS.md`](./AGENTS.md).
 
 ## Licence
 

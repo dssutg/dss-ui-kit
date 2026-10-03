@@ -9,18 +9,18 @@ deno task docs
 ```
 
 The output is written to `docs/api/` and is not committed, so the documentation cannot drift from
-the code. CI runs the generator on every merge request and fails if it reports an error, which
-means a broken build breaks the documentation build too.
+the code. CI runs the generator and fails if it reports an unresolvable type, so a broken `@link` or a
+public signature that names something a consumer cannot import fails the pipeline too.
 
 ## What is covered
 
-Every module under `src/` and `scripts/` is an entry point — `typedoc.json` expands both globs —
-minus the tests and the application files that [`TODO.md`](../TODO.md) stage 10 deletes: `main`,
-`prebundle`, `copyright`, `logo`, `routing` and the login-screen overlay.
+Exactly what `src/index.ts` exports: the components, the hooks, the infrastructure, and every type one
+of their public signatures names. A module that is not reachable from the entry point is not in here,
+which is the point of having one public surface — the reference and the package cannot disagree.
 
-Once `src/index.ts` exists this stops being a list to keep in step with the tree. The library will
-have exactly one public surface, and the reference will document that and nothing else — which is
-the point of having one.
+Two symbols are deliberately absent: `iconPaths` and `en`, the data `IconName` and `MessageKey` are
+derived from. A consumer needs the union of icon names and the set of message keys, not the map of SVG
+path data or the English catalogue behind them.
 
 ## Conventions
 

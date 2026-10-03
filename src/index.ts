@@ -7,7 +7,7 @@
  * does not describe.
  *
  * ```ts
- * import { Button, LocaleProvider, ThemeProvider } from 'dss-ui-kit';
+ * import { Button, LocaleProvider, setTheme } from 'dss-ui-kit';
  * import 'dss-ui-kit/style.css';
  * ```
  *
