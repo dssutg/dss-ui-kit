@@ -43,7 +43,9 @@ export { Button } from '@/components/buttons/Button';
 export type {
   ButtonGroupItem,
   ButtonGroupItemChangeHandler,
+  ButtonGroupProps,
 } from '@/components/buttons/ButtonGroup';
+export { ButtonGroup } from '@/components/buttons/ButtonGroup';
 export { CopyToClipboardButton } from '@/components/buttons/CopyToClipboardButton';
 export type { DropDownButtonVariant } from '@/components/buttons/DropDownButton';
 export { DropDownButton } from '@/components/buttons/DropDownButton';
@@ -155,6 +157,8 @@ export { Slider } from '@/components/inputs/Slider';
 export type { SocketServerAddressInputProps } from '@/components/inputs/SocketServerAddressInput';
 export { SocketServerAddressInput } from '@/components/inputs/SocketServerAddressInput';
 export { TextInput } from '@/components/inputs/TextInput';
+export type { TimePartInputProps } from '@/components/inputs/TimePartInput';
+export { TimePartInput } from '@/components/inputs/TimePartInput';
 export { ToggleSwitch } from '@/components/inputs/ToggleSwitch';
 export { UnsignedIntegerInput } from '@/components/inputs/UnsignedIntegerInput';
 export type { UploadConfigProps } from '@/components/inputs/UploadConfig';

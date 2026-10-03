@@ -10,7 +10,9 @@
  */
 
 export type Vector2Array = [number, number];
+/** Three numbers, for a position, a scale or a rotation in radians. */
 export type Vector3Array = [number, number, number];
+/** Four numbers, for a colour in RGBA and for a texture coordinate. */
 export type Vector4Array = [number, number, number, number];
 
 /** Texture coordinates for the four corners of a face, clockwise from the bottom left. */
@@ -80,6 +82,12 @@ export interface GroupSceneObject {
   readonly children: readonly SceneObject[];
 }
 
+/**
+ * One thing to draw: a quad, a box, a run of text, or a group of other objects.
+ *
+ * The union of what the renderer knows how to draw. An object shape a caller wants that is not here
+ * means a renderer change rather than a subclass, which is the trade for having no scene graph.
+ */
 export type SceneObject = QuadSceneObject | BoxSceneObject | TextSceneObject | GroupSceneObject;
 
 /** A scene: what is drawn, and the camera it is drawn from. */
@@ -101,6 +109,12 @@ export interface FontCharacterInfo {
   readonly width: number;
 }
 
+/**
+ * Every glyph the rasteriser has drawn, keyed by the character itself.
+ *
+ * Built once per font and size and then only added to, so a scene with a thousand text objects does
+ * not rasterise a thousand copies of the same string.
+ */
 export type FontCharacterMap = Record<string, FontCharacterInfo>;
 
 /** The atlas the renderer rasterised for {@link TextSceneObject}s, kept so it can be reloaded and freed. */

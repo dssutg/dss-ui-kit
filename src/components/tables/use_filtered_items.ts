@@ -4,6 +4,14 @@ import { getEnumLabel } from './ControlledTable';
 import type { EnumOption } from './FilterableTableTopPanel';
 import { escapeProp, formatDateAndTime } from './table_export';
 
+/**
+ * How one property of an item is searched and filtered, without a name or a label.
+ *
+ * A union over the property's type, not a record of optional fields, so `type` decides which of the
+ * rest exist: a `string` property has no `min`, and a schema that could hold both would have to be
+ * narrowed at every use. `extractValue` is the only part that touches the caller's data — it is what
+ * makes a filter over an arbitrary record type possible at all.
+ */
 export type AnonymousSearchPropertySchema<T> =
   | {
       type: 'string';
@@ -56,6 +64,12 @@ export type AnonymousSearchPropertySchema<T> =
       extractValue: (item: T) => number;
     };
 
+/**
+ * One property of a {@link SearchSchema}, named and labelled.
+ *
+ * `hiddenInTable` is what makes a filterable property one that is not also a column; see
+ * {@link FilterableTableFilterProperty}.
+ */
 export type SearchPropertySchema<T> = AnonymousSearchPropertySchema<T> & {
   name: string;
   label: string;
@@ -80,6 +94,14 @@ export type SearchPropertySchemaExtractedValue<T> = ReturnType<
   SearchPropertySchema<T> extends { extractValue: infer U } ? U : never
 >;
 
+/**
+ * The properties of one table that can be searched, filtered and exported.
+ *
+ * The same schema drives the search box, the filter modal, the statistics and the export, which is why
+ * it is passed around instead of each of those deriving its own: a filter that searched a different
+ * field from the one the table showed would be a bug in the caller's wiring rather than a visible
+ * error.
+ */
 export interface SearchSchema<T> {
   properties: SearchPropertySchema<T>[];
 }
@@ -159,6 +181,16 @@ function parsePropertyValue<T>(
   }
 }
 
+/**
+ * The items of a table that match a search string, filtered in place with no copy when the search is
+ * empty.
+ *
+ * The search string is the one this library's own filter builder writes — properties named and valued,
+ * separated by spaces — so what the table filters by and what the filter modal shows are the same
+ * thing. A term for a property narrows the result set; a term for a property the schema does not
+ * declare is ignored rather than treated as unmatched, because an unknown field is a stale search and
+ * not a filter that found nothing.
+ */
 export function useFilteredItems<T>({
   items,
   searchText,

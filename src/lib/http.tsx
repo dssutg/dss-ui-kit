@@ -174,14 +174,30 @@ export const httpCategories = [
   HttpStatusCategory.SERVER_ERROR,
 ] as const;
 
+/**
+ * The category a status code falls in, or `null` for a code outside the five categories.
+ *
+ * From the hundreds digit, so it is right for any code including one this table does not list: a status
+ * the library has never heard of still has a category, and whether it is a success does not depend on
+ * this library knowing the number.
+ */
 export function getHttpStatusCategory(status: number) {
   return httpCategories[Math.floor(status / 100) - 1] ?? null;
 }
 
+/**
+ * The name of a status code, for showing one to an operator.
+ *
+ * The names are the ones IANA publishes, in English, because a status code has exactly one name and
+ * inventing a translation would make it unrecognisable in a bug report.
+ */
 export function getHttpStatusName(status: number) {
   return httpStatusNames[status] ?? `Unknown HTTP status code ${status}`;
 }
 
+/**
+ * The name of the category a status code falls in, for grouping codes in a report.
+ */
 export function getHttpStatusCategoryName(status: number) {
   const category = getHttpStatusCategory(status);
 

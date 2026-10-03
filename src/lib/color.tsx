@@ -38,6 +38,13 @@ export function cssColorTo6DigitHex(color: string) {
   return `#${hex}`;
 }
 
+/**
+ * The value of a CSS custom property as the browser currently resolves it.
+ *
+ * Read from the computed style of an element rather than from the stylesheet, because a custom property
+ * is only known once a theme has set it on something. Returns an empty string for a property that is
+ * not set, which is what a caller gets when no theme is active.
+ */
 export function getCSSVariableValue(variableName: string): string {
   const styles = getComputedStyle(document.body);
 
@@ -88,6 +95,12 @@ export function getHslaColorString(color: HslaColor) {
   return `hsla(${h}, ${s}%, ${l}%, ${a})`;
 }
 
+/**
+ * A colour as four channels, each from 0 to 255 with alpha from 0 to 1.
+ *
+ * 32-bit rather than a float triple because that is what the GPU wants and what a canvas context reads
+ * back, so nothing has to be converted on the way to a buffer.
+ */
 export interface RGBA32 {
   red: number;
   green: number;
@@ -106,6 +119,7 @@ export function lerpRgba32(a: Readonly<RGBA32>, b: Readonly<RGBA32>, progress: n
   return { red, green, blue, alpha };
 }
 
+/** One stop of a gradient: a position from 0 to 1 and the colour there. */
 export type RGBA32BreakPoint = [number, RGBA32];
 
 export function findBreakPointRange(breakPoints: readonly RGBA32BreakPoint[], position: number) {
@@ -146,6 +160,13 @@ export function getColorBetweenBreakPoints(
   return lerpRgba32(startColor, endColor, progress);
 }
 
+/**
+ * A gradient over {@link RGBA32BreakPoint}s, evaluated at any position from 0 to 1.
+ *
+ * The stops are the caller's and are taken as given — sorted, or not — because the order a caller
+ * writes them in is the order they meant; a gradient whose stops were silently sorted would draw
+ * something other than what was written.
+ */
 export class Rgba32Gradient {
   private breakPoints: readonly RGBA32BreakPoint[];
 

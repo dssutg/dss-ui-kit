@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react';
 
+/**
+ * The size of an element, measured on mount and on every resize, from a `ResizeObserver`.
+ *
+ * The size starts at zero, because nothing has been measured before the first effect runs. The value
+ * is a content-box size as the observer reports it, which is the size to draw a canvas at and not the
+ * size of the element with its padding.
+ */
 export function useElementSize<T extends HTMLElement>(elementRef: React.RefObject<T | null>) {
   const [size, setSize] = useState({ width: 0, height: 0 });
 

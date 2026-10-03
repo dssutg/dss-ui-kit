@@ -1,3 +1,10 @@
+/**
+ * The local date and time of a `Date`, split into the fields a form shows, with the month 1-based.
+ *
+ * Local, not UTC, and the month incremented: `getMonth()` is 0-based and a form's month field is not.
+ * The seconds are there because a field with a seconds column needs them, not because they are usually
+ * shown.
+ */
 export function getDateComponents(dateObject: Date = new Date()) {
   return {
     year: dateObject.getFullYear(),
@@ -247,6 +254,13 @@ export function minstrftime(
   return result;
 }
 
+/**
+ * The words a relative date is written with, as functions where a number appears.
+ *
+ * One interface rather than a message catalogue because these are templates with a number in them:
+ * a locale that says "in 5 minutes" and "in 1 minute" has two different sentences, and a plural rule
+ * over one string cannot produce both. `src/locales/en.tsx` and `ru.tsx` each define one.
+ */
 export interface DateLocale {
   daysAgo: (days: number) => string;
   yesterday: string;
@@ -269,9 +283,13 @@ const minute = 60;
 const hour = minute * 60;
 const day = hour * 24;
 
-// We call relative dates the dates that are relative to today.
-// For example, if today is May 10, then May 9 is formatted
-// as simply 'Yesterday'.
+/**
+ * A date written as how long ago it was, or how long until it is.
+ *
+ * Both directions come from the same {@link DateLocale}, and "today" is decided by
+ * `relativeToDateObject` rather than by the system clock: a caller formatting a log for a different day
+ * has to be able to say what day that is. The locale is a required argument for the same reason.
+ */
 export function formatRelativeDate(
   dateObject: Date,
   relativeToDateObject: Date,

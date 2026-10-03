@@ -75,6 +75,12 @@ function toSpan(str: string, token: unknown) {
   return str;
 }
 
+/**
+ * The languages {@link highlightText} can colour.
+ *
+ * A closed union rather than a name resolved at runtime, so an unsupported language is a compile error
+ * instead of uncoloured output.
+ */
 export type Lang = 'lua' | 'json';
 
 const langTokenMap = {
@@ -179,8 +185,15 @@ function tokenize(src: string | any[], lang: string, token: any) {
   }
 }
 
-// biome-ignore lint: lint/suspicious/noExplicitAny
-export function highlightText(src: any, lang: Lang) {
+/**
+ * Colours source text as HTML, with one `<span>` per token.
+ *
+ * Returns a string of HTML rather than a tree of elements because the caller wants to hand it to
+ * `innerHTML` or to a document fragment, and the span classes it emits are its own — the caller's
+ * stylesheet defines what a token looks like. Every piece of the source is escaped before it is
+ * wrapped, so this is safe on text from anywhere.
+ */
+export function highlightText(src: string | unknown[], lang: Lang) {
   let tmp = '';
 
   // biome-ignore lint: lint/suspicious/noExplicitAny

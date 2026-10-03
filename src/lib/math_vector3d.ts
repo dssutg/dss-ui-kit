@@ -1,5 +1,12 @@
 import { DEFAULT_EQUALITY_TOLERANCE } from './math_vector2d';
 
+/**
+ * A vector in three dimensions, for the scene renderer.
+ *
+ * Immutable: every operation returns a new vector. A renderer that mutated a shared direction in
+ * place would be a renderer whose objects quietly rotated together, so the operations here cannot be
+ * used that way even by accident.
+ */
 export class Vector3D {
   static readonly ZERO: Vector3D = new Vector3D(0, 0, 0);
   static readonly ONE: Vector3D = new Vector3D(1, 1, 1);

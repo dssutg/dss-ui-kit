@@ -22,10 +22,23 @@ export function serializeDSVColumn(column: string, delimiter: string) {
   return s;
 }
 
+/**
+ * One row written with a chosen delimiter, quoting whatever the delimiter or a quote would
+ * otherwise break.
+ *
+ * The delimiter is an argument rather than a constant because the same rows are written as CSV for an
+ * export and as TSV for a paste into a spreadsheet, and the two differ only here.
+ */
 export function serializeDSV(columns: readonly string[], delimiter: string) {
   return columns.map((column) => serializeDSVColumn(column, delimiter)).join(delimiter);
 }
 
+/**
+ * Reads one row written by {@link serializeDSV}, honouring quoted fields that hold the delimiter.
+ *
+ * One row, not a document: this is what a caller parses a single line with, and a backslash delimiter
+ * is rejected outright because the grammar cannot quote it.
+ */
 export function parseDSV(input: string, delimiter: string) {
   if (delimiter === '\\') {
     throw new Error('Cannot use backslash as delimiter');
@@ -58,6 +71,7 @@ export function parseDSV(input: string, delimiter: string) {
   return { columns, length };
 }
 
+/** One row as a CSV line, without the line ending. Quotes any field holding a comma, quote or newline. */
 export function serializeCSVRow(columns: readonly string[]): string {
   return columns
     .map((column) => {
@@ -68,6 +82,13 @@ export function serializeCSVRow(columns: readonly string[]): string {
     .join(',');
 }
 
+/**
+ * A whole table as a CSV document, with a trailing newline.
+ *
+ * No header handling and no escaping of the caller's data beyond the field rules: what a column title
+ * is, and whether rows are quoted or not, are not decided here. An empty table serialises to an empty
+ * string rather than to a lone newline.
+ */
 export function serializeCSV(rows: readonly (readonly string[])[]): string {
   return rows.length > 0 ? `${rows.map((row) => serializeCSVRow(row)).join('\n')}\n` : '';
 }
@@ -118,6 +139,13 @@ function isCarriageReturnLineFeed(current: string, next: string): boolean {
   return current === '\r' && next === '\n';
 }
 
+/**
+ * Reads a CSV document into rows of fields, as a spreadsheet writes it.
+ *
+ * Quoted fields are honoured, including quotes doubled inside them, embedded commas, embedded line
+ * endings, and CRLF line endings. A row with a trailing delimiter keeps its last field as an empty
+ * string, because that is a cell the file says exists.
+ */
 export function parseCSV(csv: string) {
   const rows: string[][] = [];
 

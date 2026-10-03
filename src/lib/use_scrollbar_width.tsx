@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react';
 
+/**
+ * How wide the scrollbar is in this browser and theme, re-measured on resize.
+ *
+ * Zero until the first measurement. A caller laying out a panel against the viewport needs it because
+ * `width: 100%` of the document includes the scrollbar and `100vw` does not, so a sticky footer sized
+ * with `vw` is scrollbar-width too wide.
+ */
 export function useScrollbarWidth() {
   const [scrollbarWidth, setScrollbarWidth] = useState(0);
 
@@ -19,7 +26,12 @@ export function useScrollbarWidth() {
   return scrollbarWidth;
 }
 
-// Get up-to-date scrollbar width. Scrollbar width is useful to adjust CSS styles
+/**
+ * Measures the scrollbar width by rendering an element that always has one.
+ *
+ * The only way to measure it: it is the browser's own element, with a width that is zero on an overlay
+ * scrollbar system and 15 pixels on a classic one.
+ */
 export function getScrollbarWidth() {
   const div = document.createElement('div');
   div.style.overflow = 'scroll'; // force scrollbar

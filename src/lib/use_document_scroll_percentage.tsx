@@ -3,6 +3,13 @@ import { clamp } from './math';
 import { useEventListener } from './use_event_listener';
 import { useGranularEffect } from './use_granular_effect';
 
+/**
+ * How far through the document the reader is, as a percentage from 0 to 100.
+ *
+ * The document, not a container, and without a scroll listener of its own beyond the one
+ * {@link useEventListener} installs — which is why it is a hook a component such as
+ * {@link ScrollProgressBar} can call without knowing where it will be mounted.
+ */
 export function useDocumentScrollPercentage() {
   const [scrollPercentage, setScrollPercentage] = useState(0);
 

@@ -18,6 +18,18 @@ function getItemPosition(element: HTMLElement): number {
   return Number((element.dataset as { position: string }).position);
 }
 
+/**
+ * Reorders a list by dragging, holding the in-progress order until the drop.
+ *
+ * The list is the caller's and is reported whole, in the new order, from `onChange`. Nothing is
+ * reordered while the drag is in progress: the hook reports a preview order it keeps to itself, and
+ * only the drop commits it, because a list that reflows under the pointer is impossible to drop
+ * accurately.
+ *
+ * Each row must be rendered with the props `getListItemProps` returns and be marked `draggable`; the
+ * hook finds a row by reading its position back out of the DOM rather than by tracking rows in React
+ * state.
+ */
 export function useDragNDropOrderedList<ListItemDataType>(
   items: ListItemDataType[],
   onChange?: (updatedItems: ListItemDataType[]) => void,

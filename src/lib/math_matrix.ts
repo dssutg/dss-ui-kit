@@ -20,6 +20,13 @@ export type MutableVec4 = [number, number, number, number];
 
 export type Vec3Or4 = readonly [number, number, number, number?];
 
+/**
+ * A 4×4 matrix in column-major order, which is the order WebGL reads one in.
+ *
+ * Sixteen numbers rather than a nested array because that is what `uniformMatrix4fv` takes: the layout
+ * is the reason this type exists, and a row-major reading of it would be wrong rather than merely
+ * awkward.
+ */
 export type Mat4 = [
   number,
   number,

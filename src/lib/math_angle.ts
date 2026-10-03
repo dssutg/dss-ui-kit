@@ -1,5 +1,12 @@
 import { modulo } from './math_scalar';
 
+/**
+ * A point in two dimensions.
+ *
+ * An interface rather than a tuple because a caller reads `point.x` and a tuple would make every use
+ * `point[0]`; the named fields are also what {@link Point2D} in a chart's own coordinates needs to
+ * stay readable.
+ */
 export interface Point2D {
   x: number;
   y: number;

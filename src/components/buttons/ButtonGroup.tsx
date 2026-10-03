@@ -2,6 +2,21 @@ import { Ripple } from '@/components/feedback/Ripple';
 import { wrapIndex } from '@/lib/math';
 
 /**
+ * What {@link ButtonGroup} takes.
+ *
+ * Generic over the id type, so the id a click reports is the caller's own union and not a string.
+ */
+export interface ButtonGroupProps<T extends string> {
+  readonly itemId: T;
+  readonly items: readonly ButtonGroupItem<T>[];
+  readonly onItemChange: ButtonGroupItemChangeHandler<T>;
+  readonly className?: string | undefined;
+  readonly style?: React.CSSProperties | undefined;
+  readonly buttonStyle?: React.CSSProperties | undefined;
+  readonly transparentBG?: boolean | undefined;
+}
+
+/**
  * One entry of a {@link ButtonGroup}: its id, which is what {@link ButtonGroupItemChangeHandler}
  * receives, and the title rendered on it.
  */
@@ -19,11 +34,14 @@ export interface ButtonGroupItem<T extends string> {
 export type ButtonGroupItemChangeHandler<T extends string> = (itemId: T) => void;
 
 /**
- * A row of buttons of which one is selected.
+ * A row of buttons of which one is selected, and which is always the caller's choice.
  *
- * Uncontrolled after the first render unless the caller passes `itemId`, in which case it is the
- * caller's decision throughout: a group that owns its selection cannot be put back by a form reset,
- * which is usually the reason a caller wants control of it.
+ * Controlled throughout: the selected id is a prop and a click only reports the id it would select.
+ * A group that kept its own selection could not be reset by a form, and two groups on one page could
+ * not be kept in step — which is why this is not also published in an uncontrolled form.
+ *
+ * The arrow keys move the selection and wrap at both ends, from any segment, because a group of
+ * buttons is one control as far as a keyboard is concerned and the segments are only its parts.
  */
 export function ButtonGroup<T extends string>({
   itemId,
@@ -33,15 +51,7 @@ export function ButtonGroup<T extends string>({
   style,
   buttonStyle,
   transparentBG = false,
-}: {
-  readonly itemId: T;
-  readonly items: readonly ButtonGroupItem<T>[];
-  readonly onItemChange: ButtonGroupItemChangeHandler<T>;
-  readonly className?: string | undefined;
-  readonly style?: React.CSSProperties | undefined;
-  readonly buttonStyle?: React.CSSProperties | undefined;
-  readonly transparentBG?: boolean | undefined;
-}) {
+}: ButtonGroupProps<T>) {
   // Handled on each segment rather than on the wrapper: the segments are already focusable, so a
   // focusable wrapper would only add a tab stop that does nothing on Enter or Space.
   function onKeyDown(event: React.KeyboardEvent<HTMLButtonElement>) {

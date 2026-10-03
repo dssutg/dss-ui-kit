@@ -37,6 +37,16 @@ function scoreItem(itemName: string, cleanQuery: string): number {
   return score;
 }
 
+/**
+ * Filters a list by whether the query's characters appear in each item's name, in order but not
+ * adjacently.
+ *
+ * The caller's `cleanString` is applied to both sides, which is where the differences between
+ * languages are handled: case folding, and stripping the accents a search box may not carry, are
+ * decisions about the caller's data rather than about this comparison. Items come back in score
+ * order — a name the query matches from its start outranks one that matches at the end — and an empty
+ * query returns the list untouched rather than everything scored.
+ */
 export function fuzzySearch<T>(
   query: string,
   array: readonly T[],

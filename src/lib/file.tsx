@@ -106,6 +106,13 @@ export function downloadCanvasAsFile(
   downloadURLAsFile(filename, canvas.toDataURL(mimeType));
 }
 
+/**
+ * Saves text as a file the browser downloads.
+ *
+ * An object URL and a synthetic click rather than a `data:` URL, because a large `data:` URL is a
+ * string the browser has to copy and a `blob:` one is not. The URL is revoked afterwards; leaving it
+ * alive pins the content in memory for the life of the document.
+ */
 export function downloadStringAsPlainTextFile(filename: string, content: string): void {
   const blob = new Blob([content], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
@@ -144,6 +151,12 @@ export function openPdfExporterForHtml(
 
 const defaultSizeUnitTitles = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
 
+/**
+ * A byte count as a human-readable size, scaled to the largest unit that fits.
+ *
+ * Two decimals by default, which is what a file size in a panel wants, and the unit titles are the
+ * caller's because the suffixes are language — a locale shipping `Ko` and `kB` passes its own.
+ */
 export function formatByteSize(
   bytes: number,
   {

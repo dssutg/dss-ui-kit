@@ -3,6 +3,16 @@ import { getPointerPosition } from './dom';
 import type { Point2D } from './math';
 import { useEventListener } from './use_event_listener';
 
+/**
+ * Tracks a drag over an element, reporting the movement and where the pointer is now.
+ *
+ * Movement is the total since the drag began, not the delta of the last event, so a consumer can
+ * accumulate it without keeping its own running total. `onHandleDown` and `onHandleUp` report the two
+ * ends of the gesture, which is where a consumer starts and stops a resize; the pointer is tracked
+ * with pointer events, so touch works without a second path.
+ *
+ * `element` is null until the thing being dragged exists, and a null element registers nothing.
+ */
 export function useMouseDrag(
   element: Element | null,
   onDrag?: (
