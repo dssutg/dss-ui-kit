@@ -1,3 +1,9 @@
+/**
+ * The pluralization rules decide how many forms a count selects between, per locale. A wrong index
+ * renders a count against the wrong form — "one files", in effect — which an operator reads as
+ * broken text. The suite pins the two shipped locales' rules and the fallback a consumer's language
+ * would arrive through.
+ */
 import { describe, expect, test } from 'vitest';
 import { getPluralizationIndex, registerPluralRule } from './';
 
@@ -31,6 +37,10 @@ describe('getPluralizationIndex', () => {
   });
 });
 
+/**
+ * Registration is how a consumer's language pluralizes correctly: the rule is stored under the
+ * primary subtag so a regional tag resolves to it rather than falling back to English.
+ */
 describe('registerPluralRule', () => {
   test('registers the rule a new locale pluralizes by', () => {
     registerPluralRule('xx-test-plural', (count) => (count > 10 ? 3 : 0));

@@ -76,6 +76,11 @@ export type SearchPropertySchema<T> = AnonymousSearchPropertySchema<T> & {
   hiddenInTable?: boolean | undefined;
 };
 
+/**
+ * The property types a {@link SearchPropertySchema} can declare, derived from it rather than listed
+ * beside it, so adding a member to the schema widens this type too — there is no second list to keep
+ * in step.
+ */
 export type SearchPropertySchemaType<T> =
   SearchPropertySchema<T> extends {
     type: infer U;
@@ -83,6 +88,13 @@ export type SearchPropertySchemaType<T> =
     ? U
     : never;
 
+/**
+ * The names a {@link SearchPropertySchema}'s properties go by, derived from it.
+ *
+ * This is how the schema's caller names a property — the stats and timeline modals keep the property
+ * they are reporting on in state as this type — and because it is the caller's own names rather than
+ * a generic `string`, a property the schema does not declare cannot be asked for.
+ */
 export type SearchPropertySchemaName<T> =
   SearchPropertySchema<T> extends {
     name: infer U;
@@ -90,6 +102,13 @@ export type SearchPropertySchemaName<T> =
     ? U
     : never;
 
+/**
+ * Everything a {@link SearchPropertySchema}'s `extractValue` functions can return, as one union.
+ *
+ * An extracted value's type belongs to the property, so what a schema-wide consumer reads is the
+ * union of all of them; deriving it saves that consumer writing the union itself — and changing it
+ * when the schema gains a property type that returns something new.
+ */
 export type SearchPropertySchemaExtractedValue<T> = ReturnType<
   SearchPropertySchema<T> extends { extractValue: infer U } ? U : never
 >;
@@ -106,6 +125,13 @@ export interface SearchSchema<T> {
   properties: SearchPropertySchema<T>[];
 }
 
+/**
+ * Writes a record as the search text a table's filters read: one `name=value` term per entry, each
+ * half escaped with {@link escapeProp}, joined with spaces.
+ *
+ * One writer, because {@link useFilteredItems} parses this same grammar, and the two must not learn
+ * to disagree.
+ */
 export function buildFilterableTableSearchText(keyValueMap: Record<string, unknown>) {
   return Object.entries(keyValueMap)
     .map(([prop, value]) => `${escapeProp(prop)}=${escapeProp((value ?? '').toString())}`)

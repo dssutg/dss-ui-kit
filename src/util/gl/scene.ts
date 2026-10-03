@@ -9,6 +9,7 @@
  * `convertHexColorToGL` turns a design token into one.
  */
 
+/** Two numbers, for a texture coordinate or a point on the canvas. */
 export type Vector2Array = [number, number];
 /** Three numbers, for a position, a scale or a rotation in radians. */
 export type Vector3Array = [number, number, number];

@@ -1,3 +1,10 @@
+/**
+ * The scalar toolkit the rest of the library clamps, interpolates and sorts with. The suite pins the
+ * behaviours callers cannot re-derive from the names: `unlerp` reporting progress outside the bounds
+ * rather than clamping, `modulo` and `wrapIndex` wrapping instead of mirroring `%`, and
+ * `naturalCmp` ordering embedded numbers as numbers — which is what keeps `line2` before `line10`
+ * in a sorted column.
+ */
 import { describe, expect, test } from 'vitest';
 import {
   binomial,
@@ -28,6 +35,10 @@ describe('clamp', () => {
   });
 });
 
+/**
+ * The pair exists so a value can be mapped onto a zero-to-one progress and back again; whether it
+ * clamps on the way out is the difference between a slider that stops and one that overshoots.
+ */
 describe('lerp and unlerp', () => {
   test('interpolates between two bounds', () => {
     expect(lerp(0, 10, 0.5)).toBe(5);
@@ -122,6 +133,7 @@ describe('roundToPowerOfTwo', () => {
   });
 });
 
+/** The comparator contract the sort columns build on. */
 describe('cmp', () => {
   test('orders two values for a sort comparator', () => {
     expect(cmp(1, 2)).toBe(-1);
@@ -130,6 +142,10 @@ describe('cmp', () => {
   });
 });
 
+/**
+ * Human-facing ordering: a column sorted with this comparator has to read naturally, so `line10`
+ * coming after `line2` is the property under test, not an accident of string comparison.
+ */
 describe('naturalCmp', () => {
   test('orders embedded numbers as numbers', () => {
     expect(naturalCmp('line2', 'line10')).toBe(-1);

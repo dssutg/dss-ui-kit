@@ -1,6 +1,15 @@
+/**
+ * IPv4 parsing feeds address inputs and octet-wise comparisons, so the suite holds the two halves
+ * apart: the regex is the strict validator an edit box is held to, while `parseIp` is the lenient
+ * normaliser that turns whatever arrived into comparable octets without ever throwing.
+ */
 import { describe, expect, test } from 'vitest';
 import { ipv4Regex, parseIp } from './';
 
+/**
+ * The regex is the gate a value has to pass to be an address at all, so the standard's edges —
+ * octet range, no leading zeros, exactly four octets, nothing trailing — are each their own case.
+ */
 describe('ipv4Regex', () => {
   test('accepts a well-formed address', () => {
     expect(ipv4Regex.test('192.168.0.1')).toBe(true);
@@ -36,6 +45,10 @@ describe('ipv4Regex', () => {
   });
 });
 
+/**
+ * Parsing is normalisation for comparison, not validation — that is the regex's job — so malformed
+ * input reading as zeroes is the contract rather than a bug.
+ */
 describe('parseIp', () => {
   test('parses four octets as numbers', () => {
     expect(parseIp('192.168.0.1')).toEqual([192, 168, 0, 1]);

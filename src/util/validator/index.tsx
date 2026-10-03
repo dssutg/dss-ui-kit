@@ -30,6 +30,12 @@ export type VSchema<T> = {
   [K in keyof T]: VValidator<T[K]>;
 };
 
+/**
+ * Runs every validator in order against the same value, and hands the value back when all pass.
+ *
+ * All of them run rather than stopping at the first failure, so a form field reports everything wrong
+ * with it in one throw instead of only the first problem.
+ */
 export function vPipe<T>(...validators: VValidator<T>[]): VValidator<T> {
   return (value) => {
     for (const validator of validators) {
@@ -80,6 +86,13 @@ export function vInt(): VValidator<number> {
   };
 }
 
+/**
+ * Bounds for a number: below the threshold, at most it, above it, or at least it.
+ *
+ * Each of the four is a validator of its own — {@link vLt}, {@link vLe}, {@link vGt}, {@link vGe} —
+ * because a strict and a non-strict bound are different rules a caller names rather than a flag. Each
+ * also requires a number, so it never decides about a string.
+ */
 export function vLt(threshold: number): VValidator<number> {
   return (value) => {
     if (typeof value !== 'number' || value >= threshold) {
@@ -131,6 +144,13 @@ export function vString(): VValidator<string> {
   };
 }
 
+/**
+ * Checks a string against a pattern, a minimum length, a maximum length, or an exact length.
+ *
+ * Each of the four is a validator of its own — {@link vRegex}, {@link vMin}, {@link vMax},
+ * {@link vLength} — because a caller names the rule a field has. Each also requires a string, so a
+ * number is rejected by a length check rather than coerced into one.
+ */
 export function vRegex(regex: RegExp): VValidator<string> {
   return (value) => {
     if (typeof value !== 'string' || !regex.test(value)) {
@@ -158,6 +178,12 @@ export function vMax(maxLength: number): VValidator<string> {
   };
 }
 
+/**
+ * Requires a string of an exact length, for formats whose length is the format.
+ *
+ * Separate from {@link vMin} and {@link vMax} because a field such as a colour code or a fixed-width
+ * identifier is wrong at any other length — a range would accept a prefix of it.
+ */
 export function vLength(length: number): VValidator<string> {
   return (value) => {
     if (typeof value !== 'string' || value.length !== length) {
@@ -167,6 +193,12 @@ export function vLength(length: number): VValidator<string> {
   };
 }
 
+/**
+ * Requires an array of an exact length, the array counterpart of {@link vLength}.
+ *
+ * For tuples read positionally — an address, a coordinate — where a missing or extra element means the
+ * positions no longer mean what the caller expects.
+ */
 export function vArrayLength<T>(length: number): VValidator<T[]> {
   return (value) => {
     if (!Array.isArray(value) || value.length !== length) {
@@ -176,6 +208,12 @@ export function vArrayLength<T>(length: number): VValidator<T[]> {
   };
 }
 
+/**
+ * The two absences, one validator each: exactly `null`, or exactly `undefined`.
+ *
+ * Separate validators rather than one because JSON has only `null`, while a form field distinguishes
+ * the two, and a caller says which absence it means.
+ */
 export function vNull(): VValidator<null> {
   return (value) => {
     if (value !== null) {
@@ -194,6 +232,13 @@ export function vUndefined(): VValidator<undefined> {
   };
 }
 
+/**
+ * Validates an object key by key, so the errors name the field that failed.
+ *
+ * Each key's validator must consume the whole field: a key absent from the schema is dropped rather
+ * than carried through, which is how a parsed payload is narrowed to exactly the fields the caller
+ * named. An unknown key with no validator of its own cannot be checked and is not passed on.
+ */
 export function vObject<T>(schema: VSchema<T>): VValidator<T> {
   return (value) => {
     if (typeof value !== 'object' || value === null) {
@@ -240,6 +285,13 @@ export function vArray<T>(itemValidator: VValidator<T>): VValidator<T[]> {
   };
 }
 
+/**
+ * Requires the value to be one of a fixed set of strings.
+ *
+ * For names a caller's protocol or config allows — a sort order, a mode. An `enum` is not used because
+ * TypeScript enums are disallowed in this codebase; the accepted values are a literal union the caller
+ * already has a type for.
+ */
 export function vEnum<T extends string>(allowedValues: readonly T[]): VValidator<T> {
   return (value) => {
     if (!allowedValues.includes(value)) {
@@ -249,6 +301,12 @@ export function vEnum<T extends string>(allowedValues: readonly T[]): VValidator
   };
 }
 
+/**
+ * Succeeds with the first validator that does, and fails only when all of them do.
+ *
+ * For a value one of several shapes. `vPipe` asserts every rule; this asserts at least one, which is
+ * why the two take the same argument shape and are named after the logic rather than the syntax.
+ */
 export function vOr<T>(...validators: VValidator<T>[]): VValidator<T> {
   return (value) => {
     for (const validator of validators) {

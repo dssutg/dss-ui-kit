@@ -1,3 +1,9 @@
+/**
+ * The array helpers carry the bulk of the library's list arithmetic, including the path comparison
+ * tree navigation and the reordering drag-and-drop build on, so the suite pins both the numeric
+ * results and the edge behaviour (`Infinity` sentinels, index wrapping, refused empty inputs) the
+ * callers above them rely on.
+ */
 import { describe, expect, test } from 'vitest';
 import {
   averageArray,
@@ -46,6 +52,10 @@ describe('compareArrays', () => {
   });
 });
 
+/**
+ * The min/max over a number list answer the identity elements (`±Infinity`) for an empty array so a
+ * running extremum starts at a value any real element replaces.
+ */
 describe('maxInArray', () => {
   test('finds the largest number', () => {
     expect(maxInArray([3, 9, 2])).toBe(9);
@@ -66,6 +76,10 @@ describe('minInArray', () => {
   });
 });
 
+/**
+ * The mapped variants answer the element and its index alongside the extreme, which is what makes
+ * them usable for highlighting a row rather than a value.
+ */
 describe('maxInArrayMapped', () => {
   test('returns the element with the largest mapped value', () => {
     const words = ['alpha', 'be', 'charlie'];
@@ -118,6 +132,10 @@ describe('minInArrayMapped', () => {
   });
 });
 
+/**
+ * The average of nothing is refused rather than guessed, because a wrong median presented as a
+ * number is worse than a loud failure.
+ */
 describe('medianInArray', () => {
   test('takes the middle value of an odd-length array', () => {
     expect(medianInArray([3, 1, 2])).toBe(2);
@@ -169,6 +187,10 @@ describe('sumArray and averageArray', () => {
   });
 });
 
+/**
+ * Reordering is what the drag-and-drop list reports, and the wrap-instead-of-clamp index behaviour
+ * it builds on is spelled out rather than left as an implementation detail.
+ */
 describe('moveArrayElement', () => {
   test('moves an element to another position', () => {
     expect(moveArrayElement([1, 2, 3], 0, 2)).toEqual([2, 3, 1]);
@@ -191,6 +213,7 @@ describe('moveArrayElement', () => {
   });
 });
 
+/** The path relation the tree navigation walks a selection with. */
 describe('isChildArrayPath', () => {
   test('a path is a child of itself', () => {
     expect(isChildArrayPath(['a', 'b'], ['a', 'b'])).toBe(true);

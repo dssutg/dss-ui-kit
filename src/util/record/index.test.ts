@@ -1,3 +1,9 @@
+/**
+ * The record helpers are what component code narrows `unknown` data with, so the suite pins the
+ * type-guard edges (`isRecord`, `hasRecordKey`), the helpers that keep caller-owned data intact
+ * (`getListAsCountMap`, `deepClone`), and the comparison and substitution the library compares state
+ * and renders notes with.
+ */
 import { describe, expect, test } from 'vitest';
 import {
   deepClone,
@@ -24,6 +30,10 @@ describe('isRecord', () => {
   });
 });
 
+/**
+ * Own-key only: a key inherited from the prototype would let a read through the guard reach data the
+ * object itself does not carry, which is exactly the confusion the guard is consulted to prevent.
+ */
 describe('hasRecordKey', () => {
   test('is true for an own key', () => {
     expect(hasRecordKey({ key: 1 }, 'key')).toBe(true);
@@ -38,6 +48,10 @@ describe('hasRecordKey', () => {
   });
 });
 
+/**
+ * Counting is used for fold-up displays over a list, and it must never mutate the initial counts a
+ * caller may be reusing.
+ */
 describe('getListAsCountMap', () => {
   test('counts occurrences of each key', () => {
     expect(getListAsCountMap(['a', 'b', 'a'], (item) => item)).toEqual({ a: 2, b: 1 });
@@ -60,6 +74,7 @@ describe('getListAsCountMap', () => {
   });
 });
 
+/** Plain substitution, with no escaping and no word awareness: both ends are the caller's. */
 describe('substituteStringByMap', () => {
   test('replaces every occurrence of each key', () => {
     expect(substituteStringByMap('a b a', { a: 'x', b: 'y' })).toBe('x y x');
@@ -82,6 +97,11 @@ describe('substituteStringByMap', () => {
   });
 });
 
+/**
+ * Deep equality stands in for reference equality where state is rebuilt every render, so the edges
+ * that matter are: key order does not matter, nesting is followed, and mismatched shapes are never
+ * equal.
+ */
 describe('deepEqual', () => {
   test('accepts identical primitives', () => {
     expect(deepEqual(1, 1)).toBe(true);
@@ -116,6 +136,11 @@ describe('deepEqual', () => {
   });
 });
 
+/**
+ * The clone has to be safe to mutate — that is the point of calling it — and to survive the shapes
+ * the library's own state takes, including the circular references a list holding itself would trip
+ * a naive walker over.
+ */
 describe('deepClone', () => {
   test('clones objects so the copy can be changed without changing the original', () => {
     const original = { a: { b: 1 } };

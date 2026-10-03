@@ -1,4 +1,11 @@
 // @vitest-environment jsdom
+
+/**
+ * Tests for the colour utilities the colour picker is built on: hex parsing, CSS colour
+ * normalisation, hsla output, channel interpolation, breakpoint lookup and gradients, darkening
+ * and reading a CSS custom property. A failure here would mean the picker blends or resolves
+ * colours wrongly, or fails to read the theme values it is meant to inspect.
+ */
 import { describe, expect, test } from 'vitest';
 import {
   cssColorTo6DigitHex,
@@ -13,6 +20,7 @@ import {
   Rgba32Gradient,
 } from './';
 
+/** Hex text, in shorthand or full form, becomes the channel object; any other shape is rejected. */
 describe('parseHexColor', () => {
   test('parses the six-digit form', () => {
     expect(parseHexColor('#ff0000')).toEqual({ r: 255, g: 0, b: 0 });
@@ -30,6 +38,7 @@ describe('parseHexColor', () => {
   });
 });
 
+/** Any colour CSS accepts is normalised to the six-digit hex form the picker works in. */
 describe('cssColorTo6DigitHex', () => {
   test('normalises a colour name through the browser parser', () => {
     expect(cssColorTo6DigitHex('red')).toBe('#ff0000');
@@ -40,12 +49,14 @@ describe('cssColorTo6DigitHex', () => {
   });
 });
 
+/** An hsla channel object serialises to the exact hsla() string CSS expects. */
 describe('getHslaColorString', () => {
   test('writes the hsla notation', () => {
     expect(getHslaColorString({ h: 120, s: 50, l: 25, a: 0.5 })).toBe('hsla(120, 50%, 25%, 0.5)');
   });
 });
 
+/** Linear interpolation over RGBA channels, clamped to the endpoints of the [0, 1] range. */
 describe('lerpRgba32', () => {
   const white: RGBA32 = { red: 255, green: 255, blue: 255, alpha: 1 };
   const black: RGBA32 = { red: 0, green: 0, blue: 0, alpha: 0 };
@@ -67,6 +78,7 @@ describe('lerpRgba32', () => {
   });
 });
 
+/** The pair of stops a position lies between, after clamping; a short stop list answers null. */
 describe('findBreakPointRange', () => {
   const breakPoints: [number, RGBA32][] = [
     [0, { red: 0, green: 0, blue: 0, alpha: 0 }],
@@ -107,6 +119,7 @@ describe('findBreakPointRange', () => {
   });
 });
 
+/** The colour a two-stop segment shows at a position, clamped to the stops at either end. */
 describe('getColorBetweenBreakPoints', () => {
   const red: RGBA32 = { red: 255, green: 0, blue: 0, alpha: 1 };
   const blue: RGBA32 = { red: 0, green: 0, blue: 255, alpha: 1 };
@@ -126,6 +139,10 @@ describe('getColorBetweenBreakPoints', () => {
   });
 });
 
+/**
+ * A gradient over an ordered stop list: positions inside it blend between neighbours, positions
+ * outside it hold at the nearest stop, and a missing stop never crashes the getter.
+ */
 describe('Rgba32Gradient', () => {
   const black: RGBA32 = { red: 0, green: 0, blue: 0, alpha: 0 };
   const white: RGBA32 = { red: 255, green: 255, blue: 255, alpha: 1 };
@@ -155,6 +172,7 @@ describe('Rgba32Gradient', () => {
   });
 });
 
+/** Darkening never throws on input it cannot parse; it degrades to black instead. */
 describe('darkenColor', () => {
   test('reduces each channel by the percentage', () => {
     expect(darkenColor('#ffffff', 0)).toBe('#ffffff');
@@ -168,6 +186,7 @@ describe('darkenColor', () => {
   });
 });
 
+/** A resolved custom property is read and trimmed; a property nothing sets answers empty. */
 describe('getCSSVariableValue', () => {
   test('reads a custom property the document declares', () => {
     document.body.style.setProperty('--testing-variable', '  #123456  ');

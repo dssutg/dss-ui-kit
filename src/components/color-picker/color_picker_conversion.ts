@@ -1,5 +1,23 @@
 import type { HslaColor, HsvaColor, ObjectColor, RgbaColor } from './color_picker_types';
 
+/**
+ * Colour conversions for the picker family: the equality checks a {@link ColorModel} needs and the
+ * parsers and formatters between every notation and HSVA.
+ *
+ * HSVA is the model the pickers draw in, so every function here converts to or from it rather than
+ * pairing the notations with each other — a family of notations is covered by one converter each,
+ * not one per pair. The string parsers are regular expressions and are deliberately forgiving: a
+ * value the pattern does not recognise parses, without throwing, to opaque black, which keeps a
+ * malformed keystroke from taking a picker down mid-drag.
+ */
+
+/**
+ * Whether two colours written as objects are the same colour, compared channel by channel.
+ *
+ * Iteration is over the first object's keys, so the two arguments have to be written in the same
+ * notation — the types enforce that, and an extra key on the second would be ignored rather than
+ * counted. The picker uses it over two HSVA values, the same notation by construction.
+ */
 export function equalColorObjects(first: ObjectColor, second: ObjectColor): boolean {
   if (first === second) {
     return true;
@@ -22,10 +40,24 @@ export function equalColorObjects(first: ObjectColor, second: ObjectColor): bool
   return true;
 }
 
+/**
+ * Whether two colour strings are the same text, ignoring whitespace.
+ *
+ * Literal rather than colour-aware — `#ff0000` and `rgb(255, 0, 0)` are different strings — because
+ * it backs the string pickers, whose colours arrive as text and re-render through their model on
+ * every change, so two renders of one colour cannot disagree by anything but spacing.
+ */
 export function equalColorString(first: string, second: string): boolean {
   return first.replace(/\s/g, '') === second.replace(/\s/g, '');
 }
 
+/**
+ * Whether two hexadecimal strings name the same colour, whatever form each is written in.
+ *
+ * A textual comparison would say that `#FFF` and `ffffff` differ, so unequal strings are parsed and
+ * compared as channels, which also makes case and the `#` itself irrelevant. Alpha counts as part of
+ * the colour, so `#ff0000` and `#ff000080` stay unequal.
+ */
 export function equalHex(first: string, second: string): boolean {
   if (first.toLowerCase() === second.toLowerCase()) {
     return true;
@@ -43,10 +75,15 @@ const angleUnits: Record<string, number> = {
   rad: 360 / (Math.PI * 2),
 };
 
+/**
+ * Parses a hexadecimal string into HSVA, accepting the 3, 4, 6 and 8 digit forms with or without the
+ * `#`, and an opaque alpha for any form that does not carry one.
+ */
 export function hexToHsva(hex: string): HsvaColor {
   return rgbaToHsva(hexToRgba(hex));
 }
 
+/** Parses a hexadecimal string into RGBA; {@link hexToHsva} documents the accepted forms. */
 function hexToRgba(hex: string): RgbaColor {
   const digits = hex.startsWith('#') ? hex.slice(1) : hex;
 
@@ -80,6 +117,13 @@ function parseHue(value: string, unit?: string): number {
   return Number(value) * (angleUnits[unit ?? 'deg'] || 1);
 }
 
+/**
+ * Parses a CSS `hsl(...)` or `hsla(...)` string into HSVA, accepting comma and space syntax, the
+ * angle units in {@link angleUnits} and the alpha as 0-1 or as a percentage.
+ *
+ * An unrecognised string parses to opaque black rather than failing: the string pickers hand it a
+ * caller's text verbatim, and rejecting it would throw from inside a render.
+ */
 export function hslaStringToHsva(hslString: string): HsvaColor {
   const matcher =
     /hsla?\(?\s*(-?\d*\.?\d+)(deg|rad|grad|turn)?[\s,]+(-?\d*\.?\d+)%?[\s,]+(-?\d*\.?\d+)%?,?\s*[\s/]*(-?\d*\.?\d+)?(%)?\s*\)?/i;
@@ -97,6 +141,10 @@ export function hslaStringToHsva(hslString: string): HsvaColor {
   });
 }
 
+/**
+ * Converts an HSLA colour to HSVA, keeping the hue and the alpha and moving the shading from the
+ * lightness axis to the value axis.
+ */
 export function hslaToHsva({ h, s, l, a }: HslaColor): HsvaColor {
   s *= (l < 50 ? l : 100 - l) / 100;
 
@@ -108,10 +156,19 @@ export function hslaToHsva({ h, s, l, a }: HslaColor): HsvaColor {
   };
 }
 
+/** Formats an HSVA colour as a `#rrggbb` string, dropping the alpha: this hex form has no room for it. */
 export function hsvaToHex(hsva: HsvaColor): string {
   return rgbaToHex(hsvaToRgba(hsva));
 }
 
+/**
+ * Converts an HSVA colour to HSLA, keeping the hue and the alpha and moving the shading from the
+ * value axis to the lightness axis.
+ *
+ * Each channel is rounded to an integer or, for the alpha, to two decimal places. A caller who
+ * writes the result back into a picker will not get the colour they started with back unchanged;
+ * the round trip is one digit deep rather than exact.
+ */
 export function hsvaToHsla({ h, s, v, a }: HsvaColor): HslaColor {
   const hh = ((200 - s) * v) / 100;
 
@@ -123,18 +180,27 @@ export function hsvaToHsla({ h, s, v, a }: HsvaColor): HslaColor {
   };
 }
 
+/**
+ * Formats an HSVA colour as a CSS `hsl(...)` string, without the alpha: it backs the controls, which
+ * paint every bar and pointer at full saturation and so have no alpha to lose.
+ */
 export function hsvaToHslString(hsva: HsvaColor): string {
   const { h, s, l } = hsvaToHsla(hsva);
 
   return `hsl(${h}, ${s}%, ${l}%)`;
 }
 
+/** Formats an HSVA colour as a CSS `hsla(...)` string, the notation the alpha gradient is painted in. */
 export function hsvaToHslaString(hsva: HsvaColor): string {
   const { h, s, l, a } = hsvaToHsla(hsva);
 
   return `hsla(${h}, ${s}%, ${l}%, ${a})`;
 }
 
+/**
+ * Converts an HSVA colour to RGBA: sRGB channels scaled to 0-255 and rounded to an integer, alpha
+ * kept to two decimal places.
+ */
 export function hsvaToRgba({ h, s, v, a }: HsvaColor): RgbaColor {
   h = (h / 360) * 6;
   s = s / 100;
@@ -159,12 +225,20 @@ export function hsvaToRgba({ h, s, v, a }: HsvaColor): RgbaColor {
   };
 }
 
+/** Formats an HSVA colour as a CSS `rgba(...)` string. */
 export function hsvaToRgbaString(hsva: HsvaColor): string {
   const { r, g, b, a } = hsvaToRgba(hsva);
 
   return `rgba(${r}, ${g}, ${b}, ${a})`;
 }
 
+/**
+ * Parses a CSS `rgb(...)` or `rgba(...)` string into HSVA.
+ *
+ * Channels are accepted as 0-255 or as percentages, and the alpha as 0-1 or as a percentage. The
+ * notation the CSS grammar makes optional — the `a` in `rgba`, commas against spaces — the pattern
+ * tolerates, and an unrecognised string parses to opaque black like every parser here.
+ */
 export function rgbaStringToHsva(rgbaString: string): HsvaColor {
   const matcher =
     /rgba?\(?\s*(-?\d*\.?\d+)(%)?[\s,]+(-?\d*\.?\d+)(%)?[\s,]+(-?\d*\.?\d+)(%)?,?\s*[\s/]*(-?\d*\.?\d+)?(%)?\s*\)?/i;
@@ -194,6 +268,13 @@ function rgbaToHex({ r, g, b, a }: RgbaColor): string {
   return `#${format(r)}${format(g)}${format(b)}${alphaHex}`;
 }
 
+/**
+ * Converts an RGBA colour to HSVA, returning the saturation and the value in percent and the hue in
+ * degrees rounded to an integer.
+ *
+ * A grey — any colour whose channels are equal — has no hue by construction, and `delta` then reads
+ * zero, so the hue comes out as 0 rather than as an undefined value.
+ */
 export function rgbaToHsva({ r, g, b, a }: RgbaColor): HsvaColor {
   const max = Math.max(r, g, b);
   const delta = max - Math.min(r, g, b);
@@ -219,6 +300,13 @@ export function rgbaToHsva({ r, g, b, a }: RgbaColor): HsvaColor {
   };
 }
 
+/**
+ * Rounds to `digits` decimal places in base 10.
+ *
+ * Exported because the controls need the same rounding the conversions apply: an aria value or a
+ * rendered pointer position that disagreed by a fraction with the colour it describes would drift
+ * as a picker is dragged.
+ */
 export const round = (number: number, digits = 0, base = 10 ** digits): number => {
   return Math.round(base * number) / base;
 };

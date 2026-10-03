@@ -1,3 +1,10 @@
+/**
+ * Tests for the composable validation schema: base validators that accept a value or throw a
+ * `VError` with a readable message, refinements, and the combinators that turn them into field
+ * and array schemas. A failure here would mean invalid input passes through silently, valid
+ * input is rejected, or an thrown message no longer says what was wrong and where.
+ */
+
 import { describe, expect, test } from 'vitest';
 import {
   VError,
@@ -37,6 +44,7 @@ const expectVErrored = (run: () => unknown, message: string) => {
   expect((caught as VError).message).toBe(message);
 };
 
+/** The thrown error is a real `Error` a catch can identify by its `name`. */
 describe('VError', () => {
   test('is an Error named so a catch can tell it from a real failure', () => {
     const error = new VError('bad value');
@@ -47,6 +55,7 @@ describe('VError', () => {
   });
 });
 
+/** Accepts only a boolean; anything else throws with the message for the type. */
 describe('vBoolean', () => {
   test('passes a boolean through', () => {
     expect(vBoolean()(true)).toBe(true);
@@ -58,6 +67,7 @@ describe('vBoolean', () => {
   });
 });
 
+/** Accepts any number, NaN included; anything else throws with the message for the type. */
 describe('vNumber', () => {
   test('passes a number through, NaN included', () => {
     expect(vNumber()(1.5)).toBe(1.5);
@@ -69,6 +79,7 @@ describe('vNumber', () => {
   });
 });
 
+/** Accepts a whole number within the safe range, rejecting fractions and unsafe magnitudes. */
 describe('vInt', () => {
   test('passes a whole number through', () => {
     expect(vInt()(3)).toBe(3);
@@ -84,6 +95,7 @@ describe('vInt', () => {
   });
 });
 
+/** Accepts any string, empty included; anything else throws with the message for the type. */
 describe('vString', () => {
   test('passes a string through, empty included', () => {
     expect(vString()('text')).toBe('text');
@@ -95,6 +107,10 @@ describe('vString', () => {
   });
 });
 
+/**
+ * The threshold comparators over numbers: one strictly-below, one at-or-below, one
+ * strictly-above, one at-or-above. Each names its threshold and its bound in the message.
+ */
 describe('comparison validators', () => {
   test('vLt accepts only below the threshold', () => {
     expect(vLt(10)(9)).toBe(9);
@@ -118,6 +134,10 @@ describe('comparison validators', () => {
   });
 });
 
+/**
+ * String and array refinements: a regular expression to match, length bounds below, above and
+ * pinned, and a pinned element count for arrays.
+ */
 describe('vRegex, vMin, vMax and vLength', () => {
   test('vRegex tests the string against the expression', () => {
     const text = 'abc';
@@ -148,6 +168,7 @@ describe('vRegex, vMin, vMax and vLength', () => {
   });
 });
 
+/** The absence validators accept exactly their one value and reject the other kind of absence. */
 describe('vNull and vUndefined', () => {
   test('vNull only accepts null', () => {
     expect(vNull()(null)).toBeNull();
@@ -160,6 +181,7 @@ describe('vNull and vUndefined', () => {
   });
 });
 
+/** Validates every field with its own schema, rejecting non-objects and naming the failed field. */
 describe('vObject', () => {
   interface Point {
     x: number;
@@ -184,6 +206,7 @@ describe('vObject', () => {
   });
 });
 
+/** Validates every element with the element schema, rejecting non-arrays and naming the index. */
 describe('vArray', () => {
   test('validates every element', () => {
     expect(vArray(vInt())([1, 2])).toEqual([1, 2]);
@@ -198,6 +221,7 @@ describe('vArray', () => {
   });
 });
 
+/** Accepts exactly the listed values and lists them in the message when one of them is not met. */
 describe('vEnum', () => {
   const allowed = ['first', 'second'] as const;
 
@@ -210,6 +234,7 @@ describe('vEnum', () => {
   });
 });
 
+/** Runs validators in order and stops at the first failure — the pipeline that refines a base. */
 describe('vPipe', () => {
   test('runs every validator in order', () => {
     const piped = vPipe(vString(), vMin(2));
@@ -219,6 +244,7 @@ describe('vPipe', () => {
   });
 });
 
+/** Accepts a value any listed validator accepts; one satisfying none names the alternative. */
 describe('vOr', () => {
   // A validator for either shape, written as the union the two validators share a value with.
   const stringOrInt = (value: string | number) =>

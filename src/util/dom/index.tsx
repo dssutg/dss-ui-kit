@@ -1,3 +1,10 @@
+/**
+ * Browser-facing DOM helpers: pointer and drag handling, geometry, sizing, clipboard, escaping and
+ * timing.
+ *
+ * Everything here is plain DOM logic with no framework dependency, so it can be used from both
+ * components and non-component code; see each module's own docs for the contracts.
+ */
 export { copyToClipboard } from './clipboard';
 export { DragHandler } from './drag';
 export { decompressJSON } from './encoding';

@@ -1,3 +1,10 @@
+/**
+ * The `rp` coercion table is what stands between untyped data from outside the UI and the components
+ * that render it, so the suite holds it to the contract documented on `rp` itself: every member
+ * answers a usable value of its name and never throws, absence and garbage read as the type's zero,
+ * and a value in range is passed through unchanged. A coercion that produced `undefined` or an
+ * exception would put the crash in the render path the table exists to keep clean.
+ */
 import { describe, expect, test } from 'vitest';
 import { rp } from './';
 
@@ -17,6 +24,10 @@ describe('rp.string', () => {
   });
 });
 
+/**
+ * The boolean reads flags typed by hand in configs and on the wire, where `'false'` and `'0'` are
+ * spellings of off rather than truthy strings.
+ */
 describe('rp.boolean', () => {
   test('passes a boolean through', () => {
     expect(rp.boolean(true)).toBe(true);
@@ -54,6 +65,11 @@ describe('rp.boolean', () => {
   });
 });
 
+/**
+ * The integer readers repair rather than validate: truncation, NaN and garbage all land on a number
+ * and the range readers clamp, because a mis-typed byte or port still has to render as the value the
+ * field means.
+ */
 describe('rp.decimalInt', () => {
   test('truncates a number towards zero', () => {
     expect(rp.decimalInt(4.9)).toBe(4);
@@ -145,6 +161,7 @@ describe('rp.hexInt', () => {
   });
 });
 
+/** The container readers coerce anything that arrives into a list or a record to render. */
 describe('rp.array', () => {
   test('passes an array through', () => {
     expect(rp.array([1, 2])).toEqual([1, 2]);

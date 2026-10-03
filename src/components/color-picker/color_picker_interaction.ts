@@ -5,6 +5,13 @@ import type { Interaction } from './color_picker_types';
 const NO_INTERACTION: Interaction = { left: 0, top: 0 };
 
 // Check if an event was triggered by touch
+/**
+ * Whether the event is a touch event.
+ *
+ * Everything else in this module branches on the kind of event it was handed — reading a position,
+ * cancelling selection, ignoring a mouse event after a touch — so the check lives here rather than
+ * as a `'touches' in event` repeated at each site.
+ */
 export function isTouch(event: MouseEvent | TouchEvent): event is TouchEvent {
   return 'touches' in event;
 }
@@ -47,11 +54,25 @@ function getAxisDelta(keyCode: number, negativeKeyCode: number, positiveKeyCode:
 }
 
 // Finds the proper window object to fix iframe embedding issues
+/**
+ * The window to attach drag listeners to for a control inside an iframe.
+ *
+ * The events that follow a drag — `mousemove`, `mouseup` — fire on the window, not the element. A
+ * picker rendered inside an iframe has a different window from the one the library was loaded in,
+ * which the document owning the node knows and the global `self` does not.
+ */
 export function getParentWindow(node?: HTMLDivElement | null): Window {
   return node?.ownerDocument.defaultView || self;
 }
 
 // Returns a relative position of the pointer inside the node's bounding box
+/**
+ * Where an event's pointer sits inside a control, as an {@link Interaction}.
+ *
+ * Page coordinates are used, with the owning window's scroll added, so the fraction stays correct
+ * while the document scrolls under the drag. The result is clamped into `0..1`, so a pointer that
+ * leaves the box reports the edge it left through rather than a value the control cannot use.
+ */
 export const getRelativePosition = (
   node: HTMLDivElement,
   event: MouseEvent | TouchEvent,
@@ -79,12 +100,24 @@ export const getRelativePosition = (
 // Browsers introduced an intervention, making touch events passive by default.
 // This workaround removes `preventDefault` call from the touch handlers.
 // https://github.com/facebook/react/issues/19651
+/**
+ * Cancels the browser's default reaction to a mouse event, but not to a touch event.
+ *
+ * Touch listeners have been passive by default, so a `preventDefault` on one is both ignored and a
+ * console warning; text selection during a drag is prevented by CSS in that case. Mouse events are
+ * still cancellable and still need it.
+ */
 export const preventDefaultMove = (event: MouseEvent | TouchEvent): void => {
   !isTouch(event) && event.preventDefault();
 };
 
-// Prevent mobile browsers from handling mouse events (conflicting with touch ones).
-// If we detected a touch interaction before, we prefer reacting to touch events only.
+/**
+ * Whether a mouse event should be ignored because a touch interaction is already underway.
+ *
+ * Mobile browsers synthesise mouse events after a touch, and on a slider the two would fight over
+ * the handle: the touch drags it and the click that follows jumps it back. Once a touch has been
+ * seen, every mouse event is refused until the interaction ends.
+ */
 export const isInvalid = (event: MouseEvent | TouchEvent, hasTouch: boolean): boolean => {
   return hasTouch && !isTouch(event);
 };

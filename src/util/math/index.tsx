@@ -1,3 +1,9 @@
+/**
+ * The math group's entry point, re-exporting its modules so the import specifier is the directory.
+ *
+ * Everything exported here is a self-contained calculation — nothing here holds state, calls the
+ * DOM or knows what renders it, which is what keeps the group importable from any layer.
+ */
 export type { Point2D } from './angle';
 export {
   cartesianToPolar,

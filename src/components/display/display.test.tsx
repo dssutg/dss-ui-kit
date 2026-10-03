@@ -1,3 +1,9 @@
+/**
+ * The display group renders what it is handed without owning any of it: icons are decoration hidden
+ * from the accessibility tree because the control around them carries the name, `HighlightedJson`
+ * marks up text it cannot parse rather than rejecting it, and `Link` reports navigation instead of
+ * following it so a consumer router takes the decision.
+ */
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
 import { HighlightedJson } from '@/components/display/HighlightedJson';

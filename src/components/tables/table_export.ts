@@ -23,6 +23,12 @@ export function formatDateAndTime(timestamp: number, dates: LocaleDates): string
   return minstrftime(dates.formats.format, new Date(timestamp), dates.names);
 }
 
+/**
+ * Escapes the characters that would break a `name=value` search term apart: whitespace separates one
+ * term from the next, and a backslash quotes the character after it. A name or value holding either
+ * is rewritten so it stays one token once the terms are joined with spaces. `null` and `undefined`
+ * mean no value and become the empty string.
+ */
 export function escapeProp(x: string | null | undefined) {
   return (x ?? '').replace(/(\\|\s)/g, '\\$1');
 }

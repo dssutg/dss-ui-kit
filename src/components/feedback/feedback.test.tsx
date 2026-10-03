@@ -1,3 +1,10 @@
+/**
+ * The feedback group's contract, split the way the components are built: `Spinner`,
+ * `ContinuousCircleSpinner`, `Ripple` and `ScrollProgressBar` are self-contained decoration that
+ * must work without any provider around them; `DashedCircle` is the one feedback control that carries
+ * an accessible name; and the `LogWidget` family is controlled — it reports play/pause and clear and
+ * never holds output or playing state of its own.
+ */
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
 import { ContinuousCircleSpinner } from '@/components/feedback/ContinuousCircleSpinner';
@@ -65,6 +72,10 @@ describe('ScrollProgressBar', () => {
   });
 });
 
+/**
+ * A log output an operator reads while something streams: read-only so a caret cannot sit in it, and
+ * wrapping only as asked, since a log the operator lines up by column breaks under soft wrapping.
+ */
 describe('LogOutputTextArea', () => {
   it('shows the output and refuses to be typed into', async () => {
     const { find } = await render(<LogOutputTextArea output={'first line\nsecond line'} />);
@@ -86,6 +97,10 @@ describe('LogOutputTextArea', () => {
   });
 });
 
+/**
+ * The widget is controlled throughout: `playing` decides which action the button reports, and the
+ * output is only ever displayed, never cleared by the widget itself.
+ */
 describe('LogWidget', () => {
   it('reports play or pause depending on what it is doing, rather than toggling itself', async () => {
     const onPlayClick = vi.fn();

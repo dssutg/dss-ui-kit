@@ -1,3 +1,10 @@
+/**
+ * The input group is held to the library's rule that a control renders the value it is given and
+ * reports what it would move to. Two contracts matter beyond that: the numeric inputs repair what is
+ * typed — clamping to range, refusing non-numbers — because a rendered value must never leave the
+ * range its field means, and the switch family is keyboard-reachable with the exact `role` and
+ * `aria-*` attributes a screen reader reads a switch by.
+ */
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
 import { ByteFractionInput } from '@/components/inputs/ByteFractionInput';
@@ -146,6 +153,11 @@ describe('Select', () => {
   });
 });
 
+/**
+ * The switch family's accessibility contract: a keyboard-operable `role="switch"` whose checked
+ * state is always the caller's, and a lock that takes the action away without taking the control out
+ * of the tab order.
+ */
 describe('ToggleSwitch', () => {
   it('is a switch to a keyboard, and holds no state of its own', async () => {
     const onChange = vi.fn();
@@ -220,6 +232,11 @@ describe('Checkbox', () => {
   });
 });
 
+/**
+ * The numeric inputs accept what is typed and repair it into the field's range: an absent value
+ * renders as an empty field rather than as a zero the caller never set, non-numbers clear back to
+ * absent, and anything past the bounds is clamped before the caller ever sees it.
+ */
 describe('DecimalIntegerInput', () => {
   it('renders an empty field for an absent value rather than a zero the caller never set', async () => {
     const { find } = await render(

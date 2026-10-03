@@ -1,3 +1,8 @@
+/**
+ * The file-name helpers are what download and upload UIs split names with, and the edge that matters
+ * is the dotfile: a leading dot hides a file rather than naming an extension, and both helpers have
+ * to agree on that reading.
+ */
 import { describe, expect, test } from 'vitest';
 import { formatByteSize, getFileExtension, removeFileExtension } from './';
 
@@ -34,6 +39,11 @@ describe('removeFileExtension', () => {
   });
 });
 
+/**
+ * Byte sizes are shown to operators next to the values they came from, so the formatting has to be
+ * stable: binary units that keep scaling monotonic, zero left unscaled, and clamping at the last
+ * unit title the caller supplied rather than rendering a missing one.
+ */
 describe('formatByteSize', () => {
   test('formats bytes without a fraction', () => {
     expect(formatByteSize(512)).toBe('512 B');

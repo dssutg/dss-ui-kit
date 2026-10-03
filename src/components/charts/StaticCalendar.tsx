@@ -13,10 +13,23 @@ const WEEK_DAYS = 7;
 const daysPerMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
 const daysPerLeapMonth = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
 
+/**
+ * The full Gregorian leap-year rule.
+ *
+ * The century exception is the part a bare `% 4` test leaves out, and a calendar that claims 29 days
+ * for February 2100 is the failure that follows.
+ */
 function isLeapYear(year: number) {
   return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
 }
 
+/**
+ * The weekday the first of a month falls on, counted with Sunday as 0.
+ *
+ * Sakamoto's formula rather than a read off a constructed `Date`: `new Date(50, 0, 1)` is silently
+ * 1950, so a year below 100 would pick the wrong calendar, and this answers without constructing an
+ * object per month while a whole year is being built.
+ */
 function getWeekday(year: number, month: number, monthDay: number) {
   const monthValues = [0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4];
 
@@ -55,6 +68,7 @@ function monthEntry<T>(table: readonly T[], month: number): T {
   return entry;
 }
 
+/** How many days `month` of `year` has; February is the one month the year can change. */
 function getDaysInMonth(year: number, month: number) {
   if (isLeapYear(year)) {
     return monthEntry(daysPerLeapMonth, month);
@@ -62,6 +76,13 @@ function getDaysInMonth(year: number, month: number) {
   return monthEntry(daysPerMonth, month);
 }
 
+/**
+ * One month of a year, its rendering answers precomputed.
+ *
+ * The month's names, its grid of day numbers and the class every cell falls into — weekday, weekend
+ * or a day belonging to the month beside it — are worked out once here, so the render pass only
+ * reads them.
+ */
 interface MonthCalendar {
   fullName: string;
   name: string;
@@ -158,6 +179,12 @@ function buildDayTable(
   return dayTable;
 }
 
+/**
+ * Precomputes one month's rendering data — its names, its day grid and each cell's class.
+ *
+ * Every month of a year is built through this one function, which is what keeps the twelve of them
+ * alike: the drawing code renders whichever it is handed without knowing how any of them were made.
+ */
 function buildMonthCalendar(
   year: number,
   month: number,
@@ -215,6 +242,12 @@ function buildMonthCalendar(
 // NOTE September, 1752 is NOT considered in the code below
 // because it was a long time ago, so pointless to print out the
 // calendar for that month when there were only 19 days in September.
+/**
+ * A whole year for a calendar view to draw: the weekday header and the twelve months.
+ *
+ * All twelve are built even when only one is displayed, so the month number a `Date` reports
+ * indexes `months` directly.
+ */
 interface Calendar {
   year: number;
   isLeapYear: boolean;
@@ -223,6 +256,12 @@ interface Calendar {
   months: MonthCalendar[];
 }
 
+/**
+ * Builds a year as its twelve months, defaulting the year to the current one when none is given.
+ *
+ * The result is indexed by the month number `Date#getMonth` reports, so a caller hands a `Date`
+ * over without translating anything.
+ */
 function getCalendar(
   year: number | undefined,
   isSundayFirstWeekDay: boolean,
@@ -251,6 +290,13 @@ function getCalendar(
   return calendar;
 }
 
+/**
+ * One day cell: the day number, coloured for a weekend, an adjacent month or the current day.
+ *
+ * The colours are read from custom properties the theme files own, so the hues are not decided
+ * here; the current day is the only cell that also draws a filled disc behind its number, which is
+ * what makes it readable as today rather than as another date.
+ */
 function Day({
   dayClass,
   children,

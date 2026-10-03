@@ -11,6 +11,12 @@ declare module '*.jpeg';
 declare module '*.css';
 
 // Text and shader source imported for their content rather than parsed as a module.
+
+/**
+ * One shape covers every `?raw` import: the file's text as the default export, with no module
+ * structure to preserve — the bundler is what decides the load, and TypeScript only needs to know
+ * the value is a string.
+ */
 declare module '*.txt?raw' {
   const content: string;
   export default content;

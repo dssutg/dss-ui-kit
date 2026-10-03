@@ -1,3 +1,9 @@
+/**
+ * `fuzzySearch` is what the search inputs narrow a list with, so the suite pins the ranking contract
+ * the dropdown's order comes from: in-order containment only, an outright match first, earlier
+ * matches ahead of later ones, and no reordering of ties — a stable order is part of the result a
+ * user reads.
+ */
 import { describe, expect, test } from 'vitest';
 import { fuzzySearch } from './';
 

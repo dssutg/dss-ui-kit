@@ -1,3 +1,9 @@
+/**
+ * The DOM helpers mix two kinds of contract: `debounce` is plain event-coalescing logic the
+ * resizers and search inputs sit on, while `sanitizeHTMLString`, `escapeHTMLValue` and `html` are
+ * the rendering path that keeps untrusted values from becoming markup. A failure in either half
+ * breaks components outside this directory, which is why it is pinned here.
+ */
 // @vitest-environment jsdom
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import {
@@ -9,6 +15,10 @@ import {
   sanitizeHTMLString,
 } from './';
 
+/**
+ * The quiet period restarts on every call, so a burst never produces more than the last call — the
+ * behaviour the resizers actually need.
+ */
 describe('debounce', () => {
   afterEach(() => {
     vi.useRealTimers();
@@ -55,6 +65,11 @@ describe('debounce', () => {
   });
 });
 
+/**
+ * The escape helpers are the library's defence against untrusted text becoming markup: every
+ * character that could start a tag, attribute or entity is written as an entity, and the `html`
+ * template interpolates through the same escaping so a caller cannot forget it.
+ */
 describe('sanitizeHTMLString', () => {
   test('escapes every character that could start markup', () => {
     expect(sanitizeHTMLString(`<a href="x">&'</a>`)).toBe(
@@ -107,6 +122,7 @@ describe('html', () => {
   });
 });
 
+/** Edge-inclusive containment, because a hit on the border is still on the element. */
 describe('DOMRectContainsPoint', () => {
   const rect = { left: 10, right: 20, top: 10, bottom: 20 } as DOMRect;
 
@@ -124,6 +140,10 @@ describe('DOMRectContainsPoint', () => {
   });
 });
 
+/**
+ * Rectangle equality is what resize callbacks use to ignore no-op resizes, so it must accept the
+ * same object and reject any differing bound.
+ */
 describe('areDOMRectsEqual', () => {
   const rect = (left: number, width: number) =>
     ({

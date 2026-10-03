@@ -1,3 +1,9 @@
+/**
+ * `useTimeout` is the mechanism under debounces and any deferred-hide behaviour: the suite holds it
+ * to run its callback exactly once on the fake clock, stay inert on a `null` delay, and answer
+ * `clear` and `reset` — the two controls the debouncing callers need. Fake timers are what the tests
+ * drive the contract on, since the callback fires on a later turn.
+ */
 // @vitest-environment jsdom
 
 import { act } from 'react-dom/test-utils';
@@ -5,6 +11,11 @@ import { afterEach, describe, expect, test, vi } from 'vitest';
 import { render } from '@/util/testing/render';
 import { useTimeout } from './';
 
+/**
+ * The suite renders a probe component that exposes the hook's `clear` and `reset` as buttons,
+ * because those returns are part of the contract and cannot be reached from an effect that only
+ * schedules a timeout. Timed-out state lives in a module variable so it survives across renders.
+ */
 let timedOut = false;
 
 function TimeoutProbe({ delay }: { readonly delay: number | null }) {

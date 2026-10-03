@@ -1,3 +1,9 @@
+/**
+ * The hex formatters render register values and identifiers the way a manual writes them: upper
+ * case, grouped in byte pairs and zero-padded to a width, so columns of them line up. Padding must
+ * widen rather than truncate when a value outgrows the requested width — a register shown short of
+ * its high bytes is wrong at a glance.
+ */
 import { describe, expect, test } from 'vitest';
 import { formatHexNumber, formatNumberAsHexBytes } from './';
 

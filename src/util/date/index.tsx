@@ -16,6 +16,12 @@ export function getDateComponents(dateObject: Date = new Date()) {
   };
 }
 
+/**
+ * A 24-hour hour as the 12-hour clock shows it, with the `am`/`pm` half of the day.
+ *
+ * The hour wraps rather than clamps — hour 12 is `12 pm`, hour 0 is `12 am` — because that is what a
+ * clock face reads, and callers pass what `Date#getHours` reported.
+ */
 export function hours24to12(hours = 0) {
   const ampm = hours >= 12 ? 'pm' : 'am';
   const wrappedHours = hours % 12;
@@ -116,6 +122,14 @@ function getMonthName(names: DateNames, date: Date): string {
   return names.monthNames[date.getMonth()] ?? '';
 }
 
+/**
+ * A small `strftime`: the GNU date specifiers a timestamp in this library is shown with, and no more.
+ *
+ * Date and time fields, the two weekday and month name forms, padding, `%s`/`%u`, and the composites.
+ * Unknown specifiers are emitted verbatim rather than silently dropped, because a format string that
+ * asks for something this does not implement is a caller's bug worth seeing on screen. Names come from
+ * the `names` argument, so a calendar is never rendered in a language the caller did not choose.
+ */
 export function minstrftime(
   format = '',
   date: Date = new Date(),
@@ -371,6 +385,13 @@ function firstMatchingStep(steps: readonly RelativeStep[], seconds: number): str
   return undefined;
 }
 
+/**
+ * A duration as the `hh:mm:ss.uuu` fields a stopwatch column shows, or `null` for no duration at all.
+ *
+ * `null`, not zeroed fields, because a missing measurement and a zero-length one are different answers:
+ * a log line whose timer never started has nothing to show, and `formatMillisecondsAsHMSU` renders
+ * that as `??:??:??.???` rather than as a real (if empty) duration.
+ */
 export function getMillisecondsAsHMSUComponents(milliseconds?: number) {
   if (milliseconds === null || milliseconds === undefined || Number.isNaN(milliseconds)) {
     return null;
@@ -393,6 +414,12 @@ export function getMillisecondsAsHMSUComponents(milliseconds?: number) {
   return { hh, mm, ss, uuu };
 }
 
+/**
+ * A duration as `hh:mm:ss`, or `hh:mm:ss.uuu` when the milliseconds are wanted.
+ *
+ * Hours are not capped at 24, so this is a duration display and not a time of day. A missing duration
+ * renders as `??:??:??`, which is a placeholder an operator reads as "no measurement", not as zero.
+ */
 export function formatMillisecondsAsHMSU(
   milliseconds?: number,
   { millisecondsShown = true } = {},
@@ -408,6 +435,12 @@ export function formatMillisecondsAsHMSU(
   return millisecondsShown ? `${hh}:${mm}:${ss}.${uuu}` : `${hh}:${mm}:${ss}`;
 }
 
+/**
+ * A duration as `hh:mm`, for a column too narrow for seconds.
+ *
+ * Shares the components with {@link formatMillisecondsAsHMSU}, so the two agree on rounding: minutes
+ * are truncated, never carried into the hours.
+ */
 export function formatMillisecondsAsHM(milliseconds?: number): string {
   const components = getMillisecondsAsHMSUComponents(milliseconds);
 
@@ -420,6 +453,13 @@ export function formatMillisecondsAsHM(milliseconds?: number): string {
   return `${hh}:${mm}`;
 }
 
+/**
+ * Whether the moment an ISO-ish timestamp names has already passed.
+ *
+ * For an expiry read from data rather than from a `Date`, where parsing it into a `Date` beforehand
+ * would be ceremony. Throws on a string `Date.parse` cannot read, because an unparsable expiry is a
+ * caller's bug and silently answering either way would run or skip something wrongly.
+ */
 export function isNowAfter(target: string) {
   const now = Date.now();
   const t = Date.parse(target);

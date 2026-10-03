@@ -1,6 +1,16 @@
+/**
+ * Tests for the key map: how a `KeyboardEvent.code` is rendered as a hotkey label a user reads,
+ * and how a key-down dispatches the action bound to the code, honouring Shift. A failure here
+ * would mean shortcuts do the wrong thing — or swallow keys nothing is bound to.
+ */
+
 import { describe, expect, test } from 'vitest';
 import { getKeyMapCodeAsHotkey, handleKeyMapKeyDown, type KeyMap, type KeyMapActions } from './';
 
+/**
+ * A `KeyboardEvent.code` becomes the label the key cap shows, and an unmapped code passes through
+ * unchanged rather than becoming something unreadable.
+ */
 describe('getKeyMapCodeAsHotkey', () => {
   test('renders Key codes as the key cap shows them', () => {
     expect(getKeyMapCodeAsHotkey('KeyA')).toBe('A');
@@ -33,6 +43,10 @@ describe('getKeyMapCodeAsHotkey', () => {
   });
 });
 
+/**
+ * Dispatch: a bound code runs its action, a shifted code prefers the `Shift+` binding when there
+ * is one, and any handled event is stopped — while an unbound key is neither run nor swallowed.
+ */
 describe('handleKeyMapKeyDown', () => {
   const createKeyboardEvent = (code: string, shiftKey = false) => {
     const event = {

@@ -1,3 +1,9 @@
+/**
+ * `usePropertyRef` exists so a callback can be created once and still read the newest property
+ * through it — the mechanism event listeners and every dependency-list hook here build on. The
+ * suite verifies exactly that pairing: the ref never lags the render that changed the value, and it
+ * keeps doing so across re-renders rather than only updating once.
+ */
 // @vitest-environment jsdom
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { render } from '@/util/testing/render';

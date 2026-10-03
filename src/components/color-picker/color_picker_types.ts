@@ -66,6 +66,14 @@ export interface ColorModel<T extends AnyColor> {
   equal: (first: T, second: T) => boolean;
 }
 
+/**
+ * The HTML attributes every picker forwards to the element it draws into.
+ *
+ * What is dropped is the three names a picker means something else by: its `color` is the colour
+ * being edited, and its `onChange` reports a new one, so the DOM meanings of those names would
+ * fight the props the pickers actually take. Everything else an HTML `<div>` accepts passes
+ * straight through.
+ */
 export type ColorPickerHTMLAttributes = Omit<
   React.HTMLAttributes<HTMLDivElement>,
   'color' | 'onChange' | 'onChangeCapture'
@@ -83,16 +91,38 @@ export interface ColorPickerBaseProperties<T extends AnyColor> extends ColorPick
   onChange: (newColor: T) => void;
 }
 
+/**
+ * The HTML attributes a colour text field forwards to its `<input>`, minus `onChange` and `value`.
+ *
+ * Those two belong to {@link ColorInputBaseProperties}: the field's text is derived from the colour
+ * it displays, and changes are reported through the colour's own handler, so an input's idea of an
+ * uncontrolled value has no place in the props it is given.
+ */
 export type ColorInputHTMLAttributes = Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
   'onChange' | 'value'
 >;
 
+/**
+ * What a colour text field takes: the colour it displays, and what to call when that colour changes.
+ *
+ * The colour is text, because an operator is typing text and something has to decide when the text
+ * has become a colour; the field reports only what parses. Both props are optional, so a field can
+ * still take input where no one is listening — the typed text is held locally and snapped back to
+ * `color` when the prop next changes or the field loses focus on an invalid value.
+ */
 export interface ColorInputBaseProperties extends ColorInputHTMLAttributes {
   color?: string | undefined;
   onChange?: (newColor: string) => void;
 }
 
+/**
+ * A position on a colour control, as fractions of the control's own box from its top-left corner.
+ *
+ * Fractions rather than pixels, so a handle lands where its value says it is whatever size the
+ * control is drawn at. This is the shape both pointer moves and arrow-key presses are reported in,
+ * and the control that receives one decides what the fraction means on its own axis.
+ */
 export interface Interaction {
   left: number;
   top: number;

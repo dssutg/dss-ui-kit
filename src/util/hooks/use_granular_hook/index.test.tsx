@@ -1,3 +1,9 @@
+/**
+ * `useGranularHook` gives a hook two dependency lists: the primary list re-runs it, the secondary
+ * list only keeps the values it reads fresh. The suite pins the split on `useGranularEffect` and
+ * proves the mechanism carries over to another hook (`useEffect`) unchanged, because the wrapper is
+ * generic over the hook it is given.
+ */
 // @vitest-environment jsdom
 
 import { useEffect } from 'react';

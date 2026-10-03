@@ -1,3 +1,9 @@
+/**
+ * The button group's contract follows the library's controlled-component rule: every control renders
+ * the state it was handed and reports the state it would move to. The suite also pins the two
+ * accessibility edges the group owns — a button labelled behind an icon, and a keyboard navigable
+ * group — plus the difference between the `inactive` visual variant and the `disabled` attribute.
+ */
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
 import { Button } from '@/components/buttons/Button';
@@ -67,6 +73,10 @@ describe('IconButton', () => {
   });
 });
 
+/**
+ * A group of buttons acting as one selection: the selection is the caller's, and the group is
+ * reachable from the keyboard, which is what makes it a radio group in behaviour.
+ */
 describe('ButtonGroup', () => {
   const items = [
     { id: 'a', title: 'First' },
@@ -120,6 +130,10 @@ describe('ButtonGroup', () => {
   });
 });
 
+/**
+ * A two-option switch that names the option it will switch to rather than the one it is on. Given a
+ * value outside its options it refuses rather than rendering a control with nowhere to go.
+ */
 describe('ToggleButton', () => {
   it('names the option it will switch to, and reports it', async () => {
     const options = [

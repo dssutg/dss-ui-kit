@@ -1,3 +1,9 @@
+/**
+ * The interval hooks run a callback on a period the caller can pause with a `null` delay; the
+ * immediate variant fires once on mount as well, which a poll that cannot wait a whole period for
+ * its first result relies on. The suite drives both on the fake clock and holds the difference
+ * between the two variants.
+ */
 // @vitest-environment jsdom
 
 import { act } from 'react-dom/test-utils';

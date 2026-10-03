@@ -1,3 +1,15 @@
+/**
+ * The path `d` data of every icon the library ships, keyed by icon name.
+ *
+ * This file is generated from the source SVGs and holds data, not images: {@link Icon} is what builds
+ * the `<svg>` around a path and points itself at it, and it is also why the element is `aria-hidden`
+ * with no `<title>` of its own — the accessible name is the label of the control around the icon, not
+ * anything this data says.
+ *
+ * {@link IconName} is derived from the keys of this map, so a name here is a name the components can
+ * render, and adding an entry here is what adds an icon. {@link IconViewer} reads the same map to
+ * show and copy what is available.
+ */
 export const iconPaths = {
   adjustments:
     'm69.572 3.969e-6c-3.073 0-5.545 2.472-5.545 5.545v25.456c0 3.073 2.472 5.545 5.545 5.545 3.073 0 5.553-2.472 5.553-5.545v-7.183h12.089c3.073 0 5.545-2.472 5.545-5.545 0-3.073-2.472-5.545-5.545-5.545h-12.089v-7.183c0-3.073-2.48-5.545-5.553-5.545zm-58.212 12.728c-3.073 0-5.545 2.472-5.545 5.545 0 3.073 2.472 5.545 5.545 5.545h37.35c3.073 0 5.545-2.472 5.545-5.545 0-3.073-2.472-5.545-5.545-5.545zm17.642 19.217c-3.073 0-5.553 2.472-5.553 5.545v7.183h-12.089c-3.073 0-5.545 2.472-5.545 5.545 0 3.073 2.472 5.545 5.545 5.545h12.089v7.183c0 3.073 2.48 5.545 5.553 5.545s5.545-2.472 5.545-5.545v-25.456c0-3.073-2.472-5.545-5.545-5.545zm22.29 12.728c-3.073 0-5.545 2.472-5.545 5.545 0 3.073 2.472 5.545 5.545 5.545h37.35c3.073 0 5.545-2.472 5.545-5.545 0-3.073-2.472-5.545-5.545-5.545zm-0.827 18.788c-3.073 0-5.545 2.472-5.545 5.545v25.448c0 3.073 2.472 5.545 5.545 5.545 3.073 0 5.545-2.472 5.545-5.545v-7.175h32.631c3.073 0 5.545-2.472 5.545-5.545 0-3.073-2.472-5.553-5.545-5.553h-32.631v-7.175c0-3.073-2.472-5.545-5.545-5.545zm-39.105 13.157c-3.073 0-5.545 2.472-5.545 5.545 0 3.073 2.472 5.545 5.545 5.545h13.126c3.073 0 5.545-2.472 5.545-5.545 0-3.073-2.472-5.545-5.545-5.545z',

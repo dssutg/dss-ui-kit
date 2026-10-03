@@ -1,3 +1,9 @@
+/**
+ * The date helpers feed form fields and clock renders, so the suite holds the pieces the components
+ * assemble UI from: 1-based field components, the strftime subset `minstrftime` implements with its
+ * padding specifiers, and the duration formatters that answer an unknown-time placeholder rather
+ * than throwing on absent input.
+ */
 import { describe, expect, test } from 'vitest';
 import {
   defaultDateNames,
@@ -39,6 +45,11 @@ describe('hours24to12', () => {
   });
 });
 
+/**
+ * The format is whatever a format string asks for, and the contract includes what it does not do:
+ * an unknown specifier survives as written rather than being swallowed, because a format the library
+ * does not know is a caller's string, not its own.
+ */
 describe('minstrftime', () => {
   // Fixed so the output is stable; 2024-01-05 was a Friday.
   const date = new Date(2024, 0, 5, 14, 7, 9);
@@ -137,6 +148,10 @@ describe('getMillisecondsAsHMSUComponents', () => {
   });
 });
 
+/**
+ * The duration formatters render stopwatches and timers, where a measurement that has not arrived
+ * yet still has to show something stable instead of `NaN` in the middle of a panel.
+ */
 describe('formatMillisecondsAsHMSU', () => {
   test('formats with milliseconds by default', () => {
     expect(formatMillisecondsAsHMSU(61_002)).toBe('00:01:01.002');

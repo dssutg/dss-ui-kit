@@ -179,6 +179,12 @@ function drawSeries(
   context.stroke();
 }
 
+/**
+ * The canvas the chart paints, redrawn from an empty one whenever anything it shows changes.
+ *
+ * The grid is drawn before the series, so a line sits on the ruling rather than under it; the canvas
+ * is the full size the AutoSizer measured, which is why rescaling is a repaint and nothing else.
+ */
 function Canvas({
   yPoints,
   xScale,

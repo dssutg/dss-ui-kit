@@ -1,3 +1,9 @@
+/**
+ * Tests for the HTTP status catalogue: the numeric codes, how they sort into the five categories
+ * by their hundreds digit, and the display names reported for codes and categories. A failure
+ * here would mean the UI names an HTTP failure wrongly, or crashes on a code outside the table.
+ */
+
 import { describe, expect, test } from 'vitest';
 import {
   getHttpStatusCategory,
@@ -10,6 +16,7 @@ import {
   httpStatusNames,
 } from './';
 
+/** The hundreds digit alone decides the category, for listed codes and for ones that are not. */
 describe('getHttpStatusCategory', () => {
   test('names a category from the hundreds digit', () => {
     expect(getHttpStatusCategory(100)).toBe(HttpStatusCategory.INFORMATIONAL);
@@ -30,6 +37,7 @@ describe('getHttpStatusCategory', () => {
   });
 });
 
+/** A listed code is named from the catalogue; an unlisted one is named "Unknown", never undefined. */
 describe('getHttpStatusName', () => {
   test('names the codes the table lists, with their IANA names', () => {
     expect(getHttpStatusName(HttpStatus.OK)).toBe('OK');
@@ -48,6 +56,7 @@ describe('getHttpStatusName', () => {
   });
 });
 
+/** Category display names for listed codes, and an "Unknown" wording for codes with no category. */
 describe('getHttpStatusCategoryName', () => {
   test('names the category of a listed code', () => {
     expect(getHttpStatusCategoryName(HttpStatus.OK)).toBe('Successful');
@@ -59,6 +68,7 @@ describe('getHttpStatusCategoryName', () => {
   });
 });
 
+/** The category table stays in step with the names table: every category has a display name. */
 describe('httpCategories', () => {
   test('carries a display name for every category', () => {
     for (const category of httpCategories) {

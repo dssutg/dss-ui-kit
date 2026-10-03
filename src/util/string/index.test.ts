@@ -1,6 +1,13 @@
+/**
+ * Tests for the string helpers the components share: capitalising the first character and
+ * trimming trailing line breaks without touching anything else. A failure here would mean
+ * rendered labels or parsed text come out mangled.
+ */
+
 import { describe, expect, test } from 'vitest';
 import { capitalize, trimEndNewlines } from './';
 
+/** Only the first character is uppercased; everything after it, and an absent string, is left alone. */
 describe('capitalize', () => {
   test('uppercases the first character', () => {
     expect(capitalize('hello')).toBe('Hello');
@@ -23,6 +30,7 @@ describe('capitalize', () => {
   });
 });
 
+/** The trailing run of line breaks goes; interior ones and any other text stay untouched. */
 describe('trimEndNewlines', () => {
   test('removes trailing newlines', () => {
     expect(trimEndNewlines('text\n')).toBe('text');

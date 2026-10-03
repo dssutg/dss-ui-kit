@@ -1,3 +1,10 @@
+/**
+ * The overlay group: panels that appear above the page. The contract the suite holds is the standard
+ * closed-component rule — open state is the caller's — plus the overlay-specific edges: the modal
+ * portals onto the body and defers its close by its own animation, the popover hands focus back to
+ * its trigger, the tooltip stays in the tree but out of the accessibility tree while hidden, and the
+ * drop-down menu reports its selection instead of acting on it.
+ */
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DropDownMenu } from '@/components/overlays/DropDownMenu';
@@ -134,6 +141,10 @@ describe('FeedbackTooltip', () => {
   });
 });
 
+/**
+ * The menu holds no state of its own: it keeps closed until the trigger is used, reports the trigger
+ * click, and hands each item's `onSelect` through.
+ */
 describe('DropDownMenu', () => {
   const menu = [
     { path: ['rename'], title: 'Rename' },

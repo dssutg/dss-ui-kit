@@ -1,11 +1,28 @@
+/**
+ * What {@link WComponent.onAttrChange} receives for one attribute, before the re-render it triggers.
+ *
+ * `oldValue` is `null` when the attribute was just added, and `newValue` when it was just removed —
+ * the same two cases `attributeChangedCallback` itself reports, because an absent attribute and an
+ * attribute set to `''` are different facts a component may need to tell apart.
+ */
 export interface WCAttrChange {
   readonly attrName: string;
   readonly oldValue: string | null;
   readonly newValue: string | null;
 }
 
+/** Bound listener signature for {@link WComponent.on} — the actual element is not handed back. */
 export type EventCallback = (event: Event) => void;
 
+/**
+ * The base class for the library's custom elements.
+ *
+ * Every element gets an open shadow root in the constructor and renders on a microtask, so a burst of
+ * attribute changes produces one render; subclasses override {@link WComponent.render} and list their
+ * attributes in the static `props` field, which doubles as `observedAttributes`. Event wiring happens
+ * after render: {@link WComponent.on} and {@link WComponent.onClick} throw on a selector that matches
+ * nothing, since a silently dead listener reads as a broken component.
+ */
 export abstract class WComponent extends HTMLElement {
   private needsRender = false;
 
@@ -41,8 +58,20 @@ export abstract class WComponent extends HTMLElement {
     this.scheduleRender();
   }
 
+  /**
+   * Called with each attribute change, before the scheduled render.
+   *
+   * The empty default is the point: an element with no attribute-driven state does not have to
+   * override anything, and the render pass still runs.
+   */
   protected onAttrChange(_: WCAttrChange): void {}
 
+  /**
+   * Replaces the shadow root's content wholesale with the given markup.
+   *
+   * It is a setter on purpose, so a subclass writes `this.shadowHTML = '...'` and cannot keep a stale
+   * string in a field: the assignment is the render.
+   */
   protected set shadowHTML(htmlString: string) {
     if (this.shadowRoot) {
       this.shadowRoot.innerHTML = htmlString;
@@ -59,6 +88,13 @@ export abstract class WComponent extends HTMLElement {
     this.onDisconnect();
   }
 
+  /**
+   * Runs once the element is in the document, after the first render is scheduled.
+   *
+   * Querying the shadow root inside it is therefore safe — the template is already in place — but
+   * work done here on behalf of an attribute still belongs behind the render pass, because the
+   * attribute callback may fire without a connect around it.
+   */
   protected onConnect(): void {}
   protected onDisconnect(): void {}
 
@@ -99,8 +135,10 @@ export abstract class WComponent extends HTMLElement {
     }
   }
 
+  /** Subclass hook for what the element looks like; re-run by every attribute change. */
   protected render() {}
 
+  /** First element in the shadow root matching `selector`, or `null` — no throwing, unlike `on`. */
   protected el(selector: string) {
     return this.root.querySelector(selector);
   }

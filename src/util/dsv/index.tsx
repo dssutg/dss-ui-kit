@@ -1,3 +1,9 @@
+/**
+ * One column written with a chosen delimiter, escaping the delimiter and the backslash itself.
+ *
+ * The escape is a leading backslash, which is why a backslash delimiter is rejected: `parseDSV` could
+ * never tell an escaped delimiter from one that splits fields.
+ */
 export function serializeDSVColumn(column: string, delimiter: string) {
   let s = '';
 
@@ -223,6 +229,12 @@ export function parseCSV(csv: string) {
   return rows;
 }
 
+/**
+ * A record rendered as `field: value` pairs joined by commas.
+ *
+ * For a one-line note in a panel or a log, not a serialisation format: the values go through their
+ * `toString`, so an object-shaped value reads as `[object Object]` rather than as its contents.
+ */
 export function formatObjectToCommaSeparatedString(fields: Readonly<Record<string, unknown>>) {
   const entries = Object.entries(fields);
   const pairs = entries.map(([field, value]) => `${field}: ${value}`);

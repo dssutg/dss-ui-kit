@@ -1,3 +1,9 @@
+/**
+ * `useDebounce` calls its callback once the tracked state has stopped changing, which the search
+ * inputs rely on to act on settled text. The suite pins the contract's four corners on the fake
+ * clock: nothing on mount, one call after the dependencies settle, no call at all on a `null` delay,
+ * and the unmount behaviour the caller opts into — the last change is either flushed or discarded.
+ */
 // @vitest-environment jsdom
 
 import { act } from 'react-dom/test-utils';
@@ -5,6 +11,11 @@ import { afterEach, describe, expect, test, vi } from 'vitest';
 import { render } from '@/util/testing/render';
 import { useDebounce } from './';
 
+/**
+ * A probe component that drives the hook the way a caller does: the trigger values change across
+ * re-renders, and calls are collected in a module variable so a callback closing over them cannot go
+ * stale.
+ */
 let calls: number[] = [];
 
 function DebounceProbe({

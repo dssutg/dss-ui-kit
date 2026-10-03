@@ -1,3 +1,10 @@
+/**
+ * Tests for the pure text transforms behind the code editor: line splitting, tab and indent
+ * handling, indentation of selected lines, auto-indent after Enter and bracket wrapping. Each
+ * transform answers the new text with the caret or selection to restore. A failure here would
+ * corrupt editor content or move the caret without the user asking.
+ */
+
 import { describe, expect, test } from 'vitest';
 import { getLines } from './history';
 import {
@@ -11,6 +18,7 @@ import {
 } from './indentation';
 import { wrapSelectionWithPair } from './wrapping';
 
+/** The lines the text before a caret position splits into, with an out-of-range position clamped. */
 describe('getLines', () => {
   test('splits the text before a caret into lines', () => {
     expect(getLines('a\nb\nc', 3)).toEqual(['a', 'b']);
@@ -21,6 +29,7 @@ describe('getLines', () => {
   });
 });
 
+/** The indent unit, spaces or tab characters, from the settings the editor was told. */
 describe('getTabCharacter', () => {
   test('repeats spaces to the tab size', () => {
     expect(getTabCharacter(true, 4)).toBe('    ');
@@ -31,6 +40,7 @@ describe('getTabCharacter', () => {
   });
 });
 
+/** Tab presses the caret with a whole indent unit immediately before it, never over a selection. */
 describe('isTabCharacterBeforeCaret', () => {
   test('is true when the text before the caret ends with a whole tab character and nothing is selected', () => {
     expect(isTabCharacterBeforeCaret('a  ', 3, 3, '  ')).toBe(true);
@@ -42,6 +52,7 @@ describe('isTabCharacterBeforeCaret', () => {
   });
 });
 
+/** Indents every line the selection touches and answers where the caret ends up afterwards. */
 describe('indentSelectedLines', () => {
   test('prefixes every line the selection touches', () => {
     const record = indentSelectedLines('a\nb\nc', 2, 4, '>>');
@@ -57,6 +68,7 @@ describe('indentSelectedLines', () => {
   });
 });
 
+/** Unindents the selected lines or answers undefined to say nothing changed, not an empty edit. */
 describe('unindentSelectedLines', () => {
   test('removes one leading tab character from every line the selection touches', () => {
     const record = unindentSelectedLines('>>a\n>>b\n c', 2, 8, '>>');
@@ -70,6 +82,7 @@ describe('unindentSelectedLines', () => {
   });
 });
 
+/** Typed at the caret, the indent unit replaces the selection when there is one. */
 describe('insertTabCharacter', () => {
   test('inserts at the caret and replaces a selection', () => {
     expect(insertTabCharacter('ab', 1, 1, '\t')).toEqual({
@@ -85,6 +98,7 @@ describe('insertTabCharacter', () => {
   });
 });
 
+/** Backspace over an indent unit removes the whole unit, not one character of it. */
 describe('removeTabCharacterBeforeCaret', () => {
   test('removes the character before the caret and nothing else', () => {
     expect(removeTabCharacterBeforeCaret('a\tb', 2, 2, '\t')).toEqual({
@@ -95,6 +109,7 @@ describe('removeTabCharacterBeforeCaret', () => {
   });
 });
 
+/** Enter carries the current line's indentation into the new line, or defers to the browser. */
 describe('indentNewLine', () => {
   test('carries the current line indentation into the new line', () => {
     const record = indentNewLine('  text', 6, 6);
@@ -109,6 +124,7 @@ describe('indentNewLine', () => {
   });
 });
 
+/** Wrapping a selection in a character pair and leaving the caret covering the wrapped text. */
 describe('wrapSelectionWithPair', () => {
   test('surrounds the selection with the pair and leaves the caret covering it', () => {
     const record = wrapSelectionWithPair('abc', 1, 2, ['(', ')']);

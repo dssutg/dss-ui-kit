@@ -1,3 +1,9 @@
+/**
+ * The geometry the charts and the scene renderer draw with: angle conversion and normalisation,
+ * polar/cartesian conversion for arcs, Bézier sampling for curves and range merging for axes. The
+ * assertions are made with `toBeCloseTo` throughout because the computations are floating point and
+ * the contract is the geometry, not the last bits of the number.
+ */
 import { describe, expect, test } from 'vitest';
 import {
   cartesianToPolar,
@@ -61,6 +67,10 @@ describe('rotatePoint2D', () => {
   });
 });
 
+/**
+ * Merging is used to fold selected rows and axis spans into readable note text: touching ranges are
+ * one span because the bounds are inclusive, and the result is always sorted.
+ */
 describe('mergeRanges', () => {
   test('merges overlapping ranges whether they arrive sorted or not', () => {
     expect(
@@ -116,6 +126,10 @@ describe('mergeIntegers', () => {
   });
 });
 
+/**
+ * The curve's contract is that the end control points are on it and the middle ones only pull: that
+ * is what makes them controls rather than vertices.
+ */
 describe('bezier3d', () => {
   test('passes through the control points at the ends and interpolates between', () => {
     const points = [new Vector3D(0, 0, 0), new Vector3D(0, 0, 10)];

@@ -1,6 +1,16 @@
+/**
+ * Tests for the try/catch wrappers that turn a throwing getter or a rejected promise into a
+ * `[value, error]` result. A failure here would mean an exception escapes code that was told it
+ * is captured, or a thrown error is reported as a success.
+ */
+
 import { describe, expect, test } from 'vitest';
 import { tryCatch, tryCatchAsync } from './';
 
+/**
+ * The synchronous wrapper: a thrown error becomes the `[null, error]` half of the result instead
+ * of propagating.
+ */
 describe('tryCatch', () => {
   test('returns the value and a null error when the getter succeeds', () => {
     const [value, error] = tryCatch(() => 42);
@@ -28,6 +38,10 @@ describe('tryCatch', () => {
   });
 });
 
+/**
+ * The promise wrapper: a rejection becomes the `[null, error]` half of the result instead of
+ * propagating.
+ */
 describe('tryCatchAsync', () => {
   test('returns the resolved value and a null error', async () => {
     const [value, error] = await tryCatchAsync(async () => 'ok');
