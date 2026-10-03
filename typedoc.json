@@ -1,19 +1,9 @@
 {
   "$schema": "https://typedoc.org/schema.json",
   "name": "DSS UI Kit",
-  "entryPointStrategy": "expand",
-  "entryPoints": ["src/**/*.ts", "src/**/*.tsx", "scripts/**/*.ts"],
-  "exclude": [
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "src/main.tsx",
-    "src/prebundle.tsx",
-    "src/copyright.tsx",
-    "src/logo.tsx",
-    "src/routing.tsx",
-    "src/top_down_triangle_light_ray_overlay.tsx",
-    "src/tsimport.d.ts"
-  ],
+  "entryPointStrategy": "resolve",
+  "entryPoints": ["src/index.ts"],
+  "intentionallyNotExported": ["iconPaths", "en"],
   "tsconfig": "tsconfig.docs.json",
   "out": "docs/api",
   "excludePrivate": true,

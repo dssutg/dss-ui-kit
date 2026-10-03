@@ -82,6 +82,18 @@ export type { ColorInputProperties } from '@/components/color-picker/ColorInput'
 export { ColorInput } from '@/components/color-picker/ColorInput';
 export type { ColorPickerProperties } from '@/components/color-picker/ColorPicker';
 export { ColorPicker } from '@/components/color-picker/ColorPicker';
+export type {
+  AnyColor,
+  ColorModel,
+  ColorPickerBaseProperties,
+  HslaColor,
+  HslColor,
+  HsvaColor,
+  HsvColor,
+  ObjectColor,
+  RgbaColor,
+  RgbColor,
+} from '@/components/color-picker/color_picker_types';
 export { HexAlphaColorPicker } from '@/components/color-picker/HexAlphaColorPicker';
 export { HexAlphaColorPickerPopover } from '@/components/color-picker/HexAlphaColorPickerPopover';
 export type { HexColorInputProperties } from '@/components/color-picker/HexColorInput';
@@ -132,6 +144,7 @@ export type { FloatInputProps } from '@/components/inputs/FloatInput';
 export { FloatInput } from '@/components/inputs/FloatInput';
 export { HourMinuteSecondTimeInput } from '@/components/inputs/HourMinuteSecondTimeInput';
 export { HourMinuteTimeInput } from '@/components/inputs/HourMinuteTimeInput';
+export type { InputProps } from '@/components/inputs/Input';
 export { Input } from '@/components/inputs/Input';
 export { IPInput } from '@/components/inputs/IPInput';
 export { JsonEditor } from '@/components/inputs/JsonEditor';
@@ -153,7 +166,20 @@ export type {
   VirtualizedListRowRendererProps,
 } from '@/components/inputs/VirtualizedList';
 export { useVirtualizedList, VirtualizedList } from '@/components/inputs/VirtualizedList';
+export type {
+  AutoSizerProps,
+  AutoSizerState,
+  BaseProps,
+  HeightAndWidthProps,
+  HeightOnlyProps,
+  HorizontalSize,
+  Size,
+  VerticalSize,
+  WidthOnlyProps,
+} from '@/components/layout/AutoSizer';
+
 export { AutoSizer } from '@/components/layout/AutoSizer';
+
 export { ResizableSplit } from '@/components/layout/ResizableSplit';
 export { Accordion, useAccordion } from '@/components/navigation/Accordion';
 export { ControlledMUITabList } from '@/components/navigation/ControlledMUITabList';
@@ -171,7 +197,8 @@ export type { MUITabDescriptor } from '@/components/navigation/MUITabList';
 export { isMUITabActive, MUITabList } from '@/components/navigation/MUITabList';
 export { OrderPanel } from '@/components/navigation/OrderPanel';
 export { ToTop } from '@/components/navigation/ToTop';
-export type { TreeViewItem } from '@/components/navigation/TreeView';
+export type { ColorIndicator, TreeViewItem } from '@/components/navigation/TreeView';
+
 export { TreeView } from '@/components/navigation/TreeView';
 export type { DropDownMenuItem } from '@/components/overlays/DropDownMenu';
 export { DropDownMenu } from '@/components/overlays/DropDownMenu';
@@ -227,8 +254,11 @@ export type {
 } from '@/components/tables/use_filtered_items';
 export { useFilteredItems } from '@/components/tables/use_filtered_items';
 export { tryCatch, tryCatchAsync } from '@/lib/catch';
+export type { RGBA32, RGBA32BreakPoint } from '@/lib/color';
 export { getCSSVariableValue, Rgba32Gradient } from '@/lib/color';
+export type { CalendarLocale, DateFormatLocale, DateLocale, DateNames } from '@/lib/date';
 export { formatRelativeDate, getDateComponents } from '@/lib/date';
+
 export { parseCSV, parseDSV, serializeCSV, serializeDSV } from '@/lib/dsv';
 export { downloadStringAsPlainTextFile, formatByteSize } from '@/lib/file';
 export { formatHexNumber } from '@/lib/format_number';
@@ -274,11 +304,15 @@ export type {
   Vector3Array,
   Vector4Array,
 } from '@/lib/gl/scene';
+export type { Lang } from '@/lib/highlight';
 export { highlightText } from '@/lib/highlight';
 export { getHttpStatusCategory, getHttpStatusCategoryName, getHttpStatusName } from '@/lib/http';
 export { ipv4Regex, parseIp } from '@/lib/ipv4';
 export type { KeyMap, KeyMapActions, KeyMapHandler } from '@/lib/key_map';
 export { getKeyMapCodeAsHotkey, handleKeyMapKeyDown } from '@/lib/key_map';
+export type { Point2D } from '@/lib/math_angle';
+export type { Mat4 } from '@/lib/math_matrix';
+export { Vector3D } from '@/lib/math_vector3d';
 export type { PluralRule } from '@/lib/pluralization';
 export { getPluralizationIndex, registerPluralRule } from '@/lib/pluralization';
 export { useDebounce } from '@/lib/use_debounce';
@@ -286,11 +320,17 @@ export { useDelayedVisibility } from '@/lib/use_delayed_visibility';
 export { useDocumentScrollPercentage } from '@/lib/use_document_scroll_percentage';
 export { useDragNDropOrderedList } from '@/lib/use_drag_n_drop_ordered_list';
 export { useElementSize } from '@/lib/use_element_size';
+export type { EventListenerCallback } from '@/lib/use_event_listener';
 export { useEventListener } from '@/lib/use_event_listener';
+
 export { useForceUpdate } from '@/lib/use_force_update';
+export type { OnFullScreenChangeCallback } from '@/lib/use_fullscreen_change';
 export { useFullScreenChange } from '@/lib/use_fullscreen_change';
+
 export { useGranularEffect } from '@/lib/use_granular_effect';
+export type { HookWithDependencies } from '@/lib/use_granular_hook';
 export { useGranularHook } from '@/lib/use_granular_hook';
+
 export { useImmediateInterval, useInterval } from '@/lib/use_interval';
 export { minDesktopWidth, useIsMobileScreen } from '@/lib/use_is_mobile_screen';
 export { useMouseDrag } from '@/lib/use_mouse_drag';
@@ -304,6 +344,7 @@ export { useWindowSize } from '@/lib/use_window_size';
 export { uuidv4 } from '@/lib/uuid';
 export type { VError, VSchema, VValidator } from '@/lib/validator';
 export { vArray, vBoolean, vInt, vNumber, vString } from '@/lib/validator';
+export type { LocaleDates } from '@/locales/dates';
 export type { EventTypes } from './event';
 export {
   emitEvent,
