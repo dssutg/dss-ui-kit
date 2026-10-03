@@ -18,6 +18,15 @@ import type { SearchSchema } from './use_filtered_items';
 
 export type { EnumOption } from './GeneralizedSearchModal';
 
+/**
+ * The row above a filterable table: the search box, the row count, export, and the buttons that open
+ * the stats and timeline modals.
+ *
+ * It is one component rather than three because the three share the search text, the filtered items
+ * and the search schema — and because what it exports is a CSV of what the operator is currently
+ * looking at, not of everything the caller holds. The filename comes from the caller because only the
+ * caller knows what the table is a list of.
+ */
 export function FilterableTableTopPanel<T>({
   searchText,
   setSearchText,

@@ -7,18 +7,33 @@ interface DetectElementResize {
   removeResizeListener: ResizeHandler;
 }
 
+/**
+ * A measured width, and that width in CSS pixels on the screen.
+ *
+ * `width` is in layout pixels and `scaledWidth` accounts for a zoom or a device pixel ratio, so a
+ * canvas inside an {@link AutoSizer} is sized in scaled pixels and is not resampled by the browser.
+ */
 export interface HorizontalSize {
   width: number;
   scaledWidth: number;
 }
 
+/** A measured height and the same height in CSS pixels on the screen. See {@link HorizontalSize}. */
 export interface VerticalSize {
   height: number;
   scaledHeight: number;
 }
 
+/** A measured box in both axes, which is what an autosizer watching both passes to its children. */
 export type Size = HorizontalSize & VerticalSize;
 
+/**
+ * The props every way of using an {@link AutoSizer} has, on top of the attributes of its own element.
+ *
+ * `doNotBailOutOnEmptyChildren` is the one that matters most: without it, children that render nothing
+ * render nothing at all rather than the last size measured, which is right for a chart waiting for data
+ * and wrong for a table that has just been emptied.
+ */
 export interface BaseProps extends HTMLAttributes<HTMLDivElement> {
   doNotBailOutOnEmptyChildren?: boolean | undefined;
   nonce?: string | undefined;
@@ -26,6 +41,7 @@ export interface BaseProps extends HTMLAttributes<HTMLDivElement> {
   style?: React.CSSProperties | undefined;
 }
 
+/** {@link AutoSizerProps} for a child that only needs a height, on one fixed-width axis. */
 export type HeightOnlyProps = BaseProps & {
   children: (size: VerticalSize) => ReactNode;
   defaultHeight?: number | undefined;
@@ -34,6 +50,7 @@ export type HeightOnlyProps = BaseProps & {
   onResize?: (size: VerticalSize) => void;
 };
 
+/** {@link AutoSizerProps} for a child that only needs a width, on one fixed-height axis. */
 export type WidthOnlyProps = BaseProps & {
   children: (size: HorizontalSize) => ReactNode;
   defaultWidth?: number | undefined;
@@ -42,6 +59,7 @@ export type WidthOnlyProps = BaseProps & {
   onResize?: (size: HorizontalSize) => void;
 };
 
+/** {@link AutoSizerProps} for a child that needs both axes measured, which is the usual case. */
 export type HeightAndWidthProps = BaseProps & {
   children: (size: Size) => ReactNode;
   defaultHeight?: number | undefined;
@@ -51,8 +69,21 @@ export type HeightAndWidthProps = BaseProps & {
   onResize?: (size: Size) => void;
 };
 
+/**
+ * What {@link AutoSizer} takes, as one of three shapes.
+ *
+ * A union rather than one set of optional props, so a caller that only wants a height is given a child
+ * function that receives a height and not a size with an always-undefined half of it. Which shape
+ * applies is decided by which axis is disabled.
+ */
 export type AutoSizerProps = HeightOnlyProps | WidthOnlyProps | HeightAndWidthProps;
 
+/**
+ * The measurements {@link AutoSizer} keeps, both axes and both scales.
+ *
+ * `width` and `height` are what the child's layout box is; `scaledWidth` and `scaledHeight` are what
+ * to draw into. They differ under zoom, and a canvas given the wrong one is blurry or cropped.
+ */
 export interface AutoSizerState {
   height: number;
   scaledHeight: number;
@@ -450,6 +481,17 @@ function createDetectElementResize(nonce?: string): DetectElementResize {
   };
 }
 
+/**
+ * Calls its child with the size of the surrounding element, and re-renders when that size changes.
+ *
+ * This is the one component in the library that is a class rather than a function: it has to render
+ * nothing at all before it has measured, and a child that is a function of the measured size cannot be
+ * given a size it does not have yet.
+ *
+ * It renders a single element and measures its parent, so the caller puts it where the measurement
+ * should happen — filling a panel is `className="h-full"`, and a caller that expects it to measure
+ * itself gets the size of whatever contains it.
+ */
 export class AutoSizer extends Component<AutoSizerProps, AutoSizerState> {
   public override state: AutoSizerState = {
     height: (this.props as HeightAndWidthProps).defaultHeight || 0,

@@ -108,6 +108,13 @@ export interface GeneralizedSearchModalProps<T> {
   readonly onSearch: (searchText: string) => void;
 }
 
+/**
+ * A modal with one input per property of a search schema, for filtering on several fields at once.
+ *
+ * It produces one search string through the same schema the table filters with, so a filter built here
+ * and one typed into the search box are the same filter — which is what lets the top panel show the
+ * current filters and let this modal edit them without changing what they mean.
+ */
 export function GeneralizedSearchModal<T>({
   title,
   open,

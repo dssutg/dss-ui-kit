@@ -3,6 +3,14 @@ import { useLocale } from '@/locale';
 /** How far an arrow key moves a column edge, in pixels. */
 const KEYBOARD_RESIZE_STEP = 8;
 
+/**
+ * The draggable divider between two columns of a {@link SortableTable}.
+ *
+ * A `role="separator"` that answers to a drag and to the arrow keys, so a column can be resized
+ * without a mouse. It reports the movement rather than the new width — the table owns the column widths
+ * and is the only thing that knows the other columns' — and reports the end of the drag separately, so
+ * a caller can persist the layout once rather than on every pixel.
+ */
 export function ColumnResizer({
   style,
   onResize,

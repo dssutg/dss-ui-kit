@@ -4,6 +4,12 @@ import { getDpr } from '@/lib/dom';
 import { cmp, degreesToRadians } from '@/lib/math';
 import { useWindowSize } from '@/lib/use_window_size';
 
+/**
+ * A ring drawn to a fraction, for progress an operator reads at a glance.
+ *
+ * The ring is SVG with a stroke-dashoffset rather than a spinning arc, so it can be read as a
+ * percentage and not only as "not finished".
+ */
 export function RingProgress({
   progress = 100,
   progressMax = 100,

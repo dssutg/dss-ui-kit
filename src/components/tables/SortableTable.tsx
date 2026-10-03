@@ -11,15 +11,35 @@ import { useLocale } from '@/locale';
 import { ColumnResizer } from './ColumnResizer';
 import { SortableTableRow } from './SortableTableRow';
 
+/**
+ * How two rows are ordered, in the sense of `Array.prototype.sort`.
+ *
+ * Written as the caller would write it against their own data: the row descriptor is what the
+ * comparator receives, and comparing `a.data.name` is one line.
+ */
 export type SortableTableComparatorFunction<T> = (
   a: SortableTableRowDescriptor<T>,
   b: SortableTableRowDescriptor<T>,
 ) => number;
 
+/**
+ * One comparator per column id.
+ *
+ * A record rather than an array so a column cannot be given a comparator belonging to another column by
+ * being in the wrong position, and so a column with no comparator is simply absent rather than
+ * comparing everything as equal.
+ */
 export type SortableTableColumnComparatorTable<T, C extends string> = Readonly<
   Record<C, SortableTableComparatorFunction<T>>
 >;
 
+/**
+ * One column of the header: its id, the title an operator reads, and how wide it is.
+ *
+ * `width` is the starting width rather than a fixed one — the column can be dragged afterwards — and
+ * `minWidth` is what stops a drag from making the column unusable. `id` is the caller's own column
+ * name, and is what the renderer and the comparators are keyed by.
+ */
 export type SortableTableHeaderColumn<C extends string> = Readonly<{
   id: C;
   title: string;
@@ -28,16 +48,32 @@ export type SortableTableHeaderColumn<C extends string> = Readonly<{
   style?: React.CSSProperties | undefined;
 }>;
 
+/**
+ * A cell rendered ahead of time, for a caller building a column's contents by hand rather than with a
+ * renderer.
+ */
 export type SortableTableCellDescriptor<C extends string> = Readonly<{
   columnId: C;
   component: React.ReactNode;
 }>;
 
+/**
+ * One row: an id of the caller's choosing and the data behind it.
+ *
+ * `id` has to be stable across renders and unique, because it is what the table keys its rendered rows
+ * by. `data` is opaque to the table, which never reads a field of it.
+ */
 export type SortableTableRowDescriptor<T> = Readonly<{
   id: string;
   data: T;
 }>;
 
+/**
+ * What a cell renderer is given: the row, its index, the column, and the column's current width.
+ *
+ * `columnWidth` is there because a cell that has to fit inside it — a bar, a number, a progress
+ * indicator — cannot be laid out without knowing how much room there is.
+ */
 export type SortableTableCellRendererContext<T, C extends string> = Readonly<{
   row: SortableTableRowDescriptor<T>;
   data: T;
@@ -47,14 +83,28 @@ export type SortableTableCellRendererContext<T, C extends string> = Readonly<{
   columnWidth: number;
 }>;
 
+/** Renders one cell. See {@link SortableTableCellRendererContext} for what it is told. */
 export type SortableTableCellRenderer<T, C extends string> = (
   context: SortableTableCellRendererContext<T, C>,
 ) => React.ReactNode;
 
+/**
+ * One renderer per column id — the alternative to a single renderer with a switch over `columnId`.
+ */
 export type SortableTableColumnRenderMap<T, C extends string> = Readonly<
   Record<C, SortableTableCellRenderer<T, C>>
 >;
 
+/**
+ * Everything a {@link SortableTable} draws: its columns, its rows, how high a row is, and how to
+ * render and compare them.
+ *
+ * A single descriptor rather than a set of props, so the caller's table can be built by a function and
+ * passed as one value — and so a row renderer is not re-created on every render of the panel above it.
+ * `headerRowHeight` and `rowHeight` are required rather than guessed because the virtualization
+ * arithmetic needs them: a row height this table guessed wrong would put every row after the first
+ * one in the wrong place.
+ */
 export type SortableTableDescriptor<T, C extends string> = Readonly<{
   headerColumns: SortableTableHeaderColumn<C>[];
   rows: SortableTableRowDescriptor<T>[];
@@ -80,6 +130,13 @@ export type SortableTableDescriptor<T, C extends string> = Readonly<{
   }) => React.CSSProperties;
 }>;
 
+/**
+ * Builds a single cell renderer out of a per-column map, so a {@link SortableTable} can be given one
+ * renderer instead of the map.
+ *
+ * A column with no entry in the map renders as nothing: a table that asked for a missing cell would
+ * have to fail on every render of every row that reached it.
+ */
 export function makeSortableTableCellRenderer<T, C extends string>(
   columnMap: SortableTableColumnRenderMap<T, C>,
 ) {
@@ -87,6 +144,17 @@ export function makeSortableTableCellRenderer<T, C extends string>(
     columnMap[context.columnId]?.(context);
 }
 
+/**
+ * A virtualized table with draggable column widths and sortable columns.
+ *
+ * It draws and orders what the descriptor holds, and it does not sort: `sortColumnId` and
+ * `reversedSort` are the caller's, and the rows arrive in the order they are to be drawn in. Sorting
+ * the caller's array for them would take a copy of every row on every click, and a table of records
+ * the caller is already holding should not be sorted behind its back.
+ *
+ * The header is sticky and the rows are fixed height, which is what makes the row geometry exact; a
+ * row that needs to wrap is not what this is for.
+ */
 export function SortableTable<T, C extends string>({
   descriptor,
   sortColumnId,

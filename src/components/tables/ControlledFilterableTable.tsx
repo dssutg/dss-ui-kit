@@ -8,6 +8,12 @@ import { ControlledTable, type ControlledTableProps } from './ControlledTable';
  */
 export type ControlledFilterableTableProps<T, C extends string> = ControlledTableProps<T, C>;
 
+/**
+ * The published name of {@link ControlledTable}, kept so an existing import keeps resolving.
+ *
+ * Deprecated in favour of `ControlledTable`, which says in its name that the caller holds the search
+ * text. This is a wrapper rather than an alias so the two can be told apart in a stack trace.
+ */
 export function ControlledFilterableTable<T, C extends string>({
   items,
   countLabelPrefix,

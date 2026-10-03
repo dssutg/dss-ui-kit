@@ -31,6 +31,13 @@ export interface FilterableTableStatsModalProps<T> {
   readonly searchSchema: SearchSchema<T>;
 }
 
+/**
+ * A modal counting and averaging one property over the rows currently shown.
+ *
+ * The property is chosen by the caller from the search schema rather than by the modal guessing one:
+ * which property is worth a statistic is a decision about the data, and a modal that picked for itself
+ * would show an average of identifiers now and then.
+ */
 export function FilterableTableStatsModal<T>({
   open,
   onOpenChange,

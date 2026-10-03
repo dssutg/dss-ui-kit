@@ -37,6 +37,14 @@ export interface ControlledTableProps<T, C extends string> extends FilterableTab
   readonly setSearchText: React.Dispatch<React.SetStateAction<string>>;
 }
 
+/**
+ * A filterable table over the caller's items, with the search text held by the caller.
+ *
+ * Items, their property descriptions and the comparators are all the caller's data; the table filters
+ * with them, renders them through the descriptor and reports a click. It is not a data source and has
+ * no opinion about what an item is — which is what lets the same table show devices, zones or
+ * anything else with the right properties passed in.
+ */
 export function ControlledTable<T, C extends string>({
   items,
   countLabelPrefix,

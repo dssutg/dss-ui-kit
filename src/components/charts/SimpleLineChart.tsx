@@ -5,6 +5,13 @@ import { clamp } from '@/lib/math';
 import { useGranularEffect } from '@/lib/use_granular_effect';
 import { useTheme } from '@/theme';
 
+/**
+ * A line chart of one or more series, drawn on a {@link ZoomableCanvas}.
+ *
+ * The series are the caller's numbers; the chart scales them to the box and draws them. There is no
+ * data source, no sampling and no downsampling: a series with a point per pixel is the caller's to
+ * reduce, because what to drop from a signal is a decision about the signal.
+ */
 export function SimpleLineChart({
   yPoints,
   color,

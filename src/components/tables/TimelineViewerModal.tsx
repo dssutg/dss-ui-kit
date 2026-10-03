@@ -44,6 +44,14 @@ export interface TimelineViewerModalProps<T> {
   readonly searchSchema: SearchSchema<T>;
 }
 
+/**
+ * A modal drawing the rows currently shown over time, one series per non-time property.
+ *
+ * The time axis comes from the schema's `dateAndTime` properties and the series from everything else,
+ * so the same schema that makes the table searchable makes this drawable. Rows without a date are not
+ * drawn: there is nowhere to put them on a time axis, and dropping them silently would be a lie about
+ * the count.
+ */
 export function TimelineViewerModal<T>({
   open,
   onOpenChange,

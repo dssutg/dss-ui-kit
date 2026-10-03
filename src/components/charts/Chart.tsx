@@ -15,9 +15,13 @@ export const chunkLines = 100;
 /** The vertical distance between two adjacent chart rows, in chart coordinates. */
 export const gridGap = 40;
 
-/** The scale bounds a chart can be zoomed to, and the step each zoom moves it by. */
+/** The smallest scale a chart can be zoomed out to. */
 export const MIN_SCALE = 0.1;
+
+/** The largest scale a chart can be zoomed in to. */
 export const MAX_SCALE = 20;
+
+/** The step one zoom action moves the scale by. */
 export const SCALE_FACTOR = 0.1;
 
 /**
@@ -122,6 +126,14 @@ export const chartViewKeyMap: KeyMap<ActionKey> = {
   KeyM: { action: 'openChartMarkerManager' },
 };
 
+/**
+ * What {@link Chart} takes.
+ *
+ * Every function on this interface is the caller's, and the keys the chart binds are in its own table
+ * above: the chart knows how to draw a plot of functions and how to pan and zoom it, and it reports
+ * every action it would take. Which of those actions an application allows — and what "seek to the
+ * next problem" means in it — is not a decision this component can make.
+ */
 export interface ChartProps {
   readonly chartRef: React.RefObject<HTMLDivElement>;
   readonly canvasRef: React.RefObject<HTMLCanvasElement>;

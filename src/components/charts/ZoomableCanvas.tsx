@@ -2,11 +2,24 @@ import { useRef, useState } from 'react';
 import { DOMRectContainsPoint } from '@/lib/dom';
 import { useGranularEffect } from '@/lib/use_granular_effect';
 
+/**
+ * Where the pointer is over a canvas, in the canvas's own pixels.
+ *
+ * Passed to the draw callback on every pointer move so a caller drawing a crosshair knows where to put
+ * it without adding a listener of its own.
+ */
 export interface ZoomableCanvasDrawCallbackProps {
   mouseX: number;
   mouseY: number;
 }
 
+/**
+ * How far a canvas is zoomed and panned: one scale for both axes and an offset in canvas pixels.
+ *
+ * Uniform scale, because a chart that could stretch one axis independently would stop being readable
+ * — a distorted plot shows different slopes for the same slope. Exported because a caller that puts a
+ * chart in fullscreen, or saves the view, has to hold the transform itself.
+ */
 export interface ZoomableCanvasTransform {
   scale: number;
   offsetX: number;

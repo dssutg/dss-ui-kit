@@ -283,6 +283,13 @@ function Day({
   );
 }
 
+/**
+ * A scrollable year calendar with one row per day and one column per event, for reading a history.
+ *
+ * Static in the sense that it draws what it is given: it holds no selection and no scroll state of its
+ * own beyond keeping the current month in view. The events come from the caller, which is what lets it
+ * show an application's own records rather than a built-in data set.
+ */
 export function StaticCalendar({ date }: { readonly date: Date }) {
   const { dates } = useLocale();
   const { isSundayFirstWeekDay } = dates.calendar;

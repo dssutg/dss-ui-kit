@@ -4,6 +4,13 @@ import type {
   SortableTableRowDescriptor,
 } from './SortableTable';
 
+/**
+ * One row of a {@link SortableTable}: a cell per column, in the column widths currently set.
+ *
+ * Separate from the table because a row is what the virtualization re-renders, and because it is the
+ * one part that has to line up exactly with the header: the cell widths are computed from the same
+ * `columnWidths` array the header is drawn from.
+ */
 export function SortableTableRow<T, C extends string>({
   descriptor,
   columnWidths,

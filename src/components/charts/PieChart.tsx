@@ -1,12 +1,26 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { cartesianToPolar, clamp, polarToCartesian, turn } from '@/lib/math';
 
+/**
+ * One slice of a {@link PieChart}: its label, the share of the whole it is, and the colour drawn.
+ *
+ * The percentage is computed before the chart sees it, so a caller can lay out a legend or a summary
+ * table from the same data the chart draws.
+ */
 export interface PieChartShare {
   title: string;
   percent: number;
   color: string;
 }
 
+/**
+ * The palette slices are coloured with when the caller supplies none.
+ *
+ * Fixed hues rather than theme tokens, because a pie chart is about telling shares apart from each
+ * other: the eight colours here are the ones that stay distinguishable next to one another, and a
+ * theme's semantic colours — a green for good, a red for bad — would say something about the shares
+ * that nothing here knows.
+ */
 export const defaultPieChartColors: readonly string[] = [
   '#ffff00',
   '#ff0000',
@@ -21,6 +35,10 @@ export const defaultPieChartColors: readonly string[] = [
 /** Used only if a caller supplies a palette that is empty even after the default is applied. */
 const NO_SHARE_COLOR = '#d4d4d4';
 
+/**
+ * The colour of one slice, wrapping through the palette so a chart with more slices than colours
+ * still has distinct ones for as long as the palette lasts.
+ */
 export function getShareColor({
   shareIndex,
   totalShares,
@@ -50,6 +68,12 @@ export function getShareColor({
   return curColor;
 }
 
+/**
+ * One count as a percentage of a total.
+ *
+ * An empty total is reported as 100%, which keeps a chart with nothing in it from rendering a single
+ * full slice labelled as everything.
+ */
 export function getSharePercent(count: number, total: number) {
   if (total === 0) {
     return 100;
@@ -57,6 +81,13 @@ export function getSharePercent(count: number, total: number) {
   return (count * 100) / total;
 }
 
+/**
+ * Turns a list of records and a total count into the slices a {@link PieChart} draws.
+ *
+ * `mapRecord` is the caller's, so this works over any record type: it asks for a title and a count
+ * per record and does the percentage and the colouring. Exported because the same slices are usually
+ * wanted for something other than the chart.
+ */
 export function mapToShares<T>(
   records: readonly T[],
   totalCount: number,
@@ -82,11 +113,25 @@ export function mapToShares<T>(
   });
 }
 
+/**
+ * Where one slice ends, as an angle, given where the previous one ended and this slice's share.
+ *
+ * Clamps the share to 0–100 so a rounding error in the caller's counts cannot leave a gap in the
+ * circle or draw one slice over the next.
+ */
 export function getPieChartShareEndAngle(startAngle: number, sharePercent: number) {
   const fract = clamp(sharePercent, 0, 100) / 100;
   return startAngle + fract * turn;
 }
 
+/**
+ * A pie chart drawn as SVG arcs, with an optional gap between slices.
+ *
+ * Slices are drawn rather than a chart library's, so the colours are the ones the caller gave and a
+ * slice can be a fraction smaller than its share. `shareMarginDegrees` is subtracted from every
+ * slice, which is why it is in degrees rather than pixels: a gap that scaled with the radius would
+ * look different in two sizes of the same chart.
+ */
 export function PieChart({
   shares,
   radius,

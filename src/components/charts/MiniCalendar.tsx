@@ -4,6 +4,12 @@ import { useGranularEffect } from '@/lib/use_granular_effect';
 import { useLocale } from '@/locale';
 import { StaticCalendar } from './StaticCalendar';
 
+/**
+ * A month grid with the days that have data marked, for choosing a day in a small space.
+ *
+ * The month and the marks are the caller's: this draws the grid, highlights the days it is given and
+ * reports the day that was clicked.
+ */
 export function MiniCalendar({
   visible,
   date,

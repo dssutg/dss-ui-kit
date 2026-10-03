@@ -10,6 +10,16 @@ import { useInterval } from '@/lib/use_interval';
 import { useWindowSize } from '@/lib/use_window_size';
 import { useLocale } from '@/locale';
 
+/**
+ * A menu of actions and submenus, opening from a dots or button trigger.
+ *
+ * Nested menus are declared with `submenu` rather than being handed as a tree, and a submenu opens
+ * beside its parent when there is room for it and over it when there is not — which is why the menu
+ * watches the window size and where the trigger is on the screen.
+ *
+ * The list is rendered in a portal on `document.body` and positioned against the trigger's measured
+ * box, so a trigger inside a panel with `overflow: hidden` or a transform still shows its menu.
+ */
 export function DropDownMenu({
   variant = 'dots',
   triggerIcon,
@@ -313,6 +323,13 @@ export function DropDownMenu({
   );
 }
 
+/**
+ * One entry in a {@link DropDownMenu}.
+ *
+ * `path` is the item's place in the menu, given as the titles from the root down, and is how a nested
+ * item is identified: the menu opens one panel per path, so the path is not decoration and must be
+ * unique within the menu. `onSelect` is the whole action; the menu closes itself after calling it.
+ */
 export interface DropDownMenuItem {
   path: string[];
   icon?: IconName | undefined;

@@ -4,6 +4,13 @@ import { getEnumLabel } from './ControlledTable';
 import { formatDateAndTime } from './table_export';
 import type { SearchPropertySchema } from './use_filtered_items';
 
+/**
+ * Returns a function that writes one property's value of one item as text, in the caller's locale.
+ *
+ * One place that knows how every property type is written, used by the filter builder, the timeline
+ * labels and the export: a value rendered differently in each of them would make a table, its export
+ * and its filter disagree about what a row says.
+ */
 export function useSearchSchemaPropertyValueToString<T>() {
   const { t, dates } = useLocale();
 

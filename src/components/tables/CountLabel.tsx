@@ -12,6 +12,12 @@ export interface CountLabelProps {
   readonly minCountLabelWidth?: string | undefined;
 }
 
+/**
+ * The label showing how many rows a table is showing out of how many it holds.
+ *
+ * See {@link CountLabelProps} for why the wording is the caller's and why the total disappears when
+ * nothing is filtered.
+ */
 export function CountLabel({
   filteredRowCount,
   totalRowCount,
