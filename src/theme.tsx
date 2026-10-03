@@ -35,9 +35,9 @@ export interface ThemeDescriptor {
 /**
  * The shipped themes, with the swatch a picker shows for each.
  *
- * Only `dark` and `light` are finished themes; the other three exist to show that the token system
- * survives a palette the library did not design, and a consumer that wants two themes imports only
- * the CSS for the ones it uses.
+ * `dark` and `light` are the themes the library is written and tested against; the rest exist to show
+ * that the token system survives a palette the library did not design, and a consumer that wants only
+ * some of them imports only the CSS for the ones it uses.
  */
 export const builtinThemes: readonly ThemeDescriptor[] = [
   { name: 'dark', tileColor: '#222222' },

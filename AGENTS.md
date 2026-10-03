@@ -1,15 +1,7 @@
 # AGENTS.md
 
-Guidance for AI coding agents (and humans) working in this repository.
-
-## Repository state
-
-**The library is decoupled and builds.** `deno task ci` is green: 289 tests over 20 files, a
-production bundle, a manifest that matches the bundle and an API reference generated from the public
-surface. The publication-preparation work this document used to point at has been finished; what
-remains is the maintainer's release, and it is not tracked here.
-
-Read this document for the rules the library is held to.
+Guidance for AI coding agents (and humans) working in this repository. Read this document for the
+rules the library is held to.
 
 ## Project
 
@@ -126,7 +118,7 @@ not a convenience.
 ## Imports
 
 - **Anything under `src/` that leaves its own directory imports through the `@` alias**:
-  `@/components/buttons/Button`, `@/lib/math`, `@/index.css`. Never `../`, never `../../`. A relative
+  `@/components/buttons/Button`, `@/util/math`, `@/index.css`. Never `../`, never `../../`. A relative
   path makes the reader count directories up to the root before they know what is being imported, and
   it silently breaks when a file moves. Biome's `noRestrictedImports` rejects `../**` inside `src/`,
   and nothing else.
@@ -134,7 +126,7 @@ not a convenience.
   names exactly one file and cannot be misread. The rule is about not walking *up* the tree, and `./`
   does not.
 - `scripts/` runs directly under Deno, outside the Vite alias, so it keeps single-level
-  `./lib/conventional.ts` imports. `../**` is still rejected.
+  `./util/conventional.ts` imports. `../**` is still rejected.
 - The `@` alias is declared twice and both halves must agree — `resolve.alias` in `vite.config.ts`
   for the bundler, and `compilerOptions.paths` in `tsconfig.json` for the type checker.
 
@@ -145,29 +137,30 @@ not a convenience.
 **This is the rule the whole decoupling turns on.**
 
 ```
-src/lib/      hooks and framework-agnostic helpers   ← may import: src/lib/ only
-src/components/  components                         ← may import: src/lib/, src/components/,
-                                                       and the infrastructure modules below
+src/util/      hooks and framework-agnostic helpers   ← may import: src/util/ only
+src/components/  components                         ← may import: src/util/, src/components/,
+                                                        and the infrastructure modules below
 src/locale.tsx, src/theme.tsx, src/event.tsx,
-src/feature_flag.tsx          infrastructure        ← may import: src/lib/, and each other
+src/feature_flag.tsx          infrastructure        ← may import: src/util/, and each other
 src/index.ts                  the public surface    ← may import: anything above
 ```
 
-**`src/components/` and `src/lib/` may not import anything else.** They may not import a module that
-reaches an application-only module — not directly, and not through one hop. Fourteen components reach
-four infrastructure modules (`@/locale`, `@/theme`, `@/feature_flag`, `@/event`); those four are the
-sanctioned way in.
+**`src/components/` and `src/util/` may not import anything else.** They may not import a module that
+reaches an application-only module — not directly, and not through one hop. Components reach the
+infrastructure modules (`@/locale`, `@/theme`, `@/feature_flag`, `@/event`); those are the sanctioned
+way in.
 
-The one direction the rule forbids is the one nothing in the tree uses: nothing in `src/lib/` imports
-`src/components/`, while 26 files in `src/components/` import `src/lib/`. Helpers do not know what
-renders them. A helper that starts needing a component is a component, and it moves.
+The one direction the rule forbids is the one nothing in the tree uses: nothing in `src/util/`
+imports `src/components/`. Helpers do not know what renders them. A helper that starts needing a
+component is a component, and it moves.
 
 Anything a component needs from the application — a route, a locale string, the current theme — is a
-**prop** or one of those four modules. A component that reaches past them for it is a component that
-cannot ship, and the fix is to move the decision up to the caller, not to widen the layer.
+**prop** or one of those infrastructure modules. A component that reaches past them for it is a
+component that cannot ship, and the fix is to move the decision up to the caller, not to widen the
+layer.
 
 This is checked by a test, not by review: `scripts/module-boundary.test.ts` walks `src/` and fails
-if a file under `src/components/` or `src/lib/` imports a module outside the layers above.
+if a file under `src/components/` or `src/util/` imports a module outside the layers above.
 
 ## Types
 
@@ -226,7 +219,7 @@ imports by rewriting them to `preact/...`.
 
 ### The CSS custom-property contract
 
-The design system is **106 CSS custom properties** named `--color-*`, defined per theme:
+The design system is a set of CSS custom properties named `--color-*`, defined per theme:
 
 ```css
 /* themes/dark.css */
@@ -319,9 +312,9 @@ it before every job.
 ```bash
 deno install              # install/refresh dependencies (run after editing package.json)
 deno task install:frozen  # verify package.json and deno.lock agree (what CI does)
-deno task dev             # dev server on http://127.0.0.1:5173
+deno task dev             # dev server
 deno task build           # production build into dist/
-deno task preview         # serve the production build on http://127.0.0.1:4173
+deno task preview         # serve the production build
 deno task lint            # biome ci + typecheck
 deno task format          # biome check --write (apply safe fixes)
 deno task typecheck       # tsgo only
@@ -342,7 +335,7 @@ are not here because they are the maintainer's alone — see [Releasing](#releas
 `biome ci` treats formatting as an error, so an unformatted file fails the pipeline.
 
 Every job starts from `.github/actions/setup/action.yml`, which checks out the commit, sets up Deno and
-runs `deno install --frozen`. A shared action rather than seven copies: a lockfile that has to agree
+runs `deno install --frozen`. A shared action rather than a copy per job: a lockfile that has to agree
 with `package.json` is checked the same way everywhere, or not at all.
 
 The pipeline keeps one gate deliberately: every job runs the same commands `deno task ci` runs, so a
@@ -353,7 +346,7 @@ green pipeline and a green `deno task ci` mean the same thing.
 ```
 src/
   index.ts                the package's public surface; the only entry point consumers need
-  lib/                    hooks and framework-agnostic helpers, one directory per group;
+  util/                   hooks and framework-agnostic helpers, one directory per group;
                           an entry is index.* so the directory is the import specifier
     array/ assert/ catch/ color/ date/ dom/ dsv/ editor/ fetch/ file/ format/
     fuzzy_search/ gl/ highlight/ hooks/ http/ ipv4/ is_tab_active/ key_map/
@@ -367,16 +360,21 @@ src/
   theme.tsx               theme names, registration and the current theme
   event.tsx               the event bus
   feature_flag.tsx        feature flags
-  css/                    theme custom properties, global styles, Tailwind entry point
+  css/                    theme custom properties, component styles, global styles
+    themes/               one file per theme; the complete one is dark.css
+    components/           styles a component needs and Tailwind cannot generate
+    index.css             imports the stylesheets above in the cascade order they mean
+    global.css            global element styles the components assume
   index.css               Tailwind entry point (index.css is the only global stylesheet)
 scripts/
   commitlint.ts           Conventional Commits validator (used by the git hook)
   release.ts              version and changelog from the git history
   check-package-manifest.ts  verifies every path in package.json `files` exists in dist/
   *.test.ts               the repository-policy tests
-  lib/                    helpers for the scripts above, including the shared tree walker
+  util/                   helpers for the scripts above, including the shared tree walker
 docs/
   api-intro.md            landing page for the generated API reference
+  examples.md             one worked example per component group
   api/                    TypeDoc output, generated and not committed
 
 vite.config.ts            bundler config; also declares the PostCSS pipeline
@@ -397,11 +395,11 @@ standard React convention and it makes the import statement read as the symbol i
 Everything that is not a component keeps a lowercase, dash-separated name describing what it is:
 `cn.ts` for a helper, `types.ts` for a group of types, `main.tsx` for the browser entrypoint.
 
-**Non-component code lives under `src/lib/`, one directory per group.** A group that is one module
-exposes it as `index.*`, so the import specifier is the directory itself — `@/lib/date` resolves to
-`src/lib/date/index.tsx`. A group that is more than one module keeps descriptive file names beside
-its entry — `@/lib/math/scalar`, `@/lib/dom/pointer` — and a hook gets its own directory under
-`src/lib/hooks/` on the same entry convention: `@/lib/hooks/use_timeout`. The old prefix in the
+**Non-component code lives under `src/util/`, one directory per group.** A group that is one module
+exposes it as `index.*`, so the import specifier is the directory itself — `@/util/date` resolves to
+`src/util/date/index.tsx`. A group that is more than one module keeps descriptive file names beside
+its entry — `@/util/math/scalar`, `@/util/dom/pointer` — and a hook gets its own directory under
+`src/util/hooks/` on the same entry convention: `@/util/hooks/use_timeout`. The old prefix in the
 file name becomes the directory's name, so no file repeats the directory it sits in.
 
 ## Documentation
@@ -416,12 +414,11 @@ deno task docs:watch    # rebuilds on save
 - Entry points and output are configured in `typedoc.json`; TypeScript options live in
   `tsconfig.docs.json` so documentation never depends on the build settings.
 - **TypeDoc resolves from `src/index.ts` alone**, so the reference is the list of things a consumer
-  can import and nothing else. That is what makes it usable; expanding over `src/**` produced 186
-  pages of internal modules with the entry point somewhere in the middle.
-- Narrowing it exposed every type named in a public signature and not exported, which is the defect
-  [Exports](#exports) describes. Two symbols are listed in `intentionallyNotExported` instead:
-  `iconPaths` and `en` are the data `IconName` and `MessageKey` are derived from, and the derived
-  types are the API — a consumer needs the union of icon names, not a map of path data.
+  can import and nothing else. That is what makes it usable, and it is why the entry point is one
+  file rather than the tree: expanding over `src/**` drowns the entry in internal modules.
+- Two symbols are listed in `intentionallyNotExported`: `iconPaths` and `en` are the data `IconName`
+  and `MessageKey` are derived from, and the derived types are the API — a consumer needs the union
+  of icon names, not a map of path data.
 - `docs/api/` is gitignored. The HTML is a build output, not source; committing it would guarantee
   it drifts out of date the first time a comment changes.
 - CI builds it, so a broken `@link` or an unresolvable type fails the pipeline. Edit the comment,
@@ -455,14 +452,14 @@ name is wrong, that is a change with a migration, taken on its own.
 component or type, `scripts/**/*.test.ts` beside the helper. The repository-policy tests —
 `no-bare-javascript`, `module-boundary` and `no-russian-text` — are the exceptions: they guard
 repository-wide rules rather than one module, so they sit beside the tooling they protect and share its
-tree walker (`scripts/lib/source-tree.ts`).
+tree walker (`scripts/util/source-tree.ts`).
 
 The suite covers the pure helpers that carry the most logic per line, the repository-policy rules, and
 every component group with at least one render test.
 
 ### Rendering a component in a test
 
-`src/lib/testing/render.tsx` is the one place a component test renders: a container attached to the
+`src/util/testing/render.tsx` is the one place a component test renders: a container attached to the
 document, a root, effects flushed before the assertion, and an unmount after each test. A group that
 writes its own copy is a group whose test passes for a reason that has nothing to do with the
 component.
@@ -481,7 +478,7 @@ Three things about it are worth knowing before writing the first test against it
   are rendered through a portal onto the body. `container` is still there for the assertions about the
   container itself — that a component rendered nothing, for instance.
 
-`src/lib/testing/setup.ts` supplies what jsdom does not implement and the components assume:
+`src/util/testing/setup.ts` supplies what jsdom does not implement and the components assume:
 `ResizeObserver`, `matchMedia`, `scrollIntoView` and fixed element dimensions. It guards on `window`
 so it is inert in the `node`-environment tests.
 
@@ -501,7 +498,7 @@ Allowed types: `feat`, `fix`, `perf`, `refactor`, `docs`, `test`, `build`, `ci`,
 Rules:
 
 - Lowercase type, no trailing period on the subject.
-- Use a scope when one applies (`config`, `events`, `icons`, `locale`, `styles`, `ui`, `lib`).
+- Use a scope when one applies (`config`, `events`, `icons`, `locale`, `styles`, `ui`, `util`).
 - Write the description in the imperative mood, describing the change rather than the activity:
   `refactor(ui): merge Tailwind classes with tailwind-merge instead of concatenating`, not
   `changed class handling`.
@@ -560,7 +557,7 @@ Both are owned by the script.
 
 - `deno task ci` passes (this is the CI gate).
 - If you touched `package.json`, `deno.lock` is refreshed and `deno task install:frozen` passes.
-- Nothing under `src/components/` or `src/lib/` imports a module outside its layer — see
+- Nothing under `src/components/` or `src/util/` imports a module outside its layer — see
   [Layering](#layering).
 - No new CSS custom property is introduced without its Tailwind colour in `tailwind.config.ts`, and
   no existing one is renamed.

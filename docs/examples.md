@@ -515,8 +515,9 @@ function ColorField({
   return (
     <>
       <HexColorPicker color={color} onChange={onChange} />
-      {/* The popover variant reports 500ms after the last change: a drag fires a change per pointer
-          move, and a caller that re-rendered a panel per change could not drag at all. */}
+      {/* The popover variant reports the change a short debounce after the last one: a drag fires a
+          change per pointer move, and a caller that re-rendered a panel per change could not drag at
+          all. */}
       <HexAlphaColorPickerPopover
         trigger={<button type="button">Pick</button>}
         color={color}

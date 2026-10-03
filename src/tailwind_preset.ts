@@ -4,7 +4,7 @@ import type { Config } from 'tailwindcss';
  * The Tailwind preset, published as `dss-ui-kit/tailwind`.
  *
  * A consuming application cannot discover the token map by reading this package's config: it has to
- * reproduce it, and a copy of 106 lines drifts from the library without anything noticing. The map is
+ * reproduce it, and a copied map drifts from the library without anything noticing. The map is
  * therefore exported here and this repository's own `tailwind.config.ts` consumes it, so there is one
  * copy of it and a token that is renamed or removed is a type error in a consumer's config rather than
  * a class that silently stops resolving.

@@ -1,7 +1,7 @@
 # DSS UI Kit
 
-A component library and design system for Preact: **88 components**, the hooks they need, a
-**106-token** CSS custom-property contract, localisation, an event bus, and a generic WebGL scene
+A component library and design system for Preact: components, the hooks they need, a CSS
+custom-property token contract, localisation, an event bus, and a generic WebGL scene
 renderer.
 
 Nothing here knows what application it is rendered in. There is no model of what an application is
@@ -54,14 +54,14 @@ is for, and what it deliberately leaves to its caller, is in
 
 ## Styling
 
-The design system is **106 CSS custom properties** named `--color-*`, defined per theme and exposed as
+The design system is a set of CSS custom properties named `--color-*`, defined per theme and exposed as
 Tailwind colour utilities — `bg-bda`, `text-bdat`, `border-tpl`, `fill-tok`. A theme is data, not a
 build artefact: switching theme sets a `data-theme` attribute on `<body>` and nothing recompiles.
 
 A consuming application has to do two things for the components to look right: scan the published
 package so Tailwind can see the class names the components render, and use the token map, because a
 utility only exists in the output if the config names the token. The map is published as a preset, so
-it is a dependency rather than 106 lines to copy:
+it is a dependency rather than a file to copy:
 
 ```ts
 // tailwind.config.ts in the consuming application
@@ -111,12 +111,12 @@ passing `messages` to the provider.
 
 ## Theming
 
-Five themes ship, and more can be registered with `registerTheme`. Two of them are the library's
-contract and three are published examples:
+Themes ship with the library, and more can be registered with `registerTheme`. Two of them are the
+library's contract and the rest are published examples:
 
 | Theme | What it is |
 | --- | --- |
-| `dark`, `light` | The two the library is written and tested against. Both define all 106 tokens. |
+| `dark`, `light` | The two the library is written and tested against. Both define every token. |
 | `acme`, `indigo`, `purple` | Worked examples of a **partial** theme: each overrides a handful of tokens and inherits the rest from `dark`. |
 
 A theme's custom properties are the consumer's CSS, not a JavaScript object: `registerTheme` only
@@ -182,7 +182,7 @@ Deno 2 drives everything; there is no npm or yarn step.
 
 ```sh
 deno install        # install or refresh dependencies
-deno task dev       # dev server on http://127.0.0.1:5173
+deno task dev       # dev server
 deno task build     # production build into dist/
 deno task lint      # biome ci + typecheck
 deno task format    # biome check --write

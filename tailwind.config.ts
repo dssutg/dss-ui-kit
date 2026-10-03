@@ -7,7 +7,7 @@ import { uiKitPreset } from './src/tailwind_preset.ts';
  *
  * It is the same shape a consuming application writes, and it consumes the published preset rather
  * than restating the token map: `dss-ui-kit/tailwind` is built from `src/tailwind_preset.ts`, which is
- * where the 106 `--color-*` custom properties are mapped onto Tailwind colour utilities. A consumer
+ * where the `--color-*` custom properties are mapped onto Tailwind colour utilities. A consumer
  * that installs the package and puts the preset in `presets` therefore runs the identical lookup this
  * build does, and a token added to one of the two without the other is a test failure rather than a
  * class that resolves here and nowhere else.
