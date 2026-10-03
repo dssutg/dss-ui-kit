@@ -15,6 +15,12 @@ const colorModelHexColorPicker: ColorModel<string> = {
   equal: equalHex,
 };
 
+/**
+ * A {@link ColorPicker} over a hexadecimal string, reporting the colour in the same form.
+ *
+ * Alpha is dropped: a six-digit colour cannot carry transparency, and a picker that reported `#rrggbbaa`
+ * for a six-digit input would be changing the value the caller gave it.
+ */
 export function HexColorPicker(
   properties: Partial<ColorPickerBaseProperties<string>>,
 ): JSX.Element {

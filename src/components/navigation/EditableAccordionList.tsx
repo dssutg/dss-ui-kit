@@ -5,6 +5,13 @@ import { uuidv4 } from '@/lib/uuid';
 import { useLocale } from '@/locale';
 import { Accordion } from './Accordion';
 
+/**
+ * One row of an {@link EditableAccordionList}.
+ *
+ * `key` is generated when the row is added and never changes, so a row keeps its identity — and its
+ * content, its input and its expansion — across a rename. `editing` and `expanded` are the row's own
+ * state, reported to the caller with everything else because the list is the caller's data.
+ */
 export interface EditableAccordionListItem {
   key: string;
   name: string;
@@ -12,6 +19,14 @@ export interface EditableAccordionListItem {
   expanded: boolean;
 }
 
+/**
+ * A list of named, expandable, renameable rows — the shape of a set of profiles or a group of zones.
+ *
+ * It edits names and order and reports the whole list back; what a row means, and whether the names
+ * have to be unique, are the caller's: `isItemNameValid` is asked per name and `errors` is rendered
+ * as given. Adding a row generates its key and a name from `appendItemTitle`, so the caller does not
+ * have to invent either.
+ */
 export function EditableAccordionList({
   items,
   onChange,

@@ -30,6 +30,14 @@ function resolveItemTitle(
   return tRaw(titleKey);
 }
 
+/**
+ * One entry in a {@link MenuTree}, and the same shape for every level of it.
+ *
+ * The tree draws items and reports clicks; it does not decide what any of them means. That is why a
+ * title is either a literal `title` or a `titleKey` in the consumer's catalogue rather than a message
+ * of this library, why `route` is reported through `onNavigate` instead of navigated to, and why
+ * visibility, ordering and which entries exist are all the caller's data.
+ */
 export interface TMenuTreeItem {
   id: string;
   route?: string | undefined;
@@ -69,6 +77,15 @@ export type IsOnPathToCurrentItem = (itemId: string, currentItemId: string) => b
 
 const isNeverOnPath: IsOnPathToCurrentItem = () => false;
 
+/**
+ * A collapsible tree of menu items, with search, colour indicators and a mobile layout.
+ *
+ * It renders what it is given and reports activation; there is no routing, no filtering rule and no
+ * knowledge of what an item points at. An item is drawn as a list when it has subitems or asks to be
+ * one, hidden when `hidden` is set or when it is mobile-only on a screen that is not mobile, and its
+ * parent is highlighted when `isOnPathToCurrentItem` says so — a comparison the caller supplies,
+ * because only the caller knows how its items are addressed.
+ */
 export function MenuTree({
   expanded,
   width,
@@ -281,8 +298,19 @@ function renderTreeLevelBlock(
   }
 }
 
+/**
+ * What a click on a menu item asks the tree to do with it.
+ *
+ * `deny` stops the tree's own handling — used when the caller has already navigated, or is going to.
+ */
 export type MenuTreeItemClickHandlerResult = 'default' | 'deny';
 
+/**
+ * Called when a menu item is activated, with the item and whether its subitems are now shown.
+ *
+ * Returning `'deny'` leaves the item's subitems as they were, so a click that navigates away does not
+ * also leave a menu open behind it.
+ */
 export type MenuTreeItemClickCallback = ({
   menuItem,
   subitemsShown,
@@ -294,6 +322,11 @@ export type MenuTreeItemClickCallback = ({
   readonly event: React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>;
 }) => MenuTreeItemClickHandlerResult;
 
+/**
+ * Called on a right-click of a menu item, for a caller's own context menu.
+ *
+ * The tree shows no menu of its own; it reports the event so the application can.
+ */
 export type MenuTreeItemContextMenuCallback = ({
   menuItem,
   subitemsShown,
@@ -863,6 +896,13 @@ export function buildMenuItemFullTitleByItsId(
   return null;
 }
 
+/**
+ * The item with this id, anywhere in the tree, or `null`.
+ *
+ * Depth-first, and generic over the item type so a caller's own item shape — with fields this library
+ * has never heard of — is searched as it stands. Useful after a click, when the caller has an id and
+ * needs the item back.
+ */
 export function findMenuItemById<T extends { id: string; subitems: T[] }>(
   menuItems: T[],
   menuItemId: string,

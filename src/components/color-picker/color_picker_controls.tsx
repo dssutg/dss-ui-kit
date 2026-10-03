@@ -24,16 +24,34 @@ import {
 } from './color_picker_interaction';
 import type { AnyColor, ColorModel, HsvaColor, Interaction } from './color_picker_types';
 
+/**
+ * Joins the optional class names of a colour picker control into one `className`.
+ *
+ * Returns `undefined` — which React omits — rather than an empty string when there is nothing to
+ * join, so an uncontrolled element does not end up with a stray `class=""`.
+ */
 export function formatClassName(names: unknown[]): string {
   return names.filter(Boolean).join(' ');
 }
 
+/**
+ * What the hue bar takes.
+ *
+ * Reports only the hue it changed, not the whole colour: the picker holding it has the other channels
+ * and re-derives the colour from them.
+ */
 export interface HueBaseProperties {
   readonly className?: string | undefined;
   readonly hue: number;
   readonly onChange: (newHue: { h: number }) => void;
 }
 
+/**
+ * The hue bar, a gradient of every hue at full saturation and value.
+ *
+ * A `role="slider"` that answers to a drag, to the arrow keys and to Home and End, with the value
+ * exposed as a hue in degrees.
+ */
 export function HueBase({ className, hue, onChange }: HueBaseProperties) {
   const handleMove = (interaction: Interaction) => {
     onChange({ h: 360 * interaction.left });
@@ -68,7 +86,14 @@ export function HueBase({ className, hue, onChange }: HueBaseProperties) {
   );
 }
 
+/** A {@link HueBase} that only re-renders when its own props change. */
 export const Hue = memo(HueBase);
+/**
+ * What the draggable area of a colour control takes.
+ *
+ * It owns the interaction — pointer, touch and keyboard — and nothing else: it reports a position as
+ * fractions of its own box and the control that drew it decides what that position means.
+ */
 export interface InteractiveBaseProperties {
   readonly onMove: (interaction: Interaction) => void;
   readonly onKey: (offset: Interaction) => void;
@@ -170,7 +195,14 @@ const InteractiveBase = ({ onMove, onKey, ariaValueNow, ...rest }: InteractiveBa
   );
 };
 
+/** An {@link InteractiveBase} that only re-renders when its own props change. */
 export const Interactive = memo(InteractiveBase);
+/**
+ * What the draggable dot on a colour control takes.
+ *
+ * `left` and `top` are fractions of the control's box, not pixels, so the dot stays where the value
+ * says it is when the control is resized.
+ */
 export interface PointerProperties {
   readonly className?: string | undefined;
   readonly top?: number | undefined;
@@ -178,6 +210,12 @@ export interface PointerProperties {
   readonly color: string;
 }
 
+/**
+ * The dot that shows where a colour control currently is.
+ *
+ * The fill is the colour itself, which is the only way to show a position on a gradient: a white ring
+ * would be readable on a dark colour and not on a light one.
+ */
 export const Pointer = ({ className, color, left, top = 0.5 }: PointerProperties): JSX.Element => {
   const nodeClassName = formatClassName(['color-picker-cn__pointer', className]);
 
@@ -193,6 +231,12 @@ export const Pointer = ({ className, color, left, top = 0.5 }: PointerProperties
   );
 };
 
+/**
+ * What the saturation field takes.
+ *
+ * Reports saturation and value together, because on this control they are the two axes and neither
+ * one means anything without the other.
+ */
 export interface SaturationBaseProperties {
   readonly hsva: HsvaColor;
   readonly onChange: (newColor: { s: number; v: number }) => void;
@@ -237,7 +281,15 @@ const SaturationBase = ({ hsva, onChange }: SaturationBaseProperties) => {
   );
 };
 
+/** A {@link SaturationBase} that only re-renders when its own props change. */
 export const Saturation = memo(SaturationBase);
+/**
+ * Holds a colour as HSVA internally, whatever model the caller's colour is in.
+ *
+ * Every picker in this family draws from one model and converts at the edges, so a picker over RGBA
+ * and the same picker over HSL behave identically. Returns the current HSVA and a function that
+ * merges a change into it and reports the result in the caller's own model.
+ */
 export function useColorManipulation<T extends AnyColor>(
   colorModel: ColorModel<T>,
   color: T,

@@ -16,6 +16,12 @@ const colorModelHslaStringColorPicker: ColorModel<string> = {
   equal: equalColorString,
 };
 
+/**
+ * An {@link AlphaColorPicker} over a CSS `hsla(...)` string.
+ *
+ * For a caller whose colours are already CSS text. The string is parsed and re-rendered by the colour
+ * model, so a colour with an unusual but valid notation is normalised on the first change.
+ */
 export function HslaStringColorPicker(
   properties: Partial<ColorPickerBaseProperties<string>>,
 ): JSX.Element {

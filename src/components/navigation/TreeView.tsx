@@ -37,6 +37,13 @@ import { AutoSizer } from '@/components/layout/AutoSizer';
 import { clamp } from '@/lib/math';
 import { useGranularEffect } from '@/lib/use_granular_effect';
 
+/**
+ * One item in a {@link TreeView}.
+ *
+ * The tree holds a flat list of these with `level` and `expanded` set on every row, which is what
+ * makes a tree of ten thousand rows renderable: the component flattens the caller's nested `children`
+ * and collapses it back before reporting a change.
+ */
 export interface TreeViewItem {
   id: string;
   labelPrefix?: React.ReactNode | undefined;
@@ -52,6 +59,14 @@ export interface TreeViewItem {
   onDrop?: (e: DragEvent) => void;
 }
 
+/**
+ * A virtualized tree of items with selection, expansion, type-ahead and drag and drop.
+ *
+ * It keeps the tree the caller's: `setTree` receives the whole tree back with one item changed, and
+ * nothing is held internally except what is derived — the flat visible list, the type-ahead buffer,
+ * and the search text when `hasSearch` is on. Rows are fixed height, which is what the virtualization
+ * arithmetic needs and why `itemHeight` is a prop.
+ */
 export function TreeView({
   tree,
   setTree,
@@ -665,8 +680,20 @@ function findParentItem(tree: TreeViewItem[], itemId: string) {
   return find(tree, null);
 }
 
+/**
+ * The status a coloured dot next to an item reports.
+ *
+ * `unknown` is a real state and not a default: it is what an item whose status has not been read yet
+ * shows, so "not yet known" and "no problem" do not look the same.
+ */
 export type ColorIndicator = 'unknown' | 'bad' | 'normal' | 'good';
 
+/**
+ * The token each {@link ColorIndicator} is drawn with, so a dot and a status badge agree.
+ *
+ * The values are CSS custom properties rather than literals, which is what lets an indicator be
+ * correct in every theme without a second map per theme.
+ */
 export const colorIndicatorColorMap: Record<ColorIndicator, string> = {
   bad: 'var(--color-bda)',
   normal: 'var(--color-bno)',

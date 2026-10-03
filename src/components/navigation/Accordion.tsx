@@ -3,6 +3,13 @@ import { Icon } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';
 import { useScrollbarWidth } from '@/lib/use_scrollbar_width';
 
+/**
+ * A titled section that expands and collapses, with the content height animated.
+ *
+ * `expanded` is the caller's, so an accordion can be open because a route says so rather than because
+ * someone clicked it. `forceMount` defaults to true so the content exists in the DOM while collapsed
+ * and can be measured and searched; pass `false` for a section holding something expensive.
+ */
 export function Accordion({
   expanded,
   onExpansionChange,
@@ -97,6 +104,14 @@ export function Accordion({
   );
 }
 
+/**
+ * The height an {@link Accordion} animates between: the measured content height, or `fixedSize`.
+ *
+ * Returns `'auto'` until the content has been measured, which is what makes the animation possible:
+ * a section that animates to `height: auto` cannot be transitioned by the browser. A fixed size
+ * skips the measurement, and that is the right trade for a section whose height the caller already
+ * knows.
+ */
 export function useAccordion(
   expanded: boolean,
   mode: 'vertical' | 'horizontal' = 'vertical',

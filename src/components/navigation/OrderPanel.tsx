@@ -7,6 +7,13 @@ import { useDragNDropOrderedList } from '@/lib/use_drag_n_drop_ordered_list';
 import { useIsMobileScreen } from '@/lib/use_is_mobile_screen';
 import { useLocale } from '@/locale';
 
+/**
+ * A panel for choosing an order and a visibility for a list of items, by dragging or with arrows.
+ *
+ * Generic over the item type because it never inspects an item: it reorders the array the caller
+ * gave it and hands the new array back. What an item is, and whether order matters more than
+ * visibility or the other way round, is not decided here.
+ */
 export function OrderPanel<T extends number>({
   title = '',
   items,

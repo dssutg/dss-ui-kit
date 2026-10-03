@@ -1,6 +1,12 @@
 import { type JSX, useCallback } from 'react';
 import { ColorInput, type ColorInputBaseProperties } from './color_picker';
 
+/**
+ * What {@link HexColorInput} takes.
+ *
+ * `prefixed` is display only and `alpha` decides whether the value carries transparency, which also
+ * decides how long the field is allowed to be.
+ */
 export interface HexColorInputProperties extends ColorInputBaseProperties {
   /** Enables `#` prefix displaying */
   readonly prefixed?: boolean | undefined;
@@ -12,6 +18,13 @@ export interface HexColorInputProperties extends ColorInputBaseProperties {
 /** Adds "#" symbol to the beginning of the string */
 const prefixHexColorInput = (value: string) => `#${value}`;
 
+/**
+ * A text field for a hexadecimal colour, refusing anything that is not a hexadecimal digit.
+ *
+ * The `#` is display only: it is shown when `prefixed` is set and stripped again before the value is
+ * reported, because a colour held as `#fff` and one held as `fff` are the same colour and only one of
+ * them is what the caller's colour model expects.
+ */
 export function HexColorInput(properties: HexColorInputProperties): JSX.Element {
   const { prefixed, alpha, ...rest } = properties;
 

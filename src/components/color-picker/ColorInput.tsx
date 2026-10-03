@@ -2,6 +2,15 @@ import { type JSX, useCallback, useEffect, useState } from 'react';
 import { useEventCallback } from './color_picker_controls';
 import type { ColorInputBaseProperties } from './color_picker_types';
 
+/**
+ * What {@link ColorInput} takes: the behaviour of the text field, as functions.
+ *
+ * It is the machinery underneath the hex and RGB fields, so every decision about what counts as a
+ * valid colour — and about what the caller is handed on change — is passed in rather than decided
+ * here. `escape` and `validate` are required because a field that accepted any text would be a text
+ * field; `format` and `process` are what the caller uses to write the colour back the way their own
+ * code holds it.
+ */
 export interface ColorInputProperties extends ColorInputBaseProperties {
   /** Blocks typing invalid characters and limits string length */
   readonly escape: (value: string) => string;
@@ -16,6 +25,13 @@ export interface ColorInputProperties extends ColorInputBaseProperties {
   readonly process?: ((value: string) => string) | undefined;
 }
 
+/**
+ * A text field for a colour, which keeps its own text and reports a value only when it is valid.
+ *
+ * An invalid value is shown and outlined rather than rejected: a colour field that refuses a
+ * keystroke cannot be typed into, and an operator cannot see what they mistyped. The colour is only
+ * reported once it parses.
+ */
 export function ColorInput(properties: ColorInputProperties): JSX.Element {
   const {
     color = '',

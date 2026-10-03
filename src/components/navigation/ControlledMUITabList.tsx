@@ -5,6 +5,13 @@ import { useForceUpdate } from '@/lib/use_force_update';
 import { useGranularEffect } from '@/lib/use_granular_effect';
 import type { MUITabDescriptor } from './MUITabList';
 
+/**
+ * A tab list whose selected tab is the caller's, for a tab selection that has to outlive the component
+ * — one in a URL, or one two panels have to agree on.
+ *
+ * {@link MUITabList} is the same thing with the selection held inside it, and is what an application
+ * wants unless something outside needs to know which tab is open.
+ */
 export function ControlledMUITabList<ID extends string>({
   tabs,
   rightComponent,

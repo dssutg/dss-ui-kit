@@ -17,11 +17,21 @@ import type {
   Interaction,
 } from './color_picker_types';
 
+/**
+ * What {@link AlphaColorPicker} takes. The same as {@link ColorPicker}, over a colour that has an
+ * alpha channel.
+ */
 export interface AlphaColorPickerProperties<T extends AnyColor>
   extends Partial<ColorPickerBaseProperties<T>> {
   readonly colorModel: ColorModel<T>;
 }
 
+/**
+ * A saturation field with hue, alpha and brightness bars.
+ *
+ * {@link ColorPicker} plus the two bars that a colour with transparency needs, in the order they are
+ * read: pick the colour, then how much of it.
+ */
 export function AlphaColorPicker<T extends AnyColor>({
   className,
   colorModel,

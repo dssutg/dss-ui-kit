@@ -15,6 +15,9 @@ const colorModelRgbaColorPicker: ColorModel<RgbaColor> = {
   equal: equalColorObjects,
 };
 
+/**
+ * A {@link ColorPicker} over an {@link RgbaColor} object, for a colour held as channels.
+ */
 export function RgbaColorPicker(properties: Partial<ColorPickerBaseProperties<RgbaColor>>) {
   return <AlphaColorPicker {...properties} colorModel={colorModelRgbaColorPicker} />;
 }

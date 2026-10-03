@@ -15,6 +15,12 @@ const colorModelHslaColorPicker: ColorModel<HslaColor> = {
   equal: equalColorObjects,
 };
 
+/**
+ * A {@link ColorPicker} over an {@link HslaColor} object.
+ *
+ * For a caller whose colour is a structured HSLA value rather than text; the object is edited in
+ * place and reported as a new one.
+ */
 export function HslaColorPicker(properties: Partial<ColorPickerBaseProperties<HslaColor>>) {
   return <AlphaColorPicker {...properties} colorModel={colorModelHslaColorPicker} />;
 }

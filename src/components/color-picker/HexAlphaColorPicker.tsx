@@ -15,6 +15,12 @@ const colorModelHexAlphaColorPicker: ColorModel<string> = {
   equal: equalHex,
 };
 
+/**
+ * An {@link AlphaColorPicker} over a hexadecimal string with alpha.
+ *
+ * The colour is reported as the hexadecimal string the caller passed in, so this is the picker to use
+ * where a colour is stored as text — in a stylesheet, a payload or a form.
+ */
 export function HexAlphaColorPicker(
   properties: Partial<ColorPickerBaseProperties<string>>,
 ): JSX.Element {

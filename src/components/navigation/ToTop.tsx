@@ -2,6 +2,14 @@ import { useState } from 'react';
 import { IconButton } from '@/components/buttons/IconButton';
 import { useEventListener } from '@/lib/use_event_listener';
 
+/**
+ * A button that scrolls the window back to the top, appearing only once the page has been scrolled.
+ *
+ * `minAppearanceY` is the scroll position at which it appears, so it does not cover content at the top
+ * of a page that happens to be taller than the viewport. It scrolls the window, not a container: a
+ * container-scoped one would need the container, and the caller with one can put this in it and style
+ * it out of the way.
+ */
 export function ToTop({
   minAppearanceY = 300,
   style,

@@ -14,6 +14,11 @@ const colorModelRgbaStringColorPicker: ColorModel<string> = {
   equal: equalColorString,
 };
 
+/**
+ * An {@link AlphaColorPicker} over a CSS `rgba(...)` string.
+ *
+ * See {@link HslaStringColorPicker}: the same picker over the other CSS notation.
+ */
 export function RgbaStringColorPicker(properties: Partial<ColorPickerBaseProperties<string>>) {
   return <AlphaColorPicker {...properties} colorModel={colorModelRgbaStringColorPicker} />;
 }
