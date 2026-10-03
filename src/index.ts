@@ -77,16 +77,12 @@ export type {
   ZoomableCanvasTransform,
 } from '@/components/charts/ZoomableCanvas';
 export { ZoomableCanvas } from '@/components/charts/ZoomableCanvas';
-export type {
-  AlphaColorPickerProperties,
-  ColorInputProperties,
-  ColorPickerProperties,
-} from '@/components/color-picker/color_picker_components';
-export {
-  AlphaColorPicker,
-  ColorInput,
-  ColorPicker,
-} from '@/components/color-picker/color_picker_components';
+export type { AlphaColorPickerProperties } from '@/components/color-picker/AlphaColorPicker';
+export { AlphaColorPicker } from '@/components/color-picker/AlphaColorPicker';
+export type { ColorInputProperties } from '@/components/color-picker/ColorInput';
+export { ColorInput } from '@/components/color-picker/ColorInput';
+export type { ColorPickerProperties } from '@/components/color-picker/ColorPicker';
+export { ColorPicker } from '@/components/color-picker/ColorPicker';
 export { HexAlphaColorPicker } from '@/components/color-picker/HexAlphaColorPicker';
 export { HexAlphaColorPickerPopover } from '@/components/color-picker/HexAlphaColorPickerPopover';
 export type { HexColorInputProperties } from '@/components/color-picker/HexColorInput';
@@ -186,6 +182,10 @@ export { Popover } from '@/components/overlays/Popover';
 export { ColumnResizer } from '@/components/tables/ColumnResizer';
 export type { ControlledFilterableTableProps } from '@/components/tables/ControlledFilterableTable';
 export { ControlledFilterableTable } from '@/components/tables/ControlledFilterableTable';
+export type { ControlledTableProps } from '@/components/tables/ControlledTable';
+export { ControlledTable, getEnumLabel } from '@/components/tables/ControlledTable';
+export type { CountLabelProps } from '@/components/tables/CountLabel';
+export { CountLabel } from '@/components/tables/CountLabel';
 export type {
   FilterableTableColumnProperty,
   FilterableTableContext,
@@ -195,29 +195,12 @@ export type {
   FilterableTableProps,
 } from '@/components/tables/FilterableTable';
 export { FilterableTable } from '@/components/tables/FilterableTable';
+export type { FilterableTableStatsModalProps } from '@/components/tables/FilterableTableStatsModal';
+export { FilterableTableStatsModal } from '@/components/tables/FilterableTableStatsModal';
 export type { EnumOption } from '@/components/tables/FilterableTableTopPanel';
 export { FilterableTableTopPanel } from '@/components/tables/FilterableTableTopPanel';
-export type {
-  FilterableTableExportFormat,
-  GetExportedTableFilenameCallback,
-} from '@/components/tables/filterable_table_export';
-export type { ControlledTableProps } from '@/components/tables/filterable_table_internal';
-export { ControlledTable, getEnumLabel } from '@/components/tables/filterable_table_internal';
-export type {
-  AnonymousSearchPropertySchema,
-  SearchPropertySchema,
-  SearchSchema,
-} from '@/components/tables/filterable_table_search';
-export { useFilteredItems } from '@/components/tables/filterable_table_search';
-export type { GeneralizedSearchModalProps } from '@/components/tables/filterable_table_search_modal';
-export { GeneralizedSearchModal } from '@/components/tables/filterable_table_search_modal';
-export type {
-  CountLabelProps,
-  FilterableTableStatsModalProps,
-} from '@/components/tables/filterable_table_stats';
-export { CountLabel, FilterableTableStatsModal } from '@/components/tables/filterable_table_stats';
-export type { TimelineViewerModalProps } from '@/components/tables/filterable_table_timeline';
-export { TimelineViewerModal } from '@/components/tables/filterable_table_timeline';
+export type { GeneralizedSearchModalProps } from '@/components/tables/GeneralizedSearchModal';
+export { GeneralizedSearchModal } from '@/components/tables/GeneralizedSearchModal';
 export type {
   SortableTableCellDescriptor,
   SortableTableCellRenderer,
@@ -231,6 +214,18 @@ export type {
 } from '@/components/tables/SortableTable';
 export { makeSortableTableCellRenderer, SortableTable } from '@/components/tables/SortableTable';
 export type { SortableTableRow } from '@/components/tables/SortableTableRow';
+export type { TimelineViewerModalProps } from '@/components/tables/TimelineViewerModal';
+export { TimelineViewerModal } from '@/components/tables/TimelineViewerModal';
+export type {
+  FilterableTableExportFormat,
+  GetExportedTableFilenameCallback,
+} from '@/components/tables/table_export';
+export type {
+  AnonymousSearchPropertySchema,
+  SearchPropertySchema,
+  SearchSchema,
+} from '@/components/tables/use_filtered_items';
+export { useFilteredItems } from '@/components/tables/use_filtered_items';
 export { tryCatch, tryCatchAsync } from '@/lib/catch';
 export { getCSSVariableValue, Rgba32Gradient } from '@/lib/color';
 export { formatRelativeDate, getDateComponents } from '@/lib/date';

@@ -1,4 +1,4 @@
-import { ControlledTable, type ControlledTableProps } from './filterable_table_internal';
+import { ControlledTable, type ControlledTableProps } from './ControlledTable';
 
 /**
  * {@link ControlledTable} under the name this table was first published as.

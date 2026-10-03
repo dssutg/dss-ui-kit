@@ -6,7 +6,7 @@ import {
   equalHex,
   hexToHsva,
   hsvaToHex,
-} from './color_picker_internal';
+} from './color_picker';
 
 const colorModelHexColorPicker: ColorModel<string> = {
   defaultColor: '000',

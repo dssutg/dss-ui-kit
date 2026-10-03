@@ -5,7 +5,7 @@ import {
   equalColorString,
   hsvaToRgbaString,
   rgbaStringToHsva,
-} from './color_picker_internal';
+} from './color_picker';
 
 const colorModelRgbaStringColorPicker: ColorModel<string> = {
   defaultColor: 'rgba(0, 0, 0, 1)',

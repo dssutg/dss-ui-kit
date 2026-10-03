@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import type { FilterableTableColumnProperty, FilterableTableProps } from './FilterableTable';
 import { type EnumOption, FilterableTableTopPanel } from './FilterableTableTopPanel';
-import { type SearchSchema, useFilteredItems } from './filterable_table_search';
 import {
   makeSortableTableCellRenderer,
   SortableTable,
@@ -9,6 +8,7 @@ import {
   type SortableTableColumnRenderMap,
   type SortableTableDescriptor,
 } from './SortableTable';
+import { type SearchSchema, useFilteredItems } from './use_filtered_items';
 
 /**
  * The label a `enum` value is shown, searched and exported as.

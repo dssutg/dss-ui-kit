@@ -1,8 +1,8 @@
 import { createContext, useContext, useState } from 'react';
-import type { GetExportedTableFilenameCallback } from './filterable_table_export';
-import { ControlledTable } from './filterable_table_internal';
-import type { AnonymousSearchPropertySchema } from './filterable_table_search';
+import { ControlledTable } from './ControlledTable';
 import type { SortableTableCellRenderer, SortableTableComparatorFunction } from './SortableTable';
+import type { GetExportedTableFilenameCallback } from './table_export';
+import type { AnonymousSearchPropertySchema } from './use_filtered_items';
 
 export interface FilterableTableColumnProperty<T, C extends string> {
   id: C;

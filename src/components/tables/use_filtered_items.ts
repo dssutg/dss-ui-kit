@@ -1,8 +1,8 @@
 import { clamp } from '@/lib/math';
 import { useLocale } from '@/locale';
+import { getEnumLabel } from './ControlledTable';
 import type { EnumOption } from './FilterableTableTopPanel';
-import { escapeProp, formatDateAndTime } from './filterable_table_export';
-import { getEnumLabel } from './filterable_table_internal';
+import { escapeProp, formatDateAndTime } from './table_export';
 
 export type AnonymousSearchPropertySchema<T> =
   | {

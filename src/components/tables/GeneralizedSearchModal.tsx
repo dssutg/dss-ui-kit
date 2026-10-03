@@ -10,12 +10,12 @@ import { TextInput } from '@/components/inputs/TextInput';
 import { Modal } from '@/components/overlays/Modal';
 import { minstrftime } from '@/lib/date';
 import { type LocaleDates, useLocale } from '@/locale';
-import { escapeProp, formatDateAndTime } from './filterable_table_export';
+import { escapeProp, formatDateAndTime } from './table_export';
 import type {
   AnonymousSearchPropertySchema,
   SearchPropertySchema,
   SearchSchema,
-} from './filterable_table_search';
+} from './use_filtered_items';
 
 // The value an option carries when nothing has been chosen. It is a locale key, because the
 // select renders it as the prompt above the list.

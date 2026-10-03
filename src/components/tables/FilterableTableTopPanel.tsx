@@ -8,17 +8,15 @@ import { downloadStringAsPlainTextFile } from '@/lib/file';
 import { formatHexNumber } from '@/lib/format_number';
 import { unreachable } from '@/lib/unreachable';
 import { useLocale } from '@/locale';
-import {
-  formatDateAndTime,
-  type GetExportedTableFilenameCallback,
-} from './filterable_table_export';
-import { getEnumLabel } from './filterable_table_internal';
-import type { SearchSchema } from './filterable_table_search';
-import { GeneralizedSearchModal } from './filterable_table_search_modal';
-import { CountLabel, FilterableTableStatsModal } from './filterable_table_stats';
-import { TimelineViewerModal } from './filterable_table_timeline';
+import { getEnumLabel } from './ControlledTable';
+import { CountLabel } from './CountLabel';
+import { FilterableTableStatsModal } from './FilterableTableStatsModal';
+import { GeneralizedSearchModal } from './GeneralizedSearchModal';
+import { TimelineViewerModal } from './TimelineViewerModal';
+import { formatDateAndTime, type GetExportedTableFilenameCallback } from './table_export';
+import type { SearchSchema } from './use_filtered_items';
 
-export type { EnumOption } from './filterable_table_search_modal';
+export type { EnumOption } from './GeneralizedSearchModal';
 
 export function FilterableTableTopPanel<T>({
   searchText,

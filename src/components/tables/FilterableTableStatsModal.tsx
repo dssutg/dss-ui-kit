@@ -5,44 +5,12 @@ import { Modal } from '@/components/overlays/Modal';
 import { cmp } from '@/lib/math';
 import { useLocale } from '@/locale';
 import { useSearchSchemaPropertyValueToString } from './filterable_table_property_value';
+import { makeSortableTableCellRenderer, SortableTable } from './SortableTable';
 import type {
   SearchPropertySchema,
   SearchPropertySchemaName,
   SearchSchema,
-} from './filterable_table_search';
-import { makeSortableTableCellRenderer, SortableTable } from './SortableTable';
-
-/**
- * How many rows a table is showing, out of how many it has.
- *
- * `countLabelPrefix` is the caller's wording for "rows" rather than a key, because the word belongs
- * to what is being counted. The total is dropped when nothing is filtered out, so an unfiltered table
- * reads `Rows: 40` and not `Rows: 40 / 40`.
- */
-export interface CountLabelProps {
-  readonly filteredRowCount: number;
-  readonly totalRowCount: number;
-  readonly countLabelPrefix: string;
-  readonly minCountLabelWidth?: string | undefined;
-}
-
-export function CountLabel({
-  filteredRowCount,
-  totalRowCount,
-  countLabelPrefix,
-  minCountLabelWidth,
-}: CountLabelProps) {
-  return (
-    <div
-      className="p-2 bg-bpl rounded-lg truncate flex-grow sm:flex-grow-0"
-      style={{ minWidth: minCountLabelWidth }}
-    >
-      {filteredRowCount === totalRowCount
-        ? `${countLabelPrefix}: ${filteredRowCount}`
-        : `${countLabelPrefix}: ${filteredRowCount} / ${totalRowCount}`}
-    </div>
-  );
-}
+} from './use_filtered_items';
 
 interface ItemCountByPropertyValue {
   propertyValue: string;

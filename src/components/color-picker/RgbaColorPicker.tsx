@@ -6,7 +6,7 @@ import {
   hsvaToRgba,
   type RgbaColor,
   rgbaToHsva,
-} from './color_picker_internal';
+} from './color_picker';
 
 const colorModelRgbaColorPicker: ColorModel<RgbaColor> = {
   defaultColor: { r: 0, g: 0, b: 0, a: 1 },

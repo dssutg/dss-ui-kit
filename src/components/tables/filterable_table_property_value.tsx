@@ -1,8 +1,8 @@
 import { formatHexNumber } from '@/lib/format_number';
 import { useLocale } from '@/locale';
-import { formatDateAndTime } from './filterable_table_export';
-import { getEnumLabel } from './filterable_table_internal';
-import type { SearchPropertySchema } from './filterable_table_search';
+import { getEnumLabel } from './ControlledTable';
+import { formatDateAndTime } from './table_export';
+import type { SearchPropertySchema } from './use_filtered_items';
 
 export function useSearchSchemaPropertyValueToString<T>() {
   const { t, dates } = useLocale();

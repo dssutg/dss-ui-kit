@@ -7,7 +7,7 @@ import {
   equalColorString,
   hslaStringToHsva,
   hsvaToHslaString,
-} from './color_picker_internal';
+} from './color_picker';
 
 const colorModelHslaStringColorPicker: ColorModel<string> = {
   defaultColor: 'hsla(0, 0%, 0%, 1)',

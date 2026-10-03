@@ -22,13 +22,13 @@ import { useEventListener } from '@/lib/use_event_listener';
 import { useFullScreenChange } from '@/lib/use_fullscreen_change';
 import { useLocale } from '@/locale';
 import { useTheme } from '@/theme';
-import { formatDateAndTime } from './filterable_table_export';
 import { useSearchSchemaPropertyValueToString } from './filterable_table_property_value';
+import { formatDateAndTime } from './table_export';
 import type {
   SearchPropertySchema,
   SearchPropertySchemaName,
   SearchSchema,
-} from './filterable_table_search';
+} from './use_filtered_items';
 
 /**
  * Plots items against time, one series per value of a chosen property.

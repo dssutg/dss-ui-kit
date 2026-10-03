@@ -1,4 +1,4 @@
-import { TimePartInput } from './input_internal';
+import { TimePartInput } from './TimePartInput';
 
 export function HourMinuteTimeInput({
   hour,

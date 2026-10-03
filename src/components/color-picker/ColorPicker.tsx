@@ -1,0 +1,29 @@
+import { type JSX, useRef } from 'react';
+import { formatClassName, Hue, Saturation, useColorManipulation } from './color_picker_controls';
+import type { AnyColor, ColorModel, ColorPickerBaseProperties } from './color_picker_types';
+
+export interface ColorPickerProperties<T extends AnyColor>
+  extends Partial<ColorPickerBaseProperties<T>> {
+  readonly colorModel: ColorModel<T>;
+}
+
+export function ColorPicker<T extends AnyColor>({
+  className,
+  colorModel,
+  color = colorModel.defaultColor,
+  onChange,
+  ...rest
+}: ColorPickerProperties<T>): JSX.Element {
+  const nodeRef = useRef<HTMLDivElement>(null);
+
+  const [hsva, updateHsva] = useColorManipulation<T>(colorModel, color, onChange);
+
+  const nodeClassName = formatClassName(['color-picker-cn', className]);
+
+  return (
+    <div {...rest} ref={nodeRef} className={nodeClassName}>
+      <Saturation hsva={hsva} onChange={updateHsva} />
+      <Hue hue={hsva.h} onChange={updateHsva} className="color-picker-cn__last-control" />
+    </div>
+  );
+}

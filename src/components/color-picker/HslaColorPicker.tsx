@@ -6,7 +6,7 @@ import {
   type HslaColor,
   hslaToHsva,
   hsvaToHsla,
-} from './color_picker_internal';
+} from './color_picker';
 
 const colorModelHslaColorPicker: ColorModel<HslaColor> = {
   defaultColor: { h: 0, s: 0, l: 0, a: 1 },

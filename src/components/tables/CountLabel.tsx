@@ -1,0 +1,31 @@
+/**
+ * How many rows a table is showing, out of how many it has.
+ *
+ * `countLabelPrefix` is the caller's wording for "rows" rather than a key, because the word belongs
+ * to what is being counted. The total is dropped when nothing is filtered out, so an unfiltered table
+ * reads `Rows: 40` and not `Rows: 40 / 40`.
+ */
+export interface CountLabelProps {
+  readonly filteredRowCount: number;
+  readonly totalRowCount: number;
+  readonly countLabelPrefix: string;
+  readonly minCountLabelWidth?: string | undefined;
+}
+
+export function CountLabel({
+  filteredRowCount,
+  totalRowCount,
+  countLabelPrefix,
+  minCountLabelWidth,
+}: CountLabelProps) {
+  return (
+    <div
+      className="p-2 bg-bpl rounded-lg truncate flex-grow sm:flex-grow-0"
+      style={{ minWidth: minCountLabelWidth }}
+    >
+      {filteredRowCount === totalRowCount
+        ? `${countLabelPrefix}: ${filteredRowCount}`
+        : `${countLabelPrefix}: ${filteredRowCount} / ${totalRowCount}`}
+    </div>
+  );
+}

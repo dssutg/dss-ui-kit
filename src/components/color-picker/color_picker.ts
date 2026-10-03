@@ -1,11 +1,9 @@
 export {
   AlphaColorPicker,
   type AlphaColorPickerProperties,
-  ColorInput,
-  type ColorInputProperties,
-  ColorPicker,
-  type ColorPickerProperties,
-} from './color_picker_components';
+} from './AlphaColorPicker';
+export { ColorInput, type ColorInputProperties } from './ColorInput';
+export { ColorPicker, type ColorPickerProperties } from './ColorPicker';
 export {
   equalColorObjects,
   equalColorString,
