@@ -1,89 +1,173 @@
-import { describe, expect, it } from 'vitest';
-import { type DateLocale, formatRelativeDate } from './';
+import { describe, expect, test } from 'vitest';
+import {
+  defaultDateNames,
+  formatMillisecondsAsHM,
+  formatMillisecondsAsHMSU,
+  getDateComponents,
+  getMillisecondsAsHMSUComponents,
+  hours24to12,
+  isNowAfter,
+  minstrftime,
+} from './';
 
-/**
- * The phrases under test. Both directions are spelled out in one locale so that the interval
- * boundaries can be read as a table, and the wording a caller sees is asserted rather than read
- * back out of the locale file the code itself reads.
- */
-const phrases: DateLocale = {
-  justThen: 'just now',
-  inSeconds: (seconds) => `in ${seconds} seconds`,
-  inOneMinute: 'in a minute',
-  inMinutes: (minutes) => `in ${minutes} minutes`,
-  inOneHour: 'in an hour',
-  inHours: (hours) => `in ${hours} hours`,
-  tomorrow: 'tomorrow',
-  inDays: (days) => `in ${days} days`,
-  secondsAgo: (seconds) => `${seconds} seconds ago`,
-  oneMinuteAgo: 'a minute ago',
-  minutesAgo: (minutes) => `${minutes} minutes ago`,
-  oneHourAgo: 'an hour ago',
-  hoursAgo: (hours) => `${hours} hours ago`,
-  yesterday: 'yesterday',
-  daysAgo: (days) => `${days} days ago`,
-};
+describe('getDateComponents', () => {
+  test('splits a date into form fields with the month 1-based', () => {
+    const components = getDateComponents(new Date(2024, 0, 15, 10, 30, 45));
 
-describe('formatRelativeDate', () => {
-  // The instant every interval is measured from.
-  const now = new Date('2026-06-15T12:00:00Z');
-
-  function formatIn(seconds: number): string {
-    const target = new Date(now.getTime() + seconds * 1000);
-
-    return formatRelativeDate(target, now, phrases);
-  }
-
-  describe('a date in the future', () => {
-    it.each([
-      [0, 'just now'],
-      [29, 'just now'],
-      [30, 'in 30 seconds'],
-      [59, 'in 59 seconds'],
-      [60, 'in a minute'],
-      [119, 'in a minute'],
-      [120, 'in 2 minutes'],
-      [3599, 'in 59 minutes'],
-      // "in an hour" covers the whole of the second hour, not just its first 30 minutes, because
-      // it is answered by the hour count rounding down to one. "in 1 hours" is never said.
-      [3600, 'in an hour'],
-      [5399, 'in an hour'],
-      [7199, 'in an hour'],
-      [7200, 'in 2 hours'],
-      [86_399, 'in 23 hours'],
-      [86_400, 'tomorrow'],
-      [172_800, 'in 2 days'],
-    ])('formats %i seconds ahead as %s', (seconds, expected) => {
-      expect(formatIn(seconds)).toBe(expected);
+    expect(components).toEqual({
+      year: 2024,
+      month: 1,
+      day: 15,
+      hours: 10,
+      minutes: 30,
+      seconds: 45,
     });
   });
 
-  describe('a date in the past', () => {
-    it.each([
-      [0, 'just now'],
-      [29, 'just now'],
-      [30, '30 seconds ago'],
-      [59, '59 seconds ago'],
-      [60, 'a minute ago'],
-      [119, 'a minute ago'],
-      [120, '2 minutes ago'],
-      [3599, '59 minutes ago'],
-      [3600, 'an hour ago'],
-      [5399, 'an hour ago'],
-      [7199, 'an hour ago'],
-      [7200, '2 hours ago'],
-      [86_399, '23 hours ago'],
-      [86_400, 'yesterday'],
-      [172_800, '2 days ago'],
-    ])('formats %i seconds ago as %s', (seconds, expected) => {
-      expect(formatIn(-seconds)).toBe(expected);
+  test('reports December as month twelve, not eleven', () => {
+    expect(getDateComponents(new Date(2024, 11, 31)).month).toBe(12);
+  });
+});
+
+describe('hours24to12', () => {
+  test('converts a 24-hour clock into 12-hour plus am/pm', () => {
+    expect(hours24to12(0)).toEqual({ hours: 12, ampm: 'am' });
+    expect(hours24to12(9)).toEqual({ hours: 9, ampm: 'am' });
+    expect(hours24to12(12)).toEqual({ hours: 12, ampm: 'pm' });
+    expect(hours24to12(13)).toEqual({ hours: 1, ampm: 'pm' });
+    expect(hours24to12(23)).toEqual({ hours: 11, ampm: 'pm' });
+  });
+});
+
+describe('minstrftime', () => {
+  // Fixed so the output is stable; 2024-01-05 was a Friday.
+  const date = new Date(2024, 0, 5, 14, 7, 9);
+
+  test('formats a date with %F', () => {
+    expect(minstrftime('%F', date)).toBe('2024-01-05');
+  });
+
+  test('formats a time with %T and %R', () => {
+    expect(minstrftime('%T', date)).toBe('14:07:09');
+    expect(minstrftime('%R', date)).toBe('14:07');
+  });
+
+  test('formats a 12-hour clock with %I and %p', () => {
+    expect(minstrftime('%r', date)).toBe('02:07:09 PM');
+  });
+
+  test('pads with zeroes by default and not at all with the - specifier', () => {
+    expect(minstrftime('%d', date)).toBe('05');
+    expect(minstrftime('%-d', date)).toBe('5');
+  });
+
+  test('pads with spaces with the _ specifier', () => {
+    expect(minstrftime('%_d', date)).toBe(' 5');
+  });
+
+  test('writes names from the locale it is given', () => {
+    expect(minstrftime('%A %B', date)).toBe('Friday January');
+    expect(minstrftime('%a %b', date)).toBe('Fri Jan');
+  });
+
+  test('takes a different name set', () => {
+    const names = {
+      weekdayNames: ['nedele', 'pondeli', 'utery', 'streda', 'ctvrtek', 'patek', 'sobota'],
+      monthNames: [
+        'leden',
+        'unor',
+        'brezen',
+        'duben',
+        'kveten',
+        'cerven',
+        'cervenec',
+        'srpen',
+        'zari',
+        'rijen',
+        'listopad',
+        'prosinec',
+      ],
+    };
+
+    expect(minstrftime('%A %B', date, names)).toBe('patek leden');
+  });
+
+  test('writes a literal percent with %%', () => {
+    expect(minstrftime('%%', date)).toBe('%');
+  });
+
+  test('writes a tab with %t', () => {
+    expect(minstrftime('%t', date)).toBe('\t');
+  });
+
+  test('leaves an unknown specifier as it was written', () => {
+    expect(minstrftime('%Q', date)).toBe('%Q');
+  });
+
+  test('leaves a bare percent at the end of the format as it was written', () => {
+    expect(minstrftime('100%', date)).toBe('100%');
+  });
+
+  test('degrades a name outside the name arrays to empty rather than failing', () => {
+    // A malformed locale is not allowed to stop a clock from rendering.
+    expect(minstrftime('%A', date, { weekdayNames: [], monthNames: [] })).toBe('');
+  });
+});
+
+describe('defaultDateNames', () => {
+  test('carries a name for every weekday and month', () => {
+    expect(defaultDateNames.weekdayNames).toHaveLength(7);
+    expect(defaultDateNames.monthNames).toHaveLength(12);
+  });
+});
+
+describe('getMillisecondsAsHMSUComponents', () => {
+  test('splits milliseconds into padded fields', () => {
+    expect(getMillisecondsAsHMSUComponents(3_723_005)).toEqual({
+      hh: '01',
+      mm: '02',
+      ss: '03',
+      uuu: '005',
     });
   });
 
-  // Sub-second differences round to zero in the caller, so both directions have to agree that a
-  // difference too small to state is "just now" rather than a count of zero seconds.
-  it('answers just now for a difference it cannot state', () => {
-    expect(formatIn(0.4)).toBe('just now');
-    expect(formatIn(-0.4)).toBe('just now');
+  test('returns null for absent or non-numeric input', () => {
+    expect(getMillisecondsAsHMSUComponents(undefined)).toBeNull();
+    expect(getMillisecondsAsHMSUComponents(Number.NaN)).toBeNull();
+  });
+});
+
+describe('formatMillisecondsAsHMSU', () => {
+  test('formats with milliseconds by default', () => {
+    expect(formatMillisecondsAsHMSU(61_002)).toBe('00:01:01.002');
+  });
+
+  test('formats without milliseconds when they are not wanted', () => {
+    expect(formatMillisecondsAsHMSU(61_002, { millisecondsShown: false })).toBe('00:01:01');
+  });
+
+  test('formats absent input as an unknown time rather than throwing', () => {
+    expect(formatMillisecondsAsHMSU(undefined)).toBe('??:??:??.???');
+    expect(formatMillisecondsAsHMSU(undefined, { millisecondsShown: false })).toBe('??:??:??');
+  });
+});
+
+describe('formatMillisecondsAsHM', () => {
+  test('formats minutes and seconds only', () => {
+    expect(formatMillisecondsAsHM(61_002)).toBe('00:01');
+  });
+
+  test('formats absent input as an unknown time rather than throwing', () => {
+    expect(formatMillisecondsAsHM(undefined)).toBe('??:??');
+  });
+});
+
+describe('isNowAfter', () => {
+  test('answers whether a moment is already past', () => {
+    expect(isNowAfter('2000-01-01T00:00:00Z')).toBe(true);
+  });
+
+  test('rejects an unparseable target rather than answering wrongly', () => {
+    expect(() => isNowAfter('not a date')).toThrow('Invalid target date');
   });
 });
