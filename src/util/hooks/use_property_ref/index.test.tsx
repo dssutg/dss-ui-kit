@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, test, vi } from 'vitest';
-import { act, render } from '@/util/testing/render';
+import { render } from '@/util/testing/render';
 import { usePropertyRef } from './';
 
 describe('usePropertyRef', () => {

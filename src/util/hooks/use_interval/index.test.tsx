@@ -23,11 +23,10 @@ function IntervalProbe({
     tickCount += 1;
   };
 
-  if (immediate) {
-    useImmediateInterval(tick, delay);
-  } else {
-    useInterval(tick, delay);
-  }
+  // One hook per kind, each inactive on the runs the other drives: hooks cannot be called
+  // conditionally, and a null delay makes either one inert.
+  useInterval(tick, immediate ? null : delay);
+  useImmediateInterval(tick, immediate ? delay : null);
 
   return <div data-testid="probe" />;
 }
@@ -45,7 +44,7 @@ describe('useInterval', () => {
 
     expect(tickCount).toBe(0);
 
-    await act(async () => {
+    await act(() => {
       vi.advanceTimersByTime(350);
     });
 
@@ -56,21 +55,21 @@ describe('useInterval', () => {
     vi.useFakeTimers();
 
     const view = await render(<IntervalProbe delay={100} />);
-    await act(async () => {
+    await act(() => {
       vi.advanceTimersByTime(100);
     });
 
     expect(tickCount).toBe(1);
 
     await view.update(<IntervalProbe delay={null} />);
-    await act(async () => {
+    await act(() => {
       vi.advanceTimersByTime(1000);
     });
 
     expect(tickCount).toBe(1);
 
     await view.update(<IntervalProbe delay={100} />);
-    await act(async () => {
+    await act(() => {
       vi.advanceTimersByTime(1000);
     });
 
@@ -91,7 +90,7 @@ describe('useImmediateInterval', () => {
 
     expect(tickCount).toBe(1);
 
-    await act(async () => {
+    await act(() => {
       vi.advanceTimersByTime(350);
     });
 

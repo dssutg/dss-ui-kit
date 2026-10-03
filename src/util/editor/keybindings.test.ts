@@ -1,6 +1,7 @@
+// The key handling is pure: no DOM is touched, and the node environment is the one a keystroke
+// arrives in outside a browser. This file does not need document at all.
 // @vitest-environment jsdom
 import { describe, expect, test } from 'vitest';
-import { act, render } from '@/util/testing/render';
 import { getLines } from './history';
 import { type EditorKeyHandlers, handleEditorKeyDown } from './keybindings';
 

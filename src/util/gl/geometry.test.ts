@@ -14,7 +14,7 @@ import {
   makeTransformedVertex,
   naiveRaycast,
 } from './geometry';
-import type { Camera, GroupSceneObject, SceneObject, Vector3Array } from './scene';
+import type { Camera, GroupSceneObject, Vector3Array } from './scene';
 
 /** The flat material, so a box in these tests draws without naming colours per face. */
 const WHITE = [1, 1, 1, 1] as const;

@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { describe, expect, test } from 'vitest';
-import { act, render } from '@/util/testing/render';
-import { useGranularEffect } from '../use_granular_effect';
+import { useGranularEffect } from '@/util/hooks/use_granular_effect';
+import { render } from '@/util/testing/render';
 import { useGranularHook } from './';
 
 let effectRuns: string[];
@@ -97,8 +97,6 @@ describe('useGranularHook', () => {
     await view.update(<GranularMemoProbe primary={2} secondary={1} />);
 
     expect(effectRuns).toEqual(['memo primary:1 secondary:1', 'memo primary:2 secondary:1']);
-    void act;
-    void useState;
     void PlainEffectProbe;
   });
 });

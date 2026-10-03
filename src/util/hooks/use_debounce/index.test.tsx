@@ -39,7 +39,7 @@ describe('useDebounce', () => {
 
     await render(<DebounceProbe delay={100} change={1} />);
 
-    await act(async () => {
+    await act(() => {
       vi.advanceTimersByTime(200);
     });
 
@@ -52,12 +52,12 @@ describe('useDebounce', () => {
     const view = await render(<DebounceProbe delay={100} change={1} />);
 
     await view.update(<DebounceProbe delay={100} change={2} />);
-    await act(async () => {
+    await act(() => {
       vi.advanceTimersByTime(50);
     });
 
     await view.update(<DebounceProbe delay={100} change={3} />);
-    await act(async () => {
+    await act(() => {
       vi.advanceTimersByTime(100);
     });
 
@@ -70,7 +70,7 @@ describe('useDebounce', () => {
     const view = await render(<DebounceProbe delay={null} change={1} />);
 
     await view.update(<DebounceProbe delay={null} change={2} />);
-    await act(async () => {
+    await act(() => {
       vi.advanceTimersByTime(1000);
     });
 

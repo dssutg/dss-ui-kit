@@ -38,9 +38,7 @@ describe('tryCatchAsync', () => {
 
   test('returns a null value and the error from a rejected promise', async () => {
     const failure = new Error('rejected');
-    const [value, error] = await tryCatchAsync(async () => {
-      throw failure;
-    });
+    const [value, error] = await tryCatchAsync(() => Promise.reject(failure));
 
     expect(value).toBeNull();
     expect(error).toBe(failure);

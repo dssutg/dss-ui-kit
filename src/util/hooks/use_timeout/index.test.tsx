@@ -35,13 +35,13 @@ describe('useTimeout', () => {
 
     await render(<TimeoutProbe delay={100} />);
 
-    await act(async () => {
+    await act(() => {
       vi.advanceTimersByTime(100);
     });
 
     expect(timedOut).toBe(true);
 
-    await act(async () => {
+    await act(() => {
       vi.advanceTimersByTime(500);
     });
 
@@ -53,7 +53,7 @@ describe('useTimeout', () => {
 
     await render(<TimeoutProbe delay={null} />);
 
-    await act(async () => {
+    await act(() => {
       vi.advanceTimersByTime(1000);
     });
 
@@ -70,7 +70,7 @@ describe('useTimeout', () => {
       clearButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
-    await act(async () => {
+    await act(() => {
       vi.advanceTimersByTime(200);
     });
 
@@ -82,7 +82,7 @@ describe('useTimeout', () => {
 
     const view = await render(<TimeoutProbe delay={100} />);
 
-    await act(async () => {
+    await act(() => {
       vi.advanceTimersByTime(60);
     });
 
@@ -91,13 +91,13 @@ describe('useTimeout', () => {
       resetButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
-    await act(async () => {
+    await act(() => {
       vi.advanceTimersByTime(60);
     });
 
     expect(timedOut).toBe(false);
 
-    await act(async () => {
+    await act(() => {
       vi.advanceTimersByTime(60);
     });
 

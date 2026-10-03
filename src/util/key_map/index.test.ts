@@ -54,7 +54,7 @@ describe('handleKeyMapKeyDown', () => {
     KeyV: { action: 'paste' },
   };
 
-  const run = (keyMapLocal: KeyMap<'copy' | 'paste' | 'selectAll'>) => {
+  const run = () => {
     const calls: string[] = [];
     const actions: KeyMapActions<'copy' | 'paste' | 'selectAll'> = {
       copy: () => calls.push('copy'),
