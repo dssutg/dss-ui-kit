@@ -67,6 +67,12 @@ export interface CrashReportContact {
  */
 export type CrashReportSubmitter = (report: CrashReport) => Promise<void>;
 
+/**
+ * What {@link AppCrashGuard} takes.
+ *
+ * Every prop is optional except `version` and `children`, because a guard with no destination still
+ * has to work: with no `contact` the fallback shows the report and the operator copies it.
+ */
 export interface CrashGuardProps {
   readonly children: ReactNode;
   /** The application version, included in the report. */
@@ -105,6 +111,14 @@ export interface CrashGuardProps {
  * failure.
  *
  * A consumer that wants to send reports somewhere supplies `onCrash`; the library has no opinion where.
+ */
+/**
+ * Wraps an application so an uncaught render error is reported instead of blanking the page.
+ *
+ * It does not rethrow, and it does not report to anywhere: the report is rendered, cached and handed
+ * to `onCrash`, and {@link CrashReportQueue} is there to deliver it when the network works. What it
+ * deliberately does not do is recover — an error boundary that swallowed the error and kept the
+ * application running would be hiding a broken component from the operator who has to fix it.
  */
 export function AppCrashGuard(props: CrashGuardProps) {
   return <ErrorBoundary fallbackComponent={DefaultCrashFallback} {...props} />;
@@ -385,10 +399,17 @@ function cacheCrashReport(report: CrashReport): readonly CrashReport[] {
   return kept;
 }
 
+/**
+ * The reports cached from earlier crashes, newest first.
+ *
+ * Read them from a fallback the operator is looking at to recover the detail of a crash that has
+ * already happened, which is the case a crash report has to survive: the page that crashed is gone.
+ */
 export function readCachedCrashReports(): readonly CrashReport[] {
   return readJson<CrashReport[]>(crashReportCacheKey) ?? [];
 }
 
+/** Forgets every cached report. Reports not yet delivered by a {@link CrashReportQueue} are lost. */
 export function clearCachedCrashReports(): void {
   writeStorage(crashReportCacheKey, JSON.stringify([]));
 }

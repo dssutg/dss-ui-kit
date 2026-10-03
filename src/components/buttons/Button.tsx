@@ -1,6 +1,14 @@
 import { Icon, type IconName } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';
 
+/**
+ * The button's role, which is what decides its colours.
+ *
+ * `regular` and `dangerous` are filled, `discouraging` and `discouragingText` are the quieter
+ * variants, and `text`/`textLink`/`inactive` are for panels where a button is an action and not the
+ * subject. The type is a design decision rather than an intent: a caller wanting a red button asks
+ * for `dangerous`, and the library decides what that looks like in each theme.
+ */
 export type ButtonType =
   | 'regular'
   | 'dangerous'
@@ -33,6 +41,14 @@ const buttonIconColors: Readonly<Record<ButtonType, string>> = {
   discouragingText: 'var(--color-tpd)',
 };
 
+/**
+ * A button with an optional leading icon.
+ *
+ * Renders a real `<button>` and forwards everything else, so `form`, `disabled` and `aria-*` work as
+ * they do in React. It does not manage a pressed state: a button that toggles is
+ * {@link ToggleButton}, and a button in a form that submits is this one with
+ * `htmlButtonType="submit"`.
+ */
 export function Button({
   type = 'regular',
   htmlButtonType = 'button',

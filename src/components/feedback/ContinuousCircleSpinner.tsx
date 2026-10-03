@@ -1,3 +1,10 @@
+/**
+ * A ring of dots chasing each other round, for work whose duration is not known.
+ *
+ * Indeterminate by construction: it does not take a percentage, because a spinner that could show
+ * progress would be asked for progress instead. Sized by its own CSS, so a caller wanting a different
+ * size sets `style`.
+ */
 export function ContinuousCircleSpinner({ style }: { readonly style?: React.CSSProperties }) {
   return (
     <div

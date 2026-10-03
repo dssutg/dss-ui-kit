@@ -1,6 +1,12 @@
 import { createPortal, useRef, useState } from 'react';
 import { useGranularEffect } from '@/lib/use_granular_effect';
 
+/**
+ * How a tooltip is coloured, which is all this type decides.
+ *
+ * `bad` and `good` are the outcomes an operator reads after an action; `regular` and `normal` are
+ * neutral and exist so a caller can keep one call site and vary the outcome.
+ */
 export type FeedbackTooltipType = 'regular' | 'bad' | 'normal' | 'good';
 
 const feedbackTooltipColorPairClasses: Readonly<Record<FeedbackTooltipType, string>> = {
@@ -11,6 +17,14 @@ const feedbackTooltipColorPairClasses: Readonly<Record<FeedbackTooltipType, stri
 };
 
 // Feedback tooltip that temporarily slides down
+/**
+ * A tooltip anchored to a trigger element, shown for as long as `visible` is true.
+ *
+ * Rendered through a portal onto `document.body` and positioned by measuring the trigger, because a
+ * tooltip inside a transformed ancestor is positioned against that ancestor's box rather than the
+ * viewport — which is what a tooltip inside a scaled modal needs. The portal is why the trigger is a
+ * prop and not a wrapper: this component does not own the control the tooltip belongs to.
+ */
 export function FeedbackTooltip({
   type = 'regular',
   visible,
@@ -86,6 +100,13 @@ export function FeedbackTooltip({
   );
 }
 
+/**
+ * Re-shows a tooltip the caller is already controlling with a boolean.
+ *
+ * Sets the state false and back on the next tick, so an element that has been open stays mounted and
+ * the animation replays. Takes the state setter rather than the element because the caller owns the
+ * state; this is the sequencing, not the decision.
+ */
 export function showFeedbackTooltip(changeState: React.Dispatch<React.SetStateAction<boolean>>) {
   changeState(false);
   setTimeout(() => changeState(true), 0);

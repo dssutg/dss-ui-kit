@@ -2,6 +2,13 @@ import type { MouseEventHandler } from 'react';
 import { Icon, type IconName } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';
 
+/**
+ * A square button showing one icon and nothing else.
+ *
+ * `ariaLabel` exists because the accessible name of an icon button cannot come from the icon: the
+ * SVG is `aria-hidden`, so without a label the button is announced as an empty button. `title` is
+ * the tooltip, which is a visual affordance and is not what a screen reader reads.
+ */
 export function IconButton({
   icon,
   style,

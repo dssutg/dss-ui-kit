@@ -1,3 +1,9 @@
+/**
+ * A dashed ring that spins while `active` and stops when it is not.
+ *
+ * `title` is both the tooltip and the accessible name, since a ring of dashes conveys nothing to a
+ * screen reader on its own.
+ */
 export function DashedCircle({
   active = true,
   title = 'Loading...',

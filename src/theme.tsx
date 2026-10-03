@@ -11,6 +11,13 @@ import { emitEvent, useEvent } from './event';
  */
 export const builtinThemeNames = ['dark', 'light', 'acme', 'indigo', 'purple'] as const;
 
+/**
+ * One of the names in {@link builtinThemeNames}.
+ *
+ * Narrower than {@link ThemeName}: a value of this type is a theme the library ships, so a consumer
+ * can exhaustively switch over it. Use it where the library's own themes are the whole set — a
+ * documentation page, a test — and {@link ThemeName} everywhere else.
+ */
 export type BuiltinThemeName = (typeof builtinThemeNames)[number];
 
 /**
@@ -25,6 +32,13 @@ export interface ThemeDescriptor {
   readonly tileColor: string;
 }
 
+/**
+ * The shipped themes, with the swatch a picker shows for each.
+ *
+ * Only `dark` and `light` are finished themes; the other three exist to show that the token system
+ * survives a palette the library did not design, and a consumer that wants two themes imports only
+ * the CSS for the ones it uses.
+ */
 export const builtinThemes: readonly ThemeDescriptor[] = [
   { name: 'dark', tileColor: '#222222' },
   { name: 'light', tileColor: '#dedede' },
@@ -56,6 +70,10 @@ export function getAllThemes(): readonly ThemeDescriptor[] {
   return [...registeredThemes.values()];
 }
 
+/**
+ * Whether a string names a theme that is registered, which is what makes it safe to put in the
+ * document attribute: an unknown name resolves to no stylesheet and the page renders unstyled.
+ */
 export function isThemeName(name: string): name is ThemeName {
   return registeredThemes.has(name);
 }

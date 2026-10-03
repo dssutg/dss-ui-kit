@@ -2,6 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { clamp } from '@/lib/math';
 import { useMouseDrag } from '@/lib/use_mouse_drag';
 
+/**
+ * Panels side by side with draggable dividers, which remember where they were put.
+ *
+ * Sizes are fractions of the split, not pixels, so the panels stay proportional when the window
+ * changes size. The divider positions are written to `localStorage` under a key derived from the
+ * orientation, which is why this component does not take a key: two splits in one page share it.
+ */
 export function ResizableSplit({
   panels,
   style,

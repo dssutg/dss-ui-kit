@@ -1,3 +1,10 @@
+/**
+ * The largest spinner in the set: a wide arc drawn inside a fixed 112-pixel box.
+ *
+ * The box is fixed so the spinner does not resize the panel around it while it is showing — a
+ * spinner that changes layout is a layout shift on every mount. `color` defaults to a literal grey
+ * rather than a token because it is the one spinner used as a placeholder image for a panel.
+ */
 export function WshSpinner({
   color = '#ddd',
   style,

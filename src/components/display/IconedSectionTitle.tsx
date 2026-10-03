@@ -1,5 +1,11 @@
 import { Icon, type IconName } from './Icon';
 
+/**
+ * A heading with a leading icon, for a panel whose title also has a recognisable symbol.
+ *
+ * The icon is `aria-hidden` and the title is the accessible name: the SVG carries no name of its own,
+ * so a screen reader reads the text and not the icon.
+ */
 export function IconedSectionTitle({
   icon,
   title,

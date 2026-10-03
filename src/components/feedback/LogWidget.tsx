@@ -3,6 +3,15 @@ import { PlayPauseButton } from '@/components/buttons/PlayPauseButton';
 import { useLocale } from '@/locale';
 import { LogOutputTextArea } from './LogOutputTextArea';
 
+/**
+ * A titled panel with play, pause and clear controls over a {@link LogOutputTextArea}.
+ *
+ * The three callbacks are separate rather than one `onAction`, because the play and pause controls
+ * are both rendered and only one is live at a time, and a caller that has to switch on `playing` to
+ * decide which to call has been handed the panel's state. `extraLeftControlsComponent` and
+ * `extraRightControlsComponent` are slots for a caller's own controls rather than a `children` prop,
+ * because the panel's own output is not theirs to replace.
+ */
 export function LogWidget({
   title,
   playing,

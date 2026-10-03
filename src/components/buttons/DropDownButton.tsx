@@ -1,5 +1,11 @@
 import { DropDownMenu, type DropDownMenuItem } from '@/components/overlays/DropDownMenu';
 
+/**
+ * How the trigger button looks: `danger` for a menu whose items are destructive.
+ *
+ * A variant colours the trigger and its arrow only. The menu itself is {@link DropDownMenu}'s, so
+ * the items' own styling is not this component's decision.
+ */
 export type DropDownButtonVariant = 'regular' | 'danger';
 
 const dropdownVariantStyles: Readonly<Record<DropDownButtonVariant, React.CSSProperties>> = {
@@ -23,6 +29,13 @@ const dropdownIconColorStyles: Readonly<Record<DropDownButtonVariant, React.CSSP
   danger: { fill: 'var(--color-bdat)' },
 };
 
+/**
+ * A button that opens a {@link DropDownMenu}.
+ *
+ * The trigger's title is a required prop rather than the first menu item's, because a button that
+ * opens something else as well as a menu has to be able to say so. The menu is rendered by
+ * {@link DropDownMenu}, which owns closing on selection; this component only opens it.
+ */
 export function DropDownButton({
   menu,
   variant = 'regular',

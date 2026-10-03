@@ -7,6 +7,15 @@ import { useInterval } from '@/lib/use_interval';
 import { useWindowSize } from '@/lib/use_window_size';
 import { useLocale } from '@/locale';
 
+/**
+ * A panel anchored to a trigger, closed by clicking outside or pressing escape.
+ *
+ * Two details are props because they are decisions a caller has to make. `hasBackDrop` says whether
+ * the popover is modal — a picker that must be dismissed before anything else happens needs one, and
+ * a tooltip-shaped panel does not. `noAutofocusToPanel` suppresses the focus move, which is what a
+ * popover holding a text field needs: focusing the panel would leave the field the caller came to
+ * type in un-focused.
+ */
 export function Popover({
   open,
   onOpenChange,

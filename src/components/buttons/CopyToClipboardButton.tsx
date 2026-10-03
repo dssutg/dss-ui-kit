@@ -5,6 +5,14 @@ import { FeedbackTooltip, showFeedbackTooltip } from '@/components/overlays/Feed
 import { copyToClipboard } from '@/lib/dom';
 import { useLocale } from '@/locale';
 
+/**
+ * Copies `contentToCopy` to the clipboard when clicked.
+ *
+ * `contentToCopy` may be a function, so a caller can read the value at click time rather than
+ * capturing it at render time. The copy is the browser's async clipboard API, which requires a
+ * secure context and a user gesture; neither is checked, so a page served over plain HTTP on an
+ * insecure origin fails silently rather than throwing.
+ */
 export function CopyToClipboardButton({
   contentToCopy = '',
   className,

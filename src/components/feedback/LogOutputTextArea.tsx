@@ -1,6 +1,14 @@
 import { useRef } from 'react';
 import { useGranularEffect } from '@/lib/use_granular_effect';
 
+/**
+ * A read-only text area for a stream of output, which follows the end as lines arrive.
+ *
+ * Read-only rather than a live region: a log an operator scrolls back through has to not steal the
+ * keyboard, and a screen reader is better served by the surrounding panel than by an element that
+ * announces every line. `shouldScrollToEndOnUpdate` exists because an operator reading back through a
+ * log wants the scroll position kept.
+ */
 export function LogOutputTextArea({
   output,
   dontWrapLongLines = false,

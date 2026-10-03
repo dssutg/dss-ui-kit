@@ -3,6 +3,14 @@ import { IconButton } from '@/components/buttons/IconButton';
 import { useGranularEffect } from '@/lib/use_granular_effect';
 import { useLocale } from '@/locale';
 
+/**
+ * A centred dialog over a backdrop, with a title bar and a close button.
+ *
+ * `open` and `onOpenChange` are the caller's, so a modal can be opened by a route, a key press or
+ * another modal. Focus moves to the panel when it opens and returns to the control that opened it
+ * when it closes; pass nothing that would rather not be focused, and the panel itself takes focus,
+ * because a dialog whose first field takes focus is a decision only the caller can make.
+ */
 export function Modal({
   open,
   onOpenChange,

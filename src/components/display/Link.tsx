@@ -1,3 +1,9 @@
+/**
+ * What {@link Link} takes.
+ *
+ * `onNavigate` is how the library avoids choosing a router: with it, activation is reported and the
+ * application decides what a URL means; without it, the browser follows the `href`.
+ */
 export interface LinkProps {
   /** The destination. Rendered as the anchor's `href`. */
   readonly to: string;

@@ -1,7 +1,24 @@
 import { iconPaths } from '@/icons/index';
 
+/**
+ * The name of one of the icons the library ships.
+ *
+ * Derived from the generated path data, so a name in this union is a name {@link Icon} can render and
+ * nothing else. A consumer with its own artwork uses its own SVG rather than extending this.
+ */
 export type IconName = keyof typeof iconPaths;
 
+/**
+ * One icon from the library's set, rendered as an inline SVG.
+ *
+ * The element is `aria-hidden` and carries no `<title>`: the accessible name of an icon is the label
+ * of the control around it, and a `<title>` inside would be announced instead of it. That is why
+ * {@link IconButton} takes an `ariaLabel` of its own.
+ *
+ * The SVG is given an id derived from the name and looked up in the document before it is built, so a
+ * repeated icon in one tree renders once. It must therefore be rendered in a document rather than
+ * detached, which is what every consumer of it does.
+ */
 export function Icon({
   name,
   className,

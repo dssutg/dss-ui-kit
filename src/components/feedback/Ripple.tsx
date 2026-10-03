@@ -7,6 +7,12 @@ import { useGranularEffect } from '@/lib/use_granular_effect';
 import { uuidv4 } from '@/lib/uuid';
 
 // staying inside of it.
+/**
+ * A circular ripple expanding from the centre, used by {@link Button} for its pressed state.
+ *
+ * Purely visual: it is `aria-hidden`, and a caller who needs the pressed state announced needs a real
+ * `aria-pressed`, which is the button's business and not this component's.
+ */
 export function Ripple({
   color = 'rgba(128, 128, 255, 0.7)',
   duration = 600,

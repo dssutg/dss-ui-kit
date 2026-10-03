@@ -258,6 +258,14 @@ export function translate(
   return expandPluralForms(substituteParameters(message, parameters), locale, parameters);
 }
 
+/**
+ * What {@link useLocale} returns: the locale in effect, its date data, and the two ways to resolve a
+ * message.
+ *
+ * `t` and `tRaw` differ in one thing only — whether the key is one the library knows. A caller that
+ * added its own keys uses `tRaw` for them and `t` for the library's, which is what keeps a typo in a
+ * library key a type error.
+ */
 export interface LocaleContextValue {
   /** The locale in effect. */
   readonly lang: LocaleName;
@@ -312,6 +320,15 @@ function knownLocales(): readonly string[] {
   return [...supportedLocales, ...registeredLocales.keys()];
 }
 
+/**
+ * What {@link LocaleProvider} takes.
+ *
+ * Every prop has a working default: with no props beyond `children` the provider detects the
+ * browser's locale, uses the shipped catalogues, and persists the operator's choice under
+ * {@link LOCALE_STORAGE_KEY}. The `messages` and `dates` props are how a consumer translates the
+ * library without registering a locale, and they merge over the shipped ones rather than replacing
+ * them, so a single override does not require copying a whole catalogue.
+ */
 export interface LocaleProviderProps {
   readonly children: ReactNode;
   /**

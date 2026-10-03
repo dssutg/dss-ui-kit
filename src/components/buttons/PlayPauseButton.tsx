@@ -7,6 +7,12 @@ import { IconButton } from './IconButton';
  * for a change, so a caller that ignores the request sees no state flip. The titles are the label of
  * the action the click will perform, which is why they swap with `playing`.
  */
+/**
+ * What {@link PlayPauseButton} takes.
+ *
+ * The two titles are separate props because they are two different strings an operator reads, and
+ * the library does not have either of them: a component does not invent user-facing text.
+ */
 export interface PlayPauseButtonProps {
   readonly playing: boolean;
   readonly onClick: React.MouseEventHandler<HTMLButtonElement>;
@@ -14,6 +20,12 @@ export interface PlayPauseButtonProps {
   readonly pauseTitle: string;
 }
 
+/**
+ * One button that shows a play icon when paused and a pause icon when playing.
+ *
+ * It holds no state: `playing` is the caller's, so the same button works for a stream, a recording
+ * and a timeline, and an external pause still updates the icon.
+ */
 export function PlayPauseButton({ playing, onClick, playTitle, pauseTitle }: PlayPauseButtonProps) {
   return (
     <IconButton

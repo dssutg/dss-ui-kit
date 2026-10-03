@@ -1,5 +1,12 @@
 import { highlightText } from '@/lib/highlight';
 
+/**
+ * Renders a JSON string with its keys, strings, numbers and literals coloured.
+ *
+ * The value is a string, not an object, and is highlighted as text: the caller has already parsed it,
+ * or has the response body as it arrived. Nothing here re-formats it, so what is shown is byte for
+ * byte what was passed in.
+ */
 export function HighlightedJson({
   json,
   className,

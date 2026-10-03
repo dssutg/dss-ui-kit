@@ -1,13 +1,30 @@
 import { Ripple } from '@/components/feedback/Ripple';
 import { wrapIndex } from '@/lib/math';
 
+/**
+ * One entry of a {@link ButtonGroup}: its id, which is what {@link ButtonGroupItemChangeHandler}
+ * receives, and the title rendered on it.
+ */
 export interface ButtonGroupItem<T extends string> {
   readonly id: T;
   readonly title: string;
 }
 
+/**
+ * Called with the id of the item that is now selected.
+ *
+ * It is given the id and not the item, because a group is generic over its ids and the caller holds
+ * the items.
+ */
 export type ButtonGroupItemChangeHandler<T extends string> = (itemId: T) => void;
 
+/**
+ * A row of buttons of which one is selected.
+ *
+ * Uncontrolled after the first render unless the caller passes `itemId`, in which case it is the
+ * caller's decision throughout: a group that owns its selection cannot be put back by a form reset,
+ * which is usually the reason a caller wants control of it.
+ */
 export function ButtonGroup<T extends string>({
   itemId,
   items,

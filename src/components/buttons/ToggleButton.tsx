@@ -1,6 +1,13 @@
 import type { IconName } from '@/components/display/Icon';
 import { IconButton } from './IconButton';
 
+/**
+ * One position of a {@link ToggleButton}: the value it sets, the icon it shows and the title it
+ * carries.
+ *
+ * The type parameter is inferred from `options`, so a group of three options produces a
+ * {@link ToggleButton} whose `value` is one of those three rather than any string.
+ */
 export interface ToggleButtonOption<TValue extends string> {
   /** The value this option selects. */
   readonly value: TValue;
@@ -10,6 +17,13 @@ export interface ToggleButtonOption<TValue extends string> {
   readonly title: string;
 }
 
+/**
+ * What {@link ToggleButton} takes.
+ *
+ * `value` and `onChange` are both required: a toggle with no current value would have to remember
+ * one, and two sources of truth for the same state is the defect the split into
+ * {@link ToggleButton} and {@link ButtonGroup} exists to prevent.
+ */
 export interface ToggleButtonProps<TValue extends string> {
   /** The currently selected value. */
   readonly value: TValue;

@@ -1,6 +1,12 @@
 import { Icon, type IconName } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';
 
+/**
+ * A row of icon buttons of which one is selected.
+ *
+ * The selected index is a number rather than an id, so the group is not generic: it is a strip of
+ * positions, and a caller with real ids maps them to indices itself.
+ */
 export function IconedButtonGroup({
   group,
   value = 0,

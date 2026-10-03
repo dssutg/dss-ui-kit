@@ -4,6 +4,13 @@ import { iconPaths } from '@/icons/index';
 import { copyToClipboard } from '@/lib/dom';
 import { Icon, type IconName } from './Icon';
 
+/**
+ * A searchable grid of every icon in the library, with each one's path data copyable.
+ *
+ * A development aid rather than a component an application renders: it takes no props, so it cannot
+ * show a subset, and it exists so that a person looking for an icon can search for one instead of
+ * reading the generated file.
+ */
 export function IconViewer() {
   const [searchText, setSearchText] = useState('');
 
