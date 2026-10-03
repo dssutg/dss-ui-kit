@@ -122,7 +122,7 @@ contract and three are published examples:
 A theme's custom properties are the consumer's CSS, not a JavaScript object: `registerTheme` only
 tells the library a name is real — it takes the name and the swatch a picker shows for it — and the
 tokens themselves are declared in the consumer's stylesheet, under the `data-theme` attribute the
-library writes. `theme_acme.css` is the shortest way to see the shape of that block, because it is
+library writes. `themes/acme.css` is the shortest way to see the shape of that block, because it is
 the worked example: a handful of `--color-*` overrides, and the rest inherited.
 
 ```ts

@@ -1,8 +1,8 @@
 @import "./global.css";
-@import "./theme_acme.css";
-@import "./theme_dark.css";
-@import "./theme_indigo.css";
-@import "./theme_light.css";
-@import "./theme_purple.css";
-@import "./color_picker.css";
-@import "./syntax_highlight.css";
+@import "./themes/acme.css";
+@import "./themes/dark.css";
+@import "./themes/indigo.css";
+@import "./themes/light.css";
+@import "./themes/purple.css";
+@import "./components/color_picker.css";
+@import "./components/syntax_highlight.css";

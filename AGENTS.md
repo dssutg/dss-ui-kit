@@ -229,7 +229,7 @@ imports by rewriting them to `preact/...`.
 The design system is **106 CSS custom properties** named `--color-*`, defined per theme:
 
 ```css
-/* theme_dark.css */
+/* themes/dark.css */
 body {
   --color-bda: var(--color-red-light); /* Background: Danger */
   --color-bdat: var(--color-white); /* Text above Danger background */
@@ -265,7 +265,7 @@ a class that silently stops resolving. The preset deliberately does not carry `c
 resolves a `content` path against the working directory of the build that reads the config, so that
 path is the consumer's line to write.
 
-`scripts/design-tokens.test.ts` fails if the preset's map and `src/css/theme_dark.css` ever disagree
+`scripts/design-tokens.test.ts` fails if the preset's map and `src/css/themes/dark.css` ever disagree
 about which properties exist.
 
 ### Class names

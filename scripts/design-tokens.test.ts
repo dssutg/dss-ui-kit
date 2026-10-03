@@ -23,8 +23,8 @@ import { collectFiles, REPOSITORY_ROOT } from './util/source-tree.ts';
 /** The count the documentation states. Adding a token means changing it in the same change. */
 const DOCUMENTED_TOKEN_COUNT = 106;
 
-/** The one theme file that defines every token; the other four are partial overrides. */
-const COMPLETE_THEME = 'src/css/theme_dark.css';
+/** The one theme file that defines every token; the others are partial overrides. */
+const COMPLETE_THEME = 'src/css/themes/dark.css';
 
 /** Every `--color-*` custom property a theme file declares, without the prefix. */
 function themeTokens(path: string): string[] {
@@ -42,7 +42,7 @@ function themeTokens(path: string): string[] {
 function partialThemeTokens(): string[] {
   const complete = new Set(themeTokens(COMPLETE_THEME));
 
-  return collectFiles('src/css')
+  return collectFiles('src/css/themes')
     .filter((path) => path !== COMPLETE_THEME)
     .flatMap(themeTokens)
     .filter((token) => !complete.has(token));
