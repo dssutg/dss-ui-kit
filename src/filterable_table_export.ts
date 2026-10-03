@@ -1,5 +1,5 @@
 import { minstrftime } from '@/lib/date';
-import { getLocaleDates, type LocaleName } from '@/locale';
+import type { LocaleDates } from '@/locale';
 
 export type FilterableTableExportFormat = 'pdf' | 'html' | 'csv' | 'json';
 
@@ -11,12 +11,9 @@ export type GetExportedTableFilenameCallback = ({
   readonly extension: string;
 }) => string;
 
-export function formatDateAndTime(timestamp: number, lang: LocaleName) {
-  return minstrftime(
-    getLocaleDates(lang).formats.format,
-    new Date(timestamp),
-    getLocaleDates(lang).names,
-  );
+/** A timestamp in the format the active locale writes dates in. */
+export function formatDateAndTime(timestamp: number, dates: LocaleDates): string {
+  return minstrftime(dates.formats.format, new Date(timestamp), dates.names);
 }
 
 export function escapeProp(x: string | null | undefined) {

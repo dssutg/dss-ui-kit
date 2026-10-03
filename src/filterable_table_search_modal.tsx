@@ -6,7 +6,8 @@ import type {
   SearchSchema,
 } from '@/filterable_table_search';
 import { minstrftime } from '@/lib/date';
-import { type LocaleName, useLocale } from '@/locale';
+import { type LocaleDates, useLocale } from '@/locale';
+
 import { Button } from '@/ui/Button';
 import { DecimalIntegerInput, type DecimalIntegerInputValue } from '@/ui/DecimalIntegerInput';
 import { Input } from '@/ui/Input';
@@ -68,7 +69,7 @@ function isEmptyFilterValue<T>(
 function getSearchFields<T>(
   searchSchema: SearchSchema<T>,
   valueMap: Record<string, unknown>,
-  lang: LocaleName,
+  dates: LocaleDates,
 ): string[] {
   const fields: string[] = [];
 
@@ -83,7 +84,7 @@ function getSearchFields<T>(
       continue;
     }
 
-    const strValue = getFilterValueAsString(property, value, lang);
+    const strValue = getFilterValueAsString(property, value, dates);
     fields.push(`${escapeProp(property.name)}=${escapeProp(strValue)}`);
   }
 
@@ -103,7 +104,7 @@ export function GeneralizedSearchModal<T>({
   readonly searchSchema: SearchSchema<T>;
   readonly onSearch: (searchText: string) => void;
 }) {
-  const { t, lang } = useLocale();
+  const { t, dates } = useLocale();
 
   const [valueMap, setValueMap] = useState<Record<string, unknown>>({});
 
@@ -131,7 +132,7 @@ export function GeneralizedSearchModal<T>({
           type="encouraging"
           title={t('actions.find')}
           onClick={() => {
-            onSearch(getSearchFields(searchSchema, valueMap, lang).join(' '));
+            onSearch(getSearchFields(searchSchema, valueMap, dates).join(' '));
             onOpenChange(false);
           }}
         />
@@ -248,7 +249,7 @@ function EnumSelect({
 function getFilterValueAsString<T>(
   property: AnonymousSearchPropertySchema<T>,
   value: unknown,
-  lang: LocaleName,
+  dates: LocaleDates,
 ): string {
   switch (property.type) {
     case 'enum': {
@@ -258,7 +259,7 @@ function getFilterValueAsString<T>(
     }
 
     case 'dateAndTime':
-      return formatDateAndTime(value as number, lang);
+      return formatDateAndTime(value as number, dates);
 
     default:
       return (value ?? '').toString();

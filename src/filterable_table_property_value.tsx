@@ -5,7 +5,7 @@ import { formatHexNumber } from '@/lib/format_number';
 import { useLocale } from '@/locale';
 
 export function useSearchSchemaPropertyValueToString<T>() {
-  const { t, lang } = useLocale();
+  const { t, dates } = useLocale();
 
   return (item: T, property: SearchPropertySchema<T>) => {
     switch (property.type) {
@@ -23,7 +23,7 @@ export function useSearchSchemaPropertyValueToString<T>() {
       case 'unsignedHex':
         return formatHexNumber(property.extractValue(item), 1);
       case 'dateAndTime':
-        return formatDateAndTime(property.extractValue(item), lang);
+        return formatDateAndTime(property.extractValue(item), dates);
     }
   };
 }

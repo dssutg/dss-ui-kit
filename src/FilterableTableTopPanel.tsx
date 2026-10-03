@@ -49,7 +49,7 @@ export function FilterableTableTopPanel<T>({
   readonly rightComponent?: React.ReactNode | undefined;
   readonly historyId?: string | undefined;
 }) {
-  const { t, lang } = useLocale();
+  const { t, dates } = useLocale();
 
   const [extraSearchModalOpen, setExtraSearchModalOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
@@ -77,7 +77,7 @@ export function FilterableTableTopPanel<T>({
               case 'enum':
                 return getEnumLabel(property, property.extractValue(item));
               case 'dateAndTime':
-                return formatDateAndTime(property.extractValue(item), lang);
+                return formatDateAndTime(property.extractValue(item), dates);
               case 'unsignedHex':
                 return formatHexNumber(property.extractValue(item), 1);
               case 'boolean':
@@ -203,7 +203,7 @@ export function FilterableTableTopPanel<T>({
                     case 'dateAndTime': {
                       return (
                         <td key={propertyIndex}>
-                          {formatDateAndTime(property.extractValue(item), lang)}
+                          {formatDateAndTime(property.extractValue(item), dates)}
                         </td>
                       );
                     }

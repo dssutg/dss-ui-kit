@@ -781,11 +781,17 @@ function isMenuTreeItem(item: TMenuTreeItem | TreeViewItem): item is TMenuTreeIt
  * application's own menu can be resolved against.
  */
 function menuTreeItemTitle(menuTreeItem: TMenuTreeItem): string {
-  return resolveItemTitle(
-    (key) => translate(builtinCatalogues, getLocaleName(), key),
-    menuTreeItem.title,
-    menuTreeItem.titleKey,
-  );
+  return resolveItemTitle(translateInDocumentLocale, menuTreeItem.title, menuTreeItem.titleKey);
+}
+
+/**
+ * Resolves a message key outside React, against the library's catalogues and the document's locale.
+ *
+ * The walk below is exported so a caller can find the path to a menu item by id; when it runs there
+ * is no provider to read a catalogue from, so this is the resolution that is available.
+ */
+function translateInDocumentLocale(key: string): string {
+  return translate(builtinCatalogues(), getLocaleName(), key);
 }
 
 /**

@@ -1,5 +1,5 @@
 import type { CalendarLocale } from '@/lib/date';
-import { getLocaleDates, useLocale } from '@/locale';
+import { useLocale } from '@/locale';
 
 const MONTH_ROWS = 6;
 const WEEK_DAYS = 7;
@@ -284,15 +284,10 @@ function Day({
 }
 
 export function StaticCalendar({ date }: { readonly date: Date }) {
-  const { lang } = useLocale();
+  const { dates } = useLocale();
+  const { isSundayFirstWeekDay } = dates.calendar;
 
-  const { isSundayFirstWeekDay } = getLocaleDates(lang).calendar;
-
-  const calendar = getCalendar(
-    date.getFullYear(),
-    isSundayFirstWeekDay,
-    getLocaleDates(lang).calendar,
-  );
+  const calendar = getCalendar(date.getFullYear(), isSundayFirstWeekDay, dates.calendar);
 
   const year = date.getFullYear();
   const monthIndex = date.getMonth();
@@ -331,7 +326,7 @@ export function StaticCalendar({ date }: { readonly date: Date }) {
   return (
     <div className="flex flex-col gap-4">
       <h2 className="m-0 truncate text-center text-xl font-normal text-[var(--color-mini-calendar-title-fg)]">
-        {getLocaleDates(lang).calendar.monthNames[monthIndex]}, {year}
+        {dates.calendar.monthNames[monthIndex]}, {year}
       </h2>
       <div>
         <div className="flex justify-between first:mb-2">
@@ -348,7 +343,7 @@ export function StaticCalendar({ date }: { readonly date: Date }) {
                   columnIndex === 0 || columnIndex === WEEK_DAYS - 1 ? 'weekend' : 'weekday'
                 }
               >
-                {getLocaleDates(lang).calendar.weekdayNames[weekdayIndex]}
+                {dates.calendar.weekdayNames[weekdayIndex]}
               </Day>
             );
           })}

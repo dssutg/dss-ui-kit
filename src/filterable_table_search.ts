@@ -168,7 +168,7 @@ export function useFilteredItems<T>({
   readonly searchText: string;
   readonly searchSchema: SearchSchema<T>;
 }) {
-  const { lang } = useLocale();
+  const { dates } = useLocale();
 
   if (searchText === '') {
     return items;
@@ -208,7 +208,7 @@ export function useFilteredItems<T>({
       }
 
       case 'dateAndTime': {
-        const itemValue = formatDateAndTime(property.extractValue(item), lang);
+        const itemValue = formatDateAndTime(property.extractValue(item), dates);
 
         const stringValue = normalize((value ?? '').toString());
 
@@ -233,7 +233,7 @@ export function useFilteredItems<T>({
             case 'enum':
               return getEnumLabel(property, property.extractValue(item));
             case 'dateAndTime':
-              return formatDateAndTime(property.extractValue(item), lang);
+              return formatDateAndTime(property.extractValue(item), dates);
             default:
               return property.extractValue(item);
           }

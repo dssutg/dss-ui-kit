@@ -108,7 +108,7 @@ function TimelineViewer<T>({
   readonly property: SearchPropertySchema<T>;
   readonly timeProperty: SearchPropertySchema<T>;
 }) {
-  const { lang } = useLocale();
+  const { dates } = useLocale();
 
   const searchSchemaPropertyValueToString = useSearchSchemaPropertyValueToString<T>();
 
@@ -224,7 +224,7 @@ function TimelineViewer<T>({
         return '';
       }
 
-      return formatDateAndTime(timestamp, lang);
+      return formatDateAndTime(timestamp, dates);
     }
 
     function getYLabel(y: number): string {
@@ -239,7 +239,7 @@ function TimelineViewer<T>({
       getYLabel,
       lastX,
     };
-  }, [items, property, timeProperty, lang, searchSchemaPropertyValueToString]);
+  }, [items, property, timeProperty, dates, searchSchemaPropertyValueToString]);
 
   function seekEnd() {
     setCanvasTransform((transform) => {
