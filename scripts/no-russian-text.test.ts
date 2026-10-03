@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { collectFiles, REPOSITORY_ROOT } from './lib/source-tree.ts';
+import { collectFiles, REPOSITORY_ROOT } from './util/source-tree.ts';
 
 /**
  * The interface is localised, and localisation is the one thing this project does not leave to

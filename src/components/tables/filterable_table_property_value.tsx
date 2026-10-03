@@ -1,5 +1,5 @@
-import { formatHexNumber } from '@/lib/format';
 import { useLocale } from '@/locale';
+import { formatHexNumber } from '@/util/format';
 import { getEnumLabel } from './ControlledTable';
 import { formatDateAndTime } from './table_export';
 import type { SearchPropertySchema } from './use_filtered_items';

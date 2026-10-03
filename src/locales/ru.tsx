@@ -1,4 +1,4 @@
-import { getPluralizationIndex } from '@/lib/pluralization';
+import { getPluralizationIndex } from '@/util/pluralization';
 import type { LocaleDates } from './dates';
 
 export const ru = {

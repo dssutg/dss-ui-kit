@@ -11,7 +11,7 @@ import { Slider } from '@/components/inputs/Slider';
 import { TextInput } from '@/components/inputs/TextInput';
 import { ToggleSwitch } from '@/components/inputs/ToggleSwitch';
 import { UnsignedIntegerInput } from '@/components/inputs/UnsignedIntegerInput';
-import { change, click, render, type } from '@/lib/testing/render';
+import { change, click, render, type } from '@/util/testing/render';
 
 describe('Input', () => {
   it('is a native input with the DOM prop of the same name', async () => {

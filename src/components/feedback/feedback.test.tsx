@@ -7,7 +7,7 @@ import { LogWidget } from '@/components/feedback/LogWidget';
 import { Ripple } from '@/components/feedback/Ripple';
 import { ScrollProgressBar } from '@/components/feedback/ScrollProgressBar';
 import { Spinner } from '@/components/feedback/Spinner';
-import { click, render } from '@/lib/testing/render';
+import { click, render } from '@/util/testing/render';
 
 describe('Spinner', () => {
   it('renders without a provider, a theme or a locale', async () => {

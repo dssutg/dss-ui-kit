@@ -1,5 +1,5 @@
 import { type JSX, useRef } from 'react';
-import { clamp } from '@/lib/math';
+import { clamp } from '@/util/math';
 import {
   formatClassName,
   Hue,

@@ -100,7 +100,7 @@
             "patterns": [
               {
                 "group": ["../**"],
-                "message": "Import through the '@' alias, for example '@/lib/math'. Never walk up the tree with '../'."
+                "message": "Import through the '@' alias, for example '@/util/math'. Never walk up the tree with '../'."
               }
             ]
           }

@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { useForceUpdate } from '@/lib/hooks/use_force_update';
+import { useForceUpdate } from '@/util/hooks/use_force_update';
 import { emitEvent, useEvent } from './event';
 
 /**

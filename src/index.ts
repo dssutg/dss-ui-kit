@@ -257,17 +257,17 @@ export type {
   SearchSchema,
 } from '@/components/tables/use_filtered_items';
 export { useFilteredItems } from '@/components/tables/use_filtered_items';
-export { tryCatch, tryCatchAsync } from '@/lib/catch';
-export type { RGBA32, RGBA32BreakPoint } from '@/lib/color';
-export { getCSSVariableValue, Rgba32Gradient } from '@/lib/color';
-export type { CalendarLocale, DateFormatLocale, DateLocale, DateNames } from '@/lib/date';
-export { formatRelativeDate, getDateComponents } from '@/lib/date';
-
-export { parseCSV, parseDSV, serializeCSV, serializeDSV } from '@/lib/dsv';
-export { downloadStringAsPlainTextFile, formatByteSize } from '@/lib/file';
-export { formatHexNumber } from '@/lib/format';
-export { fuzzySearch } from '@/lib/fuzzy_search';
-export type { BoxFaceName, GLQuad } from '@/lib/gl/geometry';
+export type { LocaleDates } from '@/locales/dates';
+export { tryCatch, tryCatchAsync } from '@/util/catch';
+export type { RGBA32, RGBA32BreakPoint } from '@/util/color';
+export { getCSSVariableValue, Rgba32Gradient } from '@/util/color';
+export type { CalendarLocale, DateFormatLocale, DateLocale, DateNames } from '@/util/date';
+export { formatRelativeDate, getDateComponents } from '@/util/date';
+export { parseCSV, parseDSV, serializeCSV, serializeDSV } from '@/util/dsv';
+export { downloadStringAsPlainTextFile, formatByteSize } from '@/util/file';
+export { formatHexNumber } from '@/util/format';
+export { fuzzySearch } from '@/util/fuzzy_search';
+export type { BoxFaceName, GLQuad } from '@/util/gl/geometry';
 export {
   calcNormal,
   convertBoxToQuads,
@@ -282,14 +282,14 @@ export {
   makeTransformationMatrix,
   makeTransformedVertex,
   naiveRaycast,
-} from '@/lib/gl/geometry';
-export type { ProgramInfo, SceneRenderContext } from '@/lib/gl/renderer';
+} from '@/util/gl/geometry';
+export type { ProgramInfo, SceneRenderContext } from '@/util/gl/renderer';
 export {
   createSceneRenderContext,
   deleteSceneRenderContext,
   renderScene,
   useGLCtx,
-} from '@/lib/gl/renderer';
+} from '@/util/gl/renderer';
 export type {
   BoxFaceColors,
   BoxSceneObject,
@@ -307,45 +307,44 @@ export type {
   Vector2Array,
   Vector3Array,
   Vector4Array,
-} from '@/lib/gl/scene';
-export type { Lang } from '@/lib/highlight';
-export { highlightText } from '@/lib/highlight';
-export { useDebounce } from '@/lib/hooks/use_debounce';
-export { useDelayedVisibility } from '@/lib/hooks/use_delayed_visibility';
-export { useDocumentScrollPercentage } from '@/lib/hooks/use_document_scroll_percentage';
-export { useDragNDropOrderedList } from '@/lib/hooks/use_drag_n_drop_ordered_list';
-export { useElementSize } from '@/lib/hooks/use_element_size';
-export type { EventListenerCallback } from '@/lib/hooks/use_event_listener';
-export { useEventListener } from '@/lib/hooks/use_event_listener';
-export { useForceUpdate } from '@/lib/hooks/use_force_update';
-export type { OnFullScreenChangeCallback } from '@/lib/hooks/use_fullscreen_change';
-export { useFullScreenChange } from '@/lib/hooks/use_fullscreen_change';
-export { useGranularEffect } from '@/lib/hooks/use_granular_effect';
-export type { HookWithDependencies } from '@/lib/hooks/use_granular_hook';
-export { useGranularHook } from '@/lib/hooks/use_granular_hook';
-export { useImmediateInterval, useInterval } from '@/lib/hooks/use_interval';
-export { minDesktopWidth, useIsMobileScreen } from '@/lib/hooks/use_is_mobile_screen';
-export { useMouseDrag } from '@/lib/hooks/use_mouse_drag';
-export { useOutsideComponentClick } from '@/lib/hooks/use_outside_component_click';
-export { usePreventAccidentalPageClose } from '@/lib/hooks/use_prevent_accidental_page_close';
-export { usePropertyRef } from '@/lib/hooks/use_property_ref';
-export { useScrollbarWidth } from '@/lib/hooks/use_scrollbar_width';
-export { useSyncScroll } from '@/lib/hooks/use_sync_scroll';
-export { useTimeout } from '@/lib/hooks/use_timeout';
-export { useWindowSize } from '@/lib/hooks/use_window_size';
-export { getHttpStatusCategory, getHttpStatusCategoryName, getHttpStatusName } from '@/lib/http';
-export { ipv4Regex, parseIp } from '@/lib/ipv4';
-export type { KeyMap, KeyMapActions, KeyMapHandler } from '@/lib/key_map';
-export { getKeyMapCodeAsHotkey, handleKeyMapKeyDown } from '@/lib/key_map';
-export type { Point2D } from '@/lib/math/angle';
-export type { Mat4 } from '@/lib/math/matrix';
-export { Vector3D } from '@/lib/math/vector3d';
-export type { PluralRule } from '@/lib/pluralization';
-export { getPluralizationIndex, registerPluralRule } from '@/lib/pluralization';
-export { uuidv4 } from '@/lib/uuid';
-export type { VError, VSchema, VValidator } from '@/lib/validator';
-export { vArray, vBoolean, vInt, vNumber, vString } from '@/lib/validator';
-export type { LocaleDates } from '@/locales/dates';
+} from '@/util/gl/scene';
+export type { Lang } from '@/util/highlight';
+export { highlightText } from '@/util/highlight';
+export { useDebounce } from '@/util/hooks/use_debounce';
+export { useDelayedVisibility } from '@/util/hooks/use_delayed_visibility';
+export { useDocumentScrollPercentage } from '@/util/hooks/use_document_scroll_percentage';
+export { useDragNDropOrderedList } from '@/util/hooks/use_drag_n_drop_ordered_list';
+export { useElementSize } from '@/util/hooks/use_element_size';
+export type { EventListenerCallback } from '@/util/hooks/use_event_listener';
+export { useEventListener } from '@/util/hooks/use_event_listener';
+export { useForceUpdate } from '@/util/hooks/use_force_update';
+export type { OnFullScreenChangeCallback } from '@/util/hooks/use_fullscreen_change';
+export { useFullScreenChange } from '@/util/hooks/use_fullscreen_change';
+export { useGranularEffect } from '@/util/hooks/use_granular_effect';
+export type { HookWithDependencies } from '@/util/hooks/use_granular_hook';
+export { useGranularHook } from '@/util/hooks/use_granular_hook';
+export { useImmediateInterval, useInterval } from '@/util/hooks/use_interval';
+export { minDesktopWidth, useIsMobileScreen } from '@/util/hooks/use_is_mobile_screen';
+export { useMouseDrag } from '@/util/hooks/use_mouse_drag';
+export { useOutsideComponentClick } from '@/util/hooks/use_outside_component_click';
+export { usePreventAccidentalPageClose } from '@/util/hooks/use_prevent_accidental_page_close';
+export { usePropertyRef } from '@/util/hooks/use_property_ref';
+export { useScrollbarWidth } from '@/util/hooks/use_scrollbar_width';
+export { useSyncScroll } from '@/util/hooks/use_sync_scroll';
+export { useTimeout } from '@/util/hooks/use_timeout';
+export { useWindowSize } from '@/util/hooks/use_window_size';
+export { getHttpStatusCategory, getHttpStatusCategoryName, getHttpStatusName } from '@/util/http';
+export { ipv4Regex, parseIp } from '@/util/ipv4';
+export type { KeyMap, KeyMapActions, KeyMapHandler } from '@/util/key_map';
+export { getKeyMapCodeAsHotkey, handleKeyMapKeyDown } from '@/util/key_map';
+export type { Point2D } from '@/util/math/angle';
+export type { Mat4 } from '@/util/math/matrix';
+export { Vector3D } from '@/util/math/vector3d';
+export type { PluralRule } from '@/util/pluralization';
+export { getPluralizationIndex, registerPluralRule } from '@/util/pluralization';
+export { uuidv4 } from '@/util/uuid';
+export type { VError, VSchema, VValidator } from '@/util/validator';
+export { vArray, vBoolean, vInt, vNumber, vString } from '@/util/validator';
 export type { EventTypes } from './event';
 export {
   emitEvent,

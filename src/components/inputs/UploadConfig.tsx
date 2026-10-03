@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Button } from '@/components/buttons/Button';
 import { Icon, type IconName } from '@/components/display/Icon';
-import { openFileDialog } from '@/lib/file';
-import { clamp } from '@/lib/math';
 import { useLocale } from '@/locale';
+import { openFileDialog } from '@/util/file';
+import { clamp } from '@/util/math';
 
 /**
  * What {@link UploadConfig} takes.

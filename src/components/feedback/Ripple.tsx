@@ -3,8 +3,8 @@
 // Otherwise, the ripple effect goes beyond the component instead of
 
 import { useRef, useState } from 'react';
-import { useGranularEffect } from '@/lib/hooks/use_granular_effect';
-import { uuidv4 } from '@/lib/uuid';
+import { useGranularEffect } from '@/util/hooks/use_granular_effect';
+import { uuidv4 } from '@/util/uuid';
 
 // staying inside of it.
 /**

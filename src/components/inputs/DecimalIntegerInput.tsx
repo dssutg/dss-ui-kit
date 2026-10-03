@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { IconButton } from '@/components/buttons/IconButton';
-import { clamp } from '@/lib/math';
 import { useLocale } from '@/locale';
+import { clamp } from '@/util/math';
 
 /**
  * What a {@link DecimalIntegerInput} holds: an integer, or nothing while it is being typed.

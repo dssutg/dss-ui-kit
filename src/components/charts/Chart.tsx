@@ -1,6 +1,6 @@
 import { AutoSizer } from '@/components/layout/AutoSizer';
-import type { KeyMap } from '@/lib/key_map';
 import { useLocale } from '@/locale';
+import type { KeyMap } from '@/util/key_map';
 import { ZoomableCanvas, type ZoomableCanvasTransform } from './ZoomableCanvas';
 
 /**

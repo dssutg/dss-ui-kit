@@ -1,9 +1,9 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import type { EditorHistory } from '@/lib/editor/history';
-import { useEditorHistory } from '@/lib/editor/history';
-import { handleEditorKeyDown } from '@/lib/editor/keybindings';
-import { cssText, editorStyles, lineHeight } from '@/lib/editor/style';
-import { useGranularEffect } from '@/lib/hooks/use_granular_effect';
+import type { EditorHistory } from '@/util/editor/history';
+import { useEditorHistory } from '@/util/editor/history';
+import { handleEditorKeyDown } from '@/util/editor/keybindings';
+import { cssText, editorStyles, lineHeight } from '@/util/editor/style';
+import { useGranularEffect } from '@/util/hooks/use_granular_effect';
 
 /**
  * One value, or one value per edge.

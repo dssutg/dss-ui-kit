@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
 import { Button } from '@/components/buttons/Button';
 import { IconButton } from '@/components/buttons/IconButton';
-import { uuidv4 } from '@/lib/uuid';
 import { useLocale } from '@/locale';
+import { uuidv4 } from '@/util/uuid';
 import { Accordion } from './Accordion';
 
 /**

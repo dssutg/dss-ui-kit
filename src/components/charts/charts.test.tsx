@@ -14,7 +14,7 @@ import { RingProgress } from '@/components/charts/RingProgress';
 import { SimpleLineChart } from '@/components/charts/SimpleLineChart';
 import { StaticCalendar } from '@/components/charts/StaticCalendar';
 import { ZoomableCanvas } from '@/components/charts/ZoomableCanvas';
-import { act, click, render } from '@/lib/testing/render';
+import { act, click, render } from '@/util/testing/render';
 
 /** A shape with no subject in it: what a chart is counting is the caller's business. */
 interface Entry {

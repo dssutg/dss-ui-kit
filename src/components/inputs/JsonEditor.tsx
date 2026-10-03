@@ -1,4 +1,4 @@
-import { highlightText } from '@/lib/highlight';
+import { highlightText } from '@/util/highlight';
 import { Editor } from './Editor';
 
 /**

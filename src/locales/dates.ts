@@ -1,4 +1,4 @@
-import type { CalendarLocale, DateFormatLocale, DateLocale, DateNames } from '@/lib/date';
+import type { CalendarLocale, DateFormatLocale, DateLocale, DateNames } from '@/util/date';
 
 /**
  * The date data every locale carries.

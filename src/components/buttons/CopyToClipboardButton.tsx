@@ -2,8 +2,8 @@ import { useCallback, useRef, useState } from 'react';
 import { Icon } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';
 import { FeedbackTooltip, showFeedbackTooltip } from '@/components/overlays/FeedbackTooltip';
-import { copyToClipboard } from '@/lib/dom';
 import { useLocale } from '@/locale';
+import { copyToClipboard } from '@/util/dom';
 
 /**
  * Copies `contentToCopy` to the clipboard when clicked.

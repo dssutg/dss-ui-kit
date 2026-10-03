@@ -2,10 +2,10 @@ import { useCallback } from 'react';
 import { Button } from '@/components/buttons/Button';
 import { IconButton } from '@/components/buttons/IconButton';
 import type { IconName } from '@/components/display/Icon';
-import { moveArrayElementLeftOrRightCircularly } from '@/lib/array';
-import { useDragNDropOrderedList } from '@/lib/hooks/use_drag_n_drop_ordered_list';
-import { useIsMobileScreen } from '@/lib/hooks/use_is_mobile_screen';
 import { useLocale } from '@/locale';
+import { moveArrayElementLeftOrRightCircularly } from '@/util/array';
+import { useDragNDropOrderedList } from '@/util/hooks/use_drag_n_drop_ordered_list';
+import { useIsMobileScreen } from '@/util/hooks/use_is_mobile_screen';
 
 /**
  * A panel for choosing an order and a visibility for a list of items, by dragging or with arrows.

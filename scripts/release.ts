@@ -4,8 +4,8 @@ import {
   type ChangelogEntry,
   determineReleaseType,
   renderChangelogEntry,
-} from './lib/changelog.ts';
-import { type ConventionalCommit, parseConventionalCommit } from './lib/conventional.ts';
+} from './util/changelog.ts';
+import { type ConventionalCommit, parseConventionalCommit } from './util/conventional.ts';
 import {
   type Commit,
   createTag,
@@ -25,14 +25,14 @@ import {
   stageFiles,
   tagExists,
   toTagName,
-} from './lib/git.ts';
+} from './util/git.ts';
 import {
   formatSemVer,
   incrementVersion,
   parseSemVer,
   type ReleaseType,
   type SemVer,
-} from './lib/semver.ts';
+} from './util/semver.ts';
 
 const PACKAGE_JSON = 'package.json';
 const CHANGELOG_MD = 'CHANGELOG.md';

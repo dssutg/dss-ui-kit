@@ -5,7 +5,7 @@ import { Icon } from '@/components/display/Icon';
 import { IconedSectionTitle } from '@/components/display/IconedSectionTitle';
 import { IconViewer } from '@/components/display/IconViewer';
 import { Link } from '@/components/display/Link';
-import { click, render } from '@/lib/testing/render';
+import { click, render } from '@/util/testing/render';
 
 describe('Icon', () => {
   it('is hidden from the accessibility tree, because the control around it carries the name', async () => {

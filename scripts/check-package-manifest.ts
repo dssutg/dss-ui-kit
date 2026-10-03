@@ -1,7 +1,7 @@
 #!/usr/bin/env -S deno run --allow-read
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { REPOSITORY_ROOT } from './lib/source-tree.ts';
+import { REPOSITORY_ROOT } from './util/source-tree.ts';
 
 /**
  * Checks that every path the package manifest points at exists in the build output.

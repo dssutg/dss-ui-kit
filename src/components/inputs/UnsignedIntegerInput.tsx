@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { clamp } from '@/lib/math';
+import { clamp } from '@/util/math';
 
 /**
  * A number input restricted to integers in a range, clamped as it is typed.

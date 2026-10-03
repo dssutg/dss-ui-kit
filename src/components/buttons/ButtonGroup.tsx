@@ -1,5 +1,5 @@
 import { Ripple } from '@/components/feedback/Ripple';
-import { wrapIndex } from '@/lib/math';
+import { wrapIndex } from '@/util/math';
 
 /**
  * What {@link ButtonGroup} takes.

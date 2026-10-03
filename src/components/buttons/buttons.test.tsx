@@ -4,7 +4,7 @@ import { Button } from '@/components/buttons/Button';
 import { ButtonGroup } from '@/components/buttons/ButtonGroup';
 import { IconButton } from '@/components/buttons/IconButton';
 import { ToggleButton } from '@/components/buttons/ToggleButton';
-import { click, render } from '@/lib/testing/render';
+import { click, render } from '@/util/testing/render';
 
 describe('Button', () => {
   it('renders a real button and reports a click', async () => {

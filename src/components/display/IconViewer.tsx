@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { SearchInput } from '@/components/inputs/SearchInput';
 import { iconPaths } from '@/icons/index';
-import { copyToClipboard } from '@/lib/dom';
+import { copyToClipboard } from '@/util/dom';
 import { Icon, type IconName } from './Icon';
 
 /**

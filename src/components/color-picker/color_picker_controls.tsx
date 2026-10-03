@@ -11,7 +11,7 @@
  */
 
 import { type JSX, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { clamp } from '@/lib/math';
+import { clamp } from '@/util/math';
 import { equalColorObjects, hsvaToHslString, round } from './color_picker_conversion';
 import {
   getArrowKeyInteraction,

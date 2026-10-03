@@ -1,11 +1,11 @@
 import { createPortal, useCallback, useRef, useState } from 'react';
-import { areDOMRectsEqual } from '@/lib/dom';
-import { useEventListener } from '@/lib/hooks/use_event_listener';
-import { useGranularEffect } from '@/lib/hooks/use_granular_effect';
-import { useInterval } from '@/lib/hooks/use_interval';
-import { useWindowSize } from '@/lib/hooks/use_window_size';
-import { clamp } from '@/lib/math';
 import { useLocale } from '@/locale';
+import { areDOMRectsEqual } from '@/util/dom';
+import { useEventListener } from '@/util/hooks/use_event_listener';
+import { useGranularEffect } from '@/util/hooks/use_granular_effect';
+import { useInterval } from '@/util/hooks/use_interval';
+import { useWindowSize } from '@/util/hooks/use_window_size';
+import { clamp } from '@/util/math';
 
 /**
  * A panel anchored to a trigger, closed by clicking outside or pressing escape.

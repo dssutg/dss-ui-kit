@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { colorTokens } from '@/tailwind_preset';
-import { collectFiles, REPOSITORY_ROOT } from './lib/source-tree.ts';
+import { collectFiles, REPOSITORY_ROOT } from './util/source-tree.ts';
 
 /**
  * The token map and the theme files have to describe the same set of custom properties.

@@ -1,8 +1,8 @@
 import { useCallback, useRef, useState } from 'react';
-import { minInArrayMapped } from '@/lib/array';
-import { getPointerPosition } from '@/lib/dom';
-import { useOutsideComponentClick } from '@/lib/hooks/use_outside_component_click';
-import { clamp, cmp, lerp, unlerp } from '@/lib/math';
+import { minInArrayMapped } from '@/util/array';
+import { getPointerPosition } from '@/util/dom';
+import { useOutsideComponentClick } from '@/util/hooks/use_outside_component_click';
+import { clamp, cmp, lerp, unlerp } from '@/util/math';
 
 /**
  * A draggable slider over a numeric range, with optional labelled break points.

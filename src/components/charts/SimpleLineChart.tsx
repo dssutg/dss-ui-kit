@@ -1,9 +1,9 @@
 import { useRef } from 'react';
 import { AutoSizer } from '@/components/layout/AutoSizer';
-import { getCSSVariableValue } from '@/lib/color';
-import { useGranularEffect } from '@/lib/hooks/use_granular_effect';
-import { clamp } from '@/lib/math';
 import { useTheme } from '@/theme';
+import { getCSSVariableValue } from '@/util/color';
+import { useGranularEffect } from '@/util/hooks/use_granular_effect';
+import { clamp } from '@/util/math';
 
 /**
  * A line chart of one or more series, drawn on a {@link ZoomableCanvas}.

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { cssColorTo6DigitHex, getColorFromBreakPoints } from '@/lib/color';
-import { getDpr } from '@/lib/dom';
-import { useWindowSize } from '@/lib/hooks/use_window_size';
-import { cmp, degreesToRadians } from '@/lib/math';
+import { cssColorTo6DigitHex, getColorFromBreakPoints } from '@/util/color';
+import { getDpr } from '@/util/dom';
+import { useWindowSize } from '@/util/hooks/use_window_size';
+import { cmp, degreesToRadians } from '@/util/math';
 
 /**
  * A ring drawn to a fraction, for progress an operator reads at a glance.

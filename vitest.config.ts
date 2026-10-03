@@ -22,7 +22,7 @@ export default defineConfig(
       include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'scripts/**/*.test.ts'],
       // Loaded for every environment, and a no-op in the ones that need nothing: the browser APIs jsdom
       // does not implement are listed there rather than in each test file that trips over one.
-      setupFiles: ['./src/lib/testing/setup.ts'],
+      setupFiles: ['./src/util/testing/setup.ts'],
     },
   }),
 );

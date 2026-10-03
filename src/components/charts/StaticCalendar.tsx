@@ -1,5 +1,5 @@
-import type { CalendarLocale } from '@/lib/date';
 import { useLocale } from '@/locale';
+import type { CalendarLocale } from '@/util/date';
 
 const MONTH_ROWS = 6;
 const WEEK_DAYS = 7;

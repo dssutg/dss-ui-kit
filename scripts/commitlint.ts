@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run --allow-read
-import { validateCommitMessage } from './lib/conventional.ts';
+import { validateCommitMessage } from './util/conventional.ts';
 
 function readStdin(): string {
   const buffer = new Uint8Array(65536);

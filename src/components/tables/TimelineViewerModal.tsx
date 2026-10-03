@@ -16,12 +16,12 @@ import {
 import type { ZoomableCanvasTransform } from '@/components/charts/ZoomableCanvas';
 import { Select } from '@/components/inputs/Select';
 import { Modal } from '@/components/overlays/Modal';
-import { useEventListener } from '@/lib/hooks/use_event_listener';
-import { useFullScreenChange } from '@/lib/hooks/use_fullscreen_change';
-import { handleKeyMapKeyDown, type KeyMapActions } from '@/lib/key_map';
-import { clamp, cmp } from '@/lib/math';
 import { useLocale } from '@/locale';
 import { useTheme } from '@/theme';
+import { useEventListener } from '@/util/hooks/use_event_listener';
+import { useFullScreenChange } from '@/util/hooks/use_fullscreen_change';
+import { handleKeyMapKeyDown, type KeyMapActions } from '@/util/key_map';
+import { clamp, cmp } from '@/util/math';
 import { useSearchSchemaPropertyValueToString } from './filterable_table_property_value';
 import { formatDateAndTime } from './table_export';
 import type {

@@ -1,5 +1,5 @@
-import { getCSSVariableValue } from '@/lib/color';
 import { useTheme } from '@/theme';
+import { getCSSVariableValue } from '@/util/color';
 
 /**
  * A styled `<select>`, themed to the library's own input look.

@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
-import { ipv4Regex } from '@/lib/ipv4';
-import { clamp } from '@/lib/math';
+import { ipv4Regex } from '@/util/ipv4';
+import { clamp } from '@/util/math';
 import { TextInput } from './TextInput';
 
 /**

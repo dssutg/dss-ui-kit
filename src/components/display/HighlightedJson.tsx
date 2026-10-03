@@ -1,4 +1,4 @@
-import { highlightText } from '@/lib/highlight';
+import { highlightText } from '@/util/highlight';
 
 /**
  * Renders a JSON string with its keys, strings, numbers and literals coloured.

@@ -14,7 +14,7 @@ import type { MUITabDescriptor } from '@/components/navigation/MUITabList';
 import { OrderPanel } from '@/components/navigation/OrderPanel';
 import { ToTop } from '@/components/navigation/ToTop';
 import { TreeView, type TreeViewItem } from '@/components/navigation/TreeView';
-import { act, click, render, type } from '@/lib/testing/render';
+import { act, click, render, type } from '@/util/testing/render';
 
 describe('Accordion', () => {
   it('reports the state it would move to rather than moving there itself', async () => {

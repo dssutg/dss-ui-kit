@@ -1,5 +1,5 @@
-import { minstrftime } from '@/lib/date';
 import type { LocaleDates } from '@/locale';
+import { minstrftime } from '@/util/date';
 
 /** The formats a filtered table can be exported as. Each is written by the caller, not by the table. */
 export type FilterableTableExportFormat = 'pdf' | 'html' | 'csv' | 'json';

@@ -8,8 +8,8 @@ import { Input } from '@/components/inputs/Input';
 import { Select } from '@/components/inputs/Select';
 import { TextInput } from '@/components/inputs/TextInput';
 import { Modal } from '@/components/overlays/Modal';
-import { minstrftime } from '@/lib/date';
 import { type LocaleDates, useLocale } from '@/locale';
+import { minstrftime } from '@/util/date';
 import { escapeProp, formatDateAndTime } from './table_export';
 import type {
   AnonymousSearchPropertySchema,

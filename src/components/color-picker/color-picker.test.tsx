@@ -7,7 +7,7 @@ import { HexAlphaColorPickerPopover } from '@/components/color-picker/HexAlphaCo
 import { HexColorInput } from '@/components/color-picker/HexColorInput';
 import { HexColorPicker } from '@/components/color-picker/HexColorPicker';
 import { HslaStringColorPicker } from '@/components/color-picker/HslaStringColorPicker';
-import { act, click, render, type, waitFor } from '@/lib/testing/render';
+import { act, click, render, type, waitFor } from '@/util/testing/render';
 
 /**
  * A hexadecimal colour model written out rather than imported, so a change to the shipped model is a

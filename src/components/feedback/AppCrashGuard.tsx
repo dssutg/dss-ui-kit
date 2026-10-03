@@ -1,10 +1,10 @@
 import type { ComponentType, ReactNode } from 'react';
 import { Component, type ErrorInfo, useEffect, useState } from 'react';
 import { IconButton } from '@/components/buttons/IconButton';
-import { tryCatch } from '@/lib/catch';
-import { copyToClipboard } from '@/lib/dom';
-import { uuidv4 } from '@/lib/uuid';
 import { useLocale } from '@/locale';
+import { tryCatch } from '@/util/catch';
+import { copyToClipboard } from '@/util/dom';
+import { uuidv4 } from '@/util/uuid';
 
 /**
  * A crash report.

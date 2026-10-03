@@ -9,7 +9,7 @@ import { ControlledTable, getEnumLabel } from '@/components/tables/ControlledTab
 import { CountLabel } from '@/components/tables/CountLabel';
 import { FilterableTable } from '@/components/tables/FilterableTable';
 import { SortableTable, type SortableTableDescriptor } from '@/components/tables/SortableTable';
-import { click, flush, render } from '@/lib/testing/render';
+import { click, flush, render } from '@/util/testing/render';
 
 /** One row of the table every test here renders, over a shape the library never names. */
 interface Row {

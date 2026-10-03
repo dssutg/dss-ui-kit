@@ -1,5 +1,5 @@
-import { clamp } from '@/lib/math';
 import { useLocale } from '@/locale';
+import { clamp } from '@/util/math';
 import { getEnumLabel } from './ControlledTable';
 import type { EnumOption } from './FilterableTableTopPanel';
 import { escapeProp, formatDateAndTime } from './table_export';

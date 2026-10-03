@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import { cmp } from '@/lib/math';
 import { useLocale } from '@/locale';
+import { cmp } from '@/util/math';
 
 /**
  * Shows a number as its individual bits, with a description for each bit that is set.

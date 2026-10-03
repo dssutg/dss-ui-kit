@@ -1,7 +1,7 @@
 import { createPortal, useCallback, useEffect, useState } from 'react';
 import { IconButton } from '@/components/buttons/IconButton';
-import { useGranularEffect } from '@/lib/hooks/use_granular_effect';
 import { useLocale } from '@/locale';
+import { useGranularEffect } from '@/util/hooks/use_granular_effect';
 
 /**
  * A centred dialog over a backdrop, with a title bar and a close button.

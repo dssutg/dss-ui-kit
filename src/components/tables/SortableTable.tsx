@@ -5,9 +5,9 @@ import {
   useVirtualizedList,
   type VirtualizedListRowRendererProps,
 } from '@/components/inputs/VirtualizedList';
-import { useForceUpdate } from '@/lib/hooks/use_force_update';
-import { useTimeout } from '@/lib/hooks/use_timeout';
 import { useLocale } from '@/locale';
+import { useForceUpdate } from '@/util/hooks/use_force_update';
+import { useTimeout } from '@/util/hooks/use_timeout';
 import { ColumnResizer } from './ColumnResizer';
 import { SortableTableRow } from './SortableTableRow';
 

@@ -170,7 +170,7 @@ emitTypedEvent('CART_CHANGED', { itemCount: 3 });
 
 ## WebGL
 
-`src/lib/gl` is a small scene renderer over a raw WebGL context: boxes, quads, text sprites and camera
+`src/util/gl` is a small scene renderer over a raw WebGL context: boxes, quads, text sprites and camera
 projection, with per-face colours or a flat material. It is generic — it has no model of anything —
 and it is exported in full (`createSceneRenderContext`, `renderScene`, `useGLCtx`,
 `convertBoxToQuads`, `generateTransformMatrices`, …) for an application that needs to draw its own

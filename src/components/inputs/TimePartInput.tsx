@@ -1,5 +1,5 @@
 import { IconButton } from '@/components/buttons/IconButton';
-import { clamp } from '@/lib/math';
+import { clamp } from '@/util/math';
 import { DecimalIntegerInput } from './DecimalIntegerInput';
 
 /**

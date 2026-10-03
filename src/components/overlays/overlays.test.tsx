@@ -4,7 +4,7 @@ import { DropDownMenu } from '@/components/overlays/DropDownMenu';
 import { FeedbackTooltip } from '@/components/overlays/FeedbackTooltip';
 import { Modal } from '@/components/overlays/Modal';
 import { Popover } from '@/components/overlays/Popover';
-import { act, click, render } from '@/lib/testing/render';
+import { act, click, render } from '@/util/testing/render';
 
 describe('Modal', () => {
   // The dialog defers its close by the length of its own animation, so a test of that contract needs

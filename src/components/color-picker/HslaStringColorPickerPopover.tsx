@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Popover } from '@/components/overlays/Popover';
-import { useDebounce } from '@/lib/hooks/use_debounce';
+import { useDebounce } from '@/util/hooks/use_debounce';
 import { HslaStringColorPicker } from './HslaStringColorPicker';
 
 /**

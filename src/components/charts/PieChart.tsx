@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { cartesianToPolar, clamp, polarToCartesian, turn } from '@/lib/math';
+import { cartesianToPolar, clamp, polarToCartesian, turn } from '@/util/math';
 
 /**
  * One slice of a {@link PieChart}: its label, the share of the whole it is, and the colour drawn.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { collectFiles } from './lib/source-tree.ts';
+import { collectFiles } from './util/source-tree.ts';
 
 /**
  * This project is written in TypeScript. Bare JavaScript is allowed only inside dependencies, which

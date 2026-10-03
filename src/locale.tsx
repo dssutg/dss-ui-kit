@@ -7,12 +7,12 @@ import {
   useMemo,
   useState,
 } from 'react';
-import type { PluralRule } from '@/lib/pluralization';
-import { getPluralizationIndex, registerPluralRule } from '@/lib/pluralization';
-import { substituteStringByMap } from '@/lib/record';
 import type { LocaleDates } from '@/locales/dates';
 import { en, enDates } from '@/locales/en';
 import { ru, ruDates } from '@/locales/ru';
+import type { PluralRule } from '@/util/pluralization';
+import { getPluralizationIndex, registerPluralRule } from '@/util/pluralization';
+import { substituteStringByMap } from '@/util/record';
 
 // Re-exported so a component can name the shape of a locale's dates without reaching into the locale
 // files themselves, which are the one layer a component may not import.

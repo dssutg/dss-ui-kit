@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useEventListener } from '@/lib/hooks/use_event_listener';
-import { useGranularEffect } from '@/lib/hooks/use_granular_effect';
 import { useLocale } from '@/locale';
+import { useEventListener } from '@/util/hooks/use_event_listener';
+import { useGranularEffect } from '@/util/hooks/use_granular_effect';
 import { StaticCalendar } from './StaticCalendar';
 
 /**

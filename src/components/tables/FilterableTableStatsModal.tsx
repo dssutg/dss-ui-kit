@@ -2,8 +2,8 @@ import { useId, useState } from 'react';
 import { mapToShares, PieChart } from '@/components/charts/PieChart';
 import { Select } from '@/components/inputs/Select';
 import { Modal } from '@/components/overlays/Modal';
-import { cmp } from '@/lib/math';
 import { useLocale } from '@/locale';
+import { cmp } from '@/util/math';
 import { useSearchSchemaPropertyValueToString } from './filterable_table_property_value';
 import { makeSortableTableCellRenderer, SortableTable } from './SortableTable';
 import type {

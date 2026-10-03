@@ -1,4 +1,4 @@
-import { clamp } from '@/lib/math';
+import { clamp } from '@/util/math';
 import type { Interaction } from './color_picker_types';
 
 /** The position reported for a pointer event that carries no usable coordinates. */

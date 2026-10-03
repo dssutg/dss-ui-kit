@@ -1,14 +1,14 @@
 import { createPortal, useCallback, useEffect, useRef, useState } from 'react';
 import { Icon, type IconName } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';
-import { compareArrays, isChildArrayPath } from '@/lib/array';
-import { areDOMRectsEqual } from '@/lib/dom';
-import { useEventListener } from '@/lib/hooks/use_event_listener';
-import { useGranularEffect } from '@/lib/hooks/use_granular_effect';
-import { useInterval } from '@/lib/hooks/use_interval';
-import { useWindowSize } from '@/lib/hooks/use_window_size';
-import { clamp } from '@/lib/math';
 import { useLocale } from '@/locale';
+import { compareArrays, isChildArrayPath } from '@/util/array';
+import { areDOMRectsEqual } from '@/util/dom';
+import { useEventListener } from '@/util/hooks/use_event_listener';
+import { useGranularEffect } from '@/util/hooks/use_granular_effect';
+import { useInterval } from '@/util/hooks/use_interval';
+import { useWindowSize } from '@/util/hooks/use_window_size';
+import { clamp } from '@/util/math';
 
 /**
  * A menu of actions and submenus, opening from a dots or button trigger.

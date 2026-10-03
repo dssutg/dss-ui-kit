@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { collectFiles, REPOSITORY_ROOT } from './lib/source-tree.ts';
+import { collectFiles, REPOSITORY_ROOT } from './util/source-tree.ts';
 
 /**
  * The layering rule: what each directory is allowed to import.
@@ -11,7 +11,7 @@ import { collectFiles, REPOSITORY_ROOT } from './lib/source-tree.ts';
  * not code this library may keep, so where a module may reach from has to be decided once and checked
  * mechanically rather than reviewed file by file. This test is that decision.
  *
- * The one direction nothing in the tree uses is the one the rule forbids: nothing in `src/lib/`
+ * The one direction nothing in the tree uses is the one the rule forbids: nothing in `src/util/`
  * imports `src/components/`. Helpers do not know what renders them. A helper that starts needing a
  * component is a component, and it moves.
  */
@@ -46,7 +46,7 @@ const INFRASTRUCTURE_MODULES = [
 /** Which layer a source file belongs to. */
 function layerOf(path: string): Layer {
   if (path === 'src/index.ts') return 'index';
-  if (path.startsWith('src/lib/')) return 'lib';
+  if (path.startsWith('src/util/')) return 'lib';
   if (path.startsWith('src/components/')) return 'components';
   if (path.startsWith('src/icons/')) return 'icons';
   if (path.startsWith('src/locales/')) return 'locales';
@@ -130,10 +130,10 @@ describe('module boundaries', () => {
     expect(findForbiddenImports()).toEqual([]);
   });
 
-  it('keeps nothing in src/lib/ importing a component', () => {
+  it('keeps nothing in src/util/ importing a component', () => {
     // Stated separately because it is the direction nothing in the tree currently uses, and the one
     // that would turn a helper into a component. A helper that needs a component is a component.
-    const offenders = collectFiles('src/lib')
+    const offenders = collectFiles('src/util')
       .filter((path) => path.endsWith('.ts') || path.endsWith('.tsx'))
       .filter((path) => {
         const text = readFileSync(join(REPOSITORY_ROOT, path), 'utf8');

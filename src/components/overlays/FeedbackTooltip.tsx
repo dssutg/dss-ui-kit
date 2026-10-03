@@ -1,5 +1,5 @@
 import { createPortal, useRef, useState } from 'react';
-import { useGranularEffect } from '@/lib/hooks/use_granular_effect';
+import { useGranularEffect } from '@/util/hooks/use_granular_effect';
 
 /**
  * How a tooltip is coloured, which is all this type decides.
