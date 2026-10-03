@@ -29,8 +29,8 @@ Every exported symbol carries a TSDoc comment. When adding to the public surface
 - Start with a one-line summary, then a blank line and the detail.
 - Use `@param` and `@returns` on anything that takes arguments.
 - Reference other symbols with `{@link SymbolName}` so TypeDoc can resolve them.
-- Say *why* a rule exists when it is not obvious from the code — for example why a missing device is
-  never downgraded to a fault.
+- Say *why* a rule exists when it is not obvious from the code — for example why a missing value is
+  never silently defaulted.
 
 The most useful comment in a UI library is the one that says what a component will not do: what it
 assumes, what it leaves to the caller, and what it deliberately does not handle. A consumer cannot

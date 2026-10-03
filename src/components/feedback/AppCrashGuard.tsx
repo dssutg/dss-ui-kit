@@ -85,8 +85,8 @@ export interface CrashGuardProps {
    * The caller's own context for the report.
    *
    * Return a value that survives `JSON.stringify`. This is where an application puts the screen the
-   * operator was on, the device they had selected, or whatever else makes a report actionable. It is
-   * called once per crash, so it may be expensive; anything that throws is caught and recorded as
+   * operator was on, the record they had selected, or whatever else makes a report actionable. It
+   * is called once per crash, so it may be expensive; anything that throws is caught and recorded as
    * the context rather than being allowed to mask the original crash.
    */
   readonly getContext?: () => unknown;

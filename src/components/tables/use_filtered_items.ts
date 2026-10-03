@@ -38,8 +38,8 @@ export type AnonymousSearchPropertySchema<T> =
       /**
        * The values the operator may filter by, and how to label each one. A column is a closed set
        * of values in every table this serves, but which set is the caller's: naming them here is
-       * what lets one filter control serve device types, connection states or anything else without
-       * this module knowing any of them.
+       * what lets one filter control serve a closed set of values of any kind without this module
+       * knowing what they are.
        *
        * A value present in the data but absent from `options` still renders, labelled with the
        * value itself, so a new value in the caller's data is visible before it is added here.

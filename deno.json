@@ -4,8 +4,9 @@
   "lint": false,
   "tasks": {
     "dev": "deno run -A npm:vite",
-    "build": "deno task build:bundle && deno task build:types",
+    "build": "deno task build:bundle && deno task build:preset && deno task build:types",
     "build:bundle": "deno run -A npm:vite build",
+    "build:preset": "deno run -A npm:vite build --config vite.preset.config.ts",
     "build:types": "deno run -A npm:@typescript/native-preview --emitDeclarationOnly --declaration --declarationMap --outDir dist/types -p tsconfig.build.json",
     "pack": "deno run --allow-read scripts/check-package-manifest.ts",
     "preview": "deno run -A npm:vite preview",

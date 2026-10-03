@@ -44,10 +44,17 @@ const buttonIconColors: Readonly<Record<ButtonType, string>> = {
 /**
  * A button with an optional leading icon.
  *
- * Renders a real `<button>` and forwards everything else, so `form`, `disabled` and `aria-*` work as
- * they do in React. It does not manage a pressed state: a button that toggles is
- * {@link ToggleButton}, and a button in a form that submits is this one with
- * `htmlButtonType="submit"`.
+ * Renders a real `<button>`, so the browser's own focus and keyboard handling apply, and
+ * `htmlButtonType` is the only way its type is set — `<button>` defaults to `submit` in a
+ * form, which is almost never what a button in a panel wants.
+ *
+ * It does not manage a pressed state: a button that toggles is {@link ToggleButton}, and one that
+ * submits a form is this with `htmlButtonType="submit"`.
+ *
+ * It also takes exactly the props below and forwards none of the rest. That is a deliberate limit
+ * rather than an oversight: a `className` or `style` forwarded onto the element would override the
+ * colours its `type` chose, which is the one thing this component exists to decide. A caller that
+ * needs `disabled` or an `aria-*` attribute does not reach for this button.
  */
 export function Button({
   type = 'regular',

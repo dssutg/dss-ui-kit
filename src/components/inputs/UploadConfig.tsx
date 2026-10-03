@@ -8,18 +8,17 @@ import { useLocale } from '@/locale';
 /**
  * What {@link UploadConfig} takes.
  *
- * The names are the domain's, not the transport's: this describes an incoming connection well enough
- * to configure the library's own address field, and nothing about how a file would be sent or
- * received.
+ * The names belong to the caller rather than to any transport: this describes an incoming connection
+ * well enough to configure the library's own address field, and nothing about how a file would be
+ * sent or received.
  */
 export interface UploadConfigProps {
   /**
    * The icon shown once a file has been chosen, and the message the button beside the drop area
    * speaks for.
    *
-   * A prop rather than a fixed pair of variants, because what is being uploaded — a configuration, a
-   * firmware image, a licence — is the caller's fact and not the component's. The component knows
-   * about a file, and nothing about what kind.
+   * A prop rather than a fixed pair of variants, because what is being uploaded is the caller's
+   * fact and not the component's. The component knows about a file, and nothing about what kind.
    */
   readonly icon?: IconName | undefined;
   readonly uploadTitle?: string | undefined;

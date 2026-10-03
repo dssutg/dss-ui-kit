@@ -2,7 +2,16 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2023"],
-    "types": ["node", "deno"]
+    "types": ["node", "deno"],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
-  "include": ["vite.config.ts", "tailwind.config.ts", "vitest.config.ts", "scripts/**/*.ts"]
+  "include": [
+    "vite.config.ts",
+    "vite.preset.config.ts",
+    "tailwind.config.ts",
+    "vitest.config.ts",
+    "scripts/**/*.ts"
+  ]
 }

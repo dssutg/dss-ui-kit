@@ -145,6 +145,26 @@ export function makeSortableTableCellRenderer<T, C extends string>(
 }
 
 /**
+ * The `aria-sort` of one header cell: what a screen reader says when it reaches the column.
+ *
+ * It is on the header cell rather than on the sort indicator inside the header button
+ * because that is where the specification puts it, and it is stated for every column rather
+ * than only for the sorted one — `none` is the answer for a column that is not sorted, and an
+ * absent attribute says nothing.
+ */
+function getHeaderSortState(
+  columnId: string,
+  currentSortColumnId: string | undefined,
+  currentReversedSort: boolean,
+): 'ascending' | 'descending' | 'none' {
+  if (currentSortColumnId !== columnId) {
+    return 'none';
+  }
+
+  return currentReversedSort ? 'descending' : 'ascending';
+}
+
+/**
  * A virtualized table with draggable column widths and sortable columns.
  *
  * It draws and orders what the descriptor holds, and it does not sort: `sortColumnId` and
@@ -338,6 +358,7 @@ export function SortableTable<T, C extends string>({
             {descriptor.headerColumns.map((column, index) => (
               <th
                 key={column.id}
+                aria-sort={getHeaderSortState(column.id, currentSortColumnId, currentReversedSort)}
                 className="border-tpl bg-bpd shadow-tpl sticky top-0 box-border select-none border-r-2 pb-1 font-normal shadow-[inset_0px_-2px_0px_0px] last:border-r-0"
                 style={{
                   ...(index !== descriptor.headerColumns.length - 1

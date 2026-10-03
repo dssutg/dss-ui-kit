@@ -4,7 +4,7 @@ Guidance for AI coding agents (and humans) working in this repository.
 
 ## Repository state
 
-**The library is decoupled and builds.** `deno task ci` is green: 266 tracked files, 152 tests, a
+**The library is decoupled and builds.** `deno task ci` is green: 289 tests over 20 files, a
 production bundle, a manifest that matches the bundle and an API reference generated from the public
 surface.
 [`TODO.md`](./TODO.md) holds what is still to be done before it is published, in the order it should
@@ -13,10 +13,6 @@ be done.
 Read this document for the rules the library is held to, and `TODO.md` for the remaining steps. They
 are not the same thing: a rule here is why the work is done a particular way, an item there is what is
 done next.
-
-Two things in here describe work that has not happened yet, and are marked as such: the per-component
-render tests ([Testing](#testing)) and the token map shared with a consumer's Tailwind config
-([Styling](#styling)).
 
 ## Project
 
@@ -28,7 +24,8 @@ What it **is not** matters as much, because that is where the coupling used to b
 
 - **Not an application.** There is no entrypoint, no page, no router, no shell. A library has no
   entrypoint; the consumer's `main.tsx` is the consumer's.
-- **Not a domain model.** No device, no sensor, no zone, no configuration schema.
+- **Not a model of what an operator manages.** Nothing here names the subject an application is
+  built around: a component renders the shape it is handed and no more.
 - **Not a data layer.** No WebSocket client, no protocol, no persistence. A component takes props.
 - **Not a localisation catalogue.** It ships the keys its own components render and no others; the
   consumer adds its own.
@@ -188,11 +185,10 @@ if a file under `src/components/` or `src/lib/` imports a module outside the lay
 - `noPropertyAccessFromIndexSignature` is on, so a value from an index signature is read with
   brackets: `groups['type']`, not `groups.type`. When that gets noisy, narrow it once into a named
   type rather than casting at each use.
-- **No domain types.** A `DeviceType`, a `ZoneState` or a `SensorReading` appearing in a public
-  signature is a defect: it names a type no consumer can satisfy. Model the shape the component
-  actually renders and let the consumer adapt — which is what makes a component generic over its
-  data rather than over one application's protocol. `scripts/no-domain-code.test.ts` walks the tree
-  and fails on one.
+- **No types that name a subject.** A type that names what one application is about, rather than the
+  shape a component actually renders, is a defect in a public signature: it names a type no consumer
+  can satisfy. Model the shape the component renders and let the consumer adapt — which is what makes
+  a component generic over its data rather than over one application's protocol.
 
 ## Readability
 
@@ -233,7 +229,7 @@ imports by rewriting them to `preact/...`.
 
 ### The CSS custom-property contract
 
-The design system is **119 CSS custom properties** named `--color-*`, defined per theme:
+The design system is **106 CSS custom properties** named `--color-*`, defined per theme:
 
 ```css
 /* theme_dark.css */
@@ -262,9 +258,18 @@ Tailwind 3, compiled through PostCSS declared inside `vite.config.ts`. There is 
 A consumer's `tailwind.config.ts` has to scan the published package for class names, and the library
 has to make that possible: the classes it renders must be discoverable from the shipped source, not
 only from this repository. The token map is the other half of that: a utility exists in the consumer's
-output only if their config names the token, and today that means copying 119 lines out of
-`tailwind.config.ts` by hand. Publishing that map as an importable preset is
-[`TODO.md`](./TODO.md) section 2.
+output only if their config names the token.
+
+That map ships as a preset rather than as a file to copy — `src/tailwind_preset.ts`, built into
+`dist/tailwind.js` and published as `dss-ui-kit/tailwind`, so a consumer writes
+`presets: [uiKitPreset]`. This repository's own `tailwind.config.ts` consumes the preset it exports,
+so there is one copy of the map and a renamed token is a type error in a consumer's config rather than
+a class that silently stops resolving. The preset deliberately does not carry `content`: Tailwind
+resolves a `content` path against the working directory of the build that reads the config, so that
+path is the consumer's line to write.
+
+`scripts/design-tokens.test.ts` fails if the preset's map and `src/css/theme_dark.css` ever disagree
+about which properties exist.
 
 ### Class names
 
@@ -291,7 +296,7 @@ an operator reads comes from the locale files, and a component holds a key, neve
   takes messages, dates, a script and a plural rule, and `LocaleProvider` merges a caller's own
   `messages` and `dates` over the shipped catalogues. Two files per new language, not a fork.
 
-A component that needs a literal of its own — a device identifier, a version string — renders it as
+A component that needs a literal of its own — an identifier, a version string — renders it as
 data. Only text meant to be read by an operator belongs in a locale file.
 
 A test walks the tree and fails on a Cyrillic letter anywhere outside the locale files, so Russian
@@ -390,7 +395,7 @@ biome.json                the single formatter and linter
 standard React convention and it makes the import statement read as the symbol it binds.
 
 Everything that is not a component keeps a lowercase, dash-separated name describing what it is:
-`cn.ts` for a helper, `domain.ts` for a group of types, `main.tsx` for the browser entrypoint.
+`cn.ts` for a helper, `types.ts` for a group of types, `main.tsx` for the browser entrypoint.
 
 **A hook or a helper keeps a `snake_case` name describing what it is.** `use_event_listener.tsx` and
 `use_granular_effect.tsx` are not components, and a PascalCase filename would claim they were. The
@@ -421,8 +426,8 @@ deno task docs:watch    # rebuilds on save
   it drifts out of date the first time a comment changes.
 - CI builds it, so a broken `@link` or an unresolvable type fails the pipeline. Edit the comment,
   never the HTML.
-- Write TSDoc for the **why**. A comment that restates the signature is noise; one that explains why
-  a missing device is never downgraded to a fault is documentation.
+- Write TSDoc for the **why**. A comment that restates the signature is noise; one that explains why a
+  missing value is never silently defaulted is documentation.
 - Document the public surface. Exported symbols that TypeDoc cannot resolve are reported as warnings
   — that is the signal that something is under-documented.
 - **Say it once, and only where it belongs.** Give every fact one home: the file layout, the
@@ -437,8 +442,8 @@ find that out by reading the types.
 
 - **Code, identifiers, and comments: English.**
 - **User-facing text: the locale files.** Every string a person reads lives in `src/locales/`.
-- **Markdown documentation: English.** The glossary in this file is the one place a domain acronym
-  is spelled out.
+- **Markdown documentation: English.** An acronym with no other sensible expansion is spelled out the
+  first time it appears, in the document that uses it.
 
 The vocabulary the components arrived with is not being translated or renamed as part of this work. A
 key rename forces an edit in every consuming file and buys nothing but a cleaner-looking diff; if a
@@ -448,14 +453,37 @@ name is wrong, that is a change with a migration, taken on its own.
 
 `deno task test` runs the suite. Add tests next to what they cover: `src/**/*.test.ts` beside the
 component or type, `scripts/**/*.test.ts` beside the helper. The repository-policy tests —
-`no-bare-javascript`, `no-domain-code`, `module-boundary` and `no-russian-text` — are the exceptions:
-they guard repository-wide rules rather than one module, so they sit beside the tooling they protect
-and share its tree walker (`scripts/lib/source-tree.ts`).
+`no-bare-javascript`, `module-boundary` and `no-russian-text` — are the exceptions: they guard
+repository-wide rules rather than one module, so they sit beside the tooling they protect and share its
+tree walker (`scripts/lib/source-tree.ts`).
 
-152 tests cover the pure helpers that carry the most logic per line, plus the four policy rules. **There
-is no render test per component yet**, which is why [`TODO.md`](./TODO.md) section 4 exists: a
-component that stops rendering is a blank page in someone else's application, and nothing here notices
-yet.
+The suite covers the pure helpers that carry the most logic per line, the repository-policy rules, and
+every component group with at least one render test.
+
+### Rendering a component in a test
+
+`src/lib/testing/render.tsx` is the one place a component test renders: a container attached to the
+document, a root, effects flushed before the assertion, and an unmount after each test. A group that
+writes its own copy is a group whose test passes for a reason that has nothing to do with the
+component.
+
+Three things about it are worth knowing before writing the first test against it:
+
+- **The default environment is `node`**, and a component test says `// @vitest-environment jsdom` at
+  the top. A suite that walks the filesystem or builds a URL should not be running in a DOM emulation,
+  because it will pass there and fail in the runtime it ships in.
+- **`flush()` is part of rendering.** A component that measures itself is told about its size on a later
+  turn, and one that draws at all waits for that: a table draws one row until the autosizer has been
+  measured. `render` and `update` flush for you; `flush()` is exported for a test that has just changed
+  something itself. Under fake timers it advances the clock by nothing rather than waiting, because a
+  test that installed its own clock decides when deferred work happens.
+- **The queries search `document.body`, not the container**, because a modal, a dropdown and a tooltip
+  are rendered through a portal onto the body. `container` is still there for the assertions about the
+  container itself — that a component rendered nothing, for instance.
+
+`src/lib/testing/setup.ts` supplies what jsdom does not implement and the components assume:
+`ResizeObserver`, `matchMedia`, `scrollIntoView` and fixed element dimensions. It guards on `window`
+so it is inert in the `node`-environment tests.
 
 ## Git and versioning
 

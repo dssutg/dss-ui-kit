@@ -2,7 +2,7 @@
   "name": "dss-ui-kit",
   "version": "0.1.0",
   "type": "module",
-  "description": "Domain-independent Preact component library and design system: 119 CSS custom-property tokens, an event bus, localisation, and a generic WebGL scene renderer",
+  "description": "Preact component library and design system: 106 CSS custom-property tokens, an event bus, localisation, and a generic WebGL scene renderer",
   "license": "MIT",
   "keywords": [
     "preact",
@@ -26,6 +26,10 @@
       "require": "./dist/dss-ui-kit.umd.cjs"
     },
     "./style.css": "./dist/dss-ui-kit.css",
+    "./tailwind": {
+      "types": "./dist/types/tailwind_preset.d.ts",
+      "import": "./dist/tailwind.js"
+    },
     "./package.json": "./package.json"
   },
   "sideEffects": [

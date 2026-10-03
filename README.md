@@ -1,12 +1,12 @@
 # DSS UI Kit
 
-A domain-independent component library and design system for Preact: **88 components**, the hooks they
-need, a **119-token** CSS custom-property contract, localisation, an event bus, and a generic WebGL
-scene renderer.
+A component library and design system for Preact: **88 components**, the hooks they need, a
+**106-token** CSS custom-property contract, localisation, an event bus, and a generic WebGL scene
+renderer.
 
-Nothing here knows what application it is rendered in. There is no domain model, no data layer and no
-router: a component takes props, and anything a caller would otherwise have to reach into their own
-application for is a prop.
+Nothing here knows what application it is rendered in. There is no model of what an application is
+about, no data layer and no router: a component takes props, and anything a caller would otherwise
+have to reach into their own code for is a prop.
 
 ## Install
 
@@ -48,38 +48,41 @@ depending on something the version number does not describe.
 Every component exports its props interface beside it (`ButtonProps`, `AutoSizerProps`, …), and every
 one of those props interfaces is documented in the [API reference](./docs/api-intro.md).
 
+The table is an index, not the documentation: it says which group a component is in. What a component
+is for, and what it deliberately leaves to its caller, is in
+[worked examples](./docs/examples.md) — one per group, assembled from props that exist.
+
 ## Styling
 
-The design system is **119 CSS custom properties** named `--color-*`, defined per theme and exposed as
+The design system is **106 CSS custom properties** named `--color-*`, defined per theme and exposed as
 Tailwind colour utilities — `bg-bda`, `text-bdat`, `border-tpl`, `fill-tok`. A theme is data, not a
 build artefact: switching theme sets a `data-theme` attribute on `<body>` and nothing recompiles.
 
 A consuming application has to do two things for the components to look right: scan the published
-package so Tailwind can see the class names the components render, and declare the same colour map,
-because a utility only exists in the output if the config names the token.
+package so Tailwind can see the class names the components render, and use the token map, because a
+utility only exists in the output if the config names the token. The map is published as a preset, so
+it is a dependency rather than 106 lines to copy:
 
 ```ts
 // tailwind.config.ts in the consuming application
 import forms from '@tailwindcss/forms';
+import { uiKitPreset } from 'dss-ui-kit/tailwind';
 import type { Config } from 'tailwindcss';
 
 export default {
+  presets: [uiKitPreset],
   // The package is scanned as well as the application, or a class the library renders is
-  // never generated and the component is unstyled.
+  // never generated and the component is unstyled. The preset does not carry `content`:
+  // a path written in this repository would be resolved against whatever directory the
+  // build that reads the config happens to run in.
   content: ['./src/**/*.{ts,tsx}', './node_modules/dss-ui-kit/dist/**/*.{js,cjs}'],
   plugins: [forms],
-  theme: {
-    extend: {
-      colors: {
-        // The 119 tokens from the library's tailwind.config.ts, named to match the
-        // custom properties: { bda: 'var(--color-bda)' }.
-      },
-    },
-  },
 } satisfies Config;
 ```
 
-The library's own `tailwind.config.ts` is the source of truth for that map.
+`uiKitPreset` names each token the way the custom property is named, so `bg-bda` is
+`var(--color-bda)` in the output and the two cannot drift apart. A renamed token is a type error in
+this file rather than a class that silently stops resolving.
 
 Renaming a custom property is a breaking change. Adding one is not.
 
@@ -108,10 +111,36 @@ passing `messages` to the provider.
 
 ## Theming
 
-Five themes ship — `dark`, `light`, `acme`, `indigo` and `purple` — and more can be registered with
-`registerTheme`. `setTheme` writes the theme name to a `data-theme` attribute on `<body>` and remembers
-the choice; `useTheme` reads it back and re-renders when it changes, including when another tab changes
-it:
+Five themes ship, and more can be registered with `registerTheme`. Two of them are the library's
+contract and three are published examples:
+
+| Theme | What it is |
+| --- | --- |
+| `dark`, `light` | The two the library is written and tested against. Both define all 106 tokens. |
+| `acme`, `indigo`, `purple` | Worked examples of a **partial** theme: each overrides a handful of tokens and inherits the rest from `dark`. |
+
+A theme's custom properties are the consumer's CSS, not a JavaScript object: `registerTheme` only
+tells the library a name is real — it takes the name and the swatch a picker shows for it — and the
+tokens themselves are declared in the consumer's stylesheet, under the `data-theme` attribute the
+library writes. `theme_acme.css` is the shortest way to see the shape of that block, because it is
+the worked example: a handful of `--color-*` overrides, and the rest inherited.
+
+```ts
+import { registerTheme } from 'dss-ui-kit';
+
+registerTheme({ name: 'house', tileColor: '#5b8a72' });
+```
+
+```css
+/* The consumer's own stylesheet: the tokens `house` changes, and only those. */
+body[data-theme='house'] {
+  --color-bpl: #101014;
+  --color-tpl: #e6e6ec;
+}
+```
+
+`setTheme` writes the theme name to a `data-theme` attribute on `<body>` and remembers the choice;
+`useTheme` reads it back and re-renders when it changes, including when another tab changes it:
 
 ```tsx
 import { setTheme, useTheme } from 'dss-ui-kit';

@@ -110,7 +110,7 @@ export function naturalCmp(a: string, b: string): number {
 /**
  * The order of one segment against another.
  *
- * Two numeric segments compare as numbers, which is what puts `sensor2` before `sensor10`. A
+ * Two numeric segments compare as numbers, which is what puts `line2` before `line10`. A
  * numeric segment against a non-numeric one compares as text, because there is no number on both
  * sides to compare.
  */

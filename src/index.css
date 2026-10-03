@@ -8,7 +8,7 @@
  * change what `global.css` and the picker styles win against.
  *
  * A consumer that wants the library's styles has to compile this file with this package's
- * `tailwind.config.ts`, because the 119 `--color-*` tokens the components reference are declared
+ * `tailwind.config.ts`, because the 106 `--color-*` tokens the components reference are declared
  * there. The library does not ship a prebuilt stylesheet: a checked-in one cannot know which
  * classes the consumer's own components add, and it goes stale the moment a class changes.
  */

@@ -76,12 +76,6 @@ body {
 
   --color-to-top-bg: #9c759c;
 
-  --color-event-log-record-column-fg: #ffffff;
-  --color-event-log-record-column-bg: #6e3797;
-  --color-event-log-record-header-column-fg: var(--color-tpl);
-  --color-event-log-record-header-column-bg: var(--color-bpl);
-  --color-event-log-record-cell-border: #512373;
-  --color-event-log-window-bg: var(--color-bpd);
   --color-icon-regular: #898989;
   --color-icon-inactive: #696969;
   --color-menu-item: #cccccc;
@@ -103,10 +97,6 @@ body {
   --color-error-dialog-window-scroll-bar-thumb: #e00000;
   --color-error-dialog-window-close-button-text: #eeeeee;
   --color-error-dialog-window-close-button-bg: #ab0000;
-  --color-zone-manager-main-window-bg: var(--color-bpd);
-  --color-zone-manager-top-control-bg: var(--color-bpl);
-  --color-zone-manager-top-control-object-count-bg: var(--color-bpl);
-  --color-zone-manager-top-tile-title-icon: var(--color-bpl);
   --color-mini-calendar-bg: #262626;
   --color-mini-calendar-today-bg: #ffff00;
   --color-mini-calendar-today-fg: #000000;
@@ -126,11 +116,4 @@ body {
   --color-ring-progress-bar-good: #a0fb9f;
   --color-ring-progress-bar-normal: #ffb66c;
   --color-ring-progress-bar-bad: #e55f5f;
-
-  --object-action-manager-feedback-date-fg: #bb0;
-  --object-action-manager-feedback-message-fg: #ff0;
-
-  --color-graph-connected-edge: var(--color-bok);
-  --color-graph-disconnected-edge: var(--color-bno);
-  --color-graph-edge-selected: var(--color-white);
 }

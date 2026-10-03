@@ -42,8 +42,8 @@ export interface ControlledTableProps<T, C extends string> extends FilterableTab
  *
  * Items, their property descriptions and the comparators are all the caller's data; the table filters
  * with them, renders them through the descriptor and reports a click. It is not a data source and has
- * no opinion about what an item is — which is what lets the same table show devices, zones or
- * anything else with the right properties passed in.
+ * no opinion about what an item is — which is what lets the same table show anything, given the
+ * right properties.
  */
 export function ControlledTable<T, C extends string>({
   items,

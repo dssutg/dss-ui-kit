@@ -8,6 +8,10 @@ import { Ripple } from '@/components/feedback/Ripple';
  * `ariaLabel` exists because the accessible name of an icon button cannot come from the icon: the
  * SVG is `aria-hidden`, so without a label the button is announced as an empty button. `title` is
  * the tooltip, which is a visual affordance and is not what a screen reader reads.
+ *
+ * It falls back to `title` for the accessible name. The fallback is stated here because the tooltip
+ * is the only name a caller has when there is one icon and one purpose, and an `aria-label=""` is
+ * worse than no attribute at all: it names the button as empty rather than leaving it unnamed.
  */
 export function IconButton({
   icon,
@@ -15,7 +19,7 @@ export function IconButton({
   iconStyle,
   rippleColor = '',
   title = '',
-  ariaLabel = '',
+  ariaLabel,
   className,
   iconClassName,
   bgClassName,

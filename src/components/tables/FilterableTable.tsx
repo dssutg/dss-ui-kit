@@ -50,10 +50,10 @@ export type FilterableTablePropertyList<T, C extends string> = FilterableTablePr
 /**
  * What a filterable table takes, whatever it is a table of.
  *
- * There is no domain in it: `items` is the caller's type, `properties` says how each of its fields is
- * shown, searched and compared, and the two heights are the caller's because the row geometry has to
- * be exact. `getItemId` is needed only for export and selection; when it is absent the table keys rows
- * by index.
+ * There is nothing in it about what is being listed: `items` is the caller's type,
+ * `properties` says how each of its fields is shown, searched and compared, and the two heights
+ * are the caller's because the row geometry has to be exact. `getItemId` is needed only for
+ * export and selection; when it is absent the table keys rows by index.
  */
 export interface FilterableTableProps<T, C extends string> {
   readonly items: T[];

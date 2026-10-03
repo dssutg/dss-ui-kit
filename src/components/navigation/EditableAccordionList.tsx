@@ -20,7 +20,8 @@ export interface EditableAccordionListItem {
 }
 
 /**
- * A list of named, expandable, renameable rows — the shape of a set of profiles or a group of zones.
+ * A list of named, expandable, renameable rows, which is the shape of any set the operator
+ * maintains one thing at a time.
  *
  * It edits names and order and reports the whole list back; what a row means, and whether the names
  * have to be unique, are the caller's: `isItemNameValid` is asked per name and `errors` is rendered

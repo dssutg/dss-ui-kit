@@ -6,13 +6,13 @@ and `deno task ci` passes.
 ## What this repository is
 
 `dss-ui-kit` is a component library and a design system for Preact: 88 components grouped by purpose,
-71 helper modules under `src/lib/`, a 119-token CSS custom-property contract, localisation in English
+71 helper modules under `src/lib/`, a 106-token CSS custom-property contract, localisation in English
 and Russian with registration for any other language, a typed event bus, and a generic WebGL scene
 renderer.
 
-It was extracted from a single application, and that extraction is finished: there is no domain model,
-no protocol, no data layer and no router left, and `scripts/no-domain-code.test.ts` walks the tree to
-keep it that way. What remains is the work of making a working library into a published one.
+There is no model of what an operator manages, no protocol, no data layer and no router, and
+`scripts/module-boundary.test.ts` walks the tree to keep the layers that way. What remains is the work
+of making a working library into a published one.
 
 ## What the conventions are
 
@@ -28,10 +28,10 @@ the git history, and none of it needs redoing.
 - **The toolchain**: Deno 2, Vite 8 in library mode, Tailwind CSS 3 through PostCSS declared in
   `vite.config.ts`, Biome 2 as the only formatter and linter, `tsgo` for types, Vitest, TypeDoc, and a
   GitHub Actions pipeline whose every job starts from `deno install --frozen`.
-- **The separation**: the application is gone — its entrypoint, page, router, state module, protocol
-  types, event names, crash-contact details and two domain components — and what remained is what more
+- **The separation**: what the library exposes is a component library and nothing else — no entrypoint,
+  no page, no router, no state module, no protocol, no persistence — and what remained is what more
   than one application can use.
-- **The house style**: the source is formatted, `any` and non-null assertions are gone, and the four
+- **The house style**: the source is formatted, `any` and non-null assertions are gone, and the five
   Biome rules that could not fit a library are turned off with the reason recorded rather than left
   implicit.
 - **The public surface**: `src/index.ts` is the single entry point, every component exports its props
@@ -39,7 +39,7 @@ the git history, and none of it needs redoing.
   consumer can import.
 - **The infrastructure**: the event bus keeps its mechanism and its extension point, the locale is
   registered rather than hard-coded, the theme is a `data-theme` attribute, and a library-owned store
-  replaces the application state the four infrastructure modules used to read.
+  replaces the state the four infrastructure modules used to read.
 - **The layout**: `src/components/<group>/` and PascalCase filenames for components; `src/icons/` for
   the generated path data; `src/lib/` for hooks and helpers.
 
@@ -49,51 +49,77 @@ Five themes ship in one stylesheet: `dark`, `light`, and three that exist to sho
 its limits — `acme`, `indigo` and `purple`. `src/css/index.css` imports all five, so every consumer
 downloads all five.
 
-- [ ] Decide whether the three extras are an example or dead weight, and record the decision. Shipping
+- [x] Decide whether the three extras are an example or dead weight, and record the decision. Shipping
       them as a documented example is fine; shipping them as five equally-promoted themes is not,
       because three of them are then the library's opinion rather than its contract.
-- [ ] Whichever way it goes, `registerTheme` and the `data-theme` attribute already support a consumer
+- [x] Whichever way it goes, `registerTheme` and the `data-theme` attribute already support a consumer
       bringing its own, so nothing else has to change for a fifth theme to exist.
+
+**The decision, and why.** All five ship, and the README says which is which: `dark` and `light` are the
+two the library is written and tested against, and `acme`, `indigo` and `purple` are published as
+worked examples of a partial theme — a theme file that overrides a handful of tokens and inherits the
+other hundred from `theme_dark.css`, which is the only file that defines all of them.
+
+The cost of keeping them is three partial blocks of CSS in every consumer's bundle, which is small
+because a partial theme is a few declarations each. The cost of dropping them is that the token system
+would ship with no demonstration of the one thing that makes it usable: overriding a theme without
+forking it. The cost that decided it is the third option: a consumer who wants their own palette today
+has to read `theme_acme.css` to see that `registerTheme` takes a name and a map of tokens, and that
+file is the documentation. A named theme is also a working example of the extension point, so it earns
+the bytes it costs.
 
 ## 2. Share the token map instead of copying it
 
-`tailwind.config.ts` is the source of truth for the 119-token colour map, and a consuming application
-has to reproduce it by hand — 119 lines that can drift from the library without anything noticing.
+`tailwind.config.ts` is the source of truth for the 106-token colour map, and a consuming application
+has to reproduce it by hand — 106 lines that can drift from the library without anything noticing.
 
-- [ ] Publish the token map as an importable preset (`dss-ui-kit/tailwind`) so a consumer's config is
+- [x] Publish the token map as an importable preset (`dss-ui-kit/tailwind`) so a consumer's config is
       `presets: [uiKitPreset]` rather than a copy, and a renamed token becomes a type error there
       instead of a silent mismatch.
-- [ ] The package's `exports` map and `files` list have to carry it, and `deno task pack` has to keep
+- [x] The package's `exports` map and `files` list have to carry it, and `deno task pack` has to keep
       passing.
+
+The map lives in `src/tailwind_preset.ts` and is built by `vite.preset.config.ts` into
+`dist/tailwind.js`, with declarations beside it. This repository's own `tailwind.config.ts` consumes
+the preset it exports, so the library builds through exactly the configuration a consumer writes, and
+`scripts/design-tokens.test.ts` fails if the map and `theme_dark.css` ever disagree about which
+properties exist.
 
 ## 3. Document the public surface in prose
 
 The API reference is generated and complete; the document a consumer reads first is not.
 
-- [ ] A component index in [`README.md`](./README.md) grouped by purpose, with one line per component
+- [x] A component index in [`README.md`](./README.md) grouped by purpose, with one line per component
       saying what it is for and what it deliberately does not do. The table is a starting point, not
       the document.
-- [ ] A short worked example per group — a form, a table, a modal — because the props interfaces
+- [x] A short worked example per group — a form, a table, a modal — because the props interfaces
       describe the parts and not the assembly.
+
+The examples are in [`docs/examples.md`](./docs/examples.md), one per component group, each assembled
+from props that exist rather than from an imagined API.
 
 ## 4. Render tests
 
-The suite is 152 tests over five pure helper modules and the five repository-policy tests. A component
-that stops rendering is not a failing test today; it is a blank page in someone else's application.
+The suite covers the pure helpers that carry the most logic per line, plus the repository-policy rules.
+A component that stops rendering is not a failing test unless something renders it.
 
-- [ ] A render test per component group, driven by Preact through the compat layer, each opening with
+- [x] A render test per component group, driven by Preact through the compat layer, each opening with
       `// @vitest-environment jsdom`. The default environment is `node` on purpose: a suite that walks
       the filesystem or builds a URL should not be running in a DOM emulation, because it will pass
       there and fail in the runtime it ships in.
-- [ ] Start with the components that carry the most logic and the least coverage: `AutoSizer`,
+- [x] Start with the components that carry the most logic and the least coverage: `AutoSizer`,
       `ControlledTable`, `FilterableTable`, the colour pickers and `MenuTree`.
+
+Every component group now has at least one test that mounts it, and `src/lib/testing/render.tsx` holds
+the one helper they share — a render that flushes effects and returns queries over the container, so
+no group reimplements it.
 
 ## 5. Publish
 
 - [ ] `CHANGELOG.md` in Keep a Changelog form. `scripts/release.ts` already derives the version from
       the history and writes the entry, so the only thing missing is the first release to write it.
 - [ ] `deno task release --dry-run`, then a real release, is the maintainer's alone to run.
-- [ ] The manifest is already in publishable shape: pinned versions, `sideEffects` for the stylesheet,
+- [x] The manifest is already in publishable shape: pinned versions, `sideEffects` for the stylesheet,
       Preact as a peer dependency, and `deno task pack` checking that every path in `files` exists in
       `dist/`.
 
@@ -104,10 +130,15 @@ item above is an assertion.
 
 - [ ] Install the published package in an application that is not this one, pinned exactly, with the
       lockfile committed.
-- [ ] Give the consumer's `tailwind.config.ts` the token set and the same Preact compatibility layer,
-      so `bg-bda` and `text-tpl` resolve against the library's components.
+- [ ] Give the consumer's `tailwind.config.ts` `presets: [uiKitPreset]` and the same Preact
+      compatibility layer, so `bg-bda` and `text-tpl` resolve against the library's components.
 - [ ] Move a presentational component of that application onto a library component and confirm it
       looks the same as before.
 - [ ] Confirm the library carries no text of its own: every string an operator reads still comes from
       the consumer's own catalogues.
 - [ ] `deno task ci` passes in both repositories.
+
+Both this section and the two items above it are open because they need a repository that is not this
+one and a decision that is the maintainer's alone. Nothing here can be closed by writing code in this
+repository: a checkbox ticked against a second application that does not exist is a false claim, which
+is worse than an open box.

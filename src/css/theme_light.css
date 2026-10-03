@@ -25,8 +25,5 @@ body[data-theme="light"] {
   --color-bdat: #ffffff;
   --color-bsp: #000000;
   --color-ths: #000000;
-  --object-action-manager-feedback-date-fg: #8d5c00;
-  --object-action-manager-feedback-message-fg: #bb7200;
   --color-placeholder: #848484;
-  --color-graph-edge-selected: #515151;
 }

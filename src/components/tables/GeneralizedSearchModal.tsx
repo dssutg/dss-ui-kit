@@ -27,8 +27,8 @@ type OptionalValue<T extends string> = T | typeof notChosen;
  * One value an operator may filter a `enum` column by.
  *
  * `label` is rendered as given rather than looked up, because which words name a value is the
- * caller's vocabulary: a filter over device types, over connection states or over anything else
- * labels its values itself.
+ * caller's vocabulary: a filter over a closed set of values labels them however it likes, and
+ * this component never has to be told what they mean.
  */
 export interface EnumOption {
   readonly value: string;

@@ -20,11 +20,12 @@ const TEXT_EXTENSIONS = ['.css', '.html', '.json', '.md', '.ts', '.tsx', '.yaml'
 /**
  * Files that are allowed to contain Russian text, each for a stated reason.
  *
- * The locale is the point. The glossary in `AGENTS.md` names the Russian domain terms the
- * component and message-key vocabulary inherits, and it has to be able to spell them. Nothing else
- * is exempt — not the README, not the changelog, not a component.
+ * `ru.tsx` is the point: it is the catalogue a translator works from, so it is the one file that
+ * exists to hold Russian. Nothing else is exempt — not the README, not the changelog, not this
+ * repository's own documentation, not a component. An exemption with nothing in it is a hole
+ * waiting for the first paste.
  */
-const ALLOWED_FILES = ['src/locales/ru.tsx', 'AGENTS.md'];
+const ALLOWED_FILES = ['src/locales/ru.tsx'];
 
 /** Any Cyrillic letter, in any of the languages written in it. */
 const CYRILLIC = /\p{Script=Cyrillic}/u;
@@ -54,7 +55,7 @@ function findRussianText(): string[] {
 }
 
 describe('repository policy', () => {
-  it('keeps Russian text in the locale file and the glossary only', () => {
+  it('keeps Russian text in the locale file and nowhere else', () => {
     expect(findRussianText()).toEqual([]);
   });
 });
