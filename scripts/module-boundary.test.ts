@@ -7,8 +7,8 @@ import { collectFiles, REPOSITORY_ROOT } from './lib/source-tree.ts';
  * The layering rule: what each directory is allowed to import.
  *
  * The library is consumed by more than one application, and the constraint that follows from that
- * is not stylistic. Code that is convenient inside the original application and unreachable from a package is not code
- * this library may keep, so where a module may reach from has to be decided once and checked
+ * is not stylistic. Code that is convenient inside one application and unreachable from a package is
+ * not code this library may keep, so where a module may reach from has to be decided once and checked
  * mechanically rather than reviewed file by file. This test is that decision.
  *
  * The one direction nothing in the tree uses is the one the rule forbids: nothing in `src/lib/`

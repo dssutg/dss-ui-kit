@@ -2,7 +2,7 @@
   "name": "dss-ui-kit",
   "version": "0.1.0",
   "type": "module",
-  "description": "Domain-independent Preact component library and design system: 119 CSS custom-property tokens, an event bus, localisation, and the components the original application was built from",
+  "description": "Domain-independent Preact component library and design system: 119 CSS custom-property tokens, an event bus, localisation, and a generic WebGL scene renderer",
   "license": "MIT",
   "keywords": [
     "preact",

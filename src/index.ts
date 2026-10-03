@@ -18,9 +18,8 @@
  * ## What is deliberately not exported
  *
  * The library is a design system and a set of presentational components. It has no domain model, no
- * data layer and no router, and it does not carry the vocabulary of the application it was extracted
- * from. A component takes props, and anything a caller would otherwise have to reach into the
- * application for is a prop.
+ * data layer and no router, and it names no application's subject matter. A component takes props,
+ * and anything a caller would otherwise have to reach into their own application for is a prop.
  */
 
 // The one global stylesheet: the Tailwind entry point, the themes, and the base resets. Shipped as

@@ -17,7 +17,7 @@ body {
   --color-black: #181b30;
   --color-gray-light3: #dddddd;
   --color-gray-light4: #989898;
-  --color-brand: #56698f; /* Sigma-IS brand logo color */
+  --color-brand: #56698f; /* The brand accent, used by the logo and by series colour */
   --color-blue-light: #5a8ebe;
   --color-pink-light: #c6aee7;
   --color-magenta-dark: #6200ee;

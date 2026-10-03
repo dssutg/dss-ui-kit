@@ -6,11 +6,10 @@ import { collectFiles, REPOSITORY_ROOT } from './lib/source-tree.ts';
 /**
  * The library carries no domain model.
  *
- * It was extracted from the original application, and the extraction is only finished when nothing of that
- * application's subject matter is left. A `BCPType`, a `TCOType`, a `RObjectState` or a `Sensor` in
- * a public signature is a defect with a specific failure mode: it names a type no consumer of the
- * package can satisfy, so the component is not actually generic over its data — it is generic over
- * *our* data, and the second consumer has to fork it.
+ * A component that names its subject matter in a public signature is a defect with a specific
+ * failure mode: it names a type no consumer of the package can satisfy, so the component is not
+ * actually generic over its data — it is generic over *one* application's data, and the second
+ * consumer has to fork it.
  *
  * The rule is therefore stated positively. A component models the shape it actually renders and lets
  * the caller adapt, which is what makes it reusable rather than merely exported.
@@ -20,10 +19,10 @@ import { collectFiles, REPOSITORY_ROOT } from './lib/source-tree.ts';
  */
 
 /**
- * Modules of the application that were never copied here, and that therefore may not be imported.
+ * Application-only modules, which are not part of this package and may therefore not be imported.
  *
- * They are listed by name even though the files do not exist: the import is the defect, and a
- * relative path to a file that is absent is still a coupling to the application.
+ * They are listed by name even though none of them exists here: the import is the defect, and an
+ * import specifier that resolves to nothing is still a coupling to the application it names.
  */
 const FORBIDDEN_MODULES = [
   '@/def',
@@ -35,15 +34,16 @@ const FORBIDDEN_MODULES = [
   '@/routing',
   '@/locale_schema',
   '@/main',
-  '@/the original application',
 ];
 
 /**
- * Type names that name the application's subject matter.
+ * Type names that name a subject rather than a shape: the vocabulary one application's UI is built
+ * on, and the reason this package would not be usable outside it.
  *
  * Matched as whole words so an unrelated identifier that merely contains one is not a false
  * positive, and so `Sensor` catches the type without catching `SensorMount` in a comment about
- * something else entirely.
+ * something else entirely. The list is deliberately explicit: a rule written as "no domain words"
+ * is a rule that gets narrowed away, whereas removing an entry here takes a decision.
  */
 const DOMAIN_TYPE_NAMES = [
   'BCPType',

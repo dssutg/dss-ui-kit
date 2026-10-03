@@ -27,7 +27,7 @@ function main(message: string): void {
   console.error('Example:');
   console.error('  feat(ui): add a tooltip to the button');
   console.error('  fix(import): keep the @ alias working when a file moves');
-  console.error('  feat(locale)!: remove the application message keys from the package');
+  console.error('  feat(locale)!: drop the message keys the package no longer renders');
 
   Deno.exit(1);
 }
