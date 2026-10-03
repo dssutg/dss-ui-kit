@@ -1,0 +1,32 @@
+# Checks out the repository, installs the pinned Deno, and installs dependencies from the lockfile.
+#
+# Every job uses this, because a GitHub job gets a fresh runner: a dependency set up in one job does
+# not exist in the next. Installing here rather than in a setup job is what makes `deno install
+# --frozen` real — a job that skipped it would let Deno resolve dependencies itself and would not
+# fail when package.json and deno.lock disagree.
+
+name: Setup
+description: Check out, install the pinned Deno, and install dependencies from the lockfile.
+
+inputs:
+  # The release and commit-message jobs read tags and messages, which a shallow clone does not have.
+  fetch-depth:
+    description: How much history to fetch.
+    required: false
+    default: '1'
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v5
+      with:
+        fetch-depth: ${{ inputs.fetch-depth }}
+
+    - uses: denoland/setup-deno@v2
+      with:
+        deno-version: ${{ env.DENO_VERSION }}
+        cache: true
+
+    - name: Install dependencies
+      run: deno install --frozen
+      shell: bash

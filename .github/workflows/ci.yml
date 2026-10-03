@@ -1,8 +1,8 @@
 # Strict code quality pipeline for the DSS UI Kit.
 #
-# Every job installs with `deno install --frozen`, so a job fails outright when package.json and
-# deno.lock disagree, or when a dependency version was bumped without refreshing the lockfile. All
-# dependency versions are pinned exactly.
+# Every job installs with `deno install --frozen` through ./.github/actions/setup, so a job fails
+# outright when package.json and deno.lock disagree, or when a dependency version was bumped without
+# refreshing the lockfile. All dependency versions are pinned exactly.
 #
 # Locally, the same gate is `deno task ci` (or `npm run ci`).
 
@@ -23,91 +23,50 @@ concurrency:
 env:
   # Keep in sync with `engines.deno` in package.json.
   DENO_VERSION: 2.9.6
-  DENO_DIR: ${{ github.workspace }}/.deno
   # The release-preview job reads tags and the full history to derive the version.
   GIT_DEPTH: 0
 
 jobs:
-  setup:
-    name: Setup
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          # `deno task release` reads the tags to derive the next version.
-          fetch-depth: 0
-      - uses: denoland/setup-deno@v2
-        with:
-          deno-version: ${{ env.DENO_VERSION }}
-          cache: true
-
-      - name: Verify
-        run: |
-          deno --version
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          deno install --frozen
-
   format:
     name: Format
-    needs: [setup]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: denoland/setup-deno@v2
-        with:
-          deno-version: ${{ env.DENO_VERSION }}
-          cache: true
+      - uses: ./.github/actions/setup
       # Formatting is not negotiable: `biome ci` reports unformatted files as errors.
       - run: deno task format:check
 
   lint:
     name: Lint
-    needs: [setup]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: denoland/setup-deno@v2
-        with:
-          deno-version: ${{ env.DENO_VERSION }}
-          cache: true
+      - uses: ./.github/actions/setup
       - run: deno task lint:biome
 
   typecheck:
     name: Typecheck
-    needs: [setup]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: denoland/setup-deno@v2
-        with:
-          deno-version: ${{ env.DENO_VERSION }}
-          cache: true
+      - uses: ./.github/actions/setup
       - run: deno task typecheck
 
   test:
     name: Test
-    needs: [setup]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: denoland/setup-deno@v2
-        with:
-          deno-version: ${{ env.DENO_VERSION }}
-          cache: true
+      - uses: ./.github/actions/setup
       - run: deno task test
 
   commit-message:
     name: Commit message
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    env:
+      # GitHub exposes the pull request's title on the event payload, not as an environment variable.
+      PR_TITLE: ${{ github.event.pull_request.title }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup
         with:
-          fetch-depth: 0
-      - uses: denoland/setup-deno@v2
-        with:
-          deno-version: ${{ env.DENO_VERSION }}
-          cache: true
+          fetch-depth: ${{ env.GIT_DEPTH }}
       # Rejects a commit message that is not Conventional Commits. The local commit-msg hook covers
       # day-to-day work; this keeps the rule enforced on history that reaches the repository by
       # other means.
@@ -120,14 +79,9 @@ jobs:
   # fails at import time in someone else's project.
   build:
     name: Build
-    needs: [setup]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: denoland/setup-deno@v2
-        with:
-          deno-version: ${{ env.DENO_VERSION }}
-          cache: true
+      - uses: ./.github/actions/setup
       - run: deno task build
       - run: deno task pack
       - uses: actions/upload-artifact@v4
@@ -144,14 +98,9 @@ jobs:
   # the "view source" links, so this job gates on errors, not on warnings.
   docs:
     name: Docs
-    needs: [setup]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: denoland/setup-deno@v2
-        with:
-          deno-version: ${{ env.DENO_VERSION }}
-          cache: true
+      - uses: ./.github/actions/setup
       - run: deno task docs
       - uses: actions/upload-artifact@v4
         with:
@@ -164,14 +113,9 @@ jobs:
   release-preview:
     name: Release preview
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [setup]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup
         with:
-          fetch-depth: 0
-      - uses: denoland/setup-deno@v2
-        with:
-          deno-version: ${{ env.DENO_VERSION }}
-          cache: true
+          fetch-depth: ${{ env.GIT_DEPTH }}
       - run: deno task release --dry-run --skip-lint
