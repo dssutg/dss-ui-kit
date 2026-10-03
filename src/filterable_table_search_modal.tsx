@@ -91,19 +91,28 @@ function getSearchFields<T>(
   return fields;
 }
 
+/**
+ * Searches with a form instead of a search string, one input per searchable property.
+ *
+ * It produces the same search string the text field would have held, so a caller can offer both and
+ * the filter state means one thing. Empty inputs are left out rather than searched for as empty, which
+ * is what makes "change one field and keep the rest" work.
+ */
+export interface GeneralizedSearchModalProps<T> {
+  readonly title: string;
+  readonly open: boolean;
+  readonly onOpenChange: (open: boolean) => void;
+  readonly searchSchema: SearchSchema<T>;
+  readonly onSearch: (searchText: string) => void;
+}
+
 export function GeneralizedSearchModal<T>({
   title,
   open,
   onOpenChange,
   searchSchema,
   onSearch,
-}: {
-  readonly title: string;
-  readonly open: boolean;
-  readonly onOpenChange: (open: boolean) => void;
-  readonly searchSchema: SearchSchema<T>;
-  readonly onSearch: (searchText: string) => void;
-}) {
+}: GeneralizedSearchModalProps<T>) {
   const { t, dates } = useLocale();
 
   const [valueMap, setValueMap] = useState<Record<string, unknown>>({});

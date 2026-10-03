@@ -9,6 +9,26 @@ export interface VirtualizedListRowRendererProps {
   style: React.CSSProperties;
 }
 
+/**
+ * A fixed-height list that renders only the rows in view.
+ *
+ * `rowRenderer` is called for the visible rows with an absolutely positioned `style`, so a row that
+ * is not rendered costs nothing but its height. Fixed item height is what makes the offset
+ * arithmetic possible; a list whose rows vary in height needs a measurement pass this does not do.
+ */
+export interface VirtualizedListProps {
+  readonly itemCount: number;
+  readonly itemSize: number;
+  readonly rowRenderer: (props: VirtualizedListRowRendererProps) => React.ReactNode;
+  readonly width: number | string;
+  readonly height: number | string;
+  // The handler is attached to the scrolling div, so it is that element's event it receives.
+  readonly onScroll?: (event: TargetedEvent<HTMLDivElement, Event>) => void;
+  /** Rows rendered beyond the viewport, to cover a fast scroll before the next paint. */
+  readonly overScanCount?: number | undefined;
+  readonly containerRef: React.MutableRefObject<HTMLDivElement | null>;
+}
+
 export function VirtualizedList({
   itemCount,
   itemSize,
@@ -18,17 +38,7 @@ export function VirtualizedList({
   onScroll,
   overScanCount,
   containerRef,
-}: {
-  readonly itemCount: number;
-  readonly itemSize: number;
-  readonly rowRenderer: (props: VirtualizedListRowRendererProps) => React.ReactNode;
-  readonly width: number | string;
-  readonly height: number | string;
-  // The handler is attached to the scrolling div, so it is that element event it receives.
-  readonly onScroll?: (event: TargetedEvent<HTMLDivElement, Event>) => void;
-  readonly overScanCount?: number | undefined;
-  readonly containerRef: React.MutableRefObject<HTMLDivElement | null>;
-}) {
+}: VirtualizedListProps) {
   const { startIndex, endIndex, getItemStyle } = useVirtualizedList({
     // The default lives in the hook, so an absent count is passed on as absent.
     ref: containerRef,
@@ -59,17 +69,36 @@ export function VirtualizedList({
   );
 }
 
+/** The inputs {@link useVirtualizedList} reads the visible range from. */
+export interface UseVirtualizedListOptions {
+  readonly itemCount: number;
+  readonly itemSize: number;
+  readonly overScanCount?: number | undefined;
+  /** The scrolling element to measure. Pass one to scroll it from outside the hook. */
+  readonly ref?: React.MutableRefObject<HTMLDivElement | null> | undefined;
+}
+
+/** What {@link useVirtualizedList} reports about the visible range. */
+export interface UseVirtualizedListResult {
+  readonly startIndex: number;
+  readonly endIndex: number;
+  readonly containerRef: React.MutableRefObject<HTMLDivElement | null>;
+  /** The absolute position of a row, for a caller rendering it itself. */
+  readonly getItemStyle: (index: number) => React.CSSProperties;
+}
+
+/**
+ * The visible range of a fixed-height list, recomputed on scroll and on resize.
+ *
+ * Use this to render rows in something other than {@link VirtualizedList} — a table body, say — where
+ * the scrolling element is not the list's own container. Attach `containerRef` to that element.
+ */
 export function useVirtualizedList({
   itemCount,
   itemSize,
   overScanCount = 0,
   ref,
-}: {
-  itemCount: number;
-  itemSize: number;
-  overScanCount?: number | undefined;
-  ref?: React.MutableRefObject<HTMLDivElement | null> | undefined;
-}) {
+}: UseVirtualizedListOptions): UseVirtualizedListResult {
   const [startIndex, setStartIndex] = useState(0);
   const [endIndex, setEndIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);

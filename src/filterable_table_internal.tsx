@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
-import type { ControlledFilterableTableProps } from '@/ControlledFilterableTable';
-import type { FilterableTableColumnProperty } from '@/FilterableTable';
+import type { FilterableTableColumnProperty, FilterableTableProps } from '@/FilterableTable';
 import { type EnumOption, FilterableTableTopPanel } from '@/FilterableTableTopPanel';
 import { type SearchSchema, useFilteredItems } from '@/filterable_table_search';
 import {
@@ -11,12 +10,6 @@ import {
   type SortableTableDescriptor,
 } from '@/ui/SortableTable';
 
-/**
- * Renders a filter value the way the search string and the CSV export spell it.
- *
- * A closed set of values is rendered through the caller's own labels, so what an operator searches
- * for is the wording they see in the column rather than a key.
- */
 /**
  * The label a `enum` value is shown, searched and exported as.
  *
@@ -30,6 +23,18 @@ export function getEnumLabel(
   const asString = value.toString();
 
   return property.options.find((option) => option.value === asString)?.label ?? asString;
+}
+
+/**
+ * A filterable table whose search text the caller holds.
+ *
+ * "Controlled" means the search string is a prop, so a caller can put it in a URL, restore it from
+ * history, or pair it with a search form and have both edit the same state. A table that owned its
+ * search text could not do any of that.
+ */
+export interface ControlledTableProps<T, C extends string> extends FilterableTableProps<T, C> {
+  readonly searchText: string;
+  readonly setSearchText: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export function ControlledTable<T, C extends string>({
@@ -47,7 +52,7 @@ export function ControlledTable<T, C extends string>({
   getItemId,
   searchText,
   setSearchText,
-}: ControlledFilterableTableProps<T, C>) {
+}: ControlledTableProps<T, C>) {
   const searchSchema: SearchSchema<T> = {
     properties: properties.map((property) => ({
       name: property.id,

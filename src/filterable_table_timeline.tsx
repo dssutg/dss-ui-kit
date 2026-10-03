@@ -30,17 +30,26 @@ import { Modal } from '@/ui/Modal';
 import { Select } from '@/ui/Select';
 import type { ZoomableCanvasTransform } from '@/ui/ZoomableCanvas';
 
+/**
+ * Plots items against time, one series per value of a chosen property.
+ *
+ * The time axis comes from the schema's own date properties, and the series from any other property,
+ * because a timeline of a single unchanging value says nothing. Rows whose time property is absent or
+ * unparseable are skipped rather than plotted at the epoch.
+ */
+export interface TimelineViewerModalProps<T> {
+  readonly open: boolean;
+  readonly onOpenChange: (open: boolean) => void;
+  readonly items: readonly T[];
+  readonly searchSchema: SearchSchema<T>;
+}
+
 export function TimelineViewerModal<T>({
   open,
   onOpenChange,
   items,
   searchSchema,
-}: {
-  readonly open: boolean;
-  readonly onOpenChange: (open: boolean) => void;
-  readonly items: readonly T[];
-  readonly searchSchema: SearchSchema<T>;
-}) {
+}: TimelineViewerModalProps<T>) {
   const { t } = useLocale();
 
   const [statsPropertyName, setStatsPropertyName] = useState<

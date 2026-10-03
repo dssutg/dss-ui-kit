@@ -12,17 +12,26 @@ import { mapToShares, PieChart } from '@/ui/PieChart';
 import { Select } from '@/ui/Select';
 import { makeSortableTableCellRenderer, SortableTable } from '@/ui/SortableTable';
 
+/**
+ * How many rows a table is showing, out of how many it has.
+ *
+ * `countLabelPrefix` is the caller's wording for "rows" rather than a key, because the word belongs
+ * to what is being counted. The total is dropped when nothing is filtered out, so an unfiltered table
+ * reads `Rows: 40` and not `Rows: 40 / 40`.
+ */
+export interface CountLabelProps {
+  readonly filteredRowCount: number;
+  readonly totalRowCount: number;
+  readonly countLabelPrefix: string;
+  readonly minCountLabelWidth?: string | undefined;
+}
+
 export function CountLabel({
   filteredRowCount,
   totalRowCount,
   countLabelPrefix,
   minCountLabelWidth,
-}: {
-  readonly filteredRowCount: number;
-  readonly totalRowCount: number;
-  readonly countLabelPrefix: string;
-  readonly minCountLabelWidth?: string | undefined;
-}) {
+}: CountLabelProps) {
   return (
     <div
       className="p-2 bg-bpl rounded-lg truncate flex-grow sm:flex-grow-0"
@@ -40,17 +49,26 @@ interface ItemCountByPropertyValue {
   count: number;
 }
 
+/**
+ * How many rows there are per value of one searchable property, as a pie chart and a table.
+ *
+ * The property is the caller's to pick from a dropdown, because which breakdown is interesting depends
+ * on the question being asked. Values are grouped by the same text the search string uses, so a value
+ * an operator can type is a value they can count.
+ */
+export interface FilterableTableStatsModalProps<T> {
+  readonly open: boolean;
+  readonly onOpenChange: (open: boolean) => void;
+  readonly items: readonly T[];
+  readonly searchSchema: SearchSchema<T>;
+}
+
 export function FilterableTableStatsModal<T>({
   open,
   onOpenChange,
   items,
   searchSchema,
-}: {
-  readonly open: boolean;
-  readonly onOpenChange: (open: boolean) => void;
-  readonly items: readonly T[];
-  readonly searchSchema: SearchSchema<T>;
-}) {
+}: FilterableTableStatsModalProps<T>) {
   const { t } = useLocale();
 
   const [statsPropertyName, setStatsPropertyName] = useState<

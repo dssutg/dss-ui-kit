@@ -91,12 +91,20 @@ export type {
   FilterableTableExportFormat,
   GetExportedTableFilenameCallback,
 } from '@/filterable_table_export';
+export type { ControlledTableProps } from '@/filterable_table_internal';
+export { ControlledTable, getEnumLabel } from '@/filterable_table_internal';
 export type {
   AnonymousSearchPropertySchema,
   SearchPropertySchema,
   SearchSchema,
 } from '@/filterable_table_search';
 export { useFilteredItems } from '@/filterable_table_search';
+export type { GeneralizedSearchModalProps } from '@/filterable_table_search_modal';
+export { GeneralizedSearchModal } from '@/filterable_table_search_modal';
+export type { CountLabelProps, FilterableTableStatsModalProps } from '@/filterable_table_stats';
+export { CountLabel, FilterableTableStatsModal } from '@/filterable_table_stats';
+export type { TimelineViewerModalProps } from '@/filterable_table_timeline';
+export { TimelineViewerModal } from '@/filterable_table_timeline';
 export { AutoSizer } from '@/lib/AutoSizer';
 export { tryCatch, tryCatchAsync } from '@/lib/catch';
 export { getCSSVariableValue, Rgba32Gradient } from '@/lib/color';
@@ -244,6 +252,8 @@ export type { EditableAccordionListItem } from '@/ui/EditableAccordionList';
 export { EditableAccordionList } from '@/ui/EditableAccordionList';
 export type { FeedbackTooltipType } from '@/ui/FeedbackTooltip';
 export { FeedbackTooltip, showFeedbackTooltip } from '@/ui/FeedbackTooltip';
+export type { FloatInputProps } from '@/ui/FloatInput';
+export { FloatInput } from '@/ui/FloatInput';
 export { HexAlphaColorPicker } from '@/ui/HexAlphaColorPicker';
 export { HexAlphaColorPickerPopover } from '@/ui/HexAlphaColorPickerPopover';
 export type { HexColorInputProperties } from '@/ui/HexColorInput';
@@ -284,6 +294,8 @@ export { isMUITabActive, MUITabList } from '@/ui/MUITabList';
 export { OrderPanel } from '@/ui/OrderPanel';
 export type { PieChartShare } from '@/ui/PieChart';
 export { getShareColor, getSharePercent, mapToShares, PieChart } from '@/ui/PieChart';
+export type { PlayPauseButtonProps } from '@/ui/PlayPauseButton';
+export { PlayPauseButton } from '@/ui/PlayPauseButton';
 export { Popover } from '@/ui/Popover';
 export { ResizableSplit } from '@/ui/ResizableSplit';
 export { RgbaColorPicker } from '@/ui/RgbaColorPicker';
@@ -322,6 +334,13 @@ export { UnsignedIntegerInput } from '@/ui/UnsignedIntegerInput';
 export type { UploadConfigProps } from '@/ui/UploadConfig';
 export { UploadConfig } from '@/ui/UploadConfig';
 export { minDesktopWidth, useIsMobileScreen } from '@/ui/use_is_mobile_screen';
+export type {
+  UseVirtualizedListOptions,
+  UseVirtualizedListResult,
+  VirtualizedListProps,
+  VirtualizedListRowRendererProps,
+} from '@/ui/VirtualizedList';
+export { useVirtualizedList, VirtualizedList } from '@/ui/VirtualizedList';
 export { WshSpinner } from '@/ui/WshSpinner';
 export type { ZoomableCanvasDrawCallbackProps, ZoomableCanvasTransform } from '@/ui/ZoomableCanvas';
 export { ZoomableCanvas } from '@/ui/ZoomableCanvas';

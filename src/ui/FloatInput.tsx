@@ -1,19 +1,23 @@
 import { useCallback } from 'react';
 import { TextInput } from '@/ui/TextInput';
 
-export function FloatInput({
-  value,
-  onChange,
-  width,
-  min,
-  max,
-}: {
+/**
+ * A decimal number field that reports text, not a number.
+ *
+ * The value is a string so a half-typed value — `-`, `1.` — reaches the caller instead of becoming
+ * `NaN` on the way. `min` and `max` are what the browser's own spinner enforces; out-of-range text is
+ * outlined rather than rejected, because an input that swallows a keystroke is worse than one that
+ * shows red.
+ */
+export interface FloatInputProps {
   readonly value: string;
   readonly onChange: (value: string) => void;
   readonly width?: string | undefined;
   readonly min?: number | undefined;
   readonly max?: number | undefined;
-}) {
+}
+
+export function FloatInput({ value, onChange, width, min, max }: FloatInputProps) {
   const valueNum = Number(value);
 
   const valid =

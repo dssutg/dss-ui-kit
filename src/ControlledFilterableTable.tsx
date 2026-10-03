@@ -1,11 +1,12 @@
-import type { FilterableTableProps } from '@/FilterableTable';
-import { ControlledTable } from '@/filterable_table_internal';
+import { ControlledTable, type ControlledTableProps } from '@/filterable_table_internal';
 
-export interface ControlledFilterableTableProps<T, C extends string>
-  extends FilterableTableProps<T, C> {
-  searchText: string;
-  setSearchText: React.Dispatch<React.SetStateAction<string>>;
-}
+/**
+ * {@link ControlledTable} under the name this table was first published as.
+ *
+ * The two take the same props and draw the same thing; new code should use `ControlledTable`, whose
+ * name says what it is, and this wrapper exists so an existing import keeps working.
+ */
+export type ControlledFilterableTableProps<T, C extends string> = ControlledTableProps<T, C>;
 
 export function ControlledFilterableTable<T, C extends string>({
   items,
@@ -22,7 +23,7 @@ export function ControlledFilterableTable<T, C extends string>({
   getItemId,
   searchText,
   setSearchText,
-}: ControlledFilterableTableProps<T, C>) {
+}: ControlledTableProps<T, C>) {
   return (
     <ControlledTable
       items={items}
