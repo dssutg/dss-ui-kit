@@ -4,6 +4,13 @@ import { useForceUpdate } from '@/lib/use_force_update';
 import { useGranularEffect } from '@/lib/use_granular_effect';
 import { useTimeout } from '@/lib/use_timeout';
 
+/**
+ * What a {@link VirtualizedList} row renderer is called with.
+ *
+ * `style` is the position and size of this one row and must be applied to the row's outermost element:
+ * the list does not wrap what the renderer returns, because a wrapper would break a row that is a
+ * table row.
+ */
 export interface VirtualizedListRowRendererProps {
   index: number;
   style: React.CSSProperties;
@@ -15,6 +22,13 @@ export interface VirtualizedListRowRendererProps {
  * `rowRenderer` is called for the visible rows with an absolutely positioned `style`, so a row that
  * is not rendered costs nothing but its height. Fixed item height is what makes the offset
  * arithmetic possible; a list whose rows vary in height needs a measurement pass this does not do.
+ */
+/**
+ * What {@link VirtualizedList} takes.
+ *
+ * `itemCount` and `itemSize` are the whole geometry — a list of ten thousand rows of a known height
+ * needs nothing else, and no measurement pass. `containerRef` is required rather than created here
+ * because the caller usually needs the scrolling element anyway, to observe it or to scroll it.
  */
 export interface VirtualizedListProps {
   readonly itemCount: number;
@@ -29,6 +43,16 @@ export interface VirtualizedListProps {
   readonly containerRef: React.MutableRefObject<HTMLDivElement | null>;
 }
 
+/**
+ * A list that renders only the rows in view, for a count a caller would rather not put in the DOM.
+ *
+ * It renders a spacer of the full scroll height and positions the visible rows itself, so the scroll
+ * geometry is correct and the DOM is not. Rows are therefore fixed height: a row taller or shorter
+ * than `itemSize` makes the scroll position wrong in a way this component cannot detect.
+ *
+ * {@link useVirtualizedList} is the same arithmetic without the markup, for a caller whose rows are
+ * not `<div>`s.
+ */
 export function VirtualizedList({
   itemCount,
   itemSize,
@@ -69,7 +93,12 @@ export function VirtualizedList({
   );
 }
 
-/** The inputs {@link useVirtualizedList} reads the visible range from. */
+/**
+ * What {@link useVirtualizedList} needs to work out which rows are visible.
+ *
+ * `ref` is optional here and required by {@link VirtualizedList}: the hook falls back to listening on
+ * the window when there is no element to measure, which is right for a page and wrong for a panel.
+ */
 export interface UseVirtualizedListOptions {
   readonly itemCount: number;
   readonly itemSize: number;

@@ -15,6 +15,12 @@ export interface SocketServerAddressInputProps {
   readonly placeholder?: string | undefined;
 }
 
+/**
+ * A text field for the address of a WebSocket server, with the shape of an address checked.
+ *
+ * There is no connection here and no address is known: the field reports what was typed, and whether
+ * to dial it, and what to do when the dial fails, belongs to the application that owns the socket.
+ */
 export function SocketServerAddressInput({
   value,
   onChange,

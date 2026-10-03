@@ -4,6 +4,17 @@ import { getPointerPosition } from '@/lib/dom';
 import { clamp, cmp, lerp, unlerp } from '@/lib/math';
 import { useOutsideComponentClick } from '@/lib/use_outside_component_click';
 
+/**
+ * A draggable slider over a numeric range, with optional labelled break points.
+ *
+ * Works with a pointer, and with the arrow keys, because a slider that only a mouse can move is a
+ * slider a keyboard cannot use. Break points are values the thumb snaps to and labels the caller
+ * supplies; they are drawn only when `breakPointsVisible` is set, so the same data can drive the
+ * snapping without adding ticks to the track.
+ *
+ * The colours are props with literal defaults rather than tokens, because this slider is used inside
+ * embedded views that have a palette of their own.
+ */
 export function Slider({
   min,
   max,

@@ -3,6 +3,14 @@ import { ipv4Regex } from '@/lib/ipv4';
 import { clamp } from '@/lib/math';
 import { TextInput } from './TextInput';
 
+/**
+ * A text input that only accepts an IPv4 address.
+ *
+ * The value is a string, not four octets, and is reported incomplete while it is being typed: `1.2.`
+ * is a valid intermediate state and rejecting it would make the field impossible to type into. The
+ * address is validated by {@link ipv4Regex} rather than resolved, because whether the host is
+ * reachable is not the field's business.
+ */
 export function IPInput({
   value,
   onChange,

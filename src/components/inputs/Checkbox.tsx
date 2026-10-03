@@ -1,6 +1,13 @@
 import { useId } from 'react';
 import { Icon } from '@/components/display/Icon';
 
+/**
+ * A checkbox with a label that is part of the control.
+ *
+ * The label is wired to the input with a generated id rather than wrapped around it, so clicking the
+ * text toggles the box while the DOM stays flat — a wrapping label cannot hold a control the caller
+ * puts inside it. `label` is optional: an unlabelled checkbox is a caller decision, not a default.
+ */
 export function Checkbox({
   checked,
   onChange,

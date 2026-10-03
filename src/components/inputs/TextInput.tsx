@@ -1,6 +1,19 @@
 import { IconButton } from '@/components/buttons/IconButton';
 import { useLocale } from '@/locale';
 
+/**
+ * The library's text field: a bare `<input>` with the design system's focus, clear and password
+ * behaviour.
+ *
+ * It is deliberately not a controlled component in the React sense. `value` is what the caller knows
+ * and `onChangeText` is what it wants to hear about, and the component keeps the text being typed
+ * while the caller's value catches up: a field that refused a keystroke until the round trip finished
+ * drops characters on a slow render. `onChange` still fires with the DOM event for a caller that
+ * wants the event itself.
+ *
+ * `shouldRender` exists because a panel can want the layout of a text field without the field — a
+ * value with no way to edit it, which must not be announced as editable.
+ */
 export function TextInput({
   id,
   type,

@@ -1,6 +1,14 @@
 import { getCSSVariableValue } from '@/lib/color';
 import { useTheme } from '@/theme';
 
+/**
+ * A styled `<select>`, themed to the library's own input look.
+ *
+ * The chevron is drawn from the current theme's token rather than shipped as an asset, so it is
+ * correct in every theme without a second copy of the icon. It is a native select on purpose: the
+ * dropdown list is the browser's, which is the one part of a select that cannot be made to look right
+ * and is the part an operator relies on.
+ */
 export function Select({
   value,
   onChange,

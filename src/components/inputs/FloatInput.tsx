@@ -17,6 +17,7 @@ export interface FloatInputProps {
   readonly max?: number | undefined;
 }
 
+/** A decimal field for a value that may be half-typed. See {@link FloatInputProps}. */
 export function FloatInput({ value, onChange, width, min, max }: FloatInputProps) {
   const valueNum = Number(value);
 

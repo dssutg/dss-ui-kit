@@ -20,6 +20,18 @@ interface History {
   items: HistoryItem[];
 }
 
+/**
+ * A search field with a clear button and a history of past searches.
+ *
+ * The history is the component's own, kept in `localStorage` and capped at 20 entries; it is a
+ * convenience and it is why the component does not take a value for it. Entries are ranked by how
+ * often and how recently they were used rather than kept in order, and are keyed by `historyId`, so
+ * two search fields in one page can keep separate histories. Without a `historyId` nothing is stored
+ * and no history is shown.
+ *
+ * On a narrow screen the history opens as a sheet rather than a dropdown, which is the one place this
+ * component consults the viewport itself.
+ */
 export function SearchInput({
   value,
   placeholder,

@@ -1,5 +1,11 @@
 import { useLocale } from '@/locale';
 
+/**
+ * Reads yes or no in a colour, for a panel where the answer is a status.
+ *
+ * `yesIsBad` exists because yes is the good answer in most of these panels and the bad answer in
+ * enough of them that the default would be wrong either way. Both words come from the locale.
+ */
 export function ColorfulYesNo({
   yes,
   yesIsBad = false,

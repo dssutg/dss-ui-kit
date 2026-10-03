@@ -1,6 +1,13 @@
 import { clamp } from '@/lib/math';
 import { TextInput } from './TextInput';
 
+/**
+ * A text input for a byte count with a fractional part, in megabytes.
+ *
+ * Clamped to 25.5 MB and stepped in halves, because that is the range a caller of this input has
+ * always had and the field would be wrong outside it. The unit is not rendered: the caller's label
+ * says what the number means.
+ */
 export function ByteFractionInput({
   value,
   onChange,

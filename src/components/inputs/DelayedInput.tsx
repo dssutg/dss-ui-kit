@@ -1,5 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 
+/**
+ * A text input that reports a value only when it stops changing.
+ *
+ * The point is a text field over something expensive: a filter that re-renders a table, a search that
+ * hits an index. It keeps its own copy and calls `onChange` after the value has settled, and it
+ * reports intermediate values on blur and on Enter so that a form can be submitted without waiting.
+ * `getFilteredValue` is how the caller says what a valid value is; without it every keystroke is
+ * reported once typing stops.
+ */
 export function DelayedInput({
   value,
   onChange,

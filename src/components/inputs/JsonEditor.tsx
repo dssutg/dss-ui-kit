@@ -1,6 +1,13 @@
 import { highlightText } from '@/lib/highlight';
 import { Editor } from './Editor';
 
+/**
+ * A text editor holding a JSON document, with the syntax highlighted and validity shown.
+ *
+ * It does not parse the document into an object: the editor holds the text the operator is typing and
+ * reports it, and the caller decides what a valid document means. `highlightSyntax` can be turned off
+ * for a large document, where colouring on every keystroke is the expensive part.
+ */
 export function JsonEditor({
   code,
   setCode,

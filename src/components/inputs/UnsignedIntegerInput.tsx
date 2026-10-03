@@ -1,6 +1,13 @@
 import { useCallback } from 'react';
 import { clamp } from '@/lib/math';
 
+/**
+ * A number input restricted to integers in a range, clamped as it is typed.
+ *
+ * Every change is clamped rather than only on blur, so the value the caller holds is always in range
+ * and a consumer does not have to defend against the out-of-range case. `max` defaults to 100 because
+ * that is what the fields it grew up with were for; a caller with a wider range passes it.
+ */
 export function UnsignedIntegerInput({
   value = 0,
   onChange,

@@ -5,6 +5,13 @@ import { openFileDialog } from '@/lib/file';
 import { clamp } from '@/lib/math';
 import { useLocale } from '@/locale';
 
+/**
+ * What {@link UploadConfig} takes.
+ *
+ * The names are the domain's, not the transport's: this describes an incoming connection well enough
+ * to configure the library's own address field, and nothing about how a file would be sent or
+ * received.
+ */
 export interface UploadConfigProps {
   /**
    * The icon shown once a file has been chosen, and the message the button beside the drop area
@@ -29,6 +36,13 @@ export interface UploadConfigProps {
 
 type Status = 'empty' | 'chosen' | 'inProgress' | 'complete';
 
+/**
+ * A titled group of address and credential fields for an incoming upload endpoint.
+ *
+ * It renders whatever the caller puts in `extraFields`, and reports changes one field at a time. There
+ * is no submit button, because there is nothing to submit to from here: what a caller does with a
+ * completed configuration is the application's decision.
+ */
 export function UploadConfig({
   icon = 'uploadFileText',
   uploadTitle,

@@ -2,6 +2,14 @@ import { useMemo, useState } from 'react';
 import { cmp } from '@/lib/math';
 import { useLocale } from '@/locale';
 
+/**
+ * Shows a number as its individual bits, with a description for each bit that is set.
+ *
+ * `flagDescriptionMap` maps a bit position to the word an operator reads, so the component renders a
+ * value and the caller supplies the vocabulary — the same descriptions on a panel and in a tooltip are
+ * two calls of one map. `octetCount` is how many bytes are shown, which for a value wider than that
+ * means the high bits are not displayed at all rather than being folded in.
+ */
 export function BitField({
   flags,
   flagDescriptionMap,

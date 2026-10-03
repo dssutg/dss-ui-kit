@@ -2,6 +2,14 @@ import { IconButton } from '@/components/buttons/IconButton';
 import { clamp } from '@/lib/math';
 import { DecimalIntegerInput } from './DecimalIntegerInput';
 
+/**
+ * One part of a time — an hour, a minute, a second — as a number with increment arrows.
+ *
+ * Wraps at `max` rather than clamping: an hour typed as `24` becomes `0`, which is what an operator
+ * incrementing past the end expects, and the arrows stop at `max` so the value cannot be typed out of
+ * range. Used by {@link HourMinuteTimeInput} and {@link HourMinuteSecondTimeInput}, and exported for a
+ * caller assembling another time input.
+ */
 export function TimePartInput({
   value,
   onChange,

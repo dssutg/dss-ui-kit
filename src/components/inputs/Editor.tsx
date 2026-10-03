@@ -5,8 +5,24 @@ import { handleEditorKeyDown } from '@/lib/editor_keybindings';
 import { cssText, editorStyles, lineHeight } from '@/lib/editor_style';
 import { useGranularEffect } from '@/lib/use_granular_effect';
 
+/**
+ * One value, or one value per edge.
+ *
+ * What the editor's `padding` prop takes: a single number, or the four edges named individually so a
+ * caller can indent the text without indenting the gutter.
+ */
 export type Padding<T> = T | { top?: T; right?: T; bottom?: T; left?: T };
 
+/**
+ * The text editor underneath {@link JsonEditor}: a textarea with a line-number gutter, an undo history
+ * and the key handling a code field needs.
+ *
+ * It is exposed through a ref rather than props because a caller holding code needs to do three things
+ * that are not render decisions — read the value, undo, and focus — and each of those is a method on
+ * the handle. `ignoreTabKey` exists because Tab is a legitimate character in some documents; the
+ * default is the editor taking it to indent, which is what a code field wants and what a form field
+ * does not.
+ */
 export const Editor = forwardRef(
   (
     {

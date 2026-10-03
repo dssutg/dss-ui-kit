@@ -1,3 +1,10 @@
+/**
+ * A switch with a label, a bar and a knob, which is not what a checkbox looks like.
+ *
+ * `locked` shows a padlock and refuses to change, which is different from `disabled` in the only way
+ * that matters to an operator: a disabled switch is not there, and a locked one is there and explains
+ * itself through `onLockedClick`.
+ */
 export function ToggleSwitch({
   label = '',
   enabled = false,

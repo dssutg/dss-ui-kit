@@ -1,5 +1,11 @@
 import { TimePartInput } from './TimePartInput';
 
+/**
+ * An hour, a minute and a second as three {@link TimePartInput}s.
+ *
+ * The same shape as {@link HourMinuteTimeInput} with a seconds field, for a duration an operator
+ * watches rather than a time of day.
+ */
 export function HourMinuteSecondTimeInput({
   hour,
   onHourChange,

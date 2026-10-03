@@ -3,8 +3,20 @@ import { IconButton } from '@/components/buttons/IconButton';
 import { clamp } from '@/lib/math';
 import { useLocale } from '@/locale';
 
+/**
+ * What a {@link DecimalIntegerInput} holds: an integer, or nothing while it is being typed.
+ *
+ * `undefined` is a real state and not a bug. An empty field is not zero, and a component that
+ * reported zero for it would make a caller's `value === 0` check fire on a field nobody has filled in.
+ */
 export type DecimalIntegerInputValue = number | undefined;
 
+/**
+ * A number input for a decimal integer, which may be empty.
+ *
+ * Reports `undefined` while the field is empty and rejects a fractional value as it is typed rather
+ * than rounding it: rounding silently turns 1.9 into 2 and the operator never sees what happened.
+ */
 export function DecimalIntegerInput({
   value,
   onChange,
