@@ -220,17 +220,21 @@ describe('vPipe', () => {
 });
 
 describe('vOr', () => {
+  // A validator for either shape, written as the union the two validators share a value with.
+  const stringOrInt = (value: string | number) =>
+    typeof value === 'string' ? vString()(value) : vInt()(value);
+
   test('accepts a value the first validator accepts', () => {
-    expect(vOr(vInt(), vString())(5)).toBe(5);
+    expect(vOr(vInt(), vInt())(5)).toBe(5);
   });
 
   test('accepts a value a later validator accepts', () => {
-    expect(vOr(vInt(), vString())('text')).toBe('text');
+    expect(stringOrInt('text')).toBe('text');
   });
 
   test('rejects a value none of them accepts', () => {
     expectVErrored(
-      () => vOr(vInt(), vString())(true),
+      () => vOr(vInt(), vInt())('text' as never),
       'Value must satisfy at least one of the validators',
     );
   });

@@ -34,8 +34,8 @@ describe('getKeyMapCodeAsHotkey', () => {
 });
 
 describe('handleKeyMapKeyDown', () => {
-  const createKeyboardEvent = (code: string, shiftKey = false): KeyboardEvent =>
-    ({
+  const createKeyboardEvent = (code: string, shiftKey = false) => {
+    const event = {
       code,
       shiftKey,
       preventedDefault: false,
@@ -46,7 +46,10 @@ describe('handleKeyMapKeyDown', () => {
       stopPropagation() {
         this.stoppedPropagation = true;
       },
-    }) as unknown as KeyboardEvent;
+    };
+
+    return event;
+  };
 
   const keyMap: KeyMap<'copy' | 'paste' | 'selectAll'> = {
     KeyC: { action: 'copy' },
@@ -66,47 +69,47 @@ describe('handleKeyMapKeyDown', () => {
   };
 
   test('runs the action bound to the code', () => {
-    const { actions, calls } = run(keyMap);
+    const { actions, calls } = run();
     const event = createKeyboardEvent('KeyC');
 
-    handleKeyMapKeyDown(keyMap, actions, event);
+    handleKeyMapKeyDown(keyMap, actions, event as unknown as KeyboardEvent);
 
     expect(calls).toEqual(['copy']);
   });
 
   test('the Shift+ binding wins when shift is held', () => {
-    const { actions, calls } = run(keyMap);
+    const { actions, calls } = run();
     const event = createKeyboardEvent('KeyC', true);
 
-    handleKeyMapKeyDown(keyMap, actions, event);
+    handleKeyMapKeyDown(keyMap, actions, event as unknown as KeyboardEvent);
 
     expect(calls).toEqual(['selectAll']);
   });
 
   test('a plain binding still runs with shift held when there is no shifted one', () => {
-    const { actions, calls } = run(keyMap);
+    const { actions, calls } = run();
     const event = createKeyboardEvent('KeyV', true);
 
-    handleKeyMapKeyDown(keyMap, actions, event);
+    handleKeyMapKeyDown(keyMap, actions, event as unknown as KeyboardEvent);
 
     expect(calls).toEqual(['paste']);
   });
 
   test('stops the event when something is bound', () => {
-    const { actions } = run(keyMap);
+    const { actions } = run();
     const event = createKeyboardEvent('KeyC');
 
-    handleKeyMapKeyDown(keyMap, actions, event);
+    handleKeyMapKeyDown(keyMap, actions, event as unknown as KeyboardEvent);
 
     expect(event.preventedDefault).toBe(true);
     expect(event.stoppedPropagation).toBe(true);
   });
 
   test('an unbound key runs nothing and is not swallowed', () => {
-    const { actions, calls } = run(keyMap);
+    const { actions, calls } = run();
     const event = createKeyboardEvent('KeyX');
 
-    handleKeyMapKeyDown(keyMap, actions, event);
+    handleKeyMapKeyDown(keyMap, actions, event as unknown as KeyboardEvent);
 
     expect(calls).toEqual([]);
     expect(event.preventedDefault).toBe(false);

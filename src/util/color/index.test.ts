@@ -97,7 +97,13 @@ describe('findBreakPointRange', () => {
   });
 
   test('answers null for fewer than two stops', () => {
-    expect(findBreakPointRange([breakPoints[0]], 0)).toBeNull();
+    const first = breakPoints[0];
+
+    if (first === undefined) {
+      throw new Error('the list is a literal, so the first entry cannot be missing');
+    }
+
+    expect(findBreakPointRange([first], 0)).toBeNull();
   });
 });
 

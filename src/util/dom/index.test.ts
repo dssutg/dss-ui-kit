@@ -17,7 +17,7 @@ describe('debounce', () => {
   test('delays the call until the quiet period has passed', () => {
     vi.useFakeTimers();
     const calls: number[] = [];
-    const debounced = debounce((value: number) => calls.push(value), 100);
+    const debounced = debounce((...args: readonly unknown[]) => calls.push(Number(args[0])), 100);
 
     debounced(null, 1);
     expect(calls).toEqual([]);
@@ -29,7 +29,7 @@ describe('debounce', () => {
   test('collapses a burst of calls into the last one', () => {
     vi.useFakeTimers();
     const calls: number[] = [];
-    const debounced = debounce((value: number) => calls.push(value), 100);
+    const debounced = debounce((...args: readonly unknown[]) => calls.push(Number(args[0])), 100);
 
     debounced(null, 1);
     vi.advanceTimersByTime(50);

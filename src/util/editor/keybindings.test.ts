@@ -1,6 +1,7 @@
 // The key handling is pure: no DOM is touched, and the node environment is the one a keystroke
 // arrives in outside a browser. This file does not need document at all.
 // @vitest-environment jsdom
+import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { describe, expect, test } from 'vitest';
 import { getLines } from './history';
 import { type EditorKeyHandlers, handleEditorKeyDown } from './keybindings';
@@ -26,7 +27,7 @@ function keyDownEvent(options: {
   value?: string;
   selectionStart?: number;
   selectionEnd?: number;
-}): KeyboardEvent<HTMLTextAreaElement> {
+}): ReactKeyboardEvent<HTMLTextAreaElement> {
   const {
     key = 'Unidentified',
     keyCode = 0,
@@ -61,16 +62,16 @@ function keyDownEvent(options: {
     get defaultPrevented() {
       return prevented;
     },
-  } as unknown as KeyboardEvent<HTMLTextAreaElement>;
+  } as unknown as ReactKeyboardEvent<HTMLTextAreaElement>;
 }
 
-function handlersWithRecorder(): EditorKeyHandlers & {
+/** A mutable recorder, so a test can state the behaviour it drives rather than reaching into it. */
+function handlersWithRecorder(overrides: Partial<EditorKeyHandlers> = {}): EditorKeyHandlers & {
   edits: { value: string; selectionStart: number; selectionEnd: number }[];
 } {
   const edits: { value: string; selectionStart: number; selectionEnd: number }[] = [];
 
-  return {
-    edits,
+  const base: EditorKeyHandlers = {
     applyEdits: (record) => {
       edits.push(record);
     },
@@ -82,6 +83,8 @@ function handlersWithRecorder(): EditorKeyHandlers & {
     tabSize: 4,
     undoEdit: () => undefined,
   };
+
+  return { ...(base as EditorKeyHandlers), ...overrides, edits };
 }
 
 describe('handleEditorKeyDown', () => {
@@ -137,8 +140,7 @@ describe('handleEditorKeyDown', () => {
   });
 
   test('ignoreTabKey leaves Tab to the browser', () => {
-    const handlers = handlersWithRecorder();
-    handlers.ignoreTabKey = true;
+    const handlers = handlersWithRecorder({ ignoreTabKey: true });
     const event = keyDownEvent({ key: 'Tab', value: 'ab', selectionStart: 1, selectionEnd: 1 });
 
     handleEditorKeyDown(event, handlers);
@@ -218,9 +220,10 @@ describe('handleEditorKeyDown', () => {
   test('Ctrl+Z undoes, Ctrl+Shift+Z redoes', () => {
     const undoCalls: number[] = [];
     const redoCalls: number[] = [];
-    const handlers = handlersWithRecorder();
-    handlers.undoEdit = () => undoCalls.push(1);
-    handlers.redoEdit = () => redoCalls.push(1);
+    const handlers = handlersWithRecorder({
+      undoEdit: () => undoCalls.push(1),
+      redoEdit: () => redoCalls.push(1),
+    });
 
     handleEditorKeyDown(keyDownEvent({ keyCode: KEYCODES.Z, ctrlKey: true }), handlers);
     expect(undoCalls).toEqual([1]);
@@ -235,10 +238,11 @@ describe('handleEditorKeyDown', () => {
 
   test('Ctrl+M toggles tab capture', () => {
     const toggles: boolean[] = [];
-    const handlers = handlersWithRecorder();
-    handlers.setCapture = (update) => {
-      toggles.push(update(handlers.capture));
-    };
+    const handlers = handlersWithRecorder({
+      setCapture: (update: (previous: boolean) => boolean) => {
+        toggles.push(update(true));
+      },
+    });
 
     handleEditorKeyDown(keyDownEvent({ keyCode: KEYCODES.M, ctrlKey: true }), handlers);
 

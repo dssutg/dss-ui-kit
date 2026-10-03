@@ -14,10 +14,17 @@ import {
   makeTransformedVertex,
   naiveRaycast,
 } from './geometry';
-import type { Camera, GroupSceneObject, Vector3Array } from './scene';
+import type {
+  BoxFaceColors,
+  BoxSceneObject,
+  Camera,
+  GroupSceneObject,
+  Vector3Array,
+  Vector4Array,
+} from './scene';
 
 /** The flat material, so a box in these tests draws without naming colours per face. */
-const WHITE = [1, 1, 1, 1] as const;
+const WHITE: Vector4Array = [1, 1, 1, 1];
 
 describe('convertHexColorToGL', () => {
   test('reads a hex colour as RGBA in 0–1', () => {
@@ -44,7 +51,7 @@ describe('getMaterialByHexColor and getFaceColor', () => {
       rightFaceColor: [1, 1, 0, 1],
       topFaceColor: [0, 1, 1, 1],
       bottomFaceColor: [1, 0, 1, 1],
-    } as const;
+    } satisfies BoxFaceColors;
 
     expect(getFaceColor(material, 'front')).toEqual([1, 0, 0, 1]);
     expect(getFaceColor(material, 'back')).toEqual([0, 1, 0, 1]);
@@ -99,7 +106,7 @@ describe('makeTransformedVertex', () => {
 
 describe('makeTransformationMatrix', () => {
   test('places a translated, unrotated, unscaled box so its centre is at the translation', () => {
-    const matrix = makeTransformationMatrix({ type: 'box', pos: [5, 0, 0] });
+    const matrix = makeTransformationMatrix({ type: 'box', pos: [5, 0, 0], material: WHITE });
 
     // Transform the box centre, which is the origin in its own coordinates.
     const centre = glMat4MultiplyMatrixAndVector([0, 0, 0, 0], matrix, vec4From([0, 0, 0, 1]));
@@ -110,11 +117,15 @@ describe('makeTransformationMatrix', () => {
 
 describe('isPointInsideBox', () => {
   test('answers for a box transformed to a known place', () => {
-    const box: BoxSceneObject = { type: 'box', pos: [10, 0, 0], scale: [2, 2, 2] };
+    const box: BoxSceneObject = { type: 'box', pos: [10, 0, 0], scale: [2, 2, 2], material: WHITE };
     const inverted = glMat4Invert(
       [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       makeTransformationMatrix(box),
     );
+
+    if (inverted === null) {
+      throw new Error('the transform above is invertible, so this cannot be reached');
+    }
 
     expect(isPointInsideBox([10, 0, 0], inverted)).toBe(true);
     expect(isPointInsideBox([10, 0, 4], inverted)).toBe(false);
@@ -123,7 +134,7 @@ describe('isPointInsideBox', () => {
 
 describe('flattenSceneObjects', () => {
   test('leaves standalone objects alone', () => {
-    const object: BoxSceneObject = { type: 'box', pos: [1, 2, 3] };
+    const object: BoxSceneObject = { type: 'box', pos: [1, 2, 3], material: WHITE };
 
     expect(flattenSceneObjects([object])).toEqual([object]);
   });
@@ -133,7 +144,7 @@ describe('flattenSceneObjects', () => {
       type: 'group',
       pos: [10, 0, 0],
       scale: [2, 2, 2],
-      children: [{ type: 'box', pos: [1, 0, 0] }],
+      children: [{ type: 'box', pos: [1, 0, 0], material: WHITE }],
     };
 
     const flattened = flattenSceneObjects([group]);
@@ -154,7 +165,7 @@ describe('flattenSceneObjects', () => {
           type: 'group',
           rotation: [0, 0, 2],
           scale: [3, 3, 3],
-          children: [{ type: 'box' }],
+          children: [{ type: 'box', material: WHITE }],
         },
       ],
     };
@@ -272,7 +283,7 @@ describe('convertBoxToQuads', () => {
   });
 
   test('carries the texture coordinates a face was given', () => {
-    const uv: [number, number][] = [
+    const uv: [[number, number], [number, number], [number, number], [number, number]] = [
       [0, 0],
       [1, 0],
       [1, 1],
