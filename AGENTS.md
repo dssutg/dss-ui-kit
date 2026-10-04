@@ -361,9 +361,11 @@ are not here because they are the maintainer's alone — see [Releasing](#releas
 `typecheck`, `test`, `commit-message` → `build`, `docs`, plus a `release-preview` job on `v*` tags.
 `biome ci` treats formatting as an error, so an unformatted file fails the pipeline.
 
-Every job starts from `.github/actions/setup/action.yml`, which checks out the commit, sets up Deno and
-runs `deno install --frozen`. A shared action rather than a copy per job: a lockfile that has to agree
-with `package.json` is checked the same way everywhere, or not at all.
+Every job checks the repository out and then runs `.github/actions/setup/action.yml`, which installs
+the pinned Deno and runs `deno install --frozen`. A shared action rather than a copy per job: a
+lockfile that has to agree with `package.json` is checked the same way everywhere, or not at all.
+The checkout is a separate step because a local action is loaded from the working directory — the
+action cannot be the thing that put it there.
 
 The pipeline keeps one gate deliberately: every job runs the same commands `deno task ci` runs, so a
 green pipeline and a green `deno task ci` mean the same thing.
