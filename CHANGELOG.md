@@ -1,0 +1,113 @@
+# Changelog
+
+All notable changes to this project are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project
+adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Release notes are generated
+from [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) by `scripts/release.ts`.
+
+[0.2.0] — 2026-10-04
+
+### Features
+
+- **util:** add compareVersions for dotted version numbers (cc4c22e)
+- **display:** add a LightRayOverlay drawn with an image the caller bundles (151eac5)
+- **feedback:** add a CommandConsole for caller-registered commands (ea49024)
+- **ui:** add a ConfirmationModal for a question with two answers (eae0cf7)
+- **navigation:** add a SlideMenu, a NavBar and the drag hook behind them (fee5ae4)
+- **routing:** add slash-separated path helpers and a RouteSwitch (3757d3d)
+- **ui:** add render tests per group and publish the tailwind token preset (90a43a8)
+- **ui:** publish the components that were built but not exported (b208b6b)
+- **gl:** keep the WebGL scene renderer as a generic library module (12e642d)
+- **locale:** let any language be added, not only the two shipped (625a8e7)
+- **ui:** export the colour pickers (9038e64)
+- add the public surface and the guards that keep it decoupled (6d0c071)
+- initial commit (1777460)
+
+### Bug Fixes
+
+- type the timeout handles as whatever setTimeout returns (89e6ddf)
+- **config:** drop the comment that was making every lint override a no-op (9e083a8)
+- **types:** make the copied source pass strict typecheck (8a4e8dd)
+- **locale:** cut the catalogues to the keys the library renders and admit explicit undefined (f5a339c)
+
+### Refactoring
+
+- **inputs:** guard SearchInput's clear-button classes with && instead of an empty string (f375f1e)
+- **ui:** drop the stray justify-content token and spell cn() guards with && (c2bd575)
+- **ui:** build every component class list with cn() instead of interpolation (49ee8fa)
+- **styles:** group src/css into themes/ and components/ and drop the theme_ prefix (614724a)
+- **lib:** rename src/lib and scripts/lib to util (d41e2a8)
+- **lib:** group the flat src/lib helpers into one directory per group (d4f0506)
+- **ui:** remove the last hardcoded address and the any-typed resize fallback (bbeb273)
+- **components:** name each module after what it exports (af9f6be)
+- **components:** group components into directories and move the icons out (5d01712)
+- remove the rack visualisation from the library (e143cec)
+- bring every function under the complexity limit (0a3b260)
+- split the rack renderer and the editor (80bb37a)
+- split the maths and DOM helpers by subject (3b80bba)
+- split multi-component modules into one PascalCase file per component (f3cf89f)
+- rename single-component modules to PascalCase (a5782fb)
+- split the autosizer measurement and the picker's touch handling (354cd8f)
+- split the functions that were doing more than one job (14dd199)
+- clear the mechanical lint rules that hid real decisions (eafad07)
+- **ui:** make every interactive element a real control (537335e)
+- **color_picker:** clear the last non-null assertions in the library (783d822)
+- **ui:** read through checked accessors in Calendar and FilterableTable (f6e5277)
+- **ui:** remove 38 more assertions, and fix a crash they were hiding in Tree (cf760c3)
+- **dsv:** rebuild parseCSV around committed fields instead of a sparse grid (0648c7c)
+- **dom:** read touch positions through one checked helper instead of nine assertions (04dea2a)
+- **lib/math:** type the matrices so the indices need no assertions (edb4acf)
+- **lib/array:** remove every non-null assertion from the array helpers (84324fd)
+- **server-rack:** make the rack renderer and device-database editor caller-driven (bf0bfb7)
+- **lib:** strip application coupling and cut the message set to what the library renders (549b9bf)
+
+### Documentation
+
+- require reporting anything that looks like a bug, not just what a task asked about (e6864d8)
+- **ui:** add TSDoc to the remaining undocumented source files (cfbb0ea)
+- drop work-in-progress state and volatile numbers from the documentation (e5d7528)
+- correct the helper module count in TODO.md (7bffe76)
+- **lib:** document the rest of the public surface (8317897)
+- **charts,layout,tables:** document the remaining component groups (09c0a21)
+- **navigation,color-picker:** document both groups (36cff43)
+- **inputs:** document every exported input (4ea7644)
+- **ui:** document the infrastructure, buttons, display, feedback and overlay surfaces (583cc0e)
+- rewrite the three markdown documents against the library as it stands (b1157b8)
+- generate the API reference from the public surface only (c9be90f)
+- drop every mention of the code base this library came from (9bc8c82)
+- tick the stages that are done (ef6fc0b)
+- export the types the public signatures already refer to (59726ef)
+- record the fourth relaxed rule in the two places that name them (56b697f)
+- add the decoupling plan and the repository constitution (55c1a3f)
+
+### Tests
+
+- **util:** type the new suites against the library's own strictness (c9acd60)
+- **util:** fix lint findings in the new hook tests (9f66473)
+- **util:** cover the color helpers (42e4206)
+- **util:** cover the hooks and the editor keybindings (d7bddaf)
+- **util:** cover the editor modules and the WebGL geometry (b7e9cdb)
+- **util:** cover the util groups the suite had not reached (10cc86c)
+
+### Build
+
+- name the globals the UMD build reads off `window` (e85e5eb)
+- **css:** compile Tailwind instead of shipping a checked-in build (5169cfd)
+- **config:** set up the library toolchain and repository scaffolding (e276332)
+
+### Continuous Integration
+
+- install frozen dependencies in every job (84d6e72)
+- replace the GitLab pipeline with GitHub Actions (ea9bef9)
+
+### Styling
+
+- **date:** spell the step list as a readonly array type (7d28e92)
+
+### Chores
+
+- remove TODO.md now that the publication-preparation work is done (3835072)
+- **config:** turn off useComponentExportOnlyModules, and record why (14e9495)
+
+**Contributors:** Daniil Stepanov
