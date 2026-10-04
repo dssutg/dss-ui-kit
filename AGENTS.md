@@ -200,6 +200,33 @@ stylistic preferences; each one has caught a real problem.
 - **Leave code better typed than you found it.** If a new lint rule flags something you did not
   write, fix it properly instead of narrowing the rule or adding a suppression.
 
+### Say what looks wrong
+
+Reading the code you have to read turns up things that are almost certainly not meant to be there: a
+class name that is a CSS property rather than a utility, a fallback that sets the wrong side's border,
+a union that admits a form the code never produces. A typo is indistinguishable from a decision at the
+line it sits on, and the next reader cannot tell either — so whoever can see it is the one who has to
+say it.
+
+**Every such thing is reported, every time, including the ones the task did not ask about.** The task
+being unrelated is not a reason to stay quiet: that is exactly the code nobody is looking at, and it
+stays broken because the one person who noticed was working on something else. Scope decides what gets
+*changed*, not what gets *mentioned*.
+
+- **Name it with its file and line**, and say what the code does against what it says. `OrderPanel`'s
+  bottom-border branch fell back to a top-border class, so `border-t-bsp` could never apply; that is a
+  fact the next reader needs, and "this looks like a typo" is not it.
+- **Say whether it is being fixed.** A defect the change touches gets fixed and the fix is called out.
+  One outside the change gets reported and left alone — an unrequested edit is its own surprise, and
+  the person who owns that code may be halfway through changing it.
+- **Do not fix it silently, and do not leave it in the diff.** A surprise that appears only in the diff
+  is one the reader has to notice themselves, which is the failure this rule exists to prevent.
+- **A finding is not a licence to widen the task.** Report it, then finish what was asked. A pile of
+  unrelated repairs is harder to review than a list of things to repair separately.
+
+Reporting it in the commit body as well as the summary is what makes it survive: the conversation is
+gone by the time the next person reads `git log`.
+
 ## Preact through the React compatibility layer
 
 The codebase is written against the **React** API and runs on **Preact**. Do not "fix" `react`
@@ -566,3 +593,5 @@ Both are owned by the script.
 - The commit message follows Conventional Commits.
 - If the change is visible to a consumer — a component, a token, an export — say so in the commit
   body.
+- Anything that looks like a bug, a mistake or a typo is reported, including what the task did not ask
+  about — see [Say what looks wrong](#say-what-looks-wrong).
