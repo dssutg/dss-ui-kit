@@ -60,7 +60,7 @@ export function ControlledTable<T, C extends string>({
   getItemId,
   searchText,
   setSearchText,
-}: ControlledTableProps<T, C>) {
+}: ControlledTableProps<T, C>): React.JSX.Element {
   const searchSchema: SearchSchema<T> = {
     properties: properties.map((property) => ({
       name: property.id,

@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
  * request is already on its way. Hiding again is immediate, so nothing lingers after the trigger is
  * gone.
  */
-export function useDelayedVisibility(trigger: boolean, delayMilliseconds: number) {
+export function useDelayedVisibility(trigger: boolean, delayMilliseconds: number): boolean {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {

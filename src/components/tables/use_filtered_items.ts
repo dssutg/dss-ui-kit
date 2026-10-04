@@ -225,7 +225,7 @@ export function useFilteredItems<T>({
   readonly items: T[];
   readonly searchText: string;
   readonly searchSchema: SearchSchema<T>;
-}) {
+}): T[] {
   const { dates } = useLocale();
 
   if (searchText === '') {

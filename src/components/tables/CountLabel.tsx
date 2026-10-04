@@ -23,7 +23,7 @@ export function CountLabel({
   totalRowCount,
   countLabelPrefix,
   minCountLabelWidth,
-}: CountLabelProps) {
+}: CountLabelProps): React.JSX.Element {
   return (
     <div
       className="p-2 bg-bpl rounded-lg truncate flex-grow sm:flex-grow-0"

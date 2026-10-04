@@ -24,7 +24,7 @@ export function Select({
   readonly disabled?: boolean | undefined;
   readonly id?: string | undefined;
   readonly children: React.ReactNode;
-}) {
+}): React.JSX.Element {
   useTheme();
 
   const encodedColor = encodeURIComponent(getCSSVariableValue('color-tpl'));

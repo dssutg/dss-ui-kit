@@ -106,7 +106,7 @@ export function ZoomableCanvas({
   readonly usingWebGL?: boolean | undefined;
   readonly shouldReleaseDragOnMouseLeave?: boolean | undefined;
   readonly style?: React.CSSProperties | undefined;
-}) {
+}): React.JSX.Element {
   const internalCanvasRef = useRef<HTMLCanvasElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);

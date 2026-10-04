@@ -120,7 +120,7 @@ export interface CrashGuardProps {
  * deliberately does not do is recover — an error boundary that swallowed the error and kept the
  * application running would be hiding a broken component from the operator who has to fix it.
  */
-export function AppCrashGuard(props: CrashGuardProps) {
+export function AppCrashGuard(props: CrashGuardProps): React.JSX.Element {
   return <ErrorBoundary fallbackComponent={DefaultCrashFallback} {...props} />;
 }
 

@@ -22,7 +22,7 @@ export function useDebounce(
   }: {
     readonly shouldCallOnUnmount?: boolean | undefined;
   } = {},
-) {
+): { reset: () => void; clear: () => void } {
   const { reset, clear } = useTimeout(callback, delay);
   const hasMounted = useRef(false);
 

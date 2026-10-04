@@ -75,7 +75,7 @@ export function Button({
   buttonRef?: React.Ref<HTMLButtonElement> | undefined;
   readonly onClick?: React.MouseEventHandler<HTMLButtonElement> | undefined;
   readonly children?: React.ReactNode | undefined;
-}) {
+}): React.JSX.Element {
   return (
     <button
       ref={buttonRef ?? null}

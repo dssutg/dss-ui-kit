@@ -30,7 +30,7 @@ export function Modal({
   readonly noWidthRestriction?: boolean | undefined;
   readonly verticalAlignment?: 'center' | 'top' | undefined;
   readonly children?: React.ReactNode | undefined;
-}) {
+}): false | React.JSX.Element {
   const { t } = useLocale();
 
   const [locked, setLocked] = useState(true);

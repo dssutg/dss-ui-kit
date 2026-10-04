@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
  * that may never come. This is the window and not the screen: a caller laying out against the space an
  * application actually has wants the inner size.
  */
-export function useWindowSize() {
+export function useWindowSize(): { width: number; height: number } {
   const [size, setSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,

@@ -20,7 +20,7 @@ export function LogOutputTextArea({
   readonly dontWrapLongLines?: boolean | undefined;
   readonly style?: React.CSSProperties | undefined;
   readonly shouldScrollToEndOnUpdate?: boolean | undefined;
-}) {
+}): React.JSX.Element {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useGranularEffect(

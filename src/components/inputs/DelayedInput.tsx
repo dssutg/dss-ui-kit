@@ -29,7 +29,7 @@ export function DelayedInput({
   readonly getFilteredValue?: (value: string) => string;
   readonly changeOnEnterKey?: boolean | undefined;
   readonly autoFocus?: boolean | undefined;
-}) {
+}): React.JSX.Element {
   const [hotValue, setHotValue] = useState(value);
 
   const ref = useRef<HTMLInputElement>(null);

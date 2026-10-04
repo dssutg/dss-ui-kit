@@ -20,7 +20,7 @@ export function HourMinuteSecondTimeInput({
   readonly onMinuteChange: (minute: number) => void;
   readonly second: number;
   readonly onSecondChange: (second: number) => void;
-}) {
+}): React.JSX.Element {
   return (
     <div className="flex gap-2 items-center">
       <TimePartInput value={hour} onChange={onHourChange} max={23} />

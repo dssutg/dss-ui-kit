@@ -8,7 +8,10 @@ import { useGranularEffect } from '@/util/hooks/use_granular_effect';
  * debounce restarts the timer on every change and cancels it on unmount, neither of which an effect
  * that schedules a timeout can do. `delay` is `null` to never run it.
  */
-export function useTimeout(callback: () => void, delay: number | null) {
+export function useTimeout(
+  callback: () => void,
+  delay: number | null,
+): { reset: () => void; clear: () => void } {
   const callbackRef = useRef<() => void>(callback);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 

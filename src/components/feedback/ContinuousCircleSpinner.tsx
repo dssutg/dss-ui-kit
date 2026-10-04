@@ -5,7 +5,11 @@
  * progress would be asked for progress instead. Sized by its own CSS, so a caller wanting a different
  * size sets `style`.
  */
-export function ContinuousCircleSpinner({ style }: { readonly style?: React.CSSProperties }) {
+export function ContinuousCircleSpinner({
+  style,
+}: {
+  readonly style?: React.CSSProperties;
+}): React.JSX.Element {
   return (
     <div
       className="leading-0 aspect-square size-[2em] animate-spin rounded-full border-[5px] border-[var(--color-loading-spinner-bg)] border-b-[var(--color-loading-spinner-fg)] bg-transparent text-[2rem]"

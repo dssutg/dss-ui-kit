@@ -35,7 +35,7 @@ export function LogWidget({
   readonly extraRightControlsComponent?: React.ReactNode | undefined;
   readonly style?: React.CSSProperties | undefined;
   readonly className?: string | undefined;
-}) {
+}): React.JSX.Element {
   const { t } = useLocale();
 
   return (

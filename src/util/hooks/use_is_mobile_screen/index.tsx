@@ -15,7 +15,7 @@ export const minDesktopWidth = 900;
  * A layout decision, not a device guess. A caller that needs a different threshold does the same
  * comparison in its own hook, because "mobile" means something different per panel.
  */
-export function useIsMobileScreen() {
+export function useIsMobileScreen(): boolean {
   const [isMobileScreen, setIsMobileScreen] = useState(window.innerWidth < minDesktopWidth);
 
   useEffect(() => {

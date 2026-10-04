@@ -19,6 +19,6 @@ export function formatNumberAsHexBytes(x: number, minBytes = 0): string {
  *
  * The formatting an identifier is displayed with — a MAC address, a serial, a hex colour.
  */
-export function formatHexNumber(x: number, minDigits: number) {
+export function formatHexNumber(x: number, minDigits: number): string {
   return x.toString(16).toUpperCase().padStart(minDigits, '0').replace(/../g, '$& ').trim();
 }

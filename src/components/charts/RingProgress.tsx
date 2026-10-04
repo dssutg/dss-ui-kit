@@ -52,7 +52,7 @@ export function RingProgress({
   readonly style?: React.CSSProperties | undefined;
   readonly titleStyle?: React.CSSProperties | undefined;
   readonly titlePos?: 'top' | 'bottom' | undefined;
-}) {
+}): React.JSX.Element {
   useWindowSize();
 
   const diameter = radius * 2 * getDpr();

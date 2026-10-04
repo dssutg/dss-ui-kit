@@ -52,7 +52,7 @@ export function ButtonGroup<T extends string>({
   style,
   buttonStyle,
   transparentBG = false,
-}: ButtonGroupProps<T>) {
+}: ButtonGroupProps<T>): React.JSX.Element {
   // Handled on each segment rather than on the wrapper: the segments are already focusable, so a
   // focusable wrapper would only add a tab stop that does nothing on Enter or Space.
   function onKeyDown(event: React.KeyboardEvent<HTMLButtonElement>) {

@@ -55,7 +55,7 @@ export function UploadConfig({
   progress,
   onlyDrop = false,
   uploadedFile,
-}: UploadConfigProps) {
+}: UploadConfigProps): React.JSX.Element {
   const needsProgressTracking = progress !== undefined;
 
   const percent = Math.floor(clamp(progress ?? 100, 0, 100));

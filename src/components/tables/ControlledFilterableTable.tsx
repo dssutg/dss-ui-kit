@@ -29,7 +29,7 @@ export function ControlledFilterableTable<T, C extends string>({
   getItemId,
   searchText,
   setSearchText,
-}: ControlledTableProps<T, C>) {
+}: ControlledTableProps<T, C>): React.JSX.Element {
   return (
     <ControlledTable
       items={items}

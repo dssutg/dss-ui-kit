@@ -41,7 +41,7 @@ export function ConfirmationModal({
   readonly destructive?: boolean | undefined;
   readonly onConfirm: () => void;
   readonly onCancel: () => void;
-}) {
+}): React.JSX.Element {
   const { t } = useLocale();
 
   const answeredRef = useRef(false);

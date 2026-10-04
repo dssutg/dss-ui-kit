@@ -26,7 +26,7 @@ export function ResizableSplit({
   readonly style?: React.CSSProperties | undefined;
   readonly orientation?: 'horizontal' | 'vertical' | undefined;
   readonly childrenOverflow?: string | undefined;
-}) {
+}): React.JSX.Element {
   const vertical = orientation === 'vertical';
 
   return (

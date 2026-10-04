@@ -28,7 +28,7 @@ export function CopyToClipboardButton({
   readonly buttonStyle?: React.CSSProperties | undefined;
   readonly iconStyle?: React.CSSProperties | undefined;
   readonly title?: string | undefined;
-}) {
+}): React.JSX.Element {
   const { t } = useLocale();
 
   const triggerRef = useRef<HTMLButtonElement>(null);

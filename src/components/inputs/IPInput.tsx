@@ -19,7 +19,7 @@ export function IPInput({
   readonly value: string;
   readonly onChange: (value: string) => void;
   readonly width?: string | undefined;
-}) {
+}): React.JSX.Element {
   const onChangeText = useCallback(
     (text: string) => {
       onChange(

@@ -32,7 +32,7 @@ export function useMouseDrag(
     readonly onHandleDown?: (initialPosition: Point2D) => void;
     readonly onHandleUp?: () => void;
   } = {},
-) {
+): { isDragging: boolean; position: Point2D; relativeMove: Point2D } {
   const [isDragging, setIsDragging] = useState(false);
 
   const [initialPosition, setInitialPosition] = useState<Point2D>({

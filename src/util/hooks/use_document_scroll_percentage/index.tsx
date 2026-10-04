@@ -10,7 +10,7 @@ import { clamp } from '@/util/math';
  * {@link useEventListener} installs — which is why it is a hook a component such as
  * {@link ScrollProgressBar} can call without knowing where it will be mounted.
  */
-export function useDocumentScrollPercentage() {
+export function useDocumentScrollPercentage(): number {
   const [scrollPercentage, setScrollPercentage] = useState(0);
 
   const updateScrollPercentage = useCallback(() => {

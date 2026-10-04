@@ -183,7 +183,7 @@ export function CommandConsole({
   maxOutputLength = 10_000,
   className,
   style,
-}: CommandConsoleProps) {
+}: CommandConsoleProps): React.JSX.Element | null {
   const { t } = useLocale();
 
   const [output, setOutput] = useState('');

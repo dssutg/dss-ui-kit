@@ -40,7 +40,7 @@ export function FeedbackTooltip({
   readonly title?: string | undefined;
   readonly trigger?: HTMLElement | null | undefined;
   readonly children?: React.ReactNode | undefined;
-}) {
+}): React.JSX.Element {
   const [isVisible, setIsVisible] = useState(false);
 
   const wrapperRef = useRef<HTMLDivElement>(null);

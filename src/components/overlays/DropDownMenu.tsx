@@ -53,7 +53,7 @@ export function DropDownMenu({
   readonly onTriggerClick?: React.MouseEventHandler<HTMLButtonElement> | undefined;
   readonly onTriggerMouseEnter?: React.MouseEventHandler<HTMLButtonElement> | undefined;
   readonly onTriggerMouseLeave?: React.MouseEventHandler<HTMLButtonElement> | undefined;
-}) {
+}): React.JSX.Element {
   const { t } = useLocale();
 
   const [open, setOpen] = useState(false);

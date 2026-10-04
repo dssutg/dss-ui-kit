@@ -18,7 +18,13 @@ export interface FloatInputProps {
 }
 
 /** A decimal field for a value that may be half-typed. See {@link FloatInputProps}. */
-export function FloatInput({ value, onChange, width, min, max }: FloatInputProps) {
+export function FloatInput({
+  value,
+  onChange,
+  width,
+  min,
+  max,
+}: FloatInputProps): React.JSX.Element {
   const valueNum = Number(value);
 
   const valid =

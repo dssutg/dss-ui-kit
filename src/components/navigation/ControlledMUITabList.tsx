@@ -29,7 +29,7 @@ export function ControlledMUITabList<ID extends string>({
   readonly tabTriggerStyle?: React.CSSProperties | undefined;
   readonly tabId: ID | null;
   readonly setTabId: (tabId: ID | null) => void;
-}) {
+}): React.JSX.Element | null {
   const triggerListRef = useRef<HTMLDivElement>(null);
 
   // The id prefix that ties each tab to its panel. `useId` rather than a prop, because the pairing is

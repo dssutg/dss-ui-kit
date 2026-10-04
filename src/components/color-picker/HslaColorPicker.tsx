@@ -21,6 +21,8 @@ const colorModelHslaColorPicker: ColorModel<HslaColor> = {
  * For a caller whose colour is a structured HSLA value rather than text; the object is edited in
  * place and reported as a new one.
  */
-export function HslaColorPicker(properties: Partial<ColorPickerBaseProperties<HslaColor>>) {
+export function HslaColorPicker(
+  properties: Partial<ColorPickerBaseProperties<HslaColor>>,
+): React.JSX.Element {
   return <AlphaColorPicker {...properties} colorModel={colorModelHslaColorPicker} />;
 }

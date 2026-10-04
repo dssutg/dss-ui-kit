@@ -22,7 +22,7 @@ export function JsonEditor({
   readonly tabSize?: number | undefined;
   readonly highlightSyntax?: boolean | undefined;
   readonly style?: React.CSSProperties | undefined;
-}) {
+}): React.JSX.Element {
   return (
     <div className="flex w-full gap-2 overflow-hidden" style={style}>
       <div className="flex-grow overflow-scroll">

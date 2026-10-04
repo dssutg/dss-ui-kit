@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
  * `width: 100%` of the document includes the scrollbar and `100vw` does not, so a sticky footer sized
  * with `vw` is scrollbar-width too wide.
  */
-export function useScrollbarWidth() {
+export function useScrollbarWidth(): number {
   const [scrollbarWidth, setScrollbarWidth] = useState(0);
 
   useEffect(() => {

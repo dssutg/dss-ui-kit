@@ -25,7 +25,7 @@ export function SortableTableRow<T, C extends string>({
   readonly rowIndex: number;
   readonly style?: React.CSSProperties | undefined;
   readonly rowStyle?: React.CSSProperties | undefined;
-}) {
+}): React.JSX.Element {
   let cells: React.ReactNode[] = [];
 
   for (let columnIndex = 0; columnIndex < descriptor.headerColumns.length; columnIndex++) {

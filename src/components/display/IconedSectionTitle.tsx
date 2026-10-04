@@ -14,7 +14,7 @@ export function IconedSectionTitle({
   readonly icon: IconName;
   readonly title: string;
   readonly style?: React.CSSProperties | undefined;
-}) {
+}): React.JSX.Element {
   return (
     <h1
       className="m-0 flex w-full select-none items-center justify-center gap-4 p-0 text-center text-2xl text-tpl"

@@ -35,7 +35,7 @@ export function serializeDSVColumn(column: string, delimiter: string) {
  * The delimiter is an argument rather than a constant because the same rows are written as CSV for an
  * export and as TSV for a paste into a spreadsheet, and the two differ only here.
  */
-export function serializeDSV(columns: readonly string[], delimiter: string) {
+export function serializeDSV(columns: readonly string[], delimiter: string): string {
   return columns.map((column) => serializeDSVColumn(column, delimiter)).join(delimiter);
 }
 
@@ -45,7 +45,7 @@ export function serializeDSV(columns: readonly string[], delimiter: string) {
  * One row, not a document: this is what a caller parses a single line with, and a backslash delimiter
  * is rejected outright because the grammar cannot quote it.
  */
-export function parseDSV(input: string, delimiter: string) {
+export function parseDSV(input: string, delimiter: string): { columns: string[]; length: number } {
   if (delimiter === '\\') {
     throw new Error('Cannot use backslash as delimiter');
   }
@@ -152,7 +152,7 @@ function isCarriageReturnLineFeed(current: string, next: string): boolean {
  * endings, and CRLF line endings. A row with a trailing delimiter keeps its last field as an empty
  * string, because that is a cell the file says exists.
  */
-export function parseCSV(csv: string) {
+export function parseCSV(csv: string): string[][] {
   const rows: string[][] = [];
 
   let insideQuotedField = false;

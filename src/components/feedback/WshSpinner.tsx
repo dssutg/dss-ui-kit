@@ -11,7 +11,7 @@ export function WshSpinner({
 }: {
   readonly color?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
-}) {
+}): React.JSX.Element {
   return (
     <div
       className="opacity-1 flex h-28 w-28 shrink-0 justify-center"

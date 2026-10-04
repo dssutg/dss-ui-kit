@@ -32,7 +32,7 @@ export function LockableToggleSwitch({
   readonly lockReasonTitle?: string | undefined;
   readonly title?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
-}) {
+}): React.JSX.Element {
   const [feedbackVisible, setFeedbackVisible] = useState(false);
 
   // Only positioning for the tooltip. The locked click used to be handled here, which meant a div

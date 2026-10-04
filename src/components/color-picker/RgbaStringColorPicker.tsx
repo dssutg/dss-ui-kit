@@ -19,6 +19,8 @@ const colorModelRgbaStringColorPicker: ColorModel<string> = {
  *
  * See {@link HslaStringColorPicker}: the same picker over the other CSS notation.
  */
-export function RgbaStringColorPicker(properties: Partial<ColorPickerBaseProperties<string>>) {
+export function RgbaStringColorPicker(
+  properties: Partial<ColorPickerBaseProperties<string>>,
+): React.JSX.Element {
   return <AlphaColorPicker {...properties} colorModel={colorModelRgbaStringColorPicker} />;
 }

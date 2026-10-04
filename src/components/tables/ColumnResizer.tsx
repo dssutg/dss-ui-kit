@@ -24,7 +24,7 @@ export function ColumnResizer({
   /** The column's current width. A focusable separator has to report its value. */
   readonly width: number;
   readonly minWidth?: number | string | undefined;
-}) {
+}): React.JSX.Element {
   const { t } = useLocale();
 
   // `role="separator"` is what a draggable divider between two panes is. The arrow keys step it by

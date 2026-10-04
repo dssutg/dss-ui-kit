@@ -52,7 +52,7 @@ export function ToggleButton<TValue extends string>({
   className,
   style,
   iconClassName,
-}: ToggleButtonProps<TValue>) {
+}: ToggleButtonProps<TValue>): React.JSX.Element {
   const currentIndex = options.findIndex((option) => option.value === value);
   const current = options[currentIndex];
 

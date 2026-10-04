@@ -55,7 +55,7 @@ export function SearchInput({
   readonly autoFocus?: boolean | undefined;
   outerRef?: React.MutableRefObject<HTMLDivElement | null> | undefined;
   readonly historyId?: string | undefined;
-}) {
+}): React.JSX.Element {
   const { t } = useLocale();
 
   const inputRef = useRef<HTMLInputElement>(null);

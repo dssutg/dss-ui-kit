@@ -38,7 +38,7 @@ export function Icon({
   readonly onDrop?: React.DragEventHandler<SVGSVGElement> | undefined;
   readonly invisible?: boolean | undefined;
   readonly children?: React.ReactNode | undefined;
-}) {
+}): React.JSX.Element {
   const icon = iconPaths[name];
 
   const SVG_NS = 'http://www.w3.org/2000/svg';

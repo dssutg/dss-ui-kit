@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { type RefObject, useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Icon } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';
 import { cn } from '@/util/cn';
@@ -40,7 +40,7 @@ export function Accordion({
   readonly afterTriggerComponent?: React.ReactNode | undefined;
   readonly getContentStyle?: (expanded: boolean) => React.CSSProperties;
   readonly forceMount?: boolean | undefined;
-}) {
+}): React.JSX.Element {
   const id = useId();
   const { contentRef, contentStyle: defaultContentStyle } = useAccordion(
     expanded,
@@ -120,7 +120,15 @@ export function useAccordion(
   expanded: boolean,
   mode: 'vertical' | 'horizontal' = 'vertical',
   fixedSize: number | undefined = undefined,
-) {
+): {
+  contentRef: RefObject<HTMLDivElement>;
+  contentStyle: {
+    [x: string]: string | number;
+    opacity: number;
+    overflow: string;
+    transition: string;
+  };
+} {
   const contentRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<number | 'auto'>('auto');
   const scrollbarWidth = useScrollbarWidth();

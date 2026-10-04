@@ -57,7 +57,7 @@ export function TimelineViewerModal<T>({
   onOpenChange,
   items,
   searchSchema,
-}: TimelineViewerModalProps<T>) {
+}: TimelineViewerModalProps<T>): React.JSX.Element {
   const { t } = useLocale();
 
   const [statsPropertyName, setStatsPropertyName] = useState<

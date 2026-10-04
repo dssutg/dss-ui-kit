@@ -193,7 +193,7 @@ function tokenize(src: string | any[], lang: string, token: any) {
  * stylesheet defines what a token looks like. Every piece of the source is escaped before it is
  * wrapped, so this is safe on text from anywhere.
  */
-export function highlightText(src: string | unknown[], lang: Lang) {
+export function highlightText(src: string | unknown[], lang: Lang): string {
   let tmp = '';
 
   // biome-ignore lint: lint/suspicious/noExplicitAny

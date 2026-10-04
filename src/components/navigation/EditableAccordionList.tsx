@@ -46,7 +46,7 @@ export function EditableAccordionList({
   readonly appendItemTitle: string;
   readonly className?: string | undefined;
   readonly getFilteredItemName?: (name: string) => string;
-}) {
+}): React.JSX.Element {
   const { t } = useLocale();
 
   const appendItem = useCallback(() => {

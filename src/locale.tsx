@@ -1,5 +1,6 @@
 import {
   createContext,
+  type JSX,
   type ReactNode,
   useCallback,
   useContext,
@@ -422,7 +423,7 @@ export function LocaleProvider({
   fallbackLocale: fallback = fallbackLocale,
   detectLocale,
   storageKey = LOCALE_STORAGE_KEY,
-}: LocaleProviderProps) {
+}: LocaleProviderProps): JSX.Element {
   const [lang, setLang] = useState<LocaleName>(() => {
     const detected = detectLocale?.() ?? detectInitialLocale(storageKey);
     return initialLocale ?? detected;

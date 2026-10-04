@@ -55,7 +55,7 @@ export function FilterableTableTopPanel<T>({
   readonly leftComponent?: React.ReactNode | undefined;
   readonly rightComponent?: React.ReactNode | undefined;
   readonly historyId?: string | undefined;
-}) {
+}): React.JSX.Element {
   const { t, dates } = useLocale();
 
   const [extraSearchModalOpen, setExtraSearchModalOpen] = useState(false);

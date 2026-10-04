@@ -115,7 +115,7 @@ export function naiveRaycast<T>({
   readonly rayDirection: Vector3D;
   readonly camera: Camera;
   readonly stepAction: (currentPos: Vector3Array) => T;
-}) {
+}): T | null {
   const direction = rayDirection.normalize();
 
   for (let length = 0; length < maxRayLength; length += rayLengthDelta) {
@@ -138,7 +138,10 @@ export function naiveRaycast<T>({
 }
 
 /** True when a point is inside the box whose transform is inverted back to world units. */
-export function isPointInsideBox(currentPos: Vector3Array, invertedBoxTransformMatrix: Mat4) {
+export function isPointInsideBox(
+  currentPos: Vector3Array,
+  invertedBoxTransformMatrix: Mat4,
+): boolean {
   const homogeneousPos = vec4From([currentPos[0], currentPos[1], currentPos[2], 1]);
 
   // Cancel box transformation to get normalized coords
@@ -163,7 +166,7 @@ export function isPointInsideBox(currentPos: Vector3Array, invertedBoxTransformM
  * Column-major, because that is the order OpenGL reads a matrix in and `mat4From` takes it verbatim.
  * Rotation is in radians.
  */
-export function makeTransformationMatrix(object: Readonly<SceneObject>) {
+export function makeTransformationMatrix(object: Readonly<SceneObject>): Mat4 {
   const pos = object.pos ?? [0, 0, 0];
   const scale = object.scale ?? [1, 1, 1];
   const rot = object.rotation ?? [0, 0, 0];
@@ -402,7 +405,7 @@ export function getBoxCropUV({
  * A degenerate triangle gets a zero normal rather than a division by zero, which leaves it unlit
  * instead of turning it black.
  */
-export function calcNormal(v0: Vector3Array, v1: Vector3Array, v2: Vector3Array) {
+export function calcNormal(v0: Vector3Array, v1: Vector3Array, v2: Vector3Array): Vector3Array {
   // Vector A from v0 to v1
   const ax = v1[0] - v0[0];
   const ay = v1[1] - v0[1];
@@ -565,7 +568,7 @@ export function generateTransformMatrices({
 }: {
   readonly camera: Camera;
   readonly aspect: number;
-}) {
+}): { modelViewMatrix: Mat4; projectionMatrix: Mat4 } {
   // Create a perspective matrix, a special matrix that is
   // used to simulate the distortion of perspective in a camera.
   // Our field of view is 45 degrees, with a width/height

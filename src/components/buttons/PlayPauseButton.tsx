@@ -27,7 +27,12 @@ export interface PlayPauseButtonProps {
  * It holds no state: `playing` is the caller's, so the same button works for a stream, a recording
  * and a timeline, and an external pause still updates the icon.
  */
-export function PlayPauseButton({ playing, onClick, playTitle, pauseTitle }: PlayPauseButtonProps) {
+export function PlayPauseButton({
+  playing,
+  onClick,
+  playTitle,
+  pauseTitle,
+}: PlayPauseButtonProps): React.JSX.Element {
   return (
     <IconButton
       icon={playing ? 'pause' : 'play'}

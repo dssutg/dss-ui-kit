@@ -44,7 +44,7 @@ export function Slider({
   readonly trackHeight?: number | undefined;
   readonly breakPoints?: readonly number[] | undefined;
   readonly breakPointsVisible?: boolean | undefined;
-}) {
+}): React.JSX.Element {
   const minValue = Math.min(min, max);
   const maxValue = Math.max(min, max);
 

@@ -11,7 +11,7 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 }
 
 /** A native input styled with the design system's tokens. See {@link InputProps}. */
-export function Input({ ...rest }: InputProps) {
+export function Input({ ...rest }: InputProps): React.JSX.Element {
   return (
     <input
       className="bg-bin block rounded-lg p-1 h-fit text-tpl placeholder-tpd outline-none"

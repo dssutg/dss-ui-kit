@@ -50,7 +50,7 @@ export function DecimalIntegerInput({
   readonly noAlteringValueWithArrowKeys?: boolean | undefined;
   readonly noAlteringValueWithMouseWheel?: boolean | undefined;
   readonly base?: 10 | 16 | undefined;
-}) {
+}): React.JSX.Element {
   const { t } = useLocale();
 
   const maxDigits = maxValue.toString(base).length;

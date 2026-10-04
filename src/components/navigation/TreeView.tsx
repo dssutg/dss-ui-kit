@@ -110,7 +110,7 @@ export function TreeView({
   readonly onCopy?: (e: ClipboardEvent) => void;
   readonly onCut?: (e: ClipboardEvent) => void;
   readonly onPaste?: (e: ClipboardEvent) => void;
-}) {
+}): React.JSX.Element {
   const [typeAheadBuffer, setTypeAheadBuffer] = useState<string>('');
 
   const [searchText, setSearchText] = useState<string>('');

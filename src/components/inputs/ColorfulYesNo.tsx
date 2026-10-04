@@ -12,7 +12,7 @@ export function ColorfulYesNo({
 }: {
   readonly yes: boolean;
   readonly yesIsBad?: boolean | undefined;
-}) {
+}): React.JSX.Element {
   const { t } = useLocale();
 
   if (yesIsBad) {

@@ -37,7 +37,7 @@ export function Link({
   style,
   children,
   ...properties
-}: LinkProps) {
+}: LinkProps): React.JSX.Element {
   return (
     <a
       href={to}

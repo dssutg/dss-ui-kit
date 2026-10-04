@@ -7,7 +7,7 @@ import { useState } from 'react';
  * drawn into, an animation outside the state system. For state that is this library's to keep, a hook
  * that holds it is better than a re-render.
  */
-export function useForceUpdate() {
+export function useForceUpdate(): () => void {
   const [, setTick] = useState(0);
 
   function forceUpdate() {

@@ -18,7 +18,7 @@ export function UnsignedIntegerInput({
   readonly onChange: (value: number) => void;
   readonly min?: number | undefined;
   readonly max?: number | undefined;
-}) {
+}): React.JSX.Element {
   const actualMin = Math.max(min, 0);
   const actualMax = Math.min(max, Number.MAX_SAFE_INTEGER);
 

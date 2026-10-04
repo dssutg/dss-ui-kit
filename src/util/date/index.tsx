@@ -5,7 +5,14 @@
  * The seconds are there because a field with a seconds column needs them, not because they are usually
  * shown.
  */
-export function getDateComponents(dateObject: Date = new Date()) {
+export function getDateComponents(dateObject: Date = new Date()): {
+  year: number;
+  month: number;
+  day: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+} {
   return {
     year: dateObject.getFullYear(),
     month: dateObject.getMonth() + 1,
@@ -308,7 +315,7 @@ export function formatRelativeDate(
   dateObject: Date,
   relativeToDateObject: Date,
   dateLocale: DateLocale,
-) {
+): string {
   const delta = Math.round((relativeToDateObject.getTime() - dateObject.getTime()) / 1000);
 
   // The locale is a required argument: choosing one here would mean choosing a language.

@@ -14,7 +14,7 @@ export function ByteFractionInput({
 }: {
   readonly value: number;
   readonly onChange: (value: number) => void;
-}) {
+}): React.JSX.Element {
   const min = 0;
   const max = 25.5;
 

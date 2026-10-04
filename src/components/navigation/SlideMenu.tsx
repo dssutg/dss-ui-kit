@@ -49,7 +49,7 @@ export function SlideMenu({
   readonly panelClassName?: string | undefined;
   readonly overlayClassName?: string | undefined;
   readonly children?: React.ReactNode | undefined;
-}) {
+}): React.JSX.Element {
   const { t } = useLocale();
 
   const panelTitle = title ?? t('SlideMenu.open');

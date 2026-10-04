@@ -18,6 +18,8 @@ const colorModelRgbaColorPicker: ColorModel<RgbaColor> = {
 /**
  * A {@link ColorPicker} over an {@link RgbaColor} object, for a colour held as channels.
  */
-export function RgbaColorPicker(properties: Partial<ColorPickerBaseProperties<RgbaColor>>) {
+export function RgbaColorPicker(
+  properties: Partial<ColorPickerBaseProperties<RgbaColor>>,
+): React.JSX.Element {
   return <AlphaColorPicker {...properties} colorModel={colorModelRgbaColorPicker} />;
 }

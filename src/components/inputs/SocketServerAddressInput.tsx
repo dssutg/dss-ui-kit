@@ -26,7 +26,7 @@ export function SocketServerAddressInput({
   onChange,
   onConfirm,
   placeholder,
-}: SocketServerAddressInputProps) {
+}: SocketServerAddressInputProps): React.JSX.Element {
   return (
     <TextInput
       value={value}

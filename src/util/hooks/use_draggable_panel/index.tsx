@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { type RefObject, useCallback, useEffect, useRef } from 'react';
 import { getPointerPosition } from '@/util/dom';
 import { useGranularEffect } from '@/util/hooks/use_granular_effect';
 import { clamp, type Point2D } from '@/util/math';
@@ -16,6 +16,12 @@ const TRANSITION = 'transform 0.3s, box-shadow 0.3s';
 
 /** The highest opacity the overlay behind the panel reaches, at the panel's open offset. */
 const OVERLAY_OPACITY = 0.5;
+
+/** The two refs to put on the caller's panel and its backdrop. See {@link useDraggablePanel}. */
+export interface DraggablePanelRefs {
+  readonly panelRef: RefObject<HTMLDivElement>;
+  readonly overlayRef: RefObject<HTMLButtonElement>;
+}
 
 /**
  * Slides a panel in from the edge of the viewport and back out, following a drag.
@@ -50,7 +56,7 @@ export function useDraggablePanel({
   readonly onVisibleChange: (visible: boolean) => void;
   readonly animated?: boolean | undefined;
   readonly dragStartEdgeWidth?: number | undefined;
-}) {
+}): DraggablePanelRefs {
   const panelRef = useRef<HTMLDivElement>(null);
 
   /**

@@ -39,7 +39,7 @@ export function Popover({
   readonly popoverStyle?: React.CSSProperties | undefined;
   readonly popoverClassName?: string | undefined;
   readonly children?: React.ReactNode | undefined;
-}) {
+}): React.JSX.Element {
   const triggerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 

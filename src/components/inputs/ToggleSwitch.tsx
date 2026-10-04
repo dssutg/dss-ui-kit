@@ -33,7 +33,7 @@ export function ToggleSwitch({
   readonly labelStyle?: React.CSSProperties | undefined;
   readonly barStyle?: React.CSSProperties | undefined;
   readonly enabledBgClassName?: string | undefined;
-}) {
+}): React.JSX.Element {
   // The label is rendered inside the button rather than beside it in a `<label>`. A `<label>` needs a
   // form control to point at, and there is none: the control is the switch itself, so its accessible
   // name has to be its own content.

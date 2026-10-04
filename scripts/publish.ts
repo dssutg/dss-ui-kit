@@ -32,10 +32,6 @@ import { collectFiles, REPOSITORY_ROOT } from './util/source-tree.ts';
  * Tailwind or PostCSS pipeline reads them from the package by path. That is the JSR reading of the
  * `./style.css` subpath the npm manifest spells.
  *
- * The publish type-checks with the slow-type diagnostics allowed. The public API has 129 of them,
- * all missing explicit return types, and clearing them is a refactor of its own; the flag is what
- * keeps this publish usable until that lands.
- *
  * With `--dry-run` the config is written but nothing is uploaded; the flag is passed on to the
  * publish command, which stops short of contacting the registry.
  */
@@ -356,8 +352,8 @@ async function main(): Promise<void> {
   // `-c` is what makes the generated file the one the publish reads: a `deno.json` in the same
   // directory would win on its own, and only the generated file carries the publish rules.
   const publishArgs = dryRun
-    ? ['publish', '--dry-run', '--allow-slow-types', '--allow-dirty', '-c', JSR_JSON]
-    : ['publish', '--allow-slow-types', '-c', JSR_JSON];
+    ? ['publish', '--dry-run', '--allow-dirty', '-c', JSR_JSON]
+    : ['publish', '-c', JSR_JSON];
   const command = new Deno.Command('deno', {
     args: publishArgs,
     cwd: REPOSITORY_ROOT,

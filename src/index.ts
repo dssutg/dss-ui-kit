@@ -324,7 +324,12 @@ export { highlightText } from '@/util/highlight';
 export { useDebounce } from '@/util/hooks/use_debounce';
 export { useDelayedVisibility } from '@/util/hooks/use_delayed_visibility';
 export { useDocumentScrollPercentage } from '@/util/hooks/use_document_scroll_percentage';
+export type {
+  DraggableListItemProps,
+  DragNDropOrderedList,
+} from '@/util/hooks/use_drag_n_drop_ordered_list';
 export { useDragNDropOrderedList } from '@/util/hooks/use_drag_n_drop_ordered_list';
+export type { DraggablePanelRefs } from '@/util/hooks/use_draggable_panel';
 export {
   DEFAULT_DRAG_START_EDGE_WIDTH,
   useDraggablePanel,
@@ -348,6 +353,7 @@ export { useScrollbarWidth } from '@/util/hooks/use_scrollbar_width';
 export { useSyncScroll } from '@/util/hooks/use_sync_scroll';
 export { useTimeout } from '@/util/hooks/use_timeout';
 export { useWindowSize } from '@/util/hooks/use_window_size';
+export type { HttpStatus, HttpStatusCategory } from '@/util/http';
 export { getHttpStatusCategory, getHttpStatusCategoryName, getHttpStatusName } from '@/util/http';
 export { ipv4Regex, parseIp } from '@/util/ipv4';
 export type { KeyMap, KeyMapActions, KeyMapHandler } from '@/util/key_map';

@@ -43,7 +43,7 @@ export function FilterableTableStatsModal<T>({
   onOpenChange,
   items,
   searchSchema,
-}: FilterableTableStatsModalProps<T>) {
+}: FilterableTableStatsModalProps<T>): React.JSX.Element {
   const { t } = useLocale();
 
   const [statsPropertyName, setStatsPropertyName] = useState<

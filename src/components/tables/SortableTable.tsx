@@ -140,7 +140,7 @@ export type SortableTableDescriptor<T, C extends string> = Readonly<{
  */
 export function makeSortableTableCellRenderer<T, C extends string>(
   columnMap: SortableTableColumnRenderMap<T, C>,
-) {
+): SortableTableCellRenderer<T, C> {
   return (context: SortableTableCellRendererContext<T, C>) =>
     columnMap[context.columnId]?.(context);
 }
@@ -193,7 +193,7 @@ export function SortableTable<T, C extends string>({
   readonly className?: string | undefined;
   readonly rowStyle?: React.CSSProperties | undefined;
   tableRef?: React.MutableRefObject<HTMLTableSectionElement | null> | undefined;
-}) {
+}): React.JSX.Element {
   const { t } = useLocale();
 
   const [isResizing, setIsResizing] = useState(false);

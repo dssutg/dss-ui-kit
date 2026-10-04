@@ -47,7 +47,7 @@ export function DropDownButton({
   readonly variant?: DropDownButtonVariant | undefined;
   readonly triggerTitle: string;
   readonly style?: React.CSSProperties | undefined;
-}) {
+}): React.JSX.Element {
   return (
     <DropDownMenu
       variant="button"

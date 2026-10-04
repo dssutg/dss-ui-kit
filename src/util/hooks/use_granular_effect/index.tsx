@@ -15,6 +15,6 @@ export function useGranularEffect(
   effect: EffectCallback,
   primaryDeps: unknown[],
   secondaryDeps: unknown[],
-) {
+): unknown {
   return useGranularHook(useEffect, effect, primaryDeps, secondaryDeps);
 }

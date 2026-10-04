@@ -47,7 +47,7 @@ export function getShareColor({
   readonly shareIndex: number;
   readonly totalShares: number;
   readonly colors?: readonly string[] | undefined;
-}) {
+}): string {
   // An empty palette falls back to the default one rather than to nothing: a caller who passes no
   // colours still expects every wedge of the pie to be painted.
   const palette = colors.length === 0 ? defaultPieChartColors : colors;
@@ -74,7 +74,7 @@ export function getShareColor({
  * An empty total is reported as 100%, which keeps a chart with nothing in it from rendering a single
  * full slice labelled as everything.
  */
-export function getSharePercent(count: number, total: number) {
+export function getSharePercent(count: number, total: number): number {
   if (total === 0) {
     return 100;
   }
@@ -142,7 +142,7 @@ export function PieChart({
   readonly radius: number;
   readonly style?: React.CSSProperties | undefined;
   readonly shareMarginDegrees?: number | undefined;
-}) {
+}): React.JSX.Element {
   const [hoveredShare, setHoveredShare] = useState<PieChartShare | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);

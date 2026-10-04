@@ -139,7 +139,7 @@ export function MenuTree({
   readonly searchShown?: boolean | undefined;
   readonly searchText?: string | undefined;
   readonly onChangeSearchText?: ((searchText: string) => void) | undefined;
-}) {
+}): React.JSX.Element {
   const { tRaw } = useLocale();
 
   return (

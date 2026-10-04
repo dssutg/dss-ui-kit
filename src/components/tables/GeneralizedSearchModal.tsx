@@ -121,7 +121,7 @@ export function GeneralizedSearchModal<T>({
   onOpenChange,
   searchSchema,
   onSearch,
-}: GeneralizedSearchModalProps<T>) {
+}: GeneralizedSearchModalProps<T>): React.JSX.Element {
   const { t, dates } = useLocale();
 
   const [valueMap, setValueMap] = useState<Record<string, unknown>>({});

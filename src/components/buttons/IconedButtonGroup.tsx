@@ -18,7 +18,7 @@ export function IconedButtonGroup({
   readonly value?: number | undefined;
   readonly onChange?: (index: number) => void;
   readonly style?: React.CSSProperties | undefined;
-}) {
+}): React.JSX.Element {
   return (
     <div className="flex items-center justify-center" style={style}>
       {group.map((item, index) => (

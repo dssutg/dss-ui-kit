@@ -46,7 +46,7 @@ export function IconButton({
   readonly onDblClick?: MouseEventHandler<HTMLButtonElement> | undefined;
   buttonRef?: React.Ref<HTMLButtonElement> | undefined;
   readonly children?: React.ReactNode | undefined;
-}) {
+}): React.JSX.Element {
   return (
     <button
       ref={buttonRef ?? null}

@@ -19,7 +19,7 @@ export function HexAlphaColorPickerPopover({
   readonly trigger: React.ReactNode;
   readonly color: string;
   readonly onChange: (color: string) => void;
-}) {
+}): React.JSX.Element {
   const [hotColor, setHotColor] = useState(color);
 
   const [open, setOpen] = useState(false);

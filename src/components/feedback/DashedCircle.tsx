@@ -10,7 +10,7 @@ export function DashedCircle({
 }: {
   readonly active?: boolean | undefined;
   readonly title?: string | undefined;
-}) {
+}): React.JSX.Element | null {
   if (!active) {
     return null;
   }

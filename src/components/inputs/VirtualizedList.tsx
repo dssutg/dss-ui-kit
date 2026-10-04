@@ -62,7 +62,7 @@ export function VirtualizedList({
   onScroll,
   overScanCount,
   containerRef,
-}: VirtualizedListProps) {
+}: VirtualizedListProps): React.JSX.Element {
   const { startIndex, endIndex, getItemStyle } = useVirtualizedList({
     // The default lives in the hook, so an absent count is passed on as absent.
     ref: containerRef,

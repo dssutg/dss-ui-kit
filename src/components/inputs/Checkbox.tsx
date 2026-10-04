@@ -21,7 +21,7 @@ export function Checkbox({
   readonly label?: React.ReactNode | undefined;
   readonly style?: React.CSSProperties | undefined;
   readonly labelStyle?: React.CSSProperties | undefined;
-}) {
+}): React.JSX.Element {
   const id = useId();
 
   return (

@@ -30,7 +30,7 @@ export function NavBar({
   readonly breadcrumb?: readonly string[] | undefined;
   readonly children?: React.ReactNode | undefined;
   readonly className?: string | undefined;
-}) {
+}): React.JSX.Element {
   const { t } = useLocale();
 
   return (

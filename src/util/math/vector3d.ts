@@ -31,11 +31,19 @@ export class Vector3D {
     this.z = z;
   }
 
-  static fromPoint3D({ x, y, z }: { readonly x: number; readonly y: number; readonly z: number }) {
+  static fromPoint3D({
+    x,
+    y,
+    z,
+  }: {
+    readonly x: number;
+    readonly y: number;
+    readonly z: number;
+  }): Vector3D {
     return new Vector3D(x, y, z);
   }
 
-  static fromArray(components: [number, number, number]) {
+  static fromArray(components: [number, number, number]): Vector3D {
     const [x, y, z] = components;
 
     return new Vector3D(x, y, z);

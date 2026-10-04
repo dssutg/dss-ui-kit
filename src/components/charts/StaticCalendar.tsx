@@ -336,7 +336,7 @@ function Day({
  * own beyond keeping the current month in view. The events come from the caller, which is what lets it
  * show an application's own records rather than a built-in data set.
  */
-export function StaticCalendar({ date }: { readonly date: Date }) {
+export function StaticCalendar({ date }: { readonly date: Date }): React.JSX.Element | null {
   const { dates } = useLocale();
   const { isSundayFirstWeekDay } = dates.calendar;
 

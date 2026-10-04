@@ -11,7 +11,7 @@ import { Icon, type IconName } from './Icon';
  * show a subset, and it exists so that a person looking for an icon can search for one instead of
  * reading the generated file.
  */
-export function IconViewer() {
+export function IconViewer(): React.JSX.Element {
   const [searchText, setSearchText] = useState('');
 
   const iconNames = Object.keys(iconPaths) as IconName[];

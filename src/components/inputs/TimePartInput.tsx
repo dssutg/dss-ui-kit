@@ -22,7 +22,7 @@ export interface TimePartInputProps {
  * range. Used by {@link HourMinuteTimeInput} and {@link HourMinuteSecondTimeInput}, and exported for a
  * caller assembling another time input.
  */
-export function TimePartInput({ value, onChange, max }: TimePartInputProps) {
+export function TimePartInput({ value, onChange, max }: TimePartInputProps): React.JSX.Element {
   const min = 0;
 
   return (

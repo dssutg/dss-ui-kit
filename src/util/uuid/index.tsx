@@ -5,7 +5,7 @@
  * sortable by time, which is the point — a caller that needs creation order has its own creation
  * order.
  */
-export function uuidv4() {
+export function uuidv4(): string {
   return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (char) => {
     return (
       Number(char) ^

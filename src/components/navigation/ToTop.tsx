@@ -16,7 +16,7 @@ export function ToTop({
 }: {
   readonly minAppearanceY?: number | undefined;
   readonly style?: React.CSSProperties | undefined;
-}) {
+}): false | React.JSX.Element {
   const [visible, setVisible] = useState(false);
 
   useEventListener('scroll', () => {

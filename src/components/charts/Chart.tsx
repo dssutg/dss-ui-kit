@@ -181,7 +181,7 @@ export function Chart({
   getYLabel,
   className,
   style,
-}: ChartProps) {
+}: ChartProps): React.JSX.Element {
   const { t } = useLocale();
 
   // The canvas is sized in device pixels and scaled by the zoom, so the backing store follows the

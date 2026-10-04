@@ -18,7 +18,7 @@ export function useGranularHook<T extends HookWithDependencies<C, ReturnType<T>>
   callback: C,
   primaryDeps: unknown[],
   secondaryDeps: unknown[],
-) {
+): ReturnType<T> {
   const ref = useRef<unknown[] | undefined>(undefined);
   const current = ref.current;
 

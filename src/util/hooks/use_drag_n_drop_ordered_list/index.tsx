@@ -7,6 +7,30 @@ interface State<ListItemDataType> {
   updatedOrder: ListItemDataType[];
 }
 
+/** The props to spread on one list item so the hook can follow it while it is dragged. */
+export interface DraggableListItemProps {
+  readonly 'data-position': number;
+  readonly draggable: boolean;
+  onDragStart: (event: TargetedEvent<HTMLElement, DragEvent>) => void;
+  onDragOver: (event: TargetedEvent<HTMLElement, DragEvent>) => void;
+  onDragLeave: () => void;
+  onDrop: () => void;
+}
+
+/** What {@link useDragNDropOrderedList} reports while a drag is in progress. */
+export interface DragNDropOrderedList {
+  readonly getListItemProps: (listItemIndex: number) => DraggableListItemProps;
+  onDragStart: (event: TargetedEvent<HTMLElement, DragEvent>) => void;
+  onDragOver: (event: TargetedEvent<HTMLElement, DragEvent>) => void;
+  onDragLeave: () => void;
+  onDrop: () => void;
+  readonly isDragging: boolean;
+  readonly draggedFrom: number | null;
+  readonly isDragTarget: (itemIndex: number) => boolean;
+  readonly isBeforeStart: (itemIndex: number) => boolean;
+  readonly isAfterStart: (itemIndex: number) => boolean;
+}
+
 /**
  * The index a list item was rendered at, read off its `data-position`.
  *
@@ -33,7 +57,7 @@ function getItemPosition(element: HTMLElement): number {
 export function useDragNDropOrderedList<ListItemDataType>(
   items: ListItemDataType[],
   onChange?: (updatedItems: ListItemDataType[]) => void,
-) {
+): DragNDropOrderedList {
   const [dragAndDrop, setDragAndDrop] = useState<State<ListItemDataType>>({
     draggedFrom: null,
     draggedTo: null,

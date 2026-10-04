@@ -19,7 +19,7 @@ export function Ripple({
 }: {
   readonly color?: string | undefined;
   readonly duration?: number | undefined;
-}) {
+}): false | React.JSX.Element {
   const wrapperRef = useRef<HTMLSpanElement>(null);
 
   interface RippleInstance {

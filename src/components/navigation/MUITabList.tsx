@@ -20,7 +20,7 @@ export interface MUITabDescriptor<ID extends string> {
  * Exported because a caller rendering something *inside* tab content needs to know whether it is
  * visible, and the answer is one attribute read rather than a duplicate of the selection state.
  */
-export function isMUITabActive(tabContentElement: Readonly<HTMLElement>) {
+export function isMUITabActive(tabContentElement: Readonly<HTMLElement>): boolean {
   return tabContentElement.parentElement?.getAttribute('data-state') === 'active';
 }
 
@@ -41,7 +41,7 @@ export function MUITabList<ID extends string>({
   readonly style?: React.CSSProperties | undefined;
   readonly tabTriggerListStyle?: React.CSSProperties | undefined;
   readonly tabTriggerStyle?: React.CSSProperties | undefined;
-}) {
+}): React.JSX.Element {
   const [tabId, setTabId] = useState<ID | null>(tabs[0]?.id ?? null);
 
   return (

@@ -33,7 +33,7 @@ export function RouteSwitch({
 }: {
   readonly path: string;
   readonly routes: readonly RouteDescriptor[];
-}) {
+}): React.ReactNode {
   for (const route of routes) {
     const match = matchPath(route.path, path);
 

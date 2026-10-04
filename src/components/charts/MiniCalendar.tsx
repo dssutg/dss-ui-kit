@@ -22,7 +22,7 @@ export function MiniCalendar({
   readonly posX: number;
   readonly posY: number;
   readonly onClose: () => void;
-}) {
+}): React.JSX.Element {
   const { t } = useLocale();
 
   const windowRef = useRef<HTMLButtonElement>(null);

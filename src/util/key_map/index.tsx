@@ -31,7 +31,7 @@ export type KeyMapActions<A extends string> = Readonly<Record<A, () => void>>;
  * Only for display — in a shortcut hint or a settings row. A binding is matched on the code, not on
  * this, because the code is what is stable across layouts.
  */
-export function getKeyMapCodeAsHotkey(code: string) {
+export function getKeyMapCodeAsHotkey(code: string): string {
   return code
     .replace(/(Key|Digit)/, '')
     .replace(/Equal$/, '=')

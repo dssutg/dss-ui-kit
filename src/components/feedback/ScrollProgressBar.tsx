@@ -7,7 +7,7 @@ import { useDocumentScrollPercentage } from '@/util/hooks/use_document_scroll_pe
  * scrollable element would need a ref to one, and the caller wrapping it in its own container with
  * `position: sticky` gets the same result.
  */
-export function ScrollProgressBar() {
+export function ScrollProgressBar(): React.JSX.Element {
   const percent = useDocumentScrollPercentage();
 
   return (

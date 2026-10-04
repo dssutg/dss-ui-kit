@@ -85,7 +85,7 @@ export function TextInput({
   readonly clearIconInnerStyle?: React.CSSProperties | undefined;
   readonly inputStyle?: React.CSSProperties | undefined;
   [x: string]: unknown;
-}) {
+}): false | React.JSX.Element {
   const { t } = useLocale();
 
   return (

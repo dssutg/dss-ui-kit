@@ -24,7 +24,11 @@ export interface LightRayOverlayProps {
  * How bright it is is a default and not a decision: `opacity-[0.4]` is here so the panel in front of it
  * stays readable, and a caller who wants more or less passes their own `opacity-*` to `className`.
  */
-export function LightRayOverlay({ image, className, style }: LightRayOverlayProps) {
+export function LightRayOverlay({
+  image,
+  className,
+  style,
+}: LightRayOverlayProps): React.JSX.Element {
   return (
     <div
       aria-hidden="true"

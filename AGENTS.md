@@ -605,8 +605,10 @@ as-is, and the publish script carries each of them across instead of the source 
   (`vite.css.config.ts` → `dist/dss-ui-kit.css`, what npm installs as `dss-ui-kit/style.css`), and
   as packaged files under `src/css/` for a JSR consumer's Tailwind/PostCSS pipeline.
 
-The publish runs with slow types allowed: the public API does not yet carry explicit return types
-everywhere. Fixing that is the refactor that retires the flag — do not add new ones.
+The publish runs without a slow-types allowance, so a function or symbol the publish would flag
+(`missing-explicit-return-type`, `missing-explicit-type`) fails it: every exported symbol reachable
+from `src/index.ts` carries an explicit type. Run `deno task publish:dry` before finishing a new
+export, and keep the pattern in new code.
 
 Consequences worth knowing before touching the source:
 

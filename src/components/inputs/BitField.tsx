@@ -21,7 +21,7 @@ export function BitField({
   readonly flagDescriptionMap: Readonly<Record<number, string>>;
   readonly showEntireDescription?: boolean | undefined;
   readonly octetCount?: number | undefined;
-}) {
+}): React.JSX.Element {
   // IMPORTANT: Bitwise operators are not used to support numbers greater than 32-bit
 
   const { t } = useLocale();

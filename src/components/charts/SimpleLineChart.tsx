@@ -30,7 +30,7 @@ export function SimpleLineChart({
   readonly gridCellHeight?: number | undefined;
   readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
-}) {
+}): React.JSX.Element {
   useTheme();
 
   return (

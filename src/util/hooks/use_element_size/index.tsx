@@ -7,7 +7,9 @@ import { useEffect, useState } from 'react';
  * is a content-box size as the observer reports it, which is the size to draw a canvas at and not the
  * size of the element with its padding.
  */
-export function useElementSize<T extends HTMLElement>(elementRef: React.RefObject<T | null>) {
+export function useElementSize<T extends HTMLElement>(
+  elementRef: React.RefObject<T | null>,
+): { width: number; height: number } {
   const [size, setSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {

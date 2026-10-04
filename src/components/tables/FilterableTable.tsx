@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { type Context, createContext, useContext, useState } from 'react';
 import { ControlledTable } from './ControlledTable';
 import type { SortableTableCellRenderer, SortableTableComparatorFunction } from './SortableTable';
 import type { GetExportedTableFilenameCallback } from './table_export';
@@ -89,7 +89,7 @@ export function FilterableTable<T, C extends string>({
   style,
   historyId,
   getItemId,
-}: FilterableTableProps<T, C>) {
+}: FilterableTableProps<T, C>): React.JSX.Element {
   return (
     <FilterableTableContextProvider>
       <Table
@@ -168,7 +168,7 @@ function FilterableTableContextProvider({ children }: { readonly children: React
 }
 
 /**
- * The search text of the enclosing filterable table.
+ * The search text of the enclosing filterable table, and the setter for it.
  *
  * Exported for the pieces that make up a table panel — the top panel with its search box and the stats
  * modal — which have to live below the provider that owns the search text and read it from here rather
@@ -176,7 +176,10 @@ function FilterableTableContextProvider({ children }: { readonly children: React
  * {@link FilterableTable}, so a panel used on its own fails with a message naming the cause rather than
  * reading `undefined.searchText`.
  */
-export const FilterableTableContext = createContext<{
+export interface FilterableTableContext {
   searchText: string;
   setSearchText: React.Dispatch<React.SetStateAction<string>>;
-} | null>(null);
+}
+
+export const FilterableTableContext: Context<FilterableTableContext | null> =
+  createContext<FilterableTableContext | null>(null);

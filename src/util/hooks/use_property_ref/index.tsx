@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { type RefObject, useEffect, useRef } from 'react';
 
 /**
  * A ref that always holds the current value of a property, for a callback that must read the newest
@@ -8,7 +8,7 @@ import { useEffect, useRef } from 'react';
  * once and reading the newest closure through a ref is not the same as re-attaching it on every
  * render.
  */
-export function usePropertyRef<T>(property: T) {
+export function usePropertyRef<T>(property: T): RefObject<T> {
   const ref = useRef(property);
 
   useEffect(() => {

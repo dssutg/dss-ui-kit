@@ -37,7 +37,7 @@ export function OrderPanel<T extends number>({
   readonly onRemoveItem?: (item: T, itemIndex: number) => void;
   readonly noOrderControls?: boolean | undefined;
   readonly style?: React.CSSProperties | undefined;
-}) {
+}): React.JSX.Element {
   const { t } = useLocale();
 
   const isMobileScreen = useIsMobileScreen();
