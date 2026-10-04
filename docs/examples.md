@@ -469,7 +469,8 @@ deciding.
 
 **Not for:** serialising the value. `HighlightedJson` takes JSON text and highlights it; whether an
 object becomes text at all, and which of its fields an operator should see in it, is the caller's
-decision, so the caller makes it and hands over the result.
+decision, so the caller makes it and hands over the result. `LightRayOverlay` draws an image the caller
+bundled; the library ships no picture of its own, because an asset is the application's.
 
 ```tsx
 import { HighlightedJson, Icon, IconedSectionTitle, Link } from 'dss-ui-kit';
@@ -487,6 +488,27 @@ function DeviceSummary({ device }: { readonly device: Device }) {
       {/* The caller serialises, because what an operator should see in a panel is its decision. */}
       <HighlightedJson json={JSON.stringify(device, null, 2)} />
     </section>
+  );
+}
+```
+
+### Decoration across the viewport
+
+`LightRayOverlay` is a wash of light behind everything, drawn with an image the caller hands it. It takes
+no clicks and is hidden from the accessibility tree; how bright it is is a default that `className`
+overrides, so a caller who wants it stronger does not have to edit the component.
+
+```tsx
+import { LightRayOverlay } from 'dss-ui-kit';
+import rayImage from './ray.png';
+
+function DeviceScreen({ children }: { readonly children: ReactNode }) {
+  return (
+    <div className="relative">
+      {/* Behind the panel and out of the way of it: `pointer-events-none` is what keeps the panel clickable. */}
+      <LightRayOverlay image={rayImage} className="opacity-70" />
+      <div className="relative">{children}</div>
+    </div>
   );
 }
 ```

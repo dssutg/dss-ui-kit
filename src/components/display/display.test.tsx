@@ -1,8 +1,9 @@
 /**
  * The display group renders what it is handed without owning any of it: icons are decoration hidden
  * from the accessibility tree because the control around them carries the name, `HighlightedJson`
- * marks up text it cannot parse rather than rejecting it, and `Link` reports navigation instead of
- * following it so a consumer router takes the decision.
+ * marks up text it cannot parse rather than rejecting it, `Link` reports navigation instead of
+ * following it so a consumer router takes the decision, and `LightRayOverlay` draws with an image the
+ * caller bundled rather than one of the library's.
  */
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
@@ -10,6 +11,7 @@ import { HighlightedJson } from '@/components/display/HighlightedJson';
 import { Icon } from '@/components/display/Icon';
 import { IconedSectionTitle } from '@/components/display/IconedSectionTitle';
 import { IconViewer } from '@/components/display/IconViewer';
+import { LightRayOverlay } from '@/components/display/LightRayOverlay';
 import { Link } from '@/components/display/Link';
 import { click, render } from '@/util/testing/render';
 
@@ -127,5 +129,43 @@ describe('Link', () => {
     await click(find<HTMLAnchorElement>('a'));
 
     expect(onClick).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('LightRayOverlay', () => {
+  it("draws with the caller's own image, because the picture is the application's asset", async () => {
+    const { container } = await render(<LightRayOverlay image="/ray.png" />);
+
+    // The browser rewrites `url(...)` into its own quoted form, so what is asserted is the URL itself.
+    expect(container.querySelector('div')?.style.backgroundImage).toContain('/ray.png');
+  });
+
+  it('takes no clicks, or it would stand between the operator and the panel in front of it', async () => {
+    const { container } = await render(<LightRayOverlay image="/ray.png" />);
+
+    expect(container.querySelector('div')?.className).toContain('pointer-events-none');
+  });
+
+  it('is hidden from the accessibility tree, because there is nothing in it to read', async () => {
+    const { container } = await render(<LightRayOverlay image="/ray.png" />);
+
+    expect(container.querySelector('div')?.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('lets the caller choose how bright the overlay is, because the default is a default', async () => {
+    const { container } = await render(<LightRayOverlay image="/ray.png" className="opacity-90" />);
+
+    expect(container.querySelector('div')?.className).toContain('opacity-90');
+    expect(container.querySelector('div')?.className).not.toContain('opacity-[0.4]');
+  });
+
+  it('lets the caller place it rather than assuming the viewport, while still covering it', async () => {
+    const { container } = await render(<LightRayOverlay image="/ray.png" className="left-1/3" />);
+
+    const overlay = container.querySelector('div');
+
+    expect(overlay?.className).toContain('left-1/3');
+    expect(overlay?.className).toContain('fixed');
+    expect(overlay?.className).toContain('bg-cover');
   });
 });

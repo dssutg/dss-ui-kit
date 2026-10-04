@@ -111,6 +111,8 @@ export type { IconName } from '@/components/display/Icon';
 export { Icon } from '@/components/display/Icon';
 export { IconedSectionTitle } from '@/components/display/IconedSectionTitle';
 export { IconViewer } from '@/components/display/IconViewer';
+export type { LightRayOverlayProps } from '@/components/display/LightRayOverlay';
+export { LightRayOverlay } from '@/components/display/LightRayOverlay';
 export type { LinkProps } from '@/components/display/Link';
 export { Link } from '@/components/display/Link';
 export type {
@@ -270,6 +272,7 @@ export type {
 export { useFilteredItems } from '@/components/tables/use_filtered_items';
 export type { LocaleDates } from '@/locales/dates';
 export { tryCatch, tryCatchAsync } from '@/util/catch';
+export { cn } from '@/util/cn';
 export type { RGBA32, RGBA32BreakPoint } from '@/util/color';
 export { getCSSVariableValue, Rgba32Gradient } from '@/util/color';
 export type { CalendarLocale, DateFormatLocale, DateLocale, DateNames } from '@/util/date';
