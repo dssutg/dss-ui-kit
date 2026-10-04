@@ -12,8 +12,10 @@ import {
 } from '@/components/navigation/MenuTree';
 import type { MUITabDescriptor } from '@/components/navigation/MUITabList';
 import { OrderPanel } from '@/components/navigation/OrderPanel';
+import { type RouteDescriptor, RouteSwitch } from '@/components/navigation/RouteSwitch';
 import { ToTop } from '@/components/navigation/ToTop';
 import { TreeView, type TreeViewItem } from '@/components/navigation/TreeView';
+import { getPathParam } from '@/util/routing';
 import { act, click, render, type } from '@/util/testing/render';
 
 describe('Accordion', () => {
@@ -424,5 +426,41 @@ describe('MenuTree', () => {
     const entry = findAll<HTMLElement>('[role="menuitem"]')[0];
 
     expect(entry?.textContent?.trim()).toBe('');
+  });
+});
+
+describe('RouteSwitch', () => {
+  const routes: RouteDescriptor[] = [
+    { path: '/about', render: () => <p>About</p> },
+    { path: '/serverRack/:rackId', render: (match) => <p>Rack {getPathParam(match, 'rackId')}</p> },
+    { path: '*', render: () => <p>Not found</p> },
+  ];
+
+  it('renders the route the path addresses', async () => {
+    const { findByText } = await render(<RouteSwitch path="/about" routes={routes} />);
+
+    expect(findByText('About')).toBeDefined();
+  });
+
+  it('hands the matched route the parameters its pattern bound', async () => {
+    const { findByText } = await render(<RouteSwitch path="/serverRack/rack-1" routes={routes} />);
+
+    expect(findByText('Rack rack-1')).toBeDefined();
+  });
+
+  it("renders nothing when no route matches, because the fallback is the caller's to give", async () => {
+    const { container } = await render(<RouteSwitch path="/other" routes={routes.slice(0, 2)} />);
+
+    expect(container.textContent).toBe('');
+  });
+
+  it('builds only the route it renders', async () => {
+    const renderAbout = vi.fn(() => <p>About</p>);
+
+    await render(
+      <RouteSwitch path="/other" routes={[...routes, { path: '/about', render: renderAbout }]} />,
+    );
+
+    expect(renderAbout).not.toHaveBeenCalled();
   });
 });

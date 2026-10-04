@@ -253,9 +253,11 @@ hidden.
 
 **For:** a structure the caller holds — a selection, an expansion, an order — drawn from it.
 
-**Not for:** routing. There is no router here: `Link` renders an `<a href>` and reports `onNavigate`,
-so the URL is the application's. A menu that navigated on the library's say-so could not be put in a
-page that routes somewhere else.
+**Not for:** navigating. There is no router here: `Link` renders an `<a href>` and reports
+`onNavigate`, so the URL is the application's. A menu that navigated on the library's say-so could not
+be put in a page that routes somewhere else. What a path *means* is here, though — `matchPath`,
+`dispatchPathMap` and `RouteSwitch` read a path the caller holds and say what it addresses, and none of
+them touches the location or the history.
 
 ```tsx
 import { Accordion, MenuTree, type TMenuTreeItem } from 'dss-ui-kit';
@@ -331,6 +333,44 @@ function Sidebar({
         <p>Caller-supplied content.</p>
       </Accordion>
     </>
+  );
+}
+```
+
+The same tree, addressed by path instead of by a selected id — the pattern a router-driven sidebar
+uses, where the menu item's `id` *is* the path it points at:
+
+```tsx
+import { MenuTree, RouteSwitch, getPathDepth, type TMenuTreeItem } from 'dss-ui-kit';
+
+function RoutingSidebar({ path }: { readonly path: string }) {
+  return (
+    <MenuTree
+      expanded
+      width={240}
+      menuItems={menuItemsByPath}
+      currentItemId={path}
+      // A path's depth is one more than the level of the item it addresses, because it is counted
+      // from the separator in front of the first component.
+      getMenuItemDepth={(menuItem) => getPathDepth(menuItem.id) - 1}
+      onItemClick={() => 'default'}
+      onNavigate={(path) => history.pushState(null, '', path)}
+    />
+  );
+}
+
+function RoutedPage({ path }: { readonly path: string }) {
+  return (
+    <RouteSwitch
+      path={path}
+      routes={[
+        // Only the route that matches is built, so a page that reads state on construction is not
+        // constructed for a path it is not on.
+        { path: '/serverRack/:rackId', render: (match) => <RackPage rackId={getPathParam(match, 'rackId') ?? ''} /> },
+        // The fallback is an ordinary entry: the path '*' matches whatever is left.
+        { path: '*', render: () => <p>No such page</p> },
+      ]}
+    />
   );
 }
 ```

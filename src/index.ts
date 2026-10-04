@@ -200,6 +200,8 @@ export { MenuTree } from '@/components/navigation/MenuTree';
 export type { MUITabDescriptor } from '@/components/navigation/MUITabList';
 export { isMUITabActive, MUITabList } from '@/components/navigation/MUITabList';
 export { OrderPanel } from '@/components/navigation/OrderPanel';
+export type { RouteDescriptor } from '@/components/navigation/RouteSwitch';
+export { RouteSwitch } from '@/components/navigation/RouteSwitch';
 export { ToTop } from '@/components/navigation/ToTop';
 export type { ColorIndicator, TreeViewItem } from '@/components/navigation/TreeView';
 
@@ -342,6 +344,24 @@ export type { Mat4 } from '@/util/math/matrix';
 export { Vector3D } from '@/util/math/vector3d';
 export type { PluralRule } from '@/util/pluralization';
 export { getPluralizationIndex, registerPluralRule } from '@/util/pluralization';
+export type {
+  PathDispatchEntry,
+  PathDispatchMap,
+  PathDispatchResult,
+  PathDispatchTable,
+  PathMatch,
+} from '@/util/routing';
+export {
+  buildPath,
+  dispatchPath,
+  dispatchPathMap,
+  escapePathComponent,
+  getPathDepth,
+  getPathParam,
+  isChildPath,
+  matchPath,
+  parsePathComponents,
+} from '@/util/routing';
 export { uuidv4 } from '@/util/uuid';
 export type { VError, VSchema, VValidator } from '@/util/validator';
 export { vArray, vBoolean, vInt, vNumber, vString } from '@/util/validator';
