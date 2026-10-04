@@ -263,7 +263,7 @@ function PopoverPanel({
       tabIndex={-1}
       className={cn(
         'fixed top-0 left-0 shrink-0',
-        panelPosX === null || panelPosY === null ? 'pointer-events-none opacity-0' : undefined,
+        (panelPosX === null || panelPosY === null) && 'pointer-events-none opacity-0',
         className,
       )}
       style={{

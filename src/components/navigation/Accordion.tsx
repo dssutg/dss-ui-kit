@@ -85,7 +85,7 @@ export function Accordion({
             name="triangleDown"
             className={cn(
               'fill-tpd ml-auto size-4 shrink-0',
-              (flippedIcon && !expanded) || (!flippedIcon && expanded) ? 'rotate-180' : undefined,
+              ((flippedIcon && !expanded) || (!flippedIcon && expanded)) && 'rotate-180',
             )}
           />
         </button>

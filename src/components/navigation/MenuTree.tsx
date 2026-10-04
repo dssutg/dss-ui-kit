@@ -146,7 +146,7 @@ export function MenuTree({
     <div
       className={cn(
         'flex flex-col bg-bpd shrink-0 overflow-hidden',
-        expanded ? 'w-full sm:w-[var(--menu-tree-width)]' : undefined,
+        expanded && 'w-full sm:w-[var(--menu-tree-width)]',
       )}
       style={
         {

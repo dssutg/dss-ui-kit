@@ -256,10 +256,8 @@ export function DropDownMenu({
         tabIndex={0}
         className={cn(
           'relative box-border flex shrink-0 select-none place-items-center overflow-hidden',
-          variant === 'dots'
-            ? 'aspect-square rounded-full border-none p-2 hover:bg-bse'
-            : undefined,
-          variant === 'button' ? 'rounded-lg bg-bbp px-2 hover:brightness-150' : undefined,
+          variant === 'dots' && 'aspect-square rounded-full border-none p-2 hover:bg-bse',
+          variant === 'button' && 'rounded-lg bg-bbp px-2 hover:brightness-150',
           openDotsBackground,
         )}
         style={triggerStyle}
@@ -472,7 +470,7 @@ function DropDownMenuPanel({
       className={cn(
         'max-h-[300px] max-w-[100vw] shrink-0 overflow-y-auto overflow-x-hidden rounded-2xl bg-bpd p-2 text-tpl shadow-lg shadow-black',
         'fixed top-0 left-0',
-        posX === null || posY === null ? 'invisible pointer-events-none opacity-0' : undefined,
+        (posX === null || posY === null) && 'invisible pointer-events-none opacity-0',
       )}
       style={{
         top: posY ?? 0,
@@ -590,7 +588,7 @@ function DropDownMenuItemElement({
         onMouseEnter={() => setPath(item.path)}
         className={cn(
           'relative w-full flex cursor-pointer items-center gap-2 overflow-hidden rounded-lg border-none p-2 outline-none',
-          highlighted ? 'bg-bse' : undefined,
+          highlighted && 'bg-bse',
           menuItemClassName,
         )}
         data-highlighted={highlighted ? 'true' : undefined}

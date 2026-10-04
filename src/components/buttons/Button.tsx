@@ -81,8 +81,8 @@ export function Button({
       ref={buttonRef ?? null}
       type={htmlButtonType}
       className={cn(
-        'justify-content relative flex shrink-0 select-none items-center justify-center overflow-hidden rounded-lg hover:brightness-150',
-        type === 'inactive' ? 'pointer-events-none' : undefined,
+        'relative flex shrink-0 select-none items-center justify-center overflow-hidden rounded-lg hover:brightness-150',
+        type === 'inactive' && 'pointer-events-none',
         buttonTypeClasses[type],
       )}
       style={style}

@@ -155,7 +155,7 @@ export function TextInput({
             ...(value === '' && { opacity: 0 }),
             ...clearIconInnerStyle,
           }}
-          bgClassName={cn('bg-bin', value !== '' ? 'hover:bg-bse' : undefined)}
+          bgClassName={cn('bg-bin', value !== '' && 'hover:bg-bse')}
           style={
             {
               fill: 'var(--color-tpl)',

@@ -84,7 +84,7 @@ export function ButtonGroup<T extends string>({
           onClick={() => onItemChange(item.id)}
           onKeyDown={onKeyDown}
           className={cn(
-            'justify-content relative flex shrink-0 select-none items-center justify-center overflow-hidden border-2 px-4 py-2 outline-2 outline-white transition-colors duration-200 first:rounded-l-lg last:rounded-r-lg hover:brightness-150',
+            'relative flex shrink-0 select-none items-center justify-center overflow-hidden border-2 px-4 py-2 outline-2 outline-white transition-colors duration-200 first:rounded-l-lg last:rounded-r-lg hover:brightness-150',
             transparentBG ? 'bg-transparent' : 'bg-bpd',
             itemId === item.id ? 'border-tli text-tli' : 'border-bsp text-tpl',
           )}

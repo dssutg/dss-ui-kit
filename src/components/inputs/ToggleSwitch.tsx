@@ -43,8 +43,8 @@ export function ToggleSwitch({
     <span
       className={cn(
         'text-tpl overflow-x-hidden text-ellipsis',
-        !locked ? 'cursor-pointer' : undefined,
-        shouldLabelGrow ? 'flex-grow' : undefined,
+        !locked && 'cursor-pointer',
+        shouldLabelGrow && 'flex-grow',
       )}
       style={labelStyle}
     >
@@ -93,7 +93,7 @@ export function ToggleSwitch({
         <span
           className={cn(
             'absolute left-1 top-1 size-4 rounded-full bg-white shadow-lg shadow-black transition',
-            enabled ? 'translate-x-full' : undefined,
+            enabled && 'translate-x-full',
           )}
         />
       </span>

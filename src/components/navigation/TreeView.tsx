@@ -357,7 +357,7 @@ export function TreeView({
 
     return cn(
       'flex p-1 select-none',
-      !loading && selectedItemId === item.id ? 'bg-bse' : undefined,
+      !loading && selectedItemId === item.id && 'bg-bse',
       loading ? 'brightness-75 animate-pulse pointer-events-none' : 'cursor-pointer',
       itemClassName,
     );
@@ -373,7 +373,7 @@ export function TreeView({
     return (
       <IconButton
         icon="triangleDown"
-        iconClassName={cn('fill-tpd size-4', !item.expanded ? '-rotate-90' : undefined)}
+        iconClassName={cn('fill-tpd size-4', !item.expanded && '-rotate-90')}
         className="mr-2 shrink-0"
         onClick={(e) => {
           e.stopPropagation();

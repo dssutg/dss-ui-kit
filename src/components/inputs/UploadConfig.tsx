@@ -226,7 +226,7 @@ export function UploadConfig({
         <div
           className={cn(
             'text-tpl pointer-events-none w-full text-center',
-            hasDragEntered ? 'text-tok' : undefined,
+            hasDragEntered && 'text-tok',
           )}
         >
           {hint ?? t('UploadConfig.hint')}

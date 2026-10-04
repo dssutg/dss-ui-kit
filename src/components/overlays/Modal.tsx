@@ -107,7 +107,7 @@ export function Modal({
             <div
               className={cn(
                 'flex flex-col gap-2 text-tpl max-h-[80vh] max-w-[calc(100vw_-_4rem)] overflow-auto p-2',
-                noWidthRestriction ? undefined : 'w-[600px]',
+                !noWidthRestriction && 'w-[600px]',
               )}
               style={innerStyle}
             >

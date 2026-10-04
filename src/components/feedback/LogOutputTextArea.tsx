@@ -47,7 +47,7 @@ export function LogOutputTextArea({
       ref={textareaRef}
       className={cn(
         'bg-bpd text-tpl w-full flex-grow resize-none overflow-y-scroll rounded-2xl p-2 font-mono outline-none',
-        dontWrapLongLines ? 'overflow-x-scroll whitespace-pre' : undefined,
+        dontWrapLongLines && 'overflow-x-scroll whitespace-pre',
       )}
       style={style}
       value={output}

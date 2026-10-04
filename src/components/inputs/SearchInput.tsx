@@ -314,7 +314,7 @@ export function SearchInput({
       />
       <IconButton
         icon="times"
-        iconClassName={cn('fill-tpl size-2 mr-0.5', value === '' ? 'opacity-0' : undefined)}
+        iconClassName={cn('fill-tpl size-2 mr-0.5', value === '' && 'opacity-0')}
         className="rounded-full p-2"
         bgClassName={value !== '' ? 'hover:bg-bse' : ''}
         rippleColor="var(--color-ripple-icon-button)"
@@ -397,7 +397,7 @@ function HistoryListItem({
       className={cn(
         'flex w-full cursor-pointer items-center border-none bg-transparent p-2 text-left',
         'border-b-2 border-b-bsp last:border-b-0',
-        selected ? 'bg-bse' : undefined,
+        selected && 'bg-bse',
       )}
       onClick={onClick}
       onMouseEnter={onSelect}

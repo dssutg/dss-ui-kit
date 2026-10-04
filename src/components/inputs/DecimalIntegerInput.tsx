@@ -162,8 +162,8 @@ export function DecimalIntegerInput({
       />
       <IconButton
         icon="times"
-        iconClassName={cn('fill-tpl size-2', value === undefined ? 'opacity-0' : undefined)}
-        className={cn('rounded-full p-2', value !== undefined ? 'hover:bg-bse' : undefined)}
+        iconClassName={cn('fill-tpl size-2', value === undefined && 'opacity-0')}
+        className={cn('rounded-full p-2', value !== undefined && 'hover:bg-bse')}
         rippleColor="var(--color-ripple-icon-button)"
         title={value !== undefined ? t('DecimalIntegerInput.clear') : ''}
         onClick={(e) => {

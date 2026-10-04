@@ -30,10 +30,7 @@ export function ResizableSplit({
   const vertical = orientation === 'vertical';
 
   return (
-    <div
-      className={cn('flex flex-grow overflow-hidden', vertical ? 'flex-col' : undefined)}
-      style={style}
-    >
+    <div className={cn('flex flex-grow overflow-hidden', vertical && 'flex-col')} style={style}>
       {panels.map((panel, index) => (
         <ResizablePanel
           key={panel.id}
@@ -99,7 +96,7 @@ function ResizablePanel({
   return (
     <div
       ref={panelRef}
-      className={cn('flex overflow-hidden', vertical ? 'flex-col' : undefined)}
+      className={cn('flex overflow-hidden', vertical && 'flex-col')}
       style={{
         flexGrow: last ? 1 : undefined,
         ...(vertical

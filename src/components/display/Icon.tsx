@@ -77,7 +77,7 @@ export function Icon({
       focusable="false"
       width="100"
       height="100"
-      className={cn('shrink-0', invisible ? 'invisible' : undefined, className)}
+      className={cn('shrink-0', invisible && 'invisible', className)}
       style={style}
       viewBox="0 0 100 100"
       xmlns={SVG_NS}
