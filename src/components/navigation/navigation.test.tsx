@@ -11,8 +11,10 @@ import {
   type TMenuTreeItem,
 } from '@/components/navigation/MenuTree';
 import type { MUITabDescriptor } from '@/components/navigation/MUITabList';
+import { NavBar } from '@/components/navigation/NavBar';
 import { OrderPanel } from '@/components/navigation/OrderPanel';
 import { type RouteDescriptor, RouteSwitch } from '@/components/navigation/RouteSwitch';
+import { SlideMenu } from '@/components/navigation/SlideMenu';
 import { ToTop } from '@/components/navigation/ToTop';
 import { TreeView, type TreeViewItem } from '@/components/navigation/TreeView';
 import { getPathParam } from '@/util/routing';
@@ -462,5 +464,121 @@ describe('RouteSwitch', () => {
     );
 
     expect(renderAbout).not.toHaveBeenCalled();
+  });
+});
+
+describe('SlideMenu', () => {
+  it('reports the state it would move to rather than moving there itself', async () => {
+    const onOpenChange = vi.fn();
+    const { find, update } = await render(
+      <SlideMenu open={false} onOpenChange={onOpenChange}>
+        <p>Menu</p>
+      </SlideMenu>,
+    );
+
+    await click(find<HTMLButtonElement>('button'));
+
+    expect(onOpenChange).toHaveBeenCalledWith(true);
+
+    await update(
+      <SlideMenu open onOpenChange={onOpenChange}>
+        <p>Menu</p>
+      </SlideMenu>,
+    );
+
+    await click(find<HTMLButtonElement>('button'));
+
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+  });
+
+  it('keeps the panel in the document while it is closed, so a drag can open it', async () => {
+    const { findByText } = await render(
+      <SlideMenu open={false} onOpenChange={() => undefined}>
+        <p>Menu item</p>
+      </SlideMenu>,
+    );
+
+    expect(findByText('Menu item')).toBeDefined();
+  });
+
+  it('closes when its backdrop is clicked, which is the only thing the backdrop does', async () => {
+    const onOpenChange = vi.fn();
+    const { findAll } = await render(
+      <SlideMenu open onOpenChange={onOpenChange}>
+        <p>Menu item</p>
+      </SlideMenu>,
+    );
+
+    // The button that opens the menu, and the backdrop behind the panel: the backdrop is a button
+    // because a `div` one could be closed only by a mouse.
+    await click(findAll<HTMLButtonElement>('button')[1] as HTMLButtonElement);
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('names its button from the locale when the caller names it nothing', async () => {
+    const { find } = await render(
+      <SlideMenu open={false} onOpenChange={() => undefined}>
+        <p>Menu</p>
+      </SlideMenu>,
+    );
+
+    expect(find<HTMLButtonElement>('button').getAttribute('aria-label')).toBe('Open Menu');
+  });
+
+  it('leaves the panel to the width and offset the caller gives it', async () => {
+    const { find } = await render(
+      <SlideMenu open onOpenChange={() => undefined} width="30rem" topOffset="3rem">
+        <p>Menu item</p>
+      </SlideMenu>,
+    );
+
+    // The panel is portalled onto the body, so the query that finds it is one that searches there.
+    const panel = find<HTMLElement>('.bg-bpd');
+
+    expect(panel.style.width).toBe('30rem');
+    expect(panel.style.top).toBe('3rem');
+    expect(panel.style.height).toBe('calc(100vh - 3rem)');
+  });
+});
+
+describe('NavBar', () => {
+  it('joins the root title and the breadcrumb, so a caller holding a menu can name where it is', async () => {
+    const { findByText } = await render(
+      <NavBar rootTitle="Server room" breadcrumb={['Racks', 'Rack 1']} />,
+    );
+
+    expect(findByText('Server room / Racks / Rack 1')).toBeDefined();
+  });
+
+  it('shows the root title alone when there is nothing to lead to it', async () => {
+    const { findByText } = await render(<NavBar rootTitle="Server room" />);
+
+    expect(findByText('Server room')).toBeDefined();
+  });
+
+  it('renders the menu button only when there is a menu to open', async () => {
+    const onMenuClick = vi.fn();
+    const { container, update } = await render(<NavBar rootTitle="Server room" />);
+
+    expect(container.querySelector('button')).toBeNull();
+
+    await update(<NavBar rootTitle="Server room" onMenuClick={onMenuClick} />);
+
+    const [menuButton] = container.querySelectorAll<HTMLButtonElement>('button');
+
+    await click(menuButton as HTMLButtonElement);
+
+    expect(onMenuClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders what the caller puts at its right', async () => {
+    const { findByText } = await render(
+      <NavBar rootTitle="Server room">
+        <p>Right</p>
+      </NavBar>,
+    );
+
+    expect(findByText('Right')).toBeDefined();
   });
 });

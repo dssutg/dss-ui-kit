@@ -375,6 +375,63 @@ function RoutedPage({ path }: { readonly path: string }) {
 }
 ```
 
+A menu that slides in from the edge, over a bar that names where the caller is:
+
+```tsx
+import {
+  buildMenuItemFullTitleByItsId,
+  MenuTree,
+  NavBar,
+  SlideMenu,
+  type TMenuTreeItem,
+} from 'dss-ui-kit';
+
+function ApplicationShell({ path, menuItems }: { readonly path: string; readonly menuItems: TMenuTreeItem[] }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  return (
+    <>
+      <NavBar
+        rootTitle="Server room"
+        // The bar renders the title; it does not fetch it, and it does not know what a menu item is
+        // called until the caller reads it out of the menu.
+        breadcrumb={buildMenuItemFullTitleByItsId(menuItems, path) ?? []}
+        onMenuClick={() => setMenuOpen(true)}
+      >
+        <Clock />
+      </NavBar>
+
+      <SlideMenu
+        open={menuOpen}
+        onOpenChange={setMenuOpen}
+        // 3rem is the height of the bar above, which only this caller knows.
+        topOffset="3rem"
+        panelClassName="text-pl"
+      >
+        <MenuTree
+          expanded
+          width="100%"
+          menuItems={menuItems}
+          currentItemId={path}
+          getMenuItemDepth={(menuItem) => getPathDepth(menuItem.id) - 1}
+          onItemClick={({ menuItem }) => {
+            // Navigating closes the menu; the route itself is the application's.
+            onNavigate(menuItem.id);
+            setMenuOpen(false);
+            return 'deny';
+          }}
+        />
+      </SlideMenu>
+    </>
+  );
+}
+```
+
+The panel is portalled onto the body and is in the document the whole time, because a drag from the
+edge of the viewport opens it. A caller that wants it closed by a key press, or by anything else, adds
+that itself — `open` is the caller's, and the drag reports through `onOpenChange` rather than
+deciding.
+
 ## display
 
 **For:** showing something the caller has — an icon, a link, a value — in the design system's shape.

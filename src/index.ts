@@ -199,9 +199,11 @@ export type {
 export { MenuTree } from '@/components/navigation/MenuTree';
 export type { MUITabDescriptor } from '@/components/navigation/MUITabList';
 export { isMUITabActive, MUITabList } from '@/components/navigation/MUITabList';
+export { NAV_BAR_BREADCRUMB_SEPARATOR, NavBar } from '@/components/navigation/NavBar';
 export { OrderPanel } from '@/components/navigation/OrderPanel';
 export type { RouteDescriptor } from '@/components/navigation/RouteSwitch';
 export { RouteSwitch } from '@/components/navigation/RouteSwitch';
+export { SlideMenu } from '@/components/navigation/SlideMenu';
 export { ToTop } from '@/components/navigation/ToTop';
 export type { ColorIndicator, TreeViewItem } from '@/components/navigation/TreeView';
 
@@ -316,6 +318,10 @@ export { useDebounce } from '@/util/hooks/use_debounce';
 export { useDelayedVisibility } from '@/util/hooks/use_delayed_visibility';
 export { useDocumentScrollPercentage } from '@/util/hooks/use_document_scroll_percentage';
 export { useDragNDropOrderedList } from '@/util/hooks/use_drag_n_drop_ordered_list';
+export {
+  DEFAULT_DRAG_START_EDGE_WIDTH,
+  useDraggablePanel,
+} from '@/util/hooks/use_draggable_panel';
 export { useElementSize } from '@/util/hooks/use_element_size';
 export type { EventListenerCallback } from '@/util/hooks/use_event_listener';
 export { useEventListener } from '@/util/hooks/use_event_listener';
