@@ -11,9 +11,10 @@
  * import 'dss-ui-kit/style.css';
  * ```
  *
- * The stylesheet is imported by name rather than from here, because a component library that
- * injected its own CSS on import would make the order it loads in significant. The caller decides
- * when the theme and the utilities land.
+ * The stylesheet is a separate export rather than an import here. JSR type-checks the package with
+ * Deno, which cannot read a CSS module, so the side-effect import is one line the source cannot
+ * spell — and a component library that injected its own CSS on import would make the order it
+ * loads in significant anyway. The caller decides when the theme and the utilities land.
  *
  * ## What is deliberately not exported
  *
@@ -21,10 +22,6 @@
  * router, and it names no application's subject matter: a component renders the shape it is handed.
  * Anything a caller would otherwise have to reach into their own application for is a prop.
  */
-
-// The one global stylesheet: the Tailwind entry point, the themes, and the base resets. Shipped as
-// `dss-ui-kit/style.css` rather than imported here, so the caller controls when it applies.
-import './index.css';
 
 /* -------------------------------------------------------------------------------------------- */
 /* Components                                                                                     */

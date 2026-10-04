@@ -37,6 +37,7 @@ One tool per concern, and nothing else.
 | Tests            | Vitest                               | `deno task test`           |
 | API docs         | TypeDoc 0.28                         | `deno task docs`           |
 | Release          | `scripts/release.ts`                 | `deno task release`        |
+| JSR publish      | `scripts/publish.ts`                 | `deno task publish`        |
 
 Everything runs through **Deno 2** — there is no npm/yarn/pnpm step, and Deno resolves
 `package.json` dependencies into `node_modules`.
@@ -398,6 +399,7 @@ src/
 scripts/
   commitlint.ts           Conventional Commits validator (used by the git hook)
   release.ts              version and changelog from the git history
+  publish.ts              writes jsr.json and publishes the source to JSR
   check-package-manifest.ts  verifies every path in package.json `files` exists in dist/
   *.test.ts               the repository-policy tests
   util/                   helpers for the scripts above, including the shared tree walker
@@ -581,6 +583,39 @@ runs `deno task lint` first.
 
 Never hand-edit the `version` field in `package.json` or the generated sections in `CHANGELOG.md`.
 Both are owned by the script.
+
+## Publishing to JSR
+
+The same version also ships as source: `deno task publish` publishes `src/` to
+[`@dssutg/dss-ui-kit`](https://jsr.io/@dssutg/dss-ui-kit), and CI runs it on `v*` tags after the same
+gates `deno task ci` runs. Like `docs/api/`, the `jsr.json` it publishes through is generated, not
+committed — a stale imports map resolves against files that have since moved.
+
+The constraint that shapes it: `deno publish` type-checks the package with Deno, reading everything
+through the imports map of one config file. Three repository conventions do not survive that reading
+as-is, and the publish script carries each of them across instead of the source bending to JSR:
+
+- **The `@/` alias is resolved to exact files.** Deno's resolver does not do the `index.*`-inside-a-
+  directory lookup the bundler does, so the script maps every `@/` specifier the published files
+  import onto the file it names — including the `.glsl` shaders.
+- **`react` is an alias onto Preact.** The map turns `react` into `npm:preact@<pinned>/compat…`, the
+  same external the bundle keeps. A source statement stays `react`.
+- **The global stylesheet is imported nowhere.** Deno cannot read a CSS module, so `src/index.ts`
+  carries no side-effect CSS import and the stylesheet exists as a build of its own
+  (`vite.css.config.ts` → `dist/dss-ui-kit.css`, what npm installs as `dss-ui-kit/style.css`), and
+  as packaged files under `src/css/` for a JSR consumer's Tailwind/PostCSS pipeline.
+
+The publish runs with slow types allowed: the public API does not yet carry explicit return types
+everywhere. Fixing that is the refactor that retires the flag — do not add new ones.
+
+Consequences worth knowing before touching the source:
+
+- A new specifier under `src/` that no candidate file backs (`@/util/new-thing` with no directory)
+  fails the publish, by design — run `deno task publish:dry` after moving files.
+- The test-only render helper (`src/util/testing/`) is excluded from the package; it imports
+  `vitest`, which is not a package dependency.
+- The `.glsl` shaders are imported with the standard `with { type: 'text' }`, not Vite's `?raw`; the
+  rollup `moduleTypes` in `vite.config.ts` is the reading Vite gives them.
 
 ## Before you finish
 

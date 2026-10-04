@@ -1,12 +1,67 @@
 {
+  "name": "@dssutg/dss-ui-kit",
+  "version": "0.2.0",
   "nodeModulesDir": "auto",
   "fmt": false,
   "lint": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./tailwind": "./src/tailwind_preset.ts"
+  },
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
+    "types": ["@types/deno"],
+    "lib": ["dom", "esnext"],
+    "skipLibCheck": true,
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "moduleResolution": "bundler",
+    "module": "esnext",
+    "paths": {
+      "react": ["./node_modules/.deno/preact@10.29.8/node_modules/preact/compat/src/index.d.ts"],
+      "react-dom": [
+        "./node_modules/.deno/preact@10.29.8/node_modules/preact/compat/src/index.d.ts"
+      ],
+      "react-dom/client": [
+        "./node_modules/.deno/preact@10.29.8/node_modules/preact/compat/client.d.ts"
+      ],
+      "react-dom/test-utils": [
+        "./node_modules/.deno/preact@10.29.8/node_modules/preact/compat/test-utils.js"
+      ],
+      "react/jsx-runtime": [
+        "./node_modules/.deno/preact@10.29.8/node_modules/preact/compat/jsx-runtime.js"
+      ],
+      "react/jsx-dev-runtime": [
+        "./node_modules/.deno/preact@10.29.8/node_modules/preact/compat/jsx-runtime.js"
+      ],
+      "preact": ["./node_modules/.deno/preact@10.29.8/node_modules/preact"],
+      "preact/compat": [
+        "./node_modules/.deno/preact@10.29.8/node_modules/preact/compat/src/index.d.ts"
+      ],
+      "preact/compat/*": ["./node_modules/.deno/preact@10.29.8/node_modules/preact/compat/*"],
+      "preact/jsx-runtime": [
+        "./node_modules/.deno/preact@10.29.8/node_modules/preact/jsx-runtime/src/index.d.ts"
+      ],
+      "preact/jsx-dev-runtime": [
+        "./node_modules/.deno/preact@10.29.8/node_modules/preact/jsx-runtime/src/index.d.ts"
+      ],
+      "preact/hooks": [
+        "./node_modules/.deno/preact@10.29.8/node_modules/preact/hooks/src/index.js"
+      ],
+      "@/*": ["./src/*"]
+    }
+  },
   "tasks": {
     "dev": "deno run -A npm:vite",
-    "build": "deno task build:bundle && deno task build:preset && deno task build:types",
+    "build": "deno task build:bundle && deno task build:preset && deno task build:css && deno task build:types",
     "build:bundle": "deno run -A npm:vite build",
     "build:preset": "deno run -A npm:vite build --config vite.preset.config.ts",
+    "build:css": "deno run -A npm:vite build --config vite.css.config.ts",
     "build:types": "deno run -A npm:@typescript/native-preview --emitDeclarationOnly --declaration --declarationMap --outDir dist/types -p tsconfig.build.json",
     "pack": "deno run --allow-read scripts/check-package-manifest.ts",
     "preview": "deno run -A npm:vite preview",
@@ -24,6 +79,8 @@
     "ci": "deno task install:frozen && deno task format:check && deno task lint && deno task test && deno task build && deno task pack && deno task docs",
     "release": "deno run --allow-read --allow-write --allow-run --allow-env scripts/release.ts",
     "changelog": "deno run --allow-read --allow-write --allow-run --allow-env scripts/release.ts --changelog-only",
+    "publish": "deno run --allow-read --allow-write --allow-run --allow-env scripts/publish.ts",
+    "publish:dry": "deno run --allow-read --allow-write --allow-run --allow-env scripts/publish.ts --dry-run",
     "commitlint": "deno run --allow-read scripts/commitlint.ts"
   }
 }

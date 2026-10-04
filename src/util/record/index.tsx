@@ -110,15 +110,16 @@ export function hasRecordKey(record: Record<string, unknown>, key: string) {
  * is not: a structured clone. Prototypes are lost (a class instance comes back as a plain object),
  * keyed collections other than `Map`/`Set` are thrown away, and functions return as themselves.
  */
-export function deepClone<T>(value: T, seen = new WeakMap()): T {
+export function deepClone<T>(value: T, seen = new WeakMap<object, unknown>()): T {
   // Primitives (including null, undefined, boolean, number, string, symbol, bigint) are returned as is
   if (value === null || typeof value !== 'object') {
     return value;
   }
 
   // Handle circular references
-  if (seen.has(value)) {
-    return seen.get(value);
+  const known = seen.get(value as object);
+  if (known !== undefined) {
+    return known as T;
   }
 
   if (value instanceof Date) {

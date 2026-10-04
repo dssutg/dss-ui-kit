@@ -1,5 +1,5 @@
-import { createRoot } from 'preact/compat/client';
 import { StrictMode, useMemo, useState } from 'react';
+import { createRoot } from 'react-dom/client';
 import { SearchInput } from '@/components/inputs/SearchInput';
 import { DropDownMenu } from '@/components/overlays/DropDownMenu';
 import { useLocale } from '@/locale';

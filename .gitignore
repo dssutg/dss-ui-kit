@@ -8,6 +8,10 @@ coverage/
 # Generated from the source by `deno task docs`; never committed, so it cannot drift.
 docs/api/
 
+# Generated from package.json and the source tree by `deno task publish`; never committed, so it
+# cannot drift — the imports map it holds has to match the sources of the version it publishes.
+jsr.json
+
 .env
 .env.*
 !.env.example

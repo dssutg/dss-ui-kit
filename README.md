@@ -10,13 +10,31 @@ have to reach into their own code for is a prop.
 
 ## Install
 
+From npm:
+
 ```sh
 deno add npm:dss-ui-kit npm:preact
 ```
 
+From JSR (the TypeScript source, not a bundle):
+
+```sh
+deno add jsr:@dssutg/dss-ui-kit
+```
+
 Preact is a peer dependency, so the library runs on the Preact your application already has. The code is
 written against the React API and bundled with `preact/compat`, so `react`, `react-dom` and
-`react-dom/client` all resolve to Preact inside this package.
+`react-dom/client` all resolve to Preact inside this package. The JSR package relies on the same
+aliasing: a Deno consumer needs
+
+```json
+// deno.json
+{ "imports": { "react": "npm:preact@^10.19.0/compat" } }
+```
+
+or the equivalent, since the source names `react` and JSR does not rewrite it — the imports map of the
+publish resolves it for the Deno checker, and a bundler consumer maps it as they do for npm (`react` →
+`preact/compat`).
 
 ## Use
 
@@ -188,6 +206,8 @@ deno task lint      # biome ci + typecheck
 deno task format    # biome check --write
 deno task test      # unit tests
 deno task docs      # TypeDoc API reference into docs/api/
+deno task publish:dry  # what a JSR publish of the current tree would carry
+deno task publish   # publish the TypeScript source to jsr.io/@dssutg/dss-ui-kit
 deno task ci        # the full local gate, exactly what CI runs
 ```
 

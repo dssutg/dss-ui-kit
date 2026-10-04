@@ -41,6 +41,13 @@ export default defineConfig({
       fileName: (format) => (format === 'umd' ? 'dss-ui-kit.umd.cjs' : 'dss-ui-kit.js'),
     },
     rollupOptions: {
+      // The module types the bundle needs beyond JavaScript: the shader sources are read as plain
+      // text, which is also how the JSR publish reads them — the standard import attribute in the
+      // source is the one spelling both runtimes agree on.
+      moduleTypes: {
+        '.glsl': 'text',
+        '.txt': 'text',
+      },
       // The globals the UMD build reads off `window` for each external. Rollup guesses at these
       // from the module id and warns when it does, which would leave a script-tag consumer with a
       // global named `preact_jsx_runtime` that nothing sets. One Preact on the page is what every

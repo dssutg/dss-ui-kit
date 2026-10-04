@@ -12,8 +12,8 @@
  */
 
 import { useEffect, useState } from 'react';
-import fragmentShaderSource from '@/util/gl/fragment.glsl?raw';
-import vertexShaderSource from '@/util/gl/vertex.glsl?raw';
+import fragmentShaderSource from '@/util/gl/fragment.glsl' with { type: 'text' };
+import vertexShaderSource from '@/util/gl/vertex.glsl' with { type: 'text' };
 import {
   calcNormal,
   convertBoxToQuads,

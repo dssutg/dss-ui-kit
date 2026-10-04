@@ -13,16 +13,11 @@ declare module '*.css';
 // Text and shader source imported for their content rather than parsed as a module.
 
 /**
- * One shape covers every `?raw` import: the file's text as the default export, with no module
- * structure to preserve — the bundler is what decides the load, and TypeScript only needs to know
- * the value is a string.
+ * The shader sources are imported with the standard text import attribute — the same syntax every
+ * runtime of this package understands, including the JSR publish. A bundler that has no native
+ * reading for the attribute only needs a plugin that maps it onto its own raw-text mechanism.
  */
-declare module '*.txt?raw' {
-  const content: string;
-  export default content;
-}
-
-declare module '*.glsl?raw' {
+declare module '*.glsl' {
   const content: string;
   export default content;
 }
