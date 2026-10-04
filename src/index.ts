@@ -127,6 +127,12 @@ export {
   crashReportQueueKey,
   readCachedCrashReports,
 } from '@/components/feedback/AppCrashGuard';
+export type {
+  CommandConsoleCommand,
+  CommandConsoleContext,
+  CommandConsoleProps,
+} from '@/components/feedback/CommandConsole';
+export { CommandConsole } from '@/components/feedback/CommandConsole';
 export { ContinuousCircleSpinner } from '@/components/feedback/ContinuousCircleSpinner';
 export { DashedCircle } from '@/components/feedback/DashedCircle';
 export { LogOutputTextArea } from '@/components/feedback/LogOutputTextArea';

@@ -556,6 +556,79 @@ function Panel({ version, loading, lines, children }: PanelProps) {
 }
 ```
 
+### A command console
+
+`CommandConsole` is a prompt, a history and the two commands a shell cannot do without: `help`, which
+lists what the caller registered, and `clear`. The commands are the caller's — the console holds no
+vocabulary of its own, so it is built in the caller's component and closes over that component's state.
+
+```tsx
+import { CommandConsole, type CommandConsoleCommand } from 'dss-ui-kit';
+import { useMemo, useState } from 'react';
+
+function ConsolePanel({ developerMode }: { readonly developerMode: boolean }) {
+  const [open, setOpen] = useState(false);
+  const [threshold, setThreshold] = useState(80);
+
+  const commands = useMemo<Readonly<Record<string, CommandConsoleCommand>>>(
+    () => ({
+      threshold: {
+        about: 'Show or change the threshold',
+        // A function where the usage line has to read under the name it was called by.
+        usage: ({ commandName }) => [`${commandName}`, `${commandName} <percent>`],
+        execute: ({ args, echo }) => {
+          const value = args[1];
+
+          if (value === undefined) {
+            echo(`threshold is ${threshold}`);
+            return;
+          }
+
+          const percent = Number(value);
+
+          // A command validates its own arguments: the console does not know what a percent is.
+          if (Number.isNaN(percent)) {
+            echo('not a number');
+            return;
+          }
+
+          setThreshold(percent);
+          echo(`threshold is now ${percent}`);
+        },
+      },
+      dump: {
+        about: 'Print the raw frame, for a developer',
+        requiresDeveloper: true,
+        execute: ({ echo }) => {
+          echo('frame 4a2f');
+        },
+      },
+    }),
+    [threshold],
+  );
+
+  return (
+    <>
+      {/* Which key opens the console is the application's decision, so the button is the caller's. */}
+      <button type="button" onClick={() => setOpen(true)}>
+        Open the console
+      </button>
+      <CommandConsole
+        open={open}
+        onOpenChange={setOpen}
+        commands={commands}
+        developerMode={developerMode}
+      />
+    </>
+  );
+}
+```
+
+**Not for:** the vocabulary of an application. A console that shipped its own commands would have to know
+what the application is about, so every command is the caller's; a command that changes application state
+is a closure over that state. The two built-ins are replaced by name if the caller wants a command called
+`help` or `clear` to mean something else.
+
 ## layout
 
 **For:** giving a child the size it was given, and a splitter that remembers where it was put.
