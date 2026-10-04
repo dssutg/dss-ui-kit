@@ -315,8 +315,7 @@ export function SearchInput({
       <IconButton
         icon="times"
         iconClassName={cn('fill-tpl size-2 mr-0.5', value === '' && 'opacity-0')}
-        className="rounded-full p-2"
-        bgClassName={value !== '' ? 'hover:bg-bse' : ''}
+        className={cn('rounded-full p-2', value !== '' && 'hover:bg-bse')}
         rippleColor="var(--color-ripple-icon-button)"
         title={value !== '' ? t('SearchInput.clear') : ''}
         onClick={(e) => {
