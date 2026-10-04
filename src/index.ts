@@ -208,6 +208,7 @@ export { ToTop } from '@/components/navigation/ToTop';
 export type { ColorIndicator, TreeViewItem } from '@/components/navigation/TreeView';
 
 export { TreeView } from '@/components/navigation/TreeView';
+export { ConfirmationModal } from '@/components/overlays/ConfirmationModal';
 export type { DropDownMenuItem } from '@/components/overlays/DropDownMenu';
 export { DropDownMenu } from '@/components/overlays/DropDownMenu';
 export type { FeedbackTooltipType } from '@/components/overlays/FeedbackTooltip';

@@ -208,10 +208,14 @@ function DeviceTable({ devices }: { readonly devices: Device[] }) {
 decided.
 
 **Not for:** a confirm dialog. `Modal` reports `onOpenChange(false)` and lets the caller decide
-whether the close is allowed — it does not hold a question or its answer, because that would mean the
-library naming the decision. The close is deferred by the length of the opening animation, so a
-dialog that closed instantly would flash rather than fade; the panel stays unfocusable until that
-animation has run, so an invisible dialog cannot be clicked.
+whether the close is allowed — it does not hold a question, because that would mean the library
+naming the decision. The close is deferred by the length of the opening animation, so a dialog that
+closed instantly would flash rather than fade; the panel stays unfocusable until that animation has
+run, so an invisible dialog cannot be clicked.
+
+`ConfirmationModal` is the dialog that does hold the question. It reports the two answers as two
+callbacks, treats everything that dismisses it without answering — the backdrop, Escape, the close
+button — as a cancel, and answers once however many times the button is clicked.
 
 ```tsx
 import { Button, Modal } from 'dss-ui-kit';
@@ -239,6 +243,33 @@ function DeviceDialog({
       >
         <p>Anything the caller wants to put in the dialog.</p>
       </Modal>
+    </>
+  );
+}
+```
+
+```tsx
+import { Button, ConfirmationModal } from 'dss-ui-kit';
+import { useState } from 'preact/hooks';
+
+function DeleteAllLogs({ onDeleted }: { readonly onDeleted: () => void }) {
+  const [confirming, setConfirming] = useState(false);
+
+  return (
+    <>
+      <Button type="dangerous" title="Delete all logs" onClick={() => setConfirming(true)} />
+      <ConfirmationModal
+        open={confirming}
+        title="Delete every log file?"
+        message="The logs cannot be read after they are deleted."
+        // What the answer leads to is the caller's: the dialog asks, it does not decide.
+        onConfirm={() => {
+          onDeleted();
+          setConfirming(false);
+        }}
+        onCancel={() => setConfirming(false)}
+        destructive
+      />
     </>
   );
 }

@@ -21,6 +21,8 @@ export const en = {
   'ConfigurableOrderPanel.resetOrderToDefaults': 'Reset to default order',
   'ConfigurableOrderPanel.show': 'Show',
   'ConfigurableOrderPanel.showAll': 'Show all',
+  'ConfirmationModal.cancel': 'Cancel',
+  'ConfirmationModal.confirm': 'Confirm',
   'CrashGuard.contactLabel': 'Report to',
   'CrashGuard.copyReport': 'Copy the report',
   'CrashGuard.issueLabel': 'Report a problem',

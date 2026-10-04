@@ -7,6 +7,7 @@
  */
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ConfirmationModal } from '@/components/overlays/ConfirmationModal';
 import { DropDownMenu } from '@/components/overlays/DropDownMenu';
 import { FeedbackTooltip } from '@/components/overlays/FeedbackTooltip';
 import { Modal } from '@/components/overlays/Modal';
@@ -83,6 +84,133 @@ describe('Modal', () => {
     const panel = document.querySelector('.pointer-events-none');
 
     expect(panel).not.toBeNull();
+  });
+});
+
+describe('ConfirmationModal', () => {
+  // The dialog under it defers its close by the length of its animation, so a test of what happens
+  // while that runs needs the clock it defers on.
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const question = (onConfirm: () => void, onCancel: () => void, destructive = false) => (
+    <ConfirmationModal
+      open
+      title="Delete the configuration?"
+      onConfirm={onConfirm}
+      onCancel={onCancel}
+      destructive={destructive}
+    />
+  );
+
+  /**
+   * The confirm and cancel buttons.
+   *
+   * Indexed past the dialog's own buttons: the backdrop, and the close button in its title bar.
+   */
+  function theAnswers() {
+    const buttons = [...document.body.querySelectorAll<HTMLButtonElement>('button')];
+
+    return { confirm: buttons[2] as HTMLButtonElement, cancel: buttons[3] as HTMLButtonElement };
+  }
+
+  it('reports the answer as two callbacks, so a caller reads which is which', async () => {
+    const onConfirm = vi.fn();
+    const onCancel = vi.fn();
+    await render(question(onConfirm, onCancel));
+
+    const { confirm } = theAnswers();
+
+    await click(confirm);
+
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+    expect(onCancel).not.toHaveBeenCalled();
+  });
+
+  it('treats everything that dismisses the dialog without answering it as a cancel', async () => {
+    const onCancel = vi.fn();
+    const { findAll } = await render(question(vi.fn(), onCancel));
+
+    await click(findAll<HTMLButtonElement>('button')[0] as HTMLButtonElement);
+
+    act(() => {
+      vi.advanceTimersByTime(150);
+    });
+
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('answers once, however many times the confirm button is clicked', async () => {
+    const onConfirm = vi.fn();
+    await render(question(onConfirm, vi.fn()));
+
+    const { confirm } = theAnswers();
+
+    await click(confirm);
+    await click(confirm);
+
+    // The caller closes the dialog in its own callback, and the animation that follows is long enough
+    // for a second click to arrive at a button that is still on screen.
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+  });
+
+  it('can be answered again once it has been opened afresh', async () => {
+    const onConfirm = vi.fn();
+    const { update } = await render(
+      <ConfirmationModal
+        open={false}
+        title="Delete?"
+        onConfirm={onConfirm}
+        onCancel={() => undefined}
+      />,
+    );
+
+    await update(
+      <ConfirmationModal open title="Delete?" onConfirm={onConfirm} onCancel={() => undefined} />,
+    );
+
+    const { confirm } = theAnswers();
+    await click(confirm);
+
+    await update(
+      <ConfirmationModal
+        open={false}
+        title="Delete?"
+        onConfirm={onConfirm}
+        onCancel={() => undefined}
+      />,
+    );
+    await update(
+      <ConfirmationModal open title="Delete?" onConfirm={onConfirm} onCancel={() => undefined} />,
+    );
+
+    await click(theAnswers().confirm);
+
+    expect(onConfirm).toHaveBeenCalledTimes(2);
+  });
+
+  it('paints the confirm button as destructive only when the action is', async () => {
+    const { update } = await render(question(vi.fn(), vi.fn()));
+
+    expect(theAnswers().confirm.className).toContain('bg-bbp');
+
+    await update(question(vi.fn(), vi.fn(), true));
+
+    expect(theAnswers().confirm.className).toContain('bg-bda');
+  });
+
+  it('names its buttons from the locale when the caller names them nothing', async () => {
+    await render(question(vi.fn(), vi.fn()));
+
+    const { confirm, cancel } = theAnswers();
+
+    expect(confirm.textContent).toContain('Confirm');
+    expect(cancel.textContent).toContain('Cancel');
   });
 });
 

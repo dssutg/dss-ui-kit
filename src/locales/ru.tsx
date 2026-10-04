@@ -13,6 +13,8 @@ export const ru = {
   'ConfigurableOrderPanel.resetOrderToDefaults': 'Сбросить порядок элементов к умолчанию',
   'ConfigurableOrderPanel.show': 'Показать',
   'ConfigurableOrderPanel.showAll': 'Показать все',
+  'ConfirmationModal.cancel': 'Отмена',
+  'ConfirmationModal.confirm': 'Подтвердить',
   'CrashGuard.contactLabel': 'Сообщить разработчику',
   'CrashGuard.copyReport': 'Скопировать отчёт',
   'CrashGuard.issueLabel': 'Сообщить о проблеме',
