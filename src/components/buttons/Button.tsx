@@ -1,5 +1,6 @@
 import { Icon, type IconName } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';
+import { cn } from '@/util/cn';
 
 /**
  * The button's role, which is what decides its colours.
@@ -79,11 +80,11 @@ export function Button({
     <button
       ref={buttonRef ?? null}
       type={htmlButtonType}
-      className={`
-        justify-content relative flex shrink-0 select-none items-center justify-center overflow-hidden rounded-lg hover:brightness-150
-        ${type === 'inactive' ? 'pointer-events-none' : ''}
-        ${buttonTypeClasses[type]}
-      `}
+      className={cn(
+        'justify-content relative flex shrink-0 select-none items-center justify-center overflow-hidden rounded-lg hover:brightness-150',
+        type === 'inactive' ? 'pointer-events-none' : undefined,
+        buttonTypeClasses[type],
+      )}
       style={style}
       onClick={onClick}
     >

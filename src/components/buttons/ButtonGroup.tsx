@@ -1,4 +1,5 @@
 import { Ripple } from '@/components/feedback/Ripple';
+import { cn } from '@/util/cn';
 import { wrapIndex } from '@/util/math';
 
 /**
@@ -75,18 +76,18 @@ export function ButtonGroup<T extends string>({
   }
 
   return (
-    <div className={`flex ${className}`} style={style}>
+    <div className={cn('flex', className)} style={style}>
       {items.map((item) => (
         <button
           key={item.id}
           type="button"
           onClick={() => onItemChange(item.id)}
           onKeyDown={onKeyDown}
-          className={`
-            justify-content relative flex shrink-0 select-none items-center justify-center overflow-hidden border-2 px-4 py-2 outline-2 outline-white transition-colors duration-200 first:rounded-l-lg last:rounded-r-lg hover:brightness-150
-            ${transparentBG ? 'bg-transparent' : 'bg-bpd'}
-            ${itemId === item.id ? 'border-tli text-tli' : 'border-bsp text-tpl'}
-          `}
+          className={cn(
+            'justify-content relative flex shrink-0 select-none items-center justify-center overflow-hidden border-2 px-4 py-2 outline-2 outline-white transition-colors duration-200 first:rounded-l-lg last:rounded-r-lg hover:brightness-150',
+            transparentBG ? 'bg-transparent' : 'bg-bpd',
+            itemId === item.id ? 'border-tli text-tli' : 'border-bsp text-tpl',
+          )}
           style={buttonStyle}
         >
           <Ripple color="var(--color-ripple-button)" />

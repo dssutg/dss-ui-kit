@@ -1,6 +1,7 @@
 import { IconButton } from '@/components/buttons/IconButton';
 import { PlayPauseButton } from '@/components/buttons/PlayPauseButton';
 import { useLocale } from '@/locale';
+import { cn } from '@/util/cn';
 import { LogOutputTextArea } from './LogOutputTextArea';
 
 /**
@@ -39,7 +40,7 @@ export function LogWidget({
 
   return (
     <div
-      className={`bg-bpd flex flex-grow flex-col overflow-hidden rounded-2xl p-4 ${className}`}
+      className={cn('bg-bpd flex flex-grow flex-col overflow-hidden rounded-2xl p-4', className)}
       style={style}
     >
       <div className="flex justify-between">

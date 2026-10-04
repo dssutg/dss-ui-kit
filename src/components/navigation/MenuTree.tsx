@@ -4,6 +4,7 @@ import { Icon, type IconName } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';
 import { SearchInput } from '@/components/inputs/SearchInput';
 import { builtinCatalogues, getLocaleName, translate, useLocale } from '@/locale';
+import { cn } from '@/util/cn';
 import { useIsMobileScreen } from '@/util/hooks/use_is_mobile_screen';
 import { unreachable } from '@/util/unreachable';
 import { type ColorIndicator, colorIndicatorColorMap, type TreeViewItem } from './TreeView';
@@ -143,10 +144,10 @@ export function MenuTree({
 
   return (
     <div
-      className={`
-        flex flex-col bg-bpd shrink-0 overflow-hidden
-        ${expanded ? 'w-full sm:w-[var(--menu-tree-width)]' : ''}
-      `}
+      className={cn(
+        'flex flex-col bg-bpd shrink-0 overflow-hidden',
+        expanded ? 'w-full sm:w-[var(--menu-tree-width)]' : undefined,
+      )}
       style={
         {
           '--menu-tree-width': width,
@@ -160,10 +161,10 @@ export function MenuTree({
         </div>
       )}
       <div
-        className={`
-          overflow-y-scroll flex-grow
-          ${expanded ? 'overflow-x-scroll' : 'overflow-x-hidden'}
-        `}
+        className={cn(
+          'overflow-y-scroll flex-grow',
+          expanded ? 'overflow-x-scroll' : 'overflow-x-hidden',
+        )}
       >
         {menuItems.map((item) => (
           <MenuTreeItem
@@ -258,10 +259,10 @@ function renderTreeLevelBlock(
       return (
         <div
           key={index}
-          className={`
-                        border-b-tpd border-l-tpd absolute top-0 h-3/6 border-b-2 border-l-2
-                        ${fullWidth ? 'w-7' : 'w-2'}
-                      `}
+          className={cn(
+            'border-b-tpd border-l-tpd absolute top-0 h-3/6 border-b-2 border-l-2',
+            fullWidth ? 'w-7' : 'w-2',
+          )}
           style={style}
         />
       );
@@ -271,10 +272,10 @@ function renderTreeLevelBlock(
       return (
         <div key={index} className="absolute top-0 h-full" style={style}>
           <div
-            className={`
-                          border-b-tpd border-l-tpd h-3/6 border-b-2 border-l-2
-                          ${fullWidth ? 'w-7' : 'w-2'}
-                        `}
+            className={cn(
+              'border-b-tpd border-l-tpd h-3/6 border-b-2 border-l-2',
+              fullWidth ? 'w-7' : 'w-2',
+            )}
           />
           <div className="border-l-tpd h-3/6 border-l-2" />
         </div>
@@ -677,6 +678,20 @@ function MenuTreeItem({
     return menuItemStyle(item);
   }
 
+  // The per-item form of `menuItemClassName` is resolved here rather than interpolated, so the caller's
+  // function decides one item's classes instead of being stringified into every one of them.
+  function getClassName(): string | undefined {
+    if (menuItemClassName === undefined) {
+      return undefined;
+    }
+
+    if (typeof menuItemClassName === 'function') {
+      return menuItemClassName(item);
+    }
+
+    return menuItemClassName;
+  }
+
   /** The item's label: its own title between whatever the caller puts before and after it. */
   function renderLabel() {
     if (!expanded) {
@@ -769,13 +784,13 @@ function MenuTreeItem({
       <div
         role="menuitem"
         tabIndex={0}
-        className={`
-          relative flex select-none items-center overflow-hidden text-left
-          ${inactive ? 'text-tpd' : 'text-tpl hover:bg-bse cursor-pointer'}
-          ${expanded ? 'h-10 w-full pr-1' : 'aspect-square rounded-full p-2'}
-          ${selected && 'bg-bse'}
-          ${menuItemClassName}
-        `}
+        className={cn(
+          'relative flex select-none items-center overflow-hidden text-left',
+          inactive ? 'text-tpd' : 'text-tpl hover:bg-bse cursor-pointer',
+          expanded ? 'h-10 w-full pr-1' : 'aspect-square rounded-full p-2',
+          selected && 'bg-bse',
+          getClassName(),
+        )}
         style={{
           paddingLeft: level * levelXFactor,
           ...getStyle(),

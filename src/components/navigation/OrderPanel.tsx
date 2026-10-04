@@ -4,6 +4,7 @@ import { IconButton } from '@/components/buttons/IconButton';
 import type { IconName } from '@/components/display/Icon';
 import { useLocale } from '@/locale';
 import { moveArrayElementLeftOrRightCircularly } from '@/util/array';
+import { cn } from '@/util/cn';
 import { useDragNDropOrderedList } from '@/util/hooks/use_drag_n_drop_ordered_list';
 import { useIsMobileScreen } from '@/util/hooks/use_is_mobile_screen';
 
@@ -55,13 +56,14 @@ export function OrderPanel<T extends number>({
     [visibilityMap, onVisibilityChange],
   );
 
-  const getItemRowClassName = (index: number) => `
-              m-0 box-border flex select-none items-center gap-2 bg-bpd p-1 text-tpl hover:brightness-150
-              border-b-2 border-t-2 border-b-[transparent]
-              ${!noOrderControls && 'cursor-move'}
-              ${!noOrderControls && isBeforeStart(index) ? 'border-t-bsp' : 'border-t-[transparent]'}
-              ${!noOrderControls && isAfterStart(index) ? 'border-b-bsp' : 'border-t-[transparent]'}
-            `;
+  const getItemRowClassName = (index: number) =>
+    cn(
+      'm-0 box-border flex select-none items-center gap-2 bg-bpd p-1 text-tpl hover:brightness-150',
+      'border-b-2 border-t-2 border-b-[transparent]',
+      !noOrderControls && 'cursor-move',
+      !noOrderControls && isBeforeStart(index) ? 'border-t-bsp' : 'border-t-[transparent]',
+      !noOrderControls && isAfterStart(index) ? 'border-b-bsp' : 'border-b-[transparent]',
+    );
 
   const renderOrderButtons = (index: number) => {
     if (noOrderControls) {
@@ -117,10 +119,10 @@ export function OrderPanel<T extends number>({
 
   const renderItemLabel = (item: T, index: number) => (
     <p
-      className={`
-                m-0 overflow-x-hidden text-ellipsis p-0
-                ${visibilityMap === undefined || visibilityMap[item] ? 'text-tpl' : 'text-tpd'}
-              `}
+      className={cn(
+        'm-0 overflow-x-hidden text-ellipsis p-0',
+        visibilityMap === undefined || visibilityMap[item] ? 'text-tpl' : 'text-tpd',
+      )}
     >
       {itemIndexFormatter !== undefined ? itemIndexFormatter(item, index) : item}
     </p>

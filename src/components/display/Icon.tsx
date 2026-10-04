@@ -1,4 +1,5 @@
 import { iconPaths } from '@/icons/index';
+import { cn } from '@/util/cn';
 
 /**
  * The name of one of the icons the library ships.
@@ -76,7 +77,7 @@ export function Icon({
       focusable="false"
       width="100"
       height="100"
-      className={`shrink-0 ${invisible ? 'invisible' : ''} ${className}`}
+      className={cn('shrink-0', invisible ? 'invisible' : undefined, className)}
       style={style}
       viewBox="0 0 100 100"
       xmlns={SVG_NS}

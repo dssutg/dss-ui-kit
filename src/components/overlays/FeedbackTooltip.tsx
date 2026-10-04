@@ -1,4 +1,5 @@
 import { createPortal, useRef, useState } from 'react';
+import { cn } from '@/util/cn';
 import { useGranularEffect } from '@/util/hooks/use_granular_effect';
 
 /**
@@ -86,11 +87,11 @@ export function FeedbackTooltip({
   return createPortal(
     <div
       ref={wrapperRef}
-      className={`
-        fixed origin-top transform overflow-visible rounded-bl-lg rounded-br-lg px-4 py-2 shadow-lg shadow-black transition-[transform] duration-300
-        ${isVisible ? 'scale-y-1' : 'scale-y-0'}
-        ${colorPairClass}
-      `}
+      className={cn(
+        'fixed origin-top transform overflow-visible rounded-bl-lg rounded-br-lg px-4 py-2 shadow-lg shadow-black transition-[transform] duration-300',
+        isVisible ? 'scale-y-1' : 'scale-y-0',
+        colorPairClass,
+      )}
       aria-hidden={!isVisible}
     >
       {title}

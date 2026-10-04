@@ -3,6 +3,7 @@ import { Icon, type IconName } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';
 import { useLocale } from '@/locale';
 import { compareArrays, isChildArrayPath } from '@/util/array';
+import { cn } from '@/util/cn';
 import { areDOMRectsEqual } from '@/util/dom';
 import { useEventListener } from '@/util/hooks/use_event_listener';
 import { useGranularEffect } from '@/util/hooks/use_granular_effect';
@@ -253,12 +254,14 @@ export function DropDownMenu({
         ref={triggerRef}
         type="button"
         tabIndex={0}
-        className={`
-          relative box-border flex shrink-0 select-none place-items-center overflow-hidden
-          ${variant === 'dots' ? 'aspect-square rounded-full border-none p-2 hover:bg-bse' : ''}
-          ${variant === 'button' ? 'rounded-lg bg-bbp px-2 hover:brightness-150' : ''}
-          ${openDotsBackground}
-        `}
+        className={cn(
+          'relative box-border flex shrink-0 select-none place-items-center overflow-hidden',
+          variant === 'dots'
+            ? 'aspect-square rounded-full border-none p-2 hover:bg-bse'
+            : undefined,
+          variant === 'button' ? 'rounded-lg bg-bbp px-2 hover:brightness-150' : undefined,
+          openDotsBackground,
+        )}
         style={triggerStyle}
         title={dotsTriggerTitle}
         onClick={(e) => {
@@ -466,11 +469,11 @@ function DropDownMenuPanel({
   return (
     <div
       ref={listRef}
-      className={`
-        max-h-[300px] max-w-[100vw] shrink-0 overflow-y-auto overflow-x-hidden rounded-2xl bg-bpd p-2 text-tpl shadow-lg shadow-black
-        fixed top-0 left-0
-        ${posX === null || posY === null ? 'invisible pointer-events-none opacity-0' : ''}
-      `}
+      className={cn(
+        'max-h-[300px] max-w-[100vw] shrink-0 overflow-y-auto overflow-x-hidden rounded-2xl bg-bpd p-2 text-tpl shadow-lg shadow-black',
+        'fixed top-0 left-0',
+        posX === null || posY === null ? 'invisible pointer-events-none opacity-0' : undefined,
+      )}
       style={{
         top: posY ?? 0,
         left: posX ?? 0,
@@ -585,11 +588,11 @@ function DropDownMenuItemElement({
           }
         }}
         onMouseEnter={() => setPath(item.path)}
-        className={`
-          relative w-full flex cursor-pointer items-center gap-2 overflow-hidden rounded-lg border-none p-2 outline-none
-          ${highlighted ? 'bg-bse' : ''}
-          ${menuItemClassName}
-        `}
+        className={cn(
+          'relative w-full flex cursor-pointer items-center gap-2 overflow-hidden rounded-lg border-none p-2 outline-none',
+          highlighted ? 'bg-bse' : undefined,
+          menuItemClassName,
+        )}
         data-highlighted={highlighted ? 'true' : undefined}
       >
         {content}

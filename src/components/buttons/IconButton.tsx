@@ -1,6 +1,7 @@
 import type { MouseEventHandler } from 'react';
 import { Icon, type IconName } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';
+import { cn } from '@/util/cn';
 
 /**
  * A square button showing one icon and nothing else.
@@ -55,12 +56,12 @@ export function IconButton({
       aria-label={ariaLabel ?? title}
       onClick={inactive ? undefined : onClick}
       onDblClick={inactive ? undefined : onDblClick}
-      className={`
-        relative box-border flex aspect-square shrink-0 select-none items-center justify-center overflow-hidden border-none
-        ${inactive || invisible ? 'cursor-default' : 'hover:brightness-150'}
-        ${bgClassName ?? 'bg-transparent'}
-        ${className}
-      `}
+      className={cn(
+        'relative box-border flex aspect-square shrink-0 select-none items-center justify-center overflow-hidden border-none',
+        inactive || invisible ? 'cursor-default' : 'hover:brightness-150',
+        bgClassName ?? 'bg-transparent',
+        className,
+      )}
       style={style}
     >
       {rippleColor !== '' && !inactive && !invisible && <Ripple color={rippleColor} />}

@@ -6,6 +6,7 @@ import {
   type VirtualizedListRowRendererProps,
 } from '@/components/inputs/VirtualizedList';
 import { useLocale } from '@/locale';
+import { cn } from '@/util/cn';
 import { useForceUpdate } from '@/util/hooks/use_force_update';
 import { useTimeout } from '@/util/hooks/use_timeout';
 import { ColumnResizer } from './ColumnResizer';
@@ -318,7 +319,7 @@ export function SortableTable<T, C extends string>({
   return (
     <div
       ref={containerRef}
-      className={`relative flex flex-col overflow-auto ${className}`}
+      className={cn('relative flex flex-col overflow-auto', className)}
       style={style}
     >
       {

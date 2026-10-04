@@ -1,6 +1,7 @@
 import type React from 'react';
 import { IconButton } from '@/components/buttons/IconButton';
 import { useLocale } from '@/locale';
+import { cn } from '@/util/cn';
 
 /** What a breadcrumb is joined with, between a title and the path of titles leading to it. */
 export const NAV_BAR_BREADCRUMB_SEPARATOR = ' / ';
@@ -33,7 +34,7 @@ export function NavBar({
   const { t } = useLocale();
 
   return (
-    <div className={`bg-bpd flex h-12 w-full shrink-0 items-center shadow-lg ${className}`}>
+    <div className={cn('bg-bpd flex h-12 w-full shrink-0 items-center shadow-lg', className)}>
       {onMenuClick !== undefined && (
         <IconButton
           icon="bars"

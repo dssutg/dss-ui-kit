@@ -1,3 +1,5 @@
+import { cn } from '@/util/cn';
+
 /**
  * A switch with a label, a bar and a knob, which is not what a checkbox looks like.
  *
@@ -39,11 +41,11 @@ export function ToggleSwitch({
 
   const labelComponent = hasLabel && (
     <span
-      className={`
-        text-tpl overflow-x-hidden text-ellipsis
-        ${!locked ? 'cursor-pointer' : ''}
-        ${shouldLabelGrow ? 'flex-grow' : ''}
-      `}
+      className={cn(
+        'text-tpl overflow-x-hidden text-ellipsis',
+        !locked ? 'cursor-pointer' : undefined,
+        shouldLabelGrow ? 'flex-grow' : undefined,
+      )}
       style={labelStyle}
     >
       {label}
@@ -72,27 +74,27 @@ export function ToggleSwitch({
         onChange?.();
       }}
       title={title}
-      className={`
-        flex select-none items-center gap-4 border-none bg-transparent p-0 text-left
-        [-webkit-tap-highlight-color:transparent]
-        ${locked ? 'brightness-75' : 'cursor-pointer'}
-      `}
+      className={cn(
+        'flex select-none items-center gap-4 border-none bg-transparent p-0 text-left',
+        '[-webkit-tap-highlight-color:transparent]',
+        locked ? 'brightness-75' : 'cursor-pointer',
+      )}
       style={style}
     >
       {rightSide && labelComponent}
       <span
         aria-hidden="true"
-        className={`
-          relative flex h-6 w-10 shrink-0 items-center rounded-full
-          ${enabled ? enabledBgClassName : 'bg-[#e6e6e6]'}
-        `}
+        className={cn(
+          'relative flex h-6 w-10 shrink-0 items-center rounded-full',
+          enabled ? enabledBgClassName : 'bg-[#e6e6e6]',
+        )}
         style={barStyle}
       >
         <span
-          className={`
-            absolute left-1 top-1 size-4 rounded-full bg-white shadow-lg shadow-black transition
-            ${enabled ? 'translate-x-full' : ''}
-          `}
+          className={cn(
+            'absolute left-1 top-1 size-4 rounded-full bg-white shadow-lg shadow-black transition',
+            enabled ? 'translate-x-full' : undefined,
+          )}
         />
       </span>
       {!rightSide && labelComponent}

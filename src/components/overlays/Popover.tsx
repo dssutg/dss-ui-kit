@@ -1,5 +1,6 @@
 import { createPortal, useCallback, useRef, useState } from 'react';
 import { useLocale } from '@/locale';
+import { cn } from '@/util/cn';
 import { areDOMRectsEqual } from '@/util/dom';
 import { useEventListener } from '@/util/hooks/use_event_listener';
 import { useGranularEffect } from '@/util/hooks/use_granular_effect';
@@ -260,11 +261,11 @@ function PopoverPanel({
       ref={panelRef}
       role="dialog"
       tabIndex={-1}
-      className={`
-        fixed top-0 left-0 shrink-0
-        ${panelPosX === null || panelPosY === null ? 'pointer-events-none opacity-0' : ''}
-        ${className}
-      `}
+      className={cn(
+        'fixed top-0 left-0 shrink-0',
+        panelPosX === null || panelPosY === null ? 'pointer-events-none opacity-0' : undefined,
+        className,
+      )}
       style={{
         top: panelPosY ?? 0,
         left: panelPosX ?? 0,

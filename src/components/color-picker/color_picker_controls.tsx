@@ -11,6 +11,7 @@
  */
 
 import { type JSX, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { cn } from '@/util/cn';
 import { clamp } from '@/util/math';
 import { equalColorObjects, hsvaToHslString, round } from './color_picker_conversion';
 import {
@@ -23,16 +24,6 @@ import {
   preventDefaultMove,
 } from './color_picker_interaction';
 import type { AnyColor, ColorModel, HsvaColor, Interaction } from './color_picker_types';
-
-/**
- * Joins the optional class names of a colour picker control into one `className`.
- *
- * Returns `undefined` — which React omits — rather than an empty string when there is nothing to
- * join, so an uncontrolled element does not end up with a stray `class=""`.
- */
-export function formatClassName(names: unknown[]): string {
-  return names.filter(Boolean).join(' ');
-}
 
 /**
  * What the hue bar takes.
@@ -64,7 +55,7 @@ export function HueBase({ className, hue, onChange }: HueBaseProperties) {
     });
   };
 
-  const nodeClassName = formatClassName(['color-picker-cn__hue', className]);
+  const nodeClassName = cn('color-picker-cn__hue', className);
 
   return (
     <div className={nodeClassName}>
@@ -217,7 +208,7 @@ export interface PointerProperties {
  * would be readable on a dark colour and not on a light one.
  */
 export const Pointer = ({ className, color, left, top = 0.5 }: PointerProperties): JSX.Element => {
-  const nodeClassName = formatClassName(['color-picker-cn__pointer', className]);
+  const nodeClassName = cn('color-picker-cn__pointer', className);
 
   const style = {
     top: `${top * 100}%`,

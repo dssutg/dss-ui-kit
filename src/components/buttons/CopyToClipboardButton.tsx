@@ -3,6 +3,7 @@ import { Icon } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';
 import { FeedbackTooltip, showFeedbackTooltip } from '@/components/overlays/FeedbackTooltip';
 import { useLocale } from '@/locale';
+import { cn } from '@/util/cn';
 import { copyToClipboard } from '@/util/dom';
 
 /**
@@ -47,7 +48,7 @@ export function CopyToClipboardButton({
   // button inside a button in the accessibility tree and a focus stop in the tab order that Enter
   // and Space did nothing on. The button below is the control.
   return (
-    <div className={`relative ${className}`} style={style}>
+    <div className={cn('relative', className)} style={style}>
       <button
         ref={triggerRef}
         type="button"

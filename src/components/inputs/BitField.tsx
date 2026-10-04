@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useLocale } from '@/locale';
+import { cn } from '@/util/cn';
 import { cmp } from '@/util/math';
 
 /**
@@ -105,10 +106,10 @@ export function BitField({
                       .map((bit, bitIndex) => (
                         <div
                           key={bitIndex}
-                          className={`
-                            shrink-0 overflow-hidden text-center
-                            ${bit ? 'text-tpl' : 'text-tpd'}
-                          `}
+                          className={cn(
+                            'shrink-0 overflow-hidden text-center',
+                            bit ? 'text-tpl' : 'text-tpd',
+                          )}
                           style={{
                             fontSize: `${fontSize}px`,
                             lineHeight: `${fontSize}px`,
@@ -156,29 +157,19 @@ export function BitField({
             >
               {/* biome-ignore lint/a11y/noStaticElementInteractions: hovering a row cross-highlights the bit it names in the diagram above. The row carries the bit's own description as text, so nothing is reachable by hover alone. */}
               <div className="flex gap-2" onMouseEnter={() => setHighlightedBitIndex(bit)}>
-                <div
-                  className={`
-                      flex gap-1
-                      ${highlighted ? 'text-tok' : 'text-tpd'}
-                    `}
-                >
+                <div className={cn('flex gap-1', highlighted ? 'text-tok' : 'text-tpd')}>
                   {t('BitField.bitNoPrefix')}
                   <div className="mr-1 w-6 text-right">{`${bitIndex}: `}</div>
                 </div>
-                <div
-                  className={`
-                      truncate
-                      ${highlighted ? 'text-tok' : 'text-tpl'}
-                    `}
-                >
+                <div className={cn('truncate', highlighted ? 'text-tok' : 'text-tpl')}>
                   {description}
                 </div>
               </div>
               <div
-                className={`
-                    absolute border-b-2 border-l-2
-                    ${highlighted ? 'border-tok' : 'border-tpd'}
-                  `}
+                className={cn(
+                  'absolute border-b-2 border-l-2',
+                  highlighted ? 'border-tok' : 'border-tpd',
+                )}
                 style={{
                   top: -lineHeight / 2 - yDelta,
                   left: -fontSize - 5 - xDelta,

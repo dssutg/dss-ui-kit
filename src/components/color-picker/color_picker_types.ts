@@ -69,14 +69,16 @@ export interface ColorModel<T extends AnyColor> {
 /**
  * The HTML attributes every picker forwards to the element it draws into.
  *
- * What is dropped is the three names a picker means something else by: its `color` is the colour
- * being edited, and its `onChange` reports a new one, so the DOM meanings of those names would
- * fight the props the pickers actually take. Everything else an HTML `<div>` accepts passes
- * straight through.
+ * What is dropped is the four names a picker does not take straight from the DOM. Three of them mean
+ * something else here: a picker's `color` is the colour being edited, and its `onChange` reports a new
+ * one, so the DOM meanings of those names would fight the props the pickers actually take. The fourth
+ * is `className`, because the DOM type admits a signal and a picker merges the caller's classes over its
+ * own through `cn()` rather than writing one, which a signal is not. Everything else an HTML `<div>`
+ * accepts passes straight through.
  */
 export type ColorPickerHTMLAttributes = Omit<
   React.HTMLAttributes<HTMLDivElement>,
-  'color' | 'onChange' | 'onChangeCapture'
+  'className' | 'color' | 'onChange' | 'onChangeCapture'
 >;
 
 /**
@@ -87,6 +89,8 @@ export type ColorPickerHTMLAttributes = Omit<
  * to the element the picker draws into.
  */
 export interface ColorPickerBaseProperties<T extends AnyColor> extends ColorPickerHTMLAttributes {
+  /** Merged over the picker's own classes, so the caller's wins wherever the two conflict. */
+  readonly className?: string | undefined;
   color: T;
   onChange: (newColor: T) => void;
 }

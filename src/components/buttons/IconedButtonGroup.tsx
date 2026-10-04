@@ -1,5 +1,6 @@
 import { Icon, type IconName } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';
+import { cn } from '@/util/cn';
 
 /**
  * A row of icon buttons of which one is selected.
@@ -23,10 +24,10 @@ export function IconedButtonGroup({
       {group.map((item, index) => (
         <button
           key={index}
-          className={`
-            relative cursor-pointer overflow-hidden border-none p-2 hover:brightness-150
-            ${index === value ? 'bg-bse' : 'bg-bpd2'}
-          `}
+          className={cn(
+            'relative cursor-pointer overflow-hidden border-none p-2 hover:brightness-150',
+            index === value ? 'bg-bse' : 'bg-bpd2',
+          )}
           type="button"
           onClick={() => onChange?.(index)}
           title={item.title}

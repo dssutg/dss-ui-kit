@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { cn } from '@/util/cn';
 import { useMouseDrag } from '@/util/hooks/use_mouse_drag';
 import { clamp } from '@/util/math';
 
@@ -29,7 +30,10 @@ export function ResizableSplit({
   const vertical = orientation === 'vertical';
 
   return (
-    <div className={`flex flex-grow overflow-hidden ${vertical ? 'flex-col' : ''}`} style={style}>
+    <div
+      className={cn('flex flex-grow overflow-hidden', vertical ? 'flex-col' : undefined)}
+      style={style}
+    >
       {panels.map((panel, index) => (
         <ResizablePanel
           key={panel.id}
@@ -95,7 +99,7 @@ function ResizablePanel({
   return (
     <div
       ref={panelRef}
-      className={`flex overflow-hidden ${vertical ? 'flex-col' : ''}`}
+      className={cn('flex overflow-hidden', vertical ? 'flex-col' : undefined)}
       style={{
         flexGrow: last ? 1 : undefined,
         ...(vertical
@@ -111,7 +115,7 @@ function ResizablePanel({
             }),
       }}
     >
-      <div className={`flex flex-grow ${childrenOverflow}`}>{children}</div>
+      <div className={cn('flex flex-grow', childrenOverflow)}>{children}</div>
       {!last && (
         <ResizableSplitPanelSizer
           panelRef={panelRef}
@@ -200,10 +204,10 @@ function ResizableSplitPanelSizer({
         ref.current = element;
         setIsMounted(true);
       }}
-      className={`
-        flex justify-center items-center shrink-0 bg-bpl
-        ${vertical ? 'h-2 cursor-row-resize' : 'w-2 cursor-col-resize'}
-      `}
+      className={cn(
+        'flex justify-center items-center shrink-0 bg-bpl',
+        vertical ? 'h-2 cursor-row-resize' : 'w-2 cursor-col-resize',
+      )}
     />
   );
 }

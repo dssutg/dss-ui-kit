@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { LogOutputTextArea } from '@/components/feedback/LogOutputTextArea';
 import { type MessageKey, type MessageParameters, useLocale } from '@/locale';
 import { maxInArray } from '@/util/array';
+import { cn } from '@/util/cn';
 import { useGranularEffect } from '@/util/hooks/use_granular_effect';
 
 /** Resolves a message of the library's catalogue, for the parts of the console an operator reads. */
@@ -365,7 +366,7 @@ export function CommandConsole({
   }
 
   return (
-    <div className={`bg-bpd flex flex-col gap-2 overflow-auto ${className ?? ''}`} style={style}>
+    <div className={cn('bg-bpd flex flex-col gap-2 overflow-auto', className)} style={style}>
       <LogOutputTextArea output={output} dontWrapLongLines={!wrapLines} shouldScrollToEndOnUpdate />
       <div className="relative">
         <span className="before:text-tpd before:absolute before:left-2 before:top-1/2 before:-translate-y-1/2 before:content-['>']">

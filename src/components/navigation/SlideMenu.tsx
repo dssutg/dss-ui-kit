@@ -1,6 +1,7 @@
 import { createPortal, useCallback } from 'react';
 import { IconButton } from '@/components/buttons/IconButton';
 import { useLocale } from '@/locale';
+import { cn } from '@/util/cn';
 import { useDraggablePanel } from '@/util/hooks/use_draggable_panel';
 
 /**
@@ -68,7 +69,7 @@ export function SlideMenu({
       <IconButton
         icon={open ? 'times' : 'bars'}
         iconClassName="size-7 fill-tpd"
-        className={`rounded-full p-2 ${className}`}
+        className={cn('rounded-full p-2', className)}
         title={open ? panelCloseTitle : panelTitle}
         rippleColor="var(--color-ripple-icon-button)"
         onClick={() => {
@@ -83,16 +84,20 @@ export function SlideMenu({
             ref={overlayRef}
             type="button"
             aria-label={panelCloseTitle}
-            className={`
-              fixed left-0 h-screen w-screen cursor-default border-none bg-black p-0 transition-opacity
-              ${open ? '' : 'pointer-events-none opacity-0'} ${overlayClassName}
-            `}
+            className={cn(
+              'fixed left-0 h-screen w-screen cursor-default border-none bg-black p-0 transition-opacity',
+              !open && 'pointer-events-none opacity-0',
+              overlayClassName,
+            )}
             style={{ top: topOffset }}
             onClick={close}
           />
           <div
             ref={panelRef}
-            className={`bg-bpd fixed left-0 max-w-full overflow-y-auto text-tpl shadow-lg ${panelClassName}`}
+            className={cn(
+              'bg-bpd fixed left-0 max-w-full overflow-y-auto text-tpl shadow-lg',
+              panelClassName,
+            )}
             style={{ top: topOffset, width: width, height: `calc(100vh - ${topOffset})` }}
           >
             {children}

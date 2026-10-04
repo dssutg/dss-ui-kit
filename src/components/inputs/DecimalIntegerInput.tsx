@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { IconButton } from '@/components/buttons/IconButton';
 import { useLocale } from '@/locale';
+import { cn } from '@/util/cn';
 import { clamp } from '@/util/math';
 
 /**
@@ -161,14 +162,8 @@ export function DecimalIntegerInput({
       />
       <IconButton
         icon="times"
-        iconClassName={`
-          fill-tpl size-2
-          ${value === undefined ? 'opacity-0' : ''}
-        `}
-        className={`
-          rounded-full p-2
-          ${value !== undefined ? 'hover:bg-bse' : ''}
-        `}
+        iconClassName={cn('fill-tpl size-2', value === undefined ? 'opacity-0' : undefined)}
+        className={cn('rounded-full p-2', value !== undefined ? 'hover:bg-bse' : undefined)}
         rippleColor="var(--color-ripple-icon-button)"
         title={value !== undefined ? t('DecimalIntegerInput.clear') : ''}
         onClick={(e) => {

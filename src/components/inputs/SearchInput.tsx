@@ -2,6 +2,7 @@ import { createPortal, useEffect, useId, useRef, useState } from 'react';
 import { IconButton } from '@/components/buttons/IconButton';
 import { Icon } from '@/components/display/Icon';
 import { useLocale } from '@/locale';
+import { cn } from '@/util/cn';
 import { useGranularEffect } from '@/util/hooks/use_granular_effect';
 import { useIsMobileScreen } from '@/util/hooks/use_is_mobile_screen';
 import { clamp, cmp } from '@/util/math';
@@ -313,10 +314,7 @@ export function SearchInput({
       />
       <IconButton
         icon="times"
-        iconClassName={`
-          fill-tpl size-2 mr-0.5
-          ${value === '' ? 'opacity-0' : ''}
-        `}
+        iconClassName={cn('fill-tpl size-2 mr-0.5', value === '' ? 'opacity-0' : undefined)}
         className="rounded-full p-2"
         bgClassName={value !== '' ? 'hover:bg-bse' : ''}
         rippleColor="var(--color-ripple-icon-button)"
@@ -396,11 +394,11 @@ function HistoryListItem({
       role="option"
       aria-selected={selected}
       tabIndex={-1}
-      className={`
-        flex w-full cursor-pointer items-center border-none bg-transparent p-2 text-left
-        border-b-2 border-b-bsp last:border-b-0
-        ${selected ? 'bg-bse' : ''}
-      `}
+      className={cn(
+        'flex w-full cursor-pointer items-center border-none bg-transparent p-2 text-left',
+        'border-b-2 border-b-bsp last:border-b-0',
+        selected ? 'bg-bse' : undefined,
+      )}
       onClick={onClick}
       onMouseEnter={onSelect}
     >

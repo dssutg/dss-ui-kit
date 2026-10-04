@@ -1,4 +1,5 @@
 import { DropDownMenu, type DropDownMenuItem } from '@/components/overlays/DropDownMenu';
+import { cn } from '@/util/cn';
 
 /**
  * How the trigger button looks: `danger` for a menu whose items are destructive.
@@ -57,10 +58,7 @@ export function DropDownButton({
       }}
       triggerIconStyle={dropdownIconColorStyles[variant]}
       dropDownListStyle={dropdownVariantStyles[variant]}
-      menuItemClassName={`
-        data-[highlighted]:brightness-150
-        ${dropdownVariantClasses[variant]}
-      `}
+      menuItemClassName={cn('data-[highlighted]:brightness-150', dropdownVariantClasses[variant])}
       menuItemIconStyle={dropdownIconColorStyles[variant]}
       menuItemIconMoreStyle={dropdownIconColorStyles[variant]}
       menu={menu}

@@ -1,6 +1,7 @@
 import { createPortal, useCallback, useEffect, useState } from 'react';
 import { IconButton } from '@/components/buttons/IconButton';
 import { useLocale } from '@/locale';
+import { cn } from '@/util/cn';
 import { useGranularEffect } from '@/util/hooks/use_granular_effect';
 
 /**
@@ -86,11 +87,11 @@ export function Modal({
         />
         <div>
           <div
-            className={`
-            bg-bpd fixed left-1/2 m-0 box-border origin-center -translate-x-1/2 overflow-visible rounded-lg p-2 shadow-lg shadow-black transition-all duration-300
-            ${verticalAlignment === 'center' ? 'top-1/2 -translate-y-1/2' : 'top-4'}
-            ${locked ? 'pointer-events-none scale-0 opacity-0' : 'scale-1 opacity-1'}
-          `}
+            className={cn(
+              'bg-bpd fixed left-1/2 m-0 box-border origin-center -translate-x-1/2 overflow-visible rounded-lg p-2 shadow-lg shadow-black transition-all duration-300',
+              verticalAlignment === 'center' ? 'top-1/2 -translate-y-1/2' : 'top-4',
+              locked ? 'pointer-events-none scale-0 opacity-0' : 'scale-1 opacity-1',
+            )}
           >
             <div className="flex gap-2">
               <div className="text-pl ml-auto text-center">{title}</div>
@@ -104,7 +105,10 @@ export function Modal({
               />
             </div>
             <div
-              className={`flex flex-col gap-2 text-tpl max-h-[80vh] ${noWidthRestriction ? '' : 'w-[600px]'} max-w-[calc(100vw_-_4rem)] overflow-auto p-2`}
+              className={cn(
+                'flex flex-col gap-2 text-tpl max-h-[80vh] max-w-[calc(100vw_-_4rem)] overflow-auto p-2',
+                noWidthRestriction ? undefined : 'w-[600px]',
+              )}
               style={innerStyle}
             >
               {children}

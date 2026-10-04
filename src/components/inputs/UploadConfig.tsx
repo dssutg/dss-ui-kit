@@ -2,6 +2,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Button } from '@/components/buttons/Button';
 import { Icon, type IconName } from '@/components/display/Icon';
 import { useLocale } from '@/locale';
+import { cn } from '@/util/cn';
 import { openFileDialog } from '@/util/file';
 import { clamp } from '@/util/math';
 
@@ -174,10 +175,10 @@ export function UploadConfig({
     <button
       ref={dropAreaRef}
       type="button"
-      className={`
-        flex w-60 cursor-pointer flex-col items-center justify-center gap-4 overflow-hidden rounded-lg border-2 border-dashed p-4 hover:brightness-150
-        ${hasDragEntered || status === 'complete' ? 'border-tok' : 'border-tpl'}
-      `}
+      className={cn(
+        'flex w-60 cursor-pointer flex-col items-center justify-center gap-4 overflow-hidden rounded-lg border-2 border-dashed p-4 hover:brightness-150',
+        hasDragEntered || status === 'complete' ? 'border-tok' : 'border-tpl',
+      )}
       onDrop={onDrop}
       onDragOver={onDragOver}
       onDragEnter={onDragEnter}
@@ -223,10 +224,10 @@ export function UploadConfig({
           }
         />
         <div
-          className={`
-            text-tpl pointer-events-none w-full text-center
-            ${hasDragEntered ? 'text-tok' : ''}
-          `}
+          className={cn(
+            'text-tpl pointer-events-none w-full text-center',
+            hasDragEntered ? 'text-tok' : undefined,
+          )}
         >
           {hint ?? t('UploadConfig.hint')}
         </div>

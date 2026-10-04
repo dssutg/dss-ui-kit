@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Icon } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';
+import { cn } from '@/util/cn';
 import { useScrollbarWidth } from '@/util/hooks/use_scrollbar_width';
 
 /**
@@ -64,7 +65,10 @@ export function Accordion({
         <button
           tabIndex={0}
           type="button"
-          className={`relative flex flex-grow items-center cursor-pointer overflow-hidden p-2 ${triggerClassName}`}
+          className={cn(
+            'relative flex flex-grow items-center cursor-pointer overflow-hidden p-2',
+            triggerClassName,
+          )}
           style={triggerStyle}
           onClick={() => onExpansionChange(!expanded)}
           onKeyDown={handleKeyDown}
@@ -79,10 +83,10 @@ export function Accordion({
           )}
           <Icon
             name="triangleDown"
-            className={`
-              fill-tpd ml-auto size-4 shrink-0
-              ${(flippedIcon && !expanded) || (!flippedIcon && expanded) ? 'rotate-180' : ''}
-            `}
+            className={cn(
+              'fill-tpd ml-auto size-4 shrink-0',
+              (flippedIcon && !expanded) || (!flippedIcon && expanded) ? 'rotate-180' : undefined,
+            )}
           />
         </button>
         {afterTriggerComponent}

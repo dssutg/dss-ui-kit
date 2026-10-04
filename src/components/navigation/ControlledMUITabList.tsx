@@ -1,5 +1,6 @@
 import { useCallback, useId, useRef } from 'react';
 import { Ripple } from '@/components/feedback/Ripple';
+import { cn } from '@/util/cn';
 import { useForceUpdate } from '@/util/hooks/use_force_update';
 import { useGranularEffect } from '@/util/hooks/use_granular_effect';
 import { wrapIndex } from '@/util/math';
@@ -137,10 +138,10 @@ export function ControlledMUITabList<ID extends string>({
                 aria-selected={tab.id === tabId}
                 aria-controls={`${idPrefix}-panel-${tab.id}`}
                 data-tab={tab.id}
-                className={`
-                  relative overflow-hidden truncate p-4 select-none
-                  ${tab.id === tabId ? 'text-tli' : 'text-tpl'}
-                `}
+                className={cn(
+                  'relative overflow-hidden truncate p-4 select-none',
+                  tab.id === tabId ? 'text-tli' : 'text-tpl',
+                )}
                 style={tabTriggerStyle}
                 onClick={() => setTabId(tab.id)}
               >

@@ -34,6 +34,7 @@ import { Checkbox } from '@/components/inputs/Checkbox';
 import { SearchInput } from '@/components/inputs/SearchInput';
 import { VirtualizedList } from '@/components/inputs/VirtualizedList';
 import { AutoSizer } from '@/components/layout/AutoSizer';
+import { cn } from '@/util/cn';
 import { useGranularEffect } from '@/util/hooks/use_granular_effect';
 import { clamp } from '@/util/math';
 
@@ -354,12 +355,12 @@ export function TreeView({
   const getTreeItemRowClassName = (item: TreeViewItem) => {
     const loading = item.loading ?? false;
 
-    return `
-      flex p-1 select-none
-      ${!loading && selectedItemId === item.id ? 'bg-bse' : ''}
-      ${loading ? 'brightness-75 animate-pulse pointer-events-none' : 'cursor-pointer'}
-      ${itemClassName}
-    `;
+    return cn(
+      'flex p-1 select-none',
+      !loading && selectedItemId === item.id ? 'bg-bse' : undefined,
+      loading ? 'brightness-75 animate-pulse pointer-events-none' : 'cursor-pointer',
+      itemClassName,
+    );
   };
 
   // An item without children gets a spacer instead of the button, so that every label starts at
@@ -372,10 +373,7 @@ export function TreeView({
     return (
       <IconButton
         icon="triangleDown"
-        iconClassName={`
-          fill-tpd size-4
-          ${!item.expanded ? '-rotate-90' : ''}
-        `}
+        iconClassName={cn('fill-tpd size-4', !item.expanded ? '-rotate-90' : undefined)}
         className="mr-2 shrink-0"
         onClick={(e) => {
           e.stopPropagation();
@@ -433,7 +431,7 @@ export function TreeView({
     <div
       tabIndex={0}
       role="tree"
-      className={`flex flex-col flex-grow gap-2 overflow-hidden ${className}`}
+      className={cn('flex flex-col flex-grow gap-2 overflow-hidden', className)}
       style={style}
       onKeyDown={handleKeyDown}
       onDragOver={onDragOver}

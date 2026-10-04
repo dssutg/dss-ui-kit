@@ -1,5 +1,6 @@
 import { useId } from 'react';
 import { Icon } from '@/components/display/Icon';
+import { cn } from '@/util/cn';
 
 /**
  * A checkbox with a label that is part of the control.
@@ -34,10 +35,10 @@ export function Checkbox({
       />
       <label htmlFor={id} className="flex items-center cursor-pointer w-full">
         <div
-          className={`
-            transition-background flex size-5 cursor-pointer items-center justify-center rounded border-2 text-base duration-200 shrink-0
-            ${checked ? 'border-bok bg-bok' : 'border-bin'}
-          `}
+          className={cn(
+            'transition-background flex size-5 cursor-pointer items-center justify-center rounded border-2 text-base duration-200 shrink-0',
+            checked ? 'border-bok bg-bok' : 'border-bin',
+          )}
         >
           {checked && (
             <Icon

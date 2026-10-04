@@ -1,7 +1,7 @@
 import { type JSX, useRef } from 'react';
+import { cn } from '@/util/cn';
 import { clamp } from '@/util/math';
 import {
-  formatClassName,
   Hue,
   Interactive,
   Pointer,
@@ -43,7 +43,7 @@ export function AlphaColorPicker<T extends AnyColor>({
 
   const [hsva, updateHsva] = useColorManipulation<T>(colorModel, color, onChange);
 
-  const nodeClassName = formatClassName(['color-picker-cn', className]);
+  const nodeClassName = cn('color-picker-cn', className);
 
   return (
     <div {...rest} ref={nodeRef} className={nodeClassName}>
@@ -79,7 +79,7 @@ function Alpha({ className, hsva, onChange }: AlphaProperties): JSX.Element {
     backgroundImage: `linear-gradient(90deg, ${colorFrom}, ${colorTo})`,
   };
 
-  const nodeClassName = formatClassName(['color-picker-cn__alpha', className]);
+  const nodeClassName = cn('color-picker-cn__alpha', className);
   const ariaValue = round(hsva.a * 100);
 
   return (

@@ -1,3 +1,4 @@
+import { cn } from '@/util/cn';
 import { IconButton } from './IconButton';
 
 /**
@@ -32,7 +33,7 @@ export function PlayPauseButton({ playing, onClick, playTitle, pauseTitle }: Pla
       icon={playing ? 'pause' : 'play'}
       title={playing ? pauseTitle : playTitle}
       className="rounded-full p-1"
-      iconClassName={`size-6 ${playing ? 'fill-tda' : 'fill-tok'}`}
+      iconClassName={cn('size-6', playing ? 'fill-tda' : 'fill-tok')}
       rippleColor="var(--color-ripple-icon-button)"
       onClick={onClick}
     />

@@ -1,5 +1,6 @@
 import { IconButton } from '@/components/buttons/IconButton';
 import { useLocale } from '@/locale';
+import { cn } from '@/util/cn';
 
 /**
  * The library's text field: a bare `<input>` with the design system's focus, clear and password
@@ -154,7 +155,7 @@ export function TextInput({
             ...(value === '' && { opacity: 0 }),
             ...clearIconInnerStyle,
           }}
-          bgClassName={`bg-bin ${value !== '' ? 'hover:bg-bse' : ''}`}
+          bgClassName={cn('bg-bin', value !== '' ? 'hover:bg-bse' : undefined)}
           style={
             {
               fill: 'var(--color-tpl)',

@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { cn } from '@/util/cn';
 import { useGranularEffect } from '@/util/hooks/use_granular_effect';
 
 /**
@@ -44,10 +45,10 @@ export function LogOutputTextArea({
   return (
     <textarea
       ref={textareaRef}
-      className={`
-        bg-bpd text-tpl w-full flex-grow resize-none overflow-y-scroll rounded-2xl p-2 font-mono outline-none
-        ${dontWrapLongLines ? 'overflow-x-scroll whitespace-pre' : ''}
-      `}
+      className={cn(
+        'bg-bpd text-tpl w-full flex-grow resize-none overflow-y-scroll rounded-2xl p-2 font-mono outline-none',
+        dontWrapLongLines ? 'overflow-x-scroll whitespace-pre' : undefined,
+      )}
       style={style}
       value={output}
       readOnly
