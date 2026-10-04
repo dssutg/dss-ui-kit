@@ -381,6 +381,7 @@ export {
 export { uuidv4 } from '@/util/uuid';
 export type { VError, VSchema, VValidator } from '@/util/validator';
 export { vArray, vBoolean, vInt, vNumber, vString } from '@/util/validator';
+export { compareVersions } from '@/util/version';
 export type { EventTypes } from './event';
 export {
   emitEvent,
