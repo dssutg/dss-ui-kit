@@ -174,6 +174,30 @@ function collectSections(
   return sections;
 }
 
+/** Credentials embedded in the authority of an http(s) URL, as `https://something@…`. */
+const EMBEDDED_CREDENTIAL_PATTERN = /^(https?:\/\/)[^/@]+@/;
+
+/**
+ * Strips what a remote may have embedded in its URL before the changelog links to it.
+ *
+ * A remote URL can carry its access token — `https://ghp_…@github.com/owner/repo` or the
+ * `https://x-access-token:ghp_…@github.com/owner/repo` form CI writes — and a commit or comparison
+ * link built from that URL would publish the token to every reader of the changelog. A userinfo
+ * never belongs in a public link, so everything between the scheme and the host is dropped
+ * wholesale rather than inspected.
+ *
+ * Only `http` and `https` URLs are rewritten: other schemes carry a login rather than a secret in
+ * the userinfo, and `resolveUrlBase` in `scripts/release.ts` produces an `https://` base in every
+ * branch.
+ *
+ * @param urlBase - Repository base URL, or `null` when the remote could not be resolved.
+ * @returns The same URL without its userinfo, or `null` when there was no URL.
+ */
+function withoutEmbeddedCredentials(urlBase: string | null): string | null {
+  if (urlBase === null) return null;
+  return urlBase.replace(EMBEDDED_CREDENTIAL_PATTERN, '$1');
+}
+
 /**
  * Assembles the changelog entry for a version.
  *
@@ -181,7 +205,8 @@ function collectSections(
  * @param version - The version being released, without the leading `v`.
  * @param releaseType - How the version was derived.
  * @param previousTag - The previous release tag, used to build the comparison link.
- * @param urlBase - Repository base URL, or `null` when the remote cannot be resolved.
+ * @param urlBase - Repository base URL, or `null` when the remote cannot be resolved. Credentials
+ *   embedded in it (an access token in the remote URL) are stripped before any link is built.
  * @returns The populated changelog entry.
  */
 export function buildChangelogEntry(
@@ -191,6 +216,7 @@ export function buildChangelogEntry(
   previousTag: string | null,
   urlBase: string | null,
 ): ChangelogEntry {
+  const linkBase = withoutEmbeddedCredentials(urlBase);
   const contributors = [...new Set(commits.map((commit) => commit.author))].sort((a, b) =>
     a.localeCompare(b),
   );
@@ -199,9 +225,9 @@ export function buildChangelogEntry(
     version,
     date: new Date().toISOString().slice(0, 10),
     releaseType,
-    compareUrl: urlBase && previousTag ? `${urlBase}/compare/${previousTag}...v${version}` : null,
+    compareUrl: linkBase && previousTag ? `${linkBase}/compare/${previousTag}...v${version}` : null,
     contributors,
-    sections: collectSections(commits, urlBase),
+    sections: collectSections(commits, linkBase),
   };
 }
 
