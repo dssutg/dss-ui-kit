@@ -348,6 +348,7 @@ deno task format          # biome check --write (apply safe fixes)
 deno task typecheck       # tsgo only
 deno task test            # unit tests
 deno task docs            # TypeDoc API reference into docs/api/
+deno task icons           # regenerate src/icons/index.tsx from the source SVGs
 deno task ci              # the full local gate, exactly what CI runs
 ```
 
@@ -402,6 +403,7 @@ scripts/
   release.ts              version and changelog from the git history
   publish.ts              writes jsr.json and publishes the source to JSR
   check-package-manifest.ts  verifies every path in package.json `files` exists in dist/
+  bundle-icons.ts         bundles src/icons/*.svg into src/icons/index.tsx (run by `deno task icons`)
   *.test.ts               the repository-policy tests
   util/                   helpers for the scripts above, including the shared tree walker
 docs/

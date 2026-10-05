@@ -76,6 +76,7 @@
     "test:watch": "deno run -A npm:vitest",
     "docs": "deno run -A npm:typedoc",
     "docs:watch": "deno run -A npm:typedoc --watch",
+    "icons": "deno run --allow-read --allow-write --allow-run scripts/bundle-icons.ts",
     "ci": "deno task install:frozen && deno task format:check && deno task lint && deno task test && deno task build && deno task pack && deno task docs",
     "release": "deno run --allow-read --allow-write --allow-run --allow-env scripts/release.ts",
     "changelog": "deno run --allow-read --allow-write --allow-run --allow-env scripts/release.ts --changelog-only",
