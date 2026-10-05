@@ -117,20 +117,28 @@ export interface CrashGuardProps {
  * that wants to send reports somewhere supplies `onCrash`; the library has no opinion where.
  */
 export function AppCrashGuard(props: CrashGuardProps): React.JSX.Element {
-  return <ErrorBoundary fallbackComponent={DefaultCrashFallback} {...props} />;
+  return <ErrorBoundary {...props} fallbackComponent={CrashFallback} />;
 }
 
-function DefaultCrashFallback({
-  contact,
-  getContext,
-  onCrash,
-  startDate,
-  version,
-  error,
-  componentStack,
-  className,
-}: DefaultCrashFallbackProps) {
-  const { t } = useLocale();
+/**
+ * Builds the report for one crash and renders the fallback the caller asked for.
+ *
+ * The report is built here rather than inside the default fallback, and that placement is what makes
+ * both halves of the `fallback` prop true: a caller's own fallback is rendered at all, and it is
+ * given the same report the default one shows. Building it inside the default fallback instead would
+ * have meant the default one holding state the caller could never reach, so `onCrash` and
+ * `getContext` would fire for one fallback and not the other.
+ */
+function CrashFallback(props: CrashFallbackProps): React.JSX.Element {
+  const {
+    error,
+    componentStack,
+    fallback: Fallback,
+    getContext,
+    onCrash,
+    startDate,
+    version,
+  } = props;
   const [report, setReport] = useState<CrashReport | null>(null);
 
   // The effect runs once per crash, and the report describes the crash rather than the current
@@ -158,6 +166,21 @@ function DefaultCrashFallback({
     console.error(error);
   }, [error, componentStack]);
 
+  if (Fallback !== undefined) {
+    return <Fallback error={error} componentStack={componentStack} report={report} />;
+  }
+
+  return <DefaultCrashFallback {...props} report={report} />;
+}
+
+function DefaultCrashFallback({
+  contact,
+  error,
+  componentStack,
+  report,
+  className,
+}: DefaultCrashFallbackProps) {
+  const { t } = useLocale();
   const reportJson = report === null ? '' : JSON.stringify(report, null, 2);
 
   return (
@@ -293,19 +316,30 @@ function readHeapSize(): CrashReport['memory'] {
 }
 
 /**
- * What the boundary hands the default fallback.
+ * What the boundary hands the fallback it renders.
  *
  * The boundary always knows `version` — it is a required prop of the guard and is spread straight
- * through — so it is required here too, which is what lets the fallback put it in the report
- * without re-deriving it.
+ * through — so it is required here too, which is what lets the report be built without re-deriving
+ * anything. The report arrives as a prop rather than being computed here because a caller's own
+ * fallback is given one too, and it has to be the same report.
  */
-type DefaultCrashFallbackProps = CrashGuardProps & {
+type CrashFallbackProps = CrashGuardProps & {
   readonly error: Error;
   readonly componentStack: string | null;
 };
 
+/**
+ * The same, plus the report {@link CrashFallback} built from it.
+ *
+ * `report` is `null` until the effect has run, which is the first render after the crash — the frame
+ * in which the fallback appears before anything is known about it.
+ */
+type DefaultCrashFallbackProps = CrashFallbackProps & {
+  readonly report: CrashReport | null;
+};
+
 interface ErrorBoundaryProps {
-  readonly fallbackComponent: ComponentType<DefaultCrashFallbackProps>;
+  readonly fallbackComponent: ComponentType<CrashFallbackProps>;
   readonly children: ReactNode;
   readonly version: string;
   readonly startDate?: Date | undefined;

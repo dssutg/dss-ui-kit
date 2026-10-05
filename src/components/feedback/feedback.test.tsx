@@ -9,6 +9,7 @@
  */
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
+import { AppCrashGuard } from '@/components/feedback/AppCrashGuard';
 import {
   CommandConsole,
   type CommandConsoleCommand,
@@ -23,6 +24,117 @@ import { Ripple } from '@/components/feedback/Ripple';
 import { ScrollProgressBar } from '@/components/feedback/ScrollProgressBar';
 import { Spinner } from '@/components/feedback/Spinner';
 import { act, click, render, type } from '@/util/testing/render';
+
+describe('AppCrashGuard', () => {
+  /** Throws during render, which is the only way a boundary has anything to catch. */
+  function Exploding({ explode }: { readonly explode: boolean }): React.JSX.Element {
+    if (explode) {
+      throw new Error('component exploded');
+    }
+    return <p>intact</p>;
+  }
+
+  it('renders its children while nothing has thrown', async () => {
+    const { find } = await render(
+      <AppCrashGuard version="1.0.0">
+        <p>application</p>
+      </AppCrashGuard>,
+    );
+
+    expect(find('p').textContent).toBe('application');
+  });
+
+  it('shows the default fallback in place of the subtree that threw', async () => {
+    const { find, textContent } = await render(
+      <AppCrashGuard version="1.0.0">
+        <Exploding explode />
+      </AppCrashGuard>,
+    );
+
+    // The crashed subtree is gone rather than left on screen next to the report.
+    expect(textContent()).not.toContain('intact');
+    expect(find('pre').textContent).toContain('component exploded');
+  });
+
+  it('renders the fallback the caller supplied, rather than the default one', async () => {
+    // The bug this pins down: `fallback` was spread into the boundary as a prop named `fallback`,
+    // which nothing read, so the default fallback rendered whatever the caller passed.
+    const { find, query } = await render(
+      <AppCrashGuard version="1.0.0" fallback={({ error }) => <p>handled: {error.message}</p>}>
+        <Exploding explode />
+      </AppCrashGuard>,
+    );
+
+    expect(find('p').textContent).toBe('handled: component exploded');
+    expect(query('pre')).toBeNull();
+  });
+
+  it("hands the caller's fallback the report it built for the crash", async () => {
+    const { find } = await render(
+      <AppCrashGuard
+        version="2.3.4"
+        getContext={() => ({ screen: 'devices' })}
+        fallback={({ report }) => <p>report: {report?.errorMessage ?? 'none'}</p>}
+      >
+        <Exploding explode />
+      </AppCrashGuard>,
+    );
+
+    // The report arrives rather than staying `null`: `t()` and the rest of the contract say a caller
+    // that replaces the fallback is still given the report, so it does not have to rebuild one.
+    expect(find('p').textContent).toBe('report: component exploded');
+  });
+
+  it('calls onCrash once with the report, whichever fallback renders', async () => {
+    const onCrash = vi.fn();
+
+    await render(
+      <AppCrashGuard version="1.0.0" onCrash={onCrash} fallback={() => <p>handled</p>}>
+        <Exploding explode />
+      </AppCrashGuard>,
+    );
+
+    expect(onCrash).toHaveBeenCalledTimes(1);
+    expect(onCrash.mock.calls[0]?.[0]).toMatchObject({
+      appVersion: '1.0.0',
+      errorMessage: 'component exploded',
+    });
+  });
+
+  it('does not let a throwing onCrash replace the crash the operator is looking at', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const { find } = await render(
+      <AppCrashGuard
+        version="1.0.0"
+        onCrash={() => {
+          throw new Error('the handler failed');
+        }}
+      >
+        <Exploding explode />
+      </AppCrashGuard>,
+    );
+
+    expect(find('pre').textContent).toContain('component exploded');
+    consoleError.mockRestore();
+  });
+
+  it("merges a className over the fallback's own", async () => {
+    const { find } = await render(
+      <AppCrashGuard version="1.0.0" className="h-12 border border-red-500">
+        <Exploding explode />
+      </AppCrashGuard>,
+    );
+
+    // The fallback root is the one covering the viewport it replaced. `h-12` has to beat its own
+    // `h-screen`, which is what `cn` merging rather than concatenating means; a class that does not
+    // conflict would survive either way and prove nothing.
+    const fallbackRoot = find('div.fixed');
+    expect(fallbackRoot.className).toContain('h-12');
+    expect(fallbackRoot.className).not.toContain('h-screen');
+    expect(fallbackRoot.className).toContain('flex');
+  });
+});
 
 describe('Spinner', () => {
   it('renders without a provider, a theme or a locale', async () => {

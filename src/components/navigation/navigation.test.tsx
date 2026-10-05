@@ -474,9 +474,31 @@ describe('RouteSwitch', () => {
   });
 
   it("renders nothing when no route matches, because the fallback is the caller's to give", async () => {
-    const { container } = await render(<RouteSwitch path="/other" routes={routes.slice(0, 2)} />);
+    const { container } = await render(
+      <RouteSwitch path="/other" routes={routes.slice(0, 2)} className="contents" />,
+    );
 
+    // Not even the wrapper: a caller with no route for this path has nothing to lay out.
     expect(container.textContent).toBe('');
+  });
+
+  it('applies a className to the wrapper around the matched route', async () => {
+    const { find } = await render(
+      <RouteSwitch path="/about" routes={routes} className="flex h-full flex-col" />,
+    );
+
+    // The wrapper is the element carrying the class, and the route is inside it rather than beside
+    // it — a class on the wrong element is a class that does nothing.
+    // Scoped to the wrapper rather than `div`, because the render container is a div too and comes
+    // first in document order.
+    expect(find('div.flex').className).toBe('flex h-full flex-col');
+    expect(find('div.flex').textContent).toBe('About');
+  });
+
+  it('renders the route inside the wrapper rather than replacing it', async () => {
+    const { container } = await render(<RouteSwitch path="/about" routes={routes} />);
+
+    expect(container.firstElementChild?.tagName).toBe('DIV');
   });
 
   it('builds only the route it renders', async () => {

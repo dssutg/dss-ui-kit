@@ -26,19 +26,29 @@ export interface RouteDescriptor {
  * The first entry whose patterns match wins, and nothing is rendered when none do — which is what a
  * caller with nothing to show for a path wants, and what a caller with something wants to say by giving
  * the fallback its own entry with the path `'*'`.
+ *
+ * The matched route is rendered inside a wrapper element, which exists so that `className` has
+ * somewhere to go: the route's own markup belongs to the caller, and a component that renders
+ * another component's element cannot hand it a class without either cloning it — losing to a fragment,
+ * an array or a `null` — or asking the caller to thread a prop through `render`. The wrapper is the
+ * cheap half of that trade. A caller whose layout does not want a node in the middle puts
+ * `contents` on it, which keeps the wrapper in the accessibility tree and out of the layout.
  */
-export function RouteSwitch({
-  path,
-  routes,
-}: {
+export interface RouteSwitchProps {
+  /** The path to resolve, owned by the application's router. */
   readonly path: string;
+  /** The routes, in the order they should be tried. */
   readonly routes: readonly RouteDescriptor[];
-}): React.ReactNode {
+  /** Applied to the wrapper around the matched route. */
+  readonly className?: string | undefined;
+}
+
+export function RouteSwitch({ path, routes, className }: RouteSwitchProps): React.ReactNode {
   for (const route of routes) {
     const match = matchPath(route.path, path);
 
     if (match !== null) {
-      return route.render(match);
+      return <div className={className}>{route.render(match)}</div>;
     }
   }
 
