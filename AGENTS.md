@@ -194,6 +194,11 @@ stylistic preferences; each one has caught a real problem.
   in two places belongs in one exported place. Duplication is a defect when a change then has to be
   made in both copies. Ask of any repeat: does keeping it mean that the next change to this fact is
   made once, or twice?
+- **Search for a utility before writing one.** Before implementing a helper, a hook or a component,
+  look for one that already handles the sub-task: under `src/util/` for framework-agnostic work, under
+  `src/components/` for something renderable, and among the exports in `src/index.ts`. Re-using what
+  dss-ui-kit already has is the rule; a second copy of it is the defect above, arrived at without
+  looking.
 - **Keep functions short and named for what they do.** Biome's `noExcessiveCognitiveComplexity`
   allows 12; a function that reaches it is doing more than one job and wants splitting.
 - **Do not widen a type to silence a check.** A cast is a claim you could not prove. Narrow the
