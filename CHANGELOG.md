@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Release notes are generated
 from [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) by `scripts/release.ts`.
 
+[0.4.0] — 2026-10-05
+
+[Full changelog](https://github.com/dssutg/dss-ui-kit/compare/v0.3.0...v0.4.0)
+
+### Features
+
+- **icons:** bundle the source SVGs into src/icons/index.tsx with deno task icons ([4ed33a0](https://github.com/dssutg/dss-ui-kit/commit/4ed33a0197e961c7533e2ddc8c1c35d0f581cacd))
+
+### Chores
+
+- **ci:** remove JSR publish step ([be9d79e](https://github.com/dssutg/dss-ui-kit/commit/be9d79e64e154c62395f85c69dc69974b2536e6b))
+
+**Contributors:** Daniil Stepanov
+
 [0.3.0] — 2026-10-05
 
 [Full changelog](https://github.com/dssutg/dss-ui-kit/compare/v0.2.0...v0.3.0)

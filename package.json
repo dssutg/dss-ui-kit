@@ -1,6 +1,6 @@
 {
   "name": "dss-ui-kit",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "type": "module",
   "description": "Preact component library and design system: CSS custom-property tokens, an event bus, localisation, and a generic WebGL scene renderer",
   "license": "MIT",
