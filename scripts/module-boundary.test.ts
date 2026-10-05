@@ -23,7 +23,7 @@ const LAYERS: Record<LayerName, { allows: readonly LayerName[] }> = {
   lib: { allows: ['lib'] },
   /** Components. May use the helpers, each other, the icon paths and the infrastructure modules. */
   components: { allows: ['lib', 'components', 'icons', 'infrastructure'] },
-  /** Generated icon path data. Data, not code: it imports nothing. */
+  /** Generated icon path data and the registry of a caller's additions. Both are leaves. */
   icons: { allows: ['icons'] },
   /** The four modules a component is allowed to reach the application through. */
   infrastructure: { allows: ['lib', 'infrastructure', 'locales'] },

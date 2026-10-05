@@ -53,7 +53,7 @@ Five rules are turned off or narrowed for this code base:
 
 | Rule | Where | Why |
 | ---- | ----- | --- |
-| `noSvgWithoutTitle` | `src/icons/**` | Those files are generated path data, not images: `Icon` builds the `<svg>` itself, with `aria-hidden` set and the accessible name coming from the control around it. A `<title>` here would never reach the accessibility tree. |
+| `noSvgWithoutTitle` | `src/icons/**` | Those files hold path data, not images: `Icon` builds the `<svg>` itself, with `aria-hidden` set and the accessible name coming from the control around it. A `<title>` here would never reach the accessibility tree. |
 | `noDefaultExport` | `**/*.d.ts`, `*.config.*` | An ambient module declaration has no way to say anything else, and Vite and Tailwind both read their root config through the default export. A `*.config.*` file inside `src/` or `scripts/` is still an error. |
 | `noRestrictedImports` | `src/**` | Narrowed to `../**`, with the message naming what to write instead. A sibling import (`./Button`) names exactly one file, so only walking up the tree is forbidden. |
 | `useComponentExportOnlyModules` | repository | The rule protects Fast Refresh, and `build.lib` is `src/index.ts` — there is no dev entry point for a dev server to hot-replace. |
@@ -384,7 +384,8 @@ src/
   components/             components, one directory per group
     buttons/ charts/ color-picker/ display/ feedback/
     inputs/ layout/ navigation/ overlays/ tables/
-  icons/                  icon path data, generated from the source SVGs
+  icons/                  index.tsx is the generated path data, one entry per source SVG;
+                          registry.ts is how a caller adds or replaces an icon
   locale.tsx              message lookup, locale registration and detection, useLocale
   locales/                en.tsx and ru.tsx — every message the library renders
   theme.tsx               theme names, registration and the current theme

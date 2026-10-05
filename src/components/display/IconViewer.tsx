@@ -1,16 +1,17 @@
 import { useCallback, useMemo, useState } from 'react';
 import { SearchInput } from '@/components/inputs/SearchInput';
-import { iconPaths } from '@/icons/index';
+import { getIconNames } from '@/icons/registry';
 import { cn } from '@/util/cn';
 import { copyToClipboard } from '@/util/dom';
-import { Icon, type IconName } from './Icon';
+import { Icon } from './Icon';
 
 /**
  * A searchable grid of every icon in the library, with each one's path data copyable.
  *
  * A development aid rather than a component an application renders: it has no prop for showing a
  * subset, and it exists so that a person looking for an icon can search for one instead of reading the
- * generated file.
+ * generated file. Icons a caller has registered stand beside the shipped ones: a name nobody can
+ * search for is a name nobody will find.
  */
 export function IconViewer({
   className,
@@ -19,7 +20,7 @@ export function IconViewer({
 }): React.JSX.Element {
   const [searchText, setSearchText] = useState('');
 
-  const iconNames = Object.keys(iconPaths) as IconName[];
+  const iconNames = getIconNames();
 
   const totalIcons = iconNames.length;
   const size = 16 * 3;

@@ -104,7 +104,7 @@ export { HslaStringColorPickerPopover } from '@/components/color-picker/HslaStri
 export { RgbaColorPicker } from '@/components/color-picker/RgbaColorPicker';
 export { RgbaStringColorPicker } from '@/components/color-picker/RgbaStringColorPicker';
 export { HighlightedJson } from '@/components/display/HighlightedJson';
-export type { IconName } from '@/components/display/Icon';
+export type { IconName, ShippedIconName } from '@/components/display/Icon';
 export { Icon } from '@/components/display/Icon';
 export { IconedSectionTitle } from '@/components/display/IconedSectionTitle';
 export { IconViewer } from '@/components/display/IconViewer';
@@ -267,6 +267,15 @@ export type {
   SearchSchema,
 } from '@/components/tables/use_filtered_items';
 export { useFilteredItems } from '@/components/tables/use_filtered_items';
+export type { IconPath } from '@/icons/registry';
+export {
+  getIconNames,
+  getIconPath,
+  hasIcon,
+  registerIcon,
+  registerIcons,
+  unregisterIcon,
+} from '@/icons/registry';
 export type { LocaleDates } from '@/locales/dates';
 export { tryCatch, tryCatchAsync } from '@/util/catch';
 export { cn } from '@/util/cn';
