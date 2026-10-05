@@ -86,16 +86,50 @@ const registeredLocales = new Map<string, LocaleDefinition>();
  * application-wide way to add a language; {@link LocaleProvider} takes the same definition as a prop
  * for a caller that would rather not touch global state.
  *
- * Messages are merged over the ones already under that tag, one message at a time, so registering
- * `{ en: { save: 'Store' } }` changes one label rather than replacing the language with a single
- * string.
+ * Registering the same language twice merges with what is there rather than replacing it, because
+ * more than one module may register part of a language: `{ en: { save: 'Store' } }` from one and
+ * `{ en: { cancel: 'Abbrechen' } }` from another give a language with both, where replacing would
+ * leave one of them with nothing. `dates` is the exception, because a half-specified set of month
+ * names and format strings is not a set of dates.
  */
 export function registerLocale(locale: LocaleName, definition: LocaleDefinition): void {
-  registeredLocales.set(primaryLanguageSubtag(locale), definition);
+  const tag = primaryLanguageSubtag(locale);
+
+  registeredLocales.set(tag, mergeDefinition(registeredLocales.get(tag), definition));
 
   if (definition.pluralRule !== undefined) {
     registerPluralRule(locale, definition.pluralRule);
   }
+}
+
+/**
+ * Combines a new definition with what is already registered under the same language.
+ *
+ * The registry holds one definition per language tag, so a second registration used to replace the
+ * first outright — and two modules each registering part of one language left only whichever came
+ * last. Merging is what makes registering from two places safe, and it follows the same rules as
+ * {@link LocaleProvider}'s props: messages merge one at a time, `dates` replaces because a month name
+ * and a format string are read together, and `script` and `pluralRule` are single values for which
+ * the later registration is simply the current answer.
+ */
+function mergeDefinition(
+  existing: LocaleDefinition | undefined,
+  definition: LocaleDefinition,
+): LocaleDefinition {
+  if (existing === undefined) {
+    return definition;
+  }
+
+  const combined: LocaleDefinition = { ...existing, ...definition };
+
+  if (existing.messages === undefined || definition.messages === undefined) {
+    // One side had no messages, so the spread above already carried the side that did. Saying so is
+    // the point: adding an empty `messages` would make a locale look like it had translations where
+    // it has none.
+    return combined;
+  }
+
+  return { ...combined, messages: mergeMessages(existing.messages, definition.messages) };
 }
 
 /** The definition registered for a locale, or `undefined` when nothing registered one. */
@@ -129,10 +163,21 @@ export function mergeCatalogues(
   const merged: Record<string, MessageCatalogue> = { ...base };
 
   for (const [locale, catalogue] of Object.entries(overrides)) {
-    merged[locale] = { ...merged[locale], ...catalogue };
+    merged[locale] = mergeMessages(merged[locale] ?? {}, catalogue);
   }
 
   return merged;
+}
+
+/**
+ * Merges one locale's messages over another's, which is the single rule {@link mergeCatalogues} and
+ * {@link registerLocale} both need.
+ */
+function mergeMessages(
+  base: Readonly<MessageCatalogue>,
+  overrides: Readonly<MessageCatalogue>,
+): MessageCatalogue {
+  return { ...base, ...overrides };
 }
 
 /**

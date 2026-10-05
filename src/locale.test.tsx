@@ -9,6 +9,7 @@ import { describe, expect, it } from 'vitest';
 import {
   builtinCatalogues,
   getLocaleDates,
+  getLocaleDefinition,
   LocaleProvider,
   type MessageCatalogue,
   mergeCatalogues,
@@ -169,6 +170,60 @@ describe('a locale a caller registers', () => {
 
     expect(getLocaleDates('xx').names.weekdayNames[0]).toBe('Su');
     expect(getLocaleDates('en').names.weekdayNames[0]).not.toBe('Su');
+  });
+});
+
+describe('registering the same language twice', () => {
+  it('keeps the messages of both registrations', () => {
+    // The bug this pins down: the registry holds one definition per tag, so the second `set` dropped
+    // the first outright and two modules registering part of one language left only one of them.
+    registerLocale('xa', { messages: { first: 'First' } });
+    registerLocale('xa', { messages: { second: 'Second' } });
+
+    expect(message(builtinCatalogues(), 'xa', 'first')).toBe('First');
+    expect(message(builtinCatalogues(), 'xa', 'second')).toBe('Second');
+  });
+
+  it("keeps one registration's messages when the other registered only dates", () => {
+    const dates = getLocaleDates('en');
+
+    registerLocale('xb', { messages: { greeting: 'Greeting' } });
+    registerLocale('xb', {
+      dates: { ...dates, names: { ...dates.names, monthNames: ['J', 'F'] } },
+    });
+
+    expect(message(builtinCatalogues(), 'xb', 'greeting')).toBe('Greeting');
+    expect(getLocaleDates('xb').names.monthNames).toEqual(['J', 'F']);
+  });
+
+  it('keeps the script from a registration that did not mention one', () => {
+    // A registration that says nothing about a field is not a statement that the field is unset.
+    registerLocale('xc', { script: 'rtl' });
+    registerLocale('xc', { messages: { greeting: 'Greeting' } });
+
+    expect(getLocaleDefinition('xc')?.script).toBe('rtl');
+  });
+
+  it('lets a later registration answer a field the earlier one set', () => {
+    registerLocale('xd', { script: 'cyrillic' });
+    registerLocale('xd', { script: 'latin' });
+
+    expect(getLocaleDefinition('xd')?.script).toBe('latin');
+  });
+
+  it('overrides a message rather than duplicating the key', () => {
+    registerLocale('xe', { messages: { greeting: 'First' } });
+    registerLocale('xe', { messages: { greeting: 'Second' } });
+
+    expect(message(builtinCatalogues(), 'xe', 'greeting')).toBe('Second');
+  });
+
+  it('reports no messages for a locale registered without any', () => {
+    registerLocale('xf', { script: 'latin' });
+
+    // An empty `messages` would say the locale has translations where it has none, and a caller
+    // checking what was registered would be told the wrong thing.
+    expect(getLocaleDefinition('xf')?.messages).toBeUndefined();
   });
 });
 
