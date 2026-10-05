@@ -85,6 +85,10 @@ const registeredLocales = new Map<string, LocaleDefinition>();
  * Registered by the primary language subtag, so `de-AT` resolves against `de`. This is the
  * application-wide way to add a language; {@link LocaleProvider} takes the same definition as a prop
  * for a caller that would rather not touch global state.
+ *
+ * Messages are merged over the ones already under that tag, one message at a time, so registering
+ * `{ en: { save: 'Store' } }` changes one label rather than replacing the language with a single
+ * string.
  */
 export function registerLocale(locale: LocaleName, definition: LocaleDefinition): void {
   registeredLocales.set(primaryLanguageSubtag(locale), definition);
@@ -111,6 +115,27 @@ function registeredCatalogues(): Record<string, MessageCatalogue> {
 }
 
 /**
+ * Merges a caller's catalogues over the library's, one message at a time.
+ *
+ * Per message rather than per locale, and that is the whole point: `messages={{ en: { a: 'A' } }}` is
+ * how a caller overrides one string, and merging per locale would drop every other key the locale
+ * held — so the one string that was overridden would come out right and every other label on the
+ * panel would come out as its key.
+ */
+export function mergeCatalogues(
+  base: Readonly<Record<string, MessageCatalogue>>,
+  overrides: Readonly<Record<string, MessageCatalogue>>,
+): Readonly<Record<string, MessageCatalogue>> {
+  const merged: Record<string, MessageCatalogue> = { ...base };
+
+  for (const [locale, catalogue] of Object.entries(overrides)) {
+    merged[locale] = { ...merged[locale], ...catalogue };
+  }
+
+  return merged;
+}
+
+/**
  * The keys the library renders, derived from the English catalogue.
  *
  * Deriving from a value rather than declaring a union of string literals means a key exists because a
@@ -131,7 +156,7 @@ export type MessageParameters = Record<string, string | number | boolean | null 
  * allowed to translate more or fewer keys than the library renders.
  */
 export function builtinCatalogues(): Readonly<Record<string, MessageCatalogue>> {
-  return { ...SHIPPED_CATALOGUES, ...registeredCatalogues() };
+  return mergeCatalogues(SHIPPED_CATALOGUES, registeredCatalogues());
 }
 
 const SHIPPED_CATALOGUES: Readonly<Record<string, MessageCatalogue>> = { en, ru };
@@ -327,8 +352,8 @@ function knownLocales(): readonly string[] {
  * Every prop has a working default: with no props beyond `children` the provider detects the
  * browser's locale, uses the shipped catalogues, and persists the operator's choice under
  * {@link LOCALE_STORAGE_KEY}. The `messages` and `dates` props are how a consumer translates the
- * library without registering a locale, and they merge over the shipped ones rather than replacing
- * them, so a single override does not require copying a whole catalogue.
+ * library without registering a locale, and a single message override does not require copying a
+ * whole catalogue.
  */
 export interface LocaleProviderProps {
   readonly children: ReactNode;
@@ -338,16 +363,24 @@ export interface LocaleProviderProps {
    */
   readonly initialLocale?: LocaleName | undefined;
   /**
-   * Messages by locale, merged over the shipped catalogues.
+   * Messages by locale, merged over the shipped catalogues one message at a time.
    *
    * This is how a caller translates the library into any language, and how it overrides a single
-   * string without forking the library. Its own keys are welcome here: the library never needs to
-   * know about them.
+   * string without forking the library: a locale listed here keeps every message it already had and
+   * takes the ones named here instead. Its own keys are welcome — the library never needs to know
+   * about them, and `tRaw` is what resolves them.
+   *
+   * A caller's catalogue wins over a registered one for the same locale, because it is the more
+   * specific of the two: a prop was passed to this provider, the registry was set up by the module
+   * that imported it first.
    */
   readonly messages?: Readonly<Record<string, MessageCatalogue>> | undefined;
   /**
-   * Date data by locale, merged over the shipped data. A language with no dates renders the fallback
-   * locale's month names and format strings.
+   * Date data by locale, replacing the shipped data for the locales named here.
+   *
+   * Replacing rather than merging is the shape of the thing: a month name and a format string are
+   * read together by the date components, and half a locale's dates is not a locale's dates. A
+   * language with no dates here renders the fallback locale's month names and format strings.
    */
   readonly dates?: Readonly<Record<string, LocaleDates>> | undefined;
   /** The locale a missing message or a missing date falls back to. Defaults to {@link fallbackLocale}. */
@@ -430,7 +463,7 @@ export function LocaleProvider({
   });
 
   const catalogues = useMemo<Readonly<Record<string, MessageCatalogue>>>(
-    () => ({ ...builtinCatalogues(), ...messages }),
+    () => mergeCatalogues(builtinCatalogues(), messages ?? {}),
     [messages],
   );
 

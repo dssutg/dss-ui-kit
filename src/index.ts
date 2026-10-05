@@ -433,6 +433,7 @@ export {
   isLocaleWithRtlScript,
   LOCALE_STORAGE_KEY,
   LocaleProvider,
+  mergeCatalogues,
   registerLocale,
   supportedLocales,
   translate,
