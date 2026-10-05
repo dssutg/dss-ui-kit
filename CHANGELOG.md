@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Release notes are generated
 from [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) by `scripts/release.ts`.
 
+[0.3.0] — 2026-10-05
+
+[Full changelog](https://github.com/dssutg/dss-ui-kit/compare/v0.2.0...v0.3.0)
+
+### Features
+
+- **icons:** let a caller register and replace icons ([08feb55](https://github.com/dssutg/dss-ui-kit/commit/08feb55682a9af48c60edc4bb3fcf1b037b190ed))
+- **components:** add className to every component and merge it over the caller's own ([e1fd170](https://github.com/dssutg/dss-ui-kit/commit/e1fd17003ccb653614a83b49c890fd2addaaf19c))
+- **config:** publish the TypeScript source to JSR as @dssutg/dss-ui-kit ([ea6f897](https://github.com/dssutg/dss-ui-kit/commit/ea6f8974e1069cdbb99657c474737ee1cf52dac1))
+
+### Bug Fixes
+
+- **release:** strip the access token embedded in the remote url from changelog links ([f10d117](https://github.com/dssutg/dss-ui-kit/commit/f10d11787cd1f2d7eb3880d11d6a28636cb91e85))
+- **locale:** document that t returns an unknown key, as translate already did ([8f8da09](https://github.com/dssutg/dss-ui-kit/commit/8f8da092d1d7bc4692ff0210dbdb1ea151f293bc))
+- **locale:** merge a repeated registration over the one already registered ([e481d01](https://github.com/dssutg/dss-ui-kit/commit/e481d018b26fba1a07ce1f076cdf434919b959a7))
+- **components:** render the crash guard's own fallback and give RouteSwitch a className ([bf3176d](https://github.com/dssutg/dss-ui-kit/commit/bf3176d9ba6f4a0ded6133fea72f6e833288790c))
+- **locale:** merge a caller's messages over the shipped ones per message ([05036e3](https://github.com/dssutg/dss-ui-kit/commit/05036e3902a4a6e865bbf862d736f14c71888981))
+- **publish:** give every exported symbol an explicit type so the publish runs without slow types allowed ([98c5c64](https://github.com/dssutg/dss-ui-kit/commit/98c5c648c719a7f32d47b6b7e840836a85867757))
+- **ci:** check out the repository before referencing the local setup action ([61cc679](https://github.com/dssutg/dss-ui-kit/commit/61cc679260039806d88c38690185c59e96d0a7f3))
+
+**Contributors:** Daniil Stepanov
+
 [0.2.0] — 2026-10-04
 
 ### Features
