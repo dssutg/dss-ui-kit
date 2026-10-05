@@ -333,9 +333,10 @@ export function translate(
  * What {@link useLocale} returns: the locale in effect, its date data, and the two ways to resolve a
  * message.
  *
- * `t` and `tRaw` differ in one thing only — whether the key is one the library knows. A caller that
- * added its own keys uses `tRaw` for them and `t` for the library's, which is what keeps a typo in a
- * library key a type error.
+ * `t` and `tRaw` differ in what they accept and in nothing else: both resolve a message the same way,
+ * down to returning an unknown key as itself. A caller that added its own keys uses `tRaw` for them
+ * and `t` for the library's, which is what keeps a typo in a library key a type error rather than
+ * something an operator finds on screen.
  */
 export interface LocaleContextValue {
   /** The locale in effect. */
@@ -345,12 +346,19 @@ export interface LocaleContextValue {
   /**
    * Resolves a message the library renders.
    *
-   * Returns an empty string for a key no catalogue holds, so a panel with an untranslated string
-   * renders an empty label rather than throwing. The key is not echoed back, because a raw key in
-   * front of an operator is worse than a blank one.
+   * A key no catalogue holds comes back as the key itself, which is what {@link translate} does and
+   * what {@link LocaleContextValue.tRaw} does: a caller must not get a different answer for the same
+   * missing string depending on which of the two it reached for. The key is worth showing because it
+   * names the message that is missing — an operator seeing `Modal.close` knows to tell someone, where
+   * a blank button tells nobody anything and cannot be looked up.
    */
   readonly t: (key: MessageKey, parameters?: MessageParameters | null) => string;
-  /** Resolves an arbitrary string, for a message the caller added to its own catalogue. */
+  /**
+   * Resolves an arbitrary string, for a message the caller added to its own catalogue.
+   *
+   * Behaves exactly as {@link LocaleContextValue.t} does, including returning an unknown key as-is.
+   * The two differ in what they accept, not in what they return.
+   */
   readonly tRaw: (key: string, parameters?: MessageParameters | null) => string;
   /** Switches the locale and persists the choice. */
   readonly setLocale: (locale: LocaleName) => void;

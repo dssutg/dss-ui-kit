@@ -45,6 +45,7 @@ function LocaleProbe(): React.JSX.Element {
       <span data-testid="overridden">{t('Modal.close')}</span>
       <span data-testid="untouched">{t('ConfirmationModal.confirm')}</span>
       <span data-testid="own">{tRaw('MyApp.title')}</span>
+      <span data-testid="unknown">{tRaw('Nothing.holds.this')}</span>
     </div>
   );
 }
@@ -170,6 +171,42 @@ describe('a locale a caller registers', () => {
 
     expect(getLocaleDates('xx').names.weekdayNames[0]).toBe('Su');
     expect(getLocaleDates('en').names.weekdayNames[0]).not.toBe('Su');
+  });
+});
+
+describe('a key no catalogue holds', () => {
+  it('comes back as the key itself rather than as an empty string', async () => {
+    // An empty string is the one answer that helps nobody: it does not say which message is
+    // missing, and it cannot be looked up.
+    const { find } = await render(
+      <LocaleProvider initialLocale="en" storageKey={null}>
+        <LocaleProbe />
+      </LocaleProvider>,
+    );
+
+    expect(find('[data-testid="unknown"]').textContent).toBe('Nothing.holds.this');
+  });
+
+  it('is returned the same way by t as by tRaw, so which one was called makes no difference', async () => {
+    // Every key `t` accepts is in the English catalogue, so the only way it reaches this is a locale
+    // that carries no catalogue at all standing in as the fallback — which is exactly the case a
+    // caller translating only some messages runs into.
+    registerLocale('xg', {});
+
+    const { find } = await render(
+      <LocaleProvider initialLocale="xg" fallbackLocale="xg" storageKey={null}>
+        <LocaleProbe />
+      </LocaleProvider>,
+    );
+
+    expect(find('[data-testid="overridden"]').textContent).toBe('Modal.close');
+    expect(find('[data-testid="unknown"]').textContent).toBe('Nothing.holds.this');
+  });
+
+  it('is returned by translate for the same reason', () => {
+    expect(translate({ en: { other: 'Other' } }, 'xx', 'Nothing.holds.this', null, 'xx')).toBe(
+      'Nothing.holds.this',
+    );
   });
 });
 
