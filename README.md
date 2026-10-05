@@ -8,6 +8,18 @@ Nothing here knows what application it is rendered in. There is no model of what
 about, no data layer and no router: a component takes props, and anything a caller would otherwise
 have to reach into their own code for is a prop.
 
+## Contents
+
+- [Install](#install)
+- [Use](#use)
+- [Styling](#styling)
+- [Localisation](#localisation)
+- [Theming](#theming)
+- [Events](#events)
+- [WebGL](#webgl)
+- [Development](#development)
+- [Licence](#licence)
+
 ## Install
 
 From npm:
@@ -201,16 +213,19 @@ scene in the same pipeline the components use.
 Deno 2 drives everything; there is no npm or yarn step.
 
 ```sh
-deno install        # install or refresh dependencies
-deno task dev       # dev server
-deno task build     # production build into dist/
-deno task lint      # biome ci + typecheck
-deno task format    # biome check --write
-deno task test      # unit tests
-deno task docs      # TypeDoc API reference into docs/api/
-deno task publish:dry  # what a JSR publish of the current tree would carry
-deno task publish   # publish the TypeScript source to jsr.io/@dssutg/dss-ui-kit
-deno task ci        # the full local gate, exactly what CI runs
+deno install            # install or refresh dependencies
+deno task dev           # dev server
+deno task build         # production build into dist/
+deno task lint          # biome ci + markdownlint + typecheck
+deno task format        # biome check --write (apply safe fixes)
+deno task typecheck     # tsgo only
+deno task test          # unit tests
+deno task docs          # TypeDoc API reference into docs/api/
+deno task icons         # regenerate src/icons/index.tsx from the source SVGs
+deno task codemod       # run a codemod for a mechanical multi-file rewrite
+deno task publish:dry   # what a JSR publish of the current tree would carry
+deno task publish       # publish the TypeScript source to jsr.io/@dssutg/dss-ui-kit
+deno task ci            # the full local gate, exactly what CI runs
 ```
 
 `deno task ci` is the gate: a green pipeline and a green `deno task ci` mean the same thing.
