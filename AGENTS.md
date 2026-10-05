@@ -188,6 +188,8 @@ stylistic preferences; each one has caught a real problem.
 
 - **Write the obvious version.** No clever one-liners, no chained transformations that need a
   comment to decode, no tuple used as a struct. Code that is shorter is not code that is clearer.
+- **Only needed words in comments and commit messages.** No fluff, filler or noise: every sentence
+  states a fact the reader acts on. Padding buries the point it surrounds.
 - **No duplicated logic, and none that forces a second edit.** A list, a regex or a mapping needed
   in two places belongs in one exported place. Duplication is a defect when a change then has to be
   made in both copies. Ask of any repeat: does keeping it mean that the next change to this fact is
@@ -536,6 +538,7 @@ Rules:
 - Write the description in the imperative mood, describing the change rather than the activity:
   `refactor(ui): merge Tailwind classes with tailwind-merge instead of concatenating`, not
   `changed class handling`.
+- Keep it concise — only needed words: see [Readability](#readability).
 - Breaking changes: append `!` to the type/scope **or** add a `BREAKING CHANGE:` footer. Use only
   one, never both — and read [What counts as breaking](#what-counts-as-breaking) first, because the
   answer is almost always no.
