@@ -16,7 +16,9 @@ export function Accordion({
   onExpansionChange,
   flippedIcon = false,
   triggerTitle,
+  className,
   style,
+  contentClassName,
   triggerStyle,
   triggerClassName,
   fixedSize,
@@ -30,6 +32,7 @@ export function Accordion({
   readonly onExpansionChange: (expanded: boolean) => void;
   readonly flippedIcon?: boolean | undefined;
   readonly triggerTitle?: React.ReactNode | undefined;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
   readonly contentClassName?: string | undefined;
   readonly triggerClassName?: string | undefined;
@@ -59,7 +62,7 @@ export function Accordion({
   );
 
   return (
-    <div className="flex flex-col gap-1" style={style}>
+    <div className={cn('flex flex-col gap-1', className)} style={style}>
       <div className="flex w-full items-center">
         {beforeTriggerComponent}
         <button
@@ -96,7 +99,7 @@ export function Accordion({
       <section
         id={id}
         ref={contentRef}
-        className="flex flex-col"
+        className={cn('flex flex-col', contentClassName)}
         style={{
           ...defaultContentStyle,
           ...getContentStyle?.(expanded),

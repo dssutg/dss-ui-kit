@@ -564,6 +564,7 @@ export class AutoSizer extends Component<AutoSizerProps, AutoSizerState> {
       disableHeight = false,
       disableWidth = false,
       doNotBailOutOnEmptyChildren = false,
+      className,
       style = {},
       tagName = 'div',
       ...rest
@@ -607,6 +608,7 @@ export class AutoSizer extends Component<AutoSizerProps, AutoSizerState> {
       tagName,
       {
         ref: this.setRef,
+        className,
         style: {
           ...outerStyle,
           ...style,

@@ -27,6 +27,18 @@ describe('Button', () => {
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 
+  it('merges the caller classes over its own, so a caller can restyle a button it was handed', async () => {
+    // The button picks its colours from `type`, and a class the caller passes is the caller's decision:
+    // it wins where the two conflict, and the layout classes survive where they do not.
+    const { find } = await render(<Button title="Save" className="bg-tok text-ttk" />);
+
+    const className = find<HTMLButtonElement>('button').className;
+
+    expect(className).toContain('bg-tok');
+    expect(className).not.toContain('bg-tbg');
+    expect(className).toContain('rounded-lg');
+  });
+
   it('writes the html button type through, so a button in a form can submit it', async () => {
     const { find } = await render(<Button title="Send" htmlButtonType="submit" />);
 

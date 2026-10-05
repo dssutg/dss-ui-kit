@@ -16,6 +16,7 @@ export function Modal({
   open,
   onOpenChange,
   title,
+  className,
   style,
   innerStyle,
   noWidthRestriction = false,
@@ -25,6 +26,7 @@ export function Modal({
   readonly open: boolean;
   readonly onOpenChange: (open: boolean) => void;
   readonly title: string;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
   readonly innerStyle?: React.CSSProperties | undefined;
   readonly noWidthRestriction?: boolean | undefined;
@@ -75,7 +77,7 @@ export function Modal({
   return (
     open &&
     createPortal(
-      <div className="fixed" style={style}>
+      <div className={cn('fixed', className)} style={style}>
         {/* A button, because clicking it does exactly what clicking a button does, and a keyboard
             user gets the same close. A `div` here would put a control in front of the dialog that
             only the mouse could reach. */}

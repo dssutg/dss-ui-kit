@@ -106,6 +106,7 @@ export interface GeneralizedSearchModalProps<T> {
   readonly onOpenChange: (open: boolean) => void;
   readonly searchSchema: SearchSchema<T>;
   readonly onSearch: (searchText: string) => void;
+  readonly className?: string | undefined;
 }
 
 /**
@@ -121,13 +122,14 @@ export function GeneralizedSearchModal<T>({
   onOpenChange,
   searchSchema,
   onSearch,
+  className,
 }: GeneralizedSearchModalProps<T>): React.JSX.Element {
   const { t, dates } = useLocale();
 
   const [valueMap, setValueMap] = useState<Record<string, unknown>>({});
 
   return (
-    <Modal title={title} open={open} onOpenChange={onOpenChange}>
+    <Modal title={title} open={open} onOpenChange={onOpenChange} className={className}>
       <div className="grid grid-cols-[auto_auto] gap-2">
         {searchSchema.properties.map((property) => (
           <div key={property.name} className="contents">

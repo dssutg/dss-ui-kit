@@ -29,6 +29,7 @@ export interface FilterableTableStatsModalProps<T> {
   readonly onOpenChange: (open: boolean) => void;
   readonly items: readonly T[];
   readonly searchSchema: SearchSchema<T>;
+  readonly className?: string | undefined;
 }
 
 /**
@@ -43,6 +44,7 @@ export function FilterableTableStatsModal<T>({
   onOpenChange,
   items,
   searchSchema,
+  className,
 }: FilterableTableStatsModalProps<T>): React.JSX.Element {
   const { t } = useLocale();
 
@@ -59,7 +61,12 @@ export function FilterableTableStatsModal<T>({
   const property = searchSchema.properties.find((property) => property.name === statsPropertyName);
 
   return (
-    <Modal open={open} title={t('FilterableTableStatsModal.title')} onOpenChange={onOpenChange}>
+    <Modal
+      open={open}
+      title={t('FilterableTableStatsModal.title')}
+      onOpenChange={onOpenChange}
+      className={className}
+    >
       <div className="flex gap-2">
         <label htmlFor={`${id}-total-items`} className="font-bold">
           {t('FilterableTableStatsModal.totalItems')}

@@ -7,9 +7,11 @@
 export function DashedCircle({
   active = true,
   title = 'Loading...',
+  className,
 }: {
   readonly active?: boolean | undefined;
   readonly title?: string | undefined;
+  readonly className?: string | undefined;
 }): React.JSX.Element | null {
   if (!active) {
     return null;
@@ -26,6 +28,7 @@ export function DashedCircle({
       width={sizeString}
       height={sizeString}
       xmlns="http://www.w3.org/2000/svg"
+      className={className}
       viewBox="0 0 100 100"
       preserveAspectRatio="xMidYMid"
       style={style}

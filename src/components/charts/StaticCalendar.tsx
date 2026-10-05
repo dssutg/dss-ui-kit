@@ -1,4 +1,5 @@
 import { useLocale } from '@/locale';
+import { cn } from '@/util/cn';
 import type { CalendarLocale } from '@/util/date';
 
 const MONTH_ROWS = 6;
@@ -336,7 +337,13 @@ function Day({
  * own beyond keeping the current month in view. The events come from the caller, which is what lets it
  * show an application's own records rather than a built-in data set.
  */
-export function StaticCalendar({ date }: { readonly date: Date }): React.JSX.Element | null {
+export function StaticCalendar({
+  date,
+  className,
+}: {
+  readonly date: Date;
+  readonly className?: string | undefined;
+}): React.JSX.Element | null {
   const { dates } = useLocale();
   const { isSundayFirstWeekDay } = dates.calendar;
 
@@ -377,7 +384,7 @@ export function StaticCalendar({ date }: { readonly date: Date }): React.JSX.Ele
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className={cn('flex flex-col gap-4', className)}>
       <h2 className="m-0 truncate text-center text-xl font-normal text-[var(--color-mini-calendar-title-fg)]">
         {dates.calendar.monthNames[monthIndex]}, {year}
       </h2>

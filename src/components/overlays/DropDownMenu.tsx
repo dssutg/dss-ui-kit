@@ -27,6 +27,7 @@ export function DropDownMenu({
   triggerTitle,
   triggerTitleStyle,
   triggerHoverTitle,
+  triggerClassName,
   triggerStyle,
   triggerIconStyle,
   dropDownListStyle,
@@ -43,6 +44,7 @@ export function DropDownMenu({
   readonly triggerTitle?: string | undefined;
   readonly triggerTitleStyle?: React.CSSProperties | undefined;
   readonly triggerHoverTitle?: string | undefined;
+  readonly triggerClassName?: string | undefined;
   readonly triggerStyle?: React.CSSProperties | undefined;
   readonly triggerIconStyle?: React.CSSProperties | undefined;
   readonly dropDownListStyle?: React.CSSProperties | undefined;
@@ -259,6 +261,7 @@ export function DropDownMenu({
           variant === 'dots' && 'aspect-square rounded-full border-none p-2 hover:bg-bse',
           variant === 'button' && 'rounded-lg bg-bbp px-2 hover:brightness-150',
           openDotsBackground,
+          triggerClassName,
         )}
         style={triggerStyle}
         title={dotsTriggerTitle}

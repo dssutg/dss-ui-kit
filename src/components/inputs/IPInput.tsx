@@ -15,10 +15,12 @@ export function IPInput({
   value,
   onChange,
   width,
+  className,
 }: {
   readonly value: string;
   readonly onChange: (value: string) => void;
   readonly width?: string | undefined;
+  readonly className?: string | undefined;
 }): React.JSX.Element {
   const onChangeText = useCallback(
     (text: string) => {
@@ -47,5 +49,13 @@ export function IPInput({
     outline = '1px solid rgba(0, 0, 0, 0)';
   }
 
-  return <TextInput value={value} onChangeText={onChangeText} width={width} outline={outline} />;
+  return (
+    <TextInput
+      value={value}
+      onChangeText={onChangeText}
+      width={width}
+      className={className}
+      outline={outline}
+    />
+  );
 }

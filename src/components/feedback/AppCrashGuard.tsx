@@ -3,6 +3,7 @@ import { Component, type ErrorInfo, useEffect, useState } from 'react';
 import { IconButton } from '@/components/buttons/IconButton';
 import { useLocale } from '@/locale';
 import { tryCatch } from '@/util/catch';
+import { cn } from '@/util/cn';
 import { copyToClipboard } from '@/util/dom';
 import { uuidv4 } from '@/util/uuid';
 
@@ -92,6 +93,8 @@ export interface CrashGuardProps {
   readonly getContext?: () => unknown;
   /** Called for every crash, before the fallback renders. Use it to submit or log the report. */
   readonly onCrash?: (report: CrashReport) => void;
+  /** Merged over the crash screen's own classes, so the caller's wins wherever the two conflict. */
+  readonly className?: string | undefined;
   /** Replaces the whole fallback. Receives the report, which is `null` before the first effect runs. */
   readonly fallback?:
     | ComponentType<{
@@ -103,22 +106,15 @@ export interface CrashGuardProps {
 }
 
 /**
- * Catches a render error anywhere below it and shows a fallback instead of a blank page.
- *
- * This does not recover the application: the subtree is unmounted and the fallback replaces it, so
- * the operator has to reload. A crash guard that tried to keep the application running would leave it in
- * a state where the next interaction crashes somewhere else, which is harder to report than one honest
- * failure.
- *
- * A consumer that wants to send reports somewhere supplies `onCrash`; the library has no opinion where.
- */
-/**
  * Wraps an application so an uncaught render error is reported instead of blanking the page.
  *
  * It does not rethrow, and it does not report to anywhere: the report is rendered, cached and handed
- * to `onCrash`, and {@link CrashReportQueue} is there to deliver it when the network works. What it
- * deliberately does not do is recover — an error boundary that swallowed the error and kept the
- * application running would be hiding a broken component from the operator who has to fix it.
+ * to `onCrash`, and {@link CrashReportQueue} is there to deliver it when the network works.
+ *
+ * What it deliberately does not do is recover — an error boundary that swallowed the error and kept
+ * the application running would be hiding a broken component from the operator who has to fix it, and
+ * the subtree is unmounted with the fallback replacing it, so the operator has to reload. A consumer
+ * that wants to send reports somewhere supplies `onCrash`; the library has no opinion where.
  */
 export function AppCrashGuard(props: CrashGuardProps): React.JSX.Element {
   return <ErrorBoundary fallbackComponent={DefaultCrashFallback} {...props} />;
@@ -132,6 +128,7 @@ function DefaultCrashFallback({
   version,
   error,
   componentStack,
+  className,
 }: DefaultCrashFallbackProps) {
   const { t } = useLocale();
   const [report, setReport] = useState<CrashReport | null>(null);
@@ -164,7 +161,7 @@ function DefaultCrashFallback({
   const reportJson = report === null ? '' : JSON.stringify(report, null, 2);
 
   return (
-    <div className="fixed left-0 top-0 flex h-screen w-screen flex-col gap-8 p-2">
+    <div className={cn('fixed left-0 top-0 flex h-screen w-screen flex-col gap-8 p-2', className)}>
       <h1 className="text-tda text-4xl">{t('CrashGuard.title')}</h1>
 
       <div className="flex-grow overflow-auto">
@@ -315,6 +312,7 @@ interface ErrorBoundaryProps {
   readonly contact?: CrashReportContact | undefined;
   readonly getContext?: () => unknown;
   readonly onCrash?: (report: CrashReport) => void;
+  readonly className?: string | undefined;
   readonly fallback?: CrashGuardProps['fallback'] | undefined;
 }
 

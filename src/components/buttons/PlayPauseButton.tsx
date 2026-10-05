@@ -2,23 +2,20 @@ import { cn } from '@/util/cn';
 import { IconButton } from './IconButton';
 
 /**
- * The round play/pause toggle used by the playback controls.
+ * What the round play/pause toggle used by the playback controls takes.
  *
  * `playing` is the state, not an intent: the button shows what is true now and calls `onClick` to ask
- * for a change, so a caller that ignores the request sees no state flip. The titles are the label of
- * the action the click will perform, which is why they swap with `playing`.
- */
-/**
- * What {@link PlayPauseButton} takes.
- *
- * The two titles are separate props because they are two different strings an operator reads, and
- * the library does not have either of them: a component does not invent user-facing text.
+ * for a change, so a caller that ignores the request sees no state flip. The two titles are separate
+ * props because they are two different strings an operator reads, and the library does not have
+ * either of them: a component does not invent user-facing text.
  */
 export interface PlayPauseButtonProps {
   readonly playing: boolean;
   readonly onClick: React.MouseEventHandler<HTMLButtonElement>;
   readonly playTitle: string;
   readonly pauseTitle: string;
+  readonly className?: string | undefined;
+  readonly style?: React.CSSProperties | undefined;
 }
 
 /**
@@ -32,12 +29,15 @@ export function PlayPauseButton({
   onClick,
   playTitle,
   pauseTitle,
+  className,
+  style,
 }: PlayPauseButtonProps): React.JSX.Element {
   return (
     <IconButton
       icon={playing ? 'pause' : 'play'}
       title={playing ? pauseTitle : playTitle}
-      className="rounded-full p-1"
+      className={cn('rounded-full p-1', className)}
+      style={style}
       iconClassName={cn('size-6', playing ? 'fill-tda' : 'fill-tok')}
       rippleColor="var(--color-ripple-icon-button)"
       onClick={onClick}

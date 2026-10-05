@@ -15,6 +15,7 @@ export interface FloatInputProps {
   readonly width?: string | undefined;
   readonly min?: number | undefined;
   readonly max?: number | undefined;
+  readonly className?: string | undefined;
 }
 
 /** A decimal field for a value that may be half-typed. See {@link FloatInputProps}. */
@@ -24,6 +25,7 @@ export function FloatInput({
   width,
   min,
   max,
+  className,
 }: FloatInputProps): React.JSX.Element {
   const valueNum = Number(value);
 
@@ -57,6 +59,7 @@ export function FloatInput({
       width={width}
       min={min}
       max={max}
+      className={className}
       outline={valid ? '1px solid rgba(0, 0, 0, 0)' : '1px solid var(--color-tda)'}
     />
   );

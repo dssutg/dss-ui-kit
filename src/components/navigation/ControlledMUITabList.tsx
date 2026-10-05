@@ -16,6 +16,7 @@ import type { MUITabDescriptor } from './MUITabList';
 export function ControlledMUITabList<ID extends string>({
   tabs,
   rightComponent,
+  className,
   style,
   tabTriggerListStyle,
   tabTriggerStyle,
@@ -24,6 +25,7 @@ export function ControlledMUITabList<ID extends string>({
 }: {
   readonly tabs: readonly MUITabDescriptor<ID>[];
   readonly rightComponent?: React.ReactNode | undefined;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
   readonly tabTriggerListStyle?: React.CSSProperties | undefined;
   readonly tabTriggerStyle?: React.CSSProperties | undefined;
@@ -111,7 +113,7 @@ export function ControlledMUITabList<ID extends string>({
   const underlineInfo = getUnderlineInfo();
 
   return (
-    <div className="flex w-full flex-col gap-2 overflow-hidden" style={style}>
+    <div className={cn('flex w-full flex-col gap-2 overflow-hidden', className)} style={style}>
       <div
         className="bg-bpd relative flex shrink-0 overflow-auto rounded-tl-lg rounded-tr-lg"
         style={tabTriggerListStyle}

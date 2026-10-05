@@ -1,3 +1,5 @@
+import { cn } from '@/util/cn';
+
 /**
  * How many rows a table is showing, out of how many it has.
  *
@@ -10,6 +12,7 @@ export interface CountLabelProps {
   readonly totalRowCount: number;
   readonly countLabelPrefix: string;
   readonly minCountLabelWidth?: string | undefined;
+  readonly className?: string | undefined;
 }
 
 /**
@@ -23,10 +26,11 @@ export function CountLabel({
   totalRowCount,
   countLabelPrefix,
   minCountLabelWidth,
+  className,
 }: CountLabelProps): React.JSX.Element {
   return (
     <div
-      className="p-2 bg-bpl rounded-lg truncate flex-grow sm:flex-grow-0"
+      className={cn('p-2 bg-bpl rounded-lg truncate flex-grow sm:flex-grow-0', className)}
       style={{ minWidth: minCountLabelWidth }}
     >
       {filteredRowCount === totalRowCount

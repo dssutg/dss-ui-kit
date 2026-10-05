@@ -99,6 +99,7 @@ export function MenuTree({
   onMenuExpansionChange,
   isOnPathToCurrentItem = isNeverOnPath,
   onNavigate,
+  className,
   style,
   menuItemClassName,
   menuItemStyle,
@@ -128,6 +129,7 @@ export function MenuTree({
   readonly onNavigate?: ((to: string) => void) | undefined;
   /** See {@link IsOnPathToCurrentItem}. */
   readonly isOnPathToCurrentItem?: IsOnPathToCurrentItem | undefined;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
   readonly menuItemClassName?: (string | ((menuItem: TMenuTreeItem) => string)) | undefined;
   readonly menuItemStyle?:
@@ -147,6 +149,7 @@ export function MenuTree({
       className={cn(
         'flex flex-col bg-bpd shrink-0 overflow-hidden',
         expanded && 'w-full sm:w-[var(--menu-tree-width)]',
+        className,
       )}
       style={
         {

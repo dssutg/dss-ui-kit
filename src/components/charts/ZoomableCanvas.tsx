@@ -77,6 +77,7 @@ export function ZoomableCanvas({
   minScale,
   maxScale,
   scaleFactor = 0.1,
+  className,
   style,
   canvasRef,
   usingWebGL = false,
@@ -105,6 +106,7 @@ export function ZoomableCanvas({
   canvasRef?: React.RefObject<HTMLCanvasElement> | undefined;
   readonly usingWebGL?: boolean | undefined;
   readonly shouldReleaseDragOnMouseLeave?: boolean | undefined;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
 }): React.JSX.Element {
   const internalCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -399,6 +401,7 @@ export function ZoomableCanvas({
       ref={internalCanvasRef}
       width={width}
       height={height}
+      className={className}
       style={{ touchAction: 'none', ...style }}
       onDragOver={onDragOver}
       onDragEnter={onDragEnter}

@@ -11,9 +11,11 @@ import { TextInput } from './TextInput';
 export function ByteFractionInput({
   value,
   onChange,
+  className,
 }: {
   readonly value: number;
   readonly onChange: (value: number) => void;
+  readonly className?: string | undefined;
 }): React.JSX.Element {
   const min = 0;
   const max = 25.5;
@@ -28,6 +30,7 @@ export function ByteFractionInput({
       onChangeText={(value) => {
         onChange(clamp(Number(value.replace(/[^\d.]/g, '')) || 0, min, max));
       }}
+      className={className}
       width="100%"
     />
   );

@@ -13,6 +13,7 @@ export interface SocketServerAddressInputProps {
   readonly onConfirm: () => void;
   /** The address to show while the field is empty. Nothing is shown when this is absent. */
   readonly placeholder?: string | undefined;
+  readonly className?: string | undefined;
 }
 
 /**
@@ -26,11 +27,13 @@ export function SocketServerAddressInput({
   onChange,
   onConfirm,
   placeholder,
+  className,
 }: SocketServerAddressInputProps): React.JSX.Element {
   return (
     <TextInput
       value={value}
       placeholder={placeholder}
+      className={className}
       onChange={(e) => onChange(e.currentTarget.value)}
       onClearClick={() => onChange('')}
       onKeyDown={(e) => {

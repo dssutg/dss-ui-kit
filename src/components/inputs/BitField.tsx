@@ -16,11 +16,13 @@ export function BitField({
   flagDescriptionMap,
   showEntireDescription = false,
   octetCount = 4,
+  className,
 }: {
   readonly flags: number;
   readonly flagDescriptionMap: Readonly<Record<number, string>>;
   readonly showEntireDescription?: boolean | undefined;
   readonly octetCount?: number | undefined;
+  readonly className?: string | undefined;
 }): React.JSX.Element {
   // IMPORTANT: Bitwise operators are not used to support numbers greater than 32-bit
 
@@ -64,7 +66,7 @@ export function BitField({
   }, [totalBits, flags, showEntireDescription, flagDescriptionMap]);
 
   return (
-    <div className="flex flex-col">
+    <div className={cn('flex flex-col', className)}>
       <div className="flex" style={{ gap: octetGap }}>
         {octetShifts.map((offset, index) => {
           const octet = Math.floor(flags / 2 ** offset) % 256;

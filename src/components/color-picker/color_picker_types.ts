@@ -118,6 +118,8 @@ export type ColorInputHTMLAttributes = Omit<
 export interface ColorInputBaseProperties extends ColorInputHTMLAttributes {
   color?: string | undefined;
   onChange?: (newColor: string) => void;
+  /** Narrowed to a plain string for the reason {@link ColorPickerBaseProperties} gives. */
+  readonly className?: string | undefined;
 }
 
 /**

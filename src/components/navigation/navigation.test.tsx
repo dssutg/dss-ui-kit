@@ -69,6 +69,29 @@ describe('Accordion', () => {
     expect(container.textContent).not.toContain('Expensive body');
   });
 
+  it('applies contentClassName to the content, which is the only place it can mean anything', async () => {
+    // The prop is about the body rather than the trigger, and the trigger's own classes are separate;
+    // putting these on the wrong one of the two is the mistake a caller cannot see.
+    const { container } = await render(
+      <Accordion
+        expanded
+        onExpansionChange={() => undefined}
+        triggerTitle="Details"
+        contentClassName="gap-8"
+      >
+        <p>Body</p>
+      </Accordion>,
+    );
+
+    // The content is the <section> the trigger points at through `aria-controls`, and the wrapper
+    // above it is a different element with its own `className`.
+    const content = container.querySelector('section');
+
+    expect(content?.className).toContain('gap-8');
+    expect(content?.className).toContain('flex');
+    expect(container.querySelector('button')?.className).not.toContain('gap-8');
+  });
+
   it('expands on Enter and on Space, because a section is a control a keyboard reaches', async () => {
     const onExpansionChange = vi.fn();
     const { find } = await render(

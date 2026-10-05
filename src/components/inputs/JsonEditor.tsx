@@ -1,3 +1,4 @@
+import { cn } from '@/util/cn';
 import { highlightText } from '@/util/highlight';
 import { Editor } from './Editor';
 
@@ -14,6 +15,7 @@ export function JsonEditor({
   expandingTab = false,
   tabSize = 2,
   highlightSyntax = true,
+  className,
   style,
 }: {
   readonly code: string;
@@ -21,10 +23,11 @@ export function JsonEditor({
   readonly expandingTab?: boolean | undefined;
   readonly tabSize?: number | undefined;
   readonly highlightSyntax?: boolean | undefined;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
 }): React.JSX.Element {
   return (
-    <div className="flex w-full gap-2 overflow-hidden" style={style}>
+    <div className={cn('flex w-full gap-2 overflow-hidden', className)} style={style}>
       <div className="flex-grow overflow-scroll">
         <Editor
           value={code}
@@ -38,7 +41,7 @@ export function JsonEditor({
           tabSize={expandingTab ? tabSize : 1}
           insertSpaces={expandingTab}
           autoFocus
-          className="min-h-full font-mono outline-none"
+          textareaClassName="min-h-full font-mono outline-none"
           textareaStyle={{
             fontFamily: 'var(--font-mono)',
             outline: '2px solid transparent',

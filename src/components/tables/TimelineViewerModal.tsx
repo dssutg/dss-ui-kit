@@ -42,6 +42,7 @@ export interface TimelineViewerModalProps<T> {
   readonly onOpenChange: (open: boolean) => void;
   readonly items: readonly T[];
   readonly searchSchema: SearchSchema<T>;
+  readonly className?: string | undefined;
 }
 
 /**
@@ -57,6 +58,7 @@ export function TimelineViewerModal<T>({
   onOpenChange,
   items,
   searchSchema,
+  className,
 }: TimelineViewerModalProps<T>): React.JSX.Element {
   const { t } = useLocale();
 
@@ -84,6 +86,7 @@ export function TimelineViewerModal<T>({
       title={t('TimelineViewerModal.title')}
       onOpenChange={onOpenChange}
       noWidthRestriction
+      className={className}
     >
       {items.length !== 0 && (
         <div className="flex flex-col gap-2 mt-4">

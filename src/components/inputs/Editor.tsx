@@ -49,6 +49,7 @@ export const Editor = forwardRef(
       style,
       tabSize = 2,
       textareaStyle,
+      textareaClassName,
       textareaId,
       value,
       className,
@@ -80,6 +81,7 @@ export const Editor = forwardRef(
       readonly readOnly?: boolean | undefined;
       readonly required?: boolean | undefined;
       readonly textareaStyle?: React.CSSProperties | undefined;
+      readonly textareaClassName?: string | undefined;
       readonly textareaId?: string | undefined;
 
       // Props for the code pre element
@@ -266,7 +268,7 @@ export const Editor = forwardRef(
             width: `calc(100% - ${textFieldXOffset}px)`,
             ...textareaStyle,
           }}
-          className={className}
+          className={textareaClassName}
           id={textareaId}
           value={value}
           onChange={handleChange}

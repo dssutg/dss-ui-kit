@@ -41,17 +41,20 @@ export function DropDownButton({
   menu,
   variant = 'regular',
   triggerTitle,
+  className,
   style,
 }: {
   readonly menu: DropDownMenuItem[];
   readonly variant?: DropDownButtonVariant | undefined;
   readonly triggerTitle: string;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
 }): React.JSX.Element {
   return (
     <DropDownMenu
       variant="button"
       triggerTitle={triggerTitle}
+      triggerClassName={className}
       triggerStyle={{
         ...dropdownVariantStyles[variant],
         ...style,

@@ -1,3 +1,5 @@
+import { cn } from '@/util/cn';
+
 /**
  * The largest spinner in the set: a wide arc drawn inside a fixed 112-pixel box.
  *
@@ -7,14 +9,16 @@
  */
 export function WshSpinner({
   color = '#ddd',
+  className,
   style,
 }: {
   readonly color?: string | undefined;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
 }): React.JSX.Element {
   return (
     <div
-      className="opacity-1 flex h-28 w-28 shrink-0 justify-center"
+      className={cn('opacity-1 flex h-28 w-28 shrink-0 justify-center', className)}
       style={
         {
           '--color': color,

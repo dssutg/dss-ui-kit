@@ -1,4 +1,5 @@
 import { IconButton } from '@/components/buttons/IconButton';
+import { cn } from '@/util/cn';
 import { clamp } from '@/util/math';
 import { DecimalIntegerInput } from './DecimalIntegerInput';
 
@@ -12,6 +13,7 @@ export interface TimePartInputProps {
   readonly value: number;
   readonly onChange: (value: number) => void;
   readonly max: number;
+  readonly className?: string | undefined;
 }
 
 /**
@@ -22,11 +24,16 @@ export interface TimePartInputProps {
  * range. Used by {@link HourMinuteTimeInput} and {@link HourMinuteSecondTimeInput}, and exported for a
  * caller assembling another time input.
  */
-export function TimePartInput({ value, onChange, max }: TimePartInputProps): React.JSX.Element {
+export function TimePartInput({
+  value,
+  onChange,
+  max,
+  className,
+}: TimePartInputProps): React.JSX.Element {
   const min = 0;
 
   return (
-    <div className="flex flex-col items-center">
+    <div className={cn('flex flex-col items-center', className)}>
       <IconButton
         icon="triangleDown"
         iconClassName="size-3 fill-tpd rotate-180"

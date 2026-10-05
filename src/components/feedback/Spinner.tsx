@@ -6,6 +6,12 @@ import { WshSpinner } from './WshSpinner';
  * The smallest indeterminate indicator the set has; {@link ContinuousCircleSpinner} is the one that
  * reads as motion when there is something to look at while waiting.
  */
-export function Spinner({ style }: { readonly style?: React.CSSProperties }): React.JSX.Element {
-  return <WshSpinner style={style} color="var(--color-tpl)" />;
+export function Spinner({
+  className,
+  style,
+}: {
+  readonly className?: string | undefined;
+  readonly style?: React.CSSProperties | undefined;
+}): React.JSX.Element {
+  return <WshSpinner className={className} style={style} color="var(--color-tpl)" />;
 }

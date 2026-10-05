@@ -52,16 +52,21 @@ const buttonIconColors: Readonly<Record<ButtonType, string>> = {
  * It does not manage a pressed state: a button that toggles is {@link ToggleButton}, and one that
  * submits a form is this with `htmlButtonType="submit"`.
  *
- * It also takes exactly the props below and forwards none of the rest. That is a deliberate limit
- * rather than an oversight: a `className` or `style` forwarded onto the element would override the
- * colours its `type` chose, which is the one thing this component exists to decide. A caller that
+ * It takes exactly the props below and forwards none of the rest: there is no `...rest` spread, so an
+ * attribute the component does not name is not silently dropped on the element either. A caller that
  * needs `disabled` or an `aria-*` attribute does not reach for this button.
+ *
+ * `className` and `style` both reach the `<button>` itself, which is the one thing this component does
+ * not hand over: it will let a caller restyle the button its `type` chose, because a component that
+ * took a `style` and refused the classes doing the same job would be a distinction without a
+ * difference. The colours stay a decision of `type` by default, not a guarantee against a caller.
  */
 export function Button({
   type = 'regular',
   htmlButtonType = 'button',
   icon,
   title,
+  className,
   style,
   buttonRef,
   onClick,
@@ -71,6 +76,7 @@ export function Button({
   readonly htmlButtonType?: 'button' | 'submit' | 'reset' | undefined;
   readonly icon?: IconName | undefined;
   readonly title?: string | undefined;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
   buttonRef?: React.Ref<HTMLButtonElement> | undefined;
   readonly onClick?: React.MouseEventHandler<HTMLButtonElement> | undefined;
@@ -84,6 +90,7 @@ export function Button({
         'relative flex shrink-0 select-none items-center justify-center overflow-hidden rounded-lg hover:brightness-150',
         type === 'inactive' && 'pointer-events-none',
         buttonTypeClasses[type],
+        className,
       )}
       style={style}
       onClick={onClick}

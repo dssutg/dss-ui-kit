@@ -17,18 +17,15 @@ export interface VirtualizedListRowRendererProps {
 }
 
 /**
- * A fixed-height list that renders only the rows in view.
- *
- * `rowRenderer` is called for the visible rows with an absolutely positioned `style`, so a row that
- * is not rendered costs nothing but its height. Fixed item height is what makes the offset
- * arithmetic possible; a list whose rows vary in height needs a measurement pass this does not do.
- */
-/**
- * What {@link VirtualizedList} takes.
+ * What the fixed-height {@link VirtualizedList} takes.
  *
  * `itemCount` and `itemSize` are the whole geometry — a list of ten thousand rows of a known height
  * needs nothing else, and no measurement pass. `containerRef` is required rather than created here
  * because the caller usually needs the scrolling element anyway, to observe it or to scroll it.
+ *
+ * `rowRenderer` is called for the visible rows with an absolutely positioned `style`, so a row that
+ * is not rendered costs nothing but its height. Fixed item height is what makes the offset
+ * arithmetic possible; a list whose rows vary in height needs a measurement pass this does not do.
  */
 export interface VirtualizedListProps {
   readonly itemCount: number;
@@ -41,6 +38,7 @@ export interface VirtualizedListProps {
   /** Rows rendered beyond the viewport, to cover a fast scroll before the next paint. */
   readonly overScanCount?: number | undefined;
   readonly containerRef: React.MutableRefObject<HTMLDivElement | null>;
+  readonly className?: string | undefined;
 }
 
 /**
@@ -62,6 +60,7 @@ export function VirtualizedList({
   onScroll,
   overScanCount,
   containerRef,
+  className,
 }: VirtualizedListProps): React.JSX.Element {
   const { startIndex, endIndex, getItemStyle } = useVirtualizedList({
     // The default lives in the hook, so an absent count is passed on as absent.
@@ -79,6 +78,7 @@ export function VirtualizedList({
   return (
     <div
       ref={containerRef}
+      className={className}
       style={{ width, height, overflow: 'auto', position: 'relative' }}
       onScroll={onScroll}
     >

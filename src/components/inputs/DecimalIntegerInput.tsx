@@ -24,6 +24,7 @@ export function DecimalIntegerInput({
   onClear,
   minValue = 0,
   maxValue = 2 ** 32 - 1,
+  className,
   style,
   inputStyle,
   onInputBlur,
@@ -40,6 +41,7 @@ export function DecimalIntegerInput({
   readonly onClear?: (() => void) | undefined;
   readonly minValue?: number | undefined;
   readonly maxValue?: number | undefined;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
   readonly inputStyle?: React.CSSProperties | undefined;
   readonly onInputBlur?: React.FocusEventHandler<HTMLInputElement> | undefined;
@@ -113,7 +115,7 @@ export function DecimalIntegerInput({
   );
 
   return (
-    <div className="bg-bin flex rounded-lg pl-2 h-fit" style={style}>
+    <div className={cn('bg-bin flex rounded-lg pl-2 h-fit', className)} style={style}>
       <input
         ref={inputRef}
         type="text"

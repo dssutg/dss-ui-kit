@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { FeedbackTooltip, showFeedbackTooltip } from '@/components/overlays/FeedbackTooltip';
+import { cn } from '@/util/cn';
 import { ToggleSwitch } from './ToggleSwitch';
 
 /**
@@ -20,6 +21,7 @@ export function LockableToggleSwitch({
   locked = false,
   lockReasonTitle,
   title,
+  className,
   style,
 }: {
   readonly label: string;
@@ -31,6 +33,7 @@ export function LockableToggleSwitch({
   readonly locked?: boolean | undefined;
   readonly lockReasonTitle?: string | undefined;
   readonly title?: string | undefined;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
 }): React.JSX.Element {
   const [feedbackVisible, setFeedbackVisible] = useState(false);
@@ -38,7 +41,7 @@ export function LockableToggleSwitch({
   // Only positioning for the tooltip. The locked click used to be handled here, which meant a div
   // intercepted the mouse while the keyboard had no way to reach it at all; it is on the control now.
   return (
-    <div className="relative" style={style}>
+    <div className={cn('relative', className)} style={style}>
       <ToggleSwitch
         label={label}
         enabled={enabled}

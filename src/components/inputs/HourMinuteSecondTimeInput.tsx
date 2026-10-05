@@ -1,3 +1,4 @@
+import { cn } from '@/util/cn';
 import { TimePartInput } from './TimePartInput';
 
 /**
@@ -13,6 +14,7 @@ export function HourMinuteSecondTimeInput({
   onMinuteChange,
   second,
   onSecondChange,
+  className,
 }: {
   readonly hour: number;
   readonly onHourChange: (hour: number) => void;
@@ -20,9 +22,10 @@ export function HourMinuteSecondTimeInput({
   readonly onMinuteChange: (minute: number) => void;
   readonly second: number;
   readonly onSecondChange: (second: number) => void;
+  readonly className?: string | undefined;
 }): React.JSX.Element {
   return (
-    <div className="flex gap-2 items-center">
+    <div className={cn('flex gap-2 items-center', className)}>
       <TimePartInput value={hour} onChange={onHourChange} max={23} />
       <div>:</div>
       <TimePartInput value={minute} onChange={onMinuteChange} max={59} />

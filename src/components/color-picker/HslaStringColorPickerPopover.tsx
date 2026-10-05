@@ -14,10 +14,13 @@ export function HslaStringColorPickerPopover({
   trigger,
   color,
   onChange,
+  className,
 }: {
   readonly trigger: React.ReactNode;
   readonly color: string;
   readonly onChange: (color: string) => void;
+  /** Applied to the panel the popover opens over, not to the swatch the caller supplied. */
+  readonly className?: string | undefined;
 }): React.JSX.Element {
   const [hotColor, setHotColor] = useState(color);
 
@@ -35,7 +38,7 @@ export function HslaStringColorPickerPopover({
 
   return (
     <Popover open={open} onOpenChange={setOpen} hasBackDrop trigger={trigger}>
-      <div>
+      <div className={className}>
         <HslaStringColorPicker color={hotColor} onChange={setHotColor} />
       </div>
     </Popover>

@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { cn } from '@/util/cn';
 import type { FilterableTableColumnProperty, FilterableTableProps } from './FilterableTable';
 import { type EnumOption, FilterableTableTopPanel } from './FilterableTableTopPanel';
 import {
@@ -55,6 +56,7 @@ export function ControlledTable<T, C extends string>({
   getExportedTableFilename,
   sortColumnId,
   reversedSort,
+  className,
   style,
   historyId,
   getItemId,
@@ -120,7 +122,10 @@ export function ControlledTable<T, C extends string>({
 
   return (
     <div
-      className="flex flex-col gap-2 rounded-2xl p-2 bg-bpd overflow-auto sm:overflow-hidden flex-grow"
+      className={cn(
+        'flex flex-col gap-2 rounded-2xl p-2 bg-bpd overflow-auto sm:overflow-hidden flex-grow',
+        className,
+      )}
       style={style}
     >
       <FilterableTableTopPanel

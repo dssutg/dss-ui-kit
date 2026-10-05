@@ -14,6 +14,10 @@ import { cn } from '@/util/cn';
  *
  * `shouldRender` exists because a panel can want the layout of a text field without the field — a
  * value with no way to edit it, which must not be announced as editable.
+ *
+ * `className` is an explicit prop rather than something the `[x: string]: unknown` index signature
+ * swallows: the signature admits a `className` without applying one, so a caller passing it got no
+ * error, no effect, and nothing to notice.
  */
 export function TextInput({
   id,
@@ -49,6 +53,7 @@ export function TextInput({
   pattern,
   showPasswordIconInnerStyle,
   clearIconInnerStyle,
+  className,
   inputStyle,
 }: {
   readonly id?: string | undefined;
@@ -83,6 +88,7 @@ export function TextInput({
   readonly inputAutoFocus?: boolean | undefined;
   readonly showPasswordIconInnerStyle?: React.CSSProperties | undefined;
   readonly clearIconInnerStyle?: React.CSSProperties | undefined;
+  readonly className?: string | undefined;
   readonly inputStyle?: React.CSSProperties | undefined;
   [x: string]: unknown;
 }): false | React.JSX.Element {
@@ -90,7 +96,7 @@ export function TextInput({
 
   return (
     shouldRender && (
-      <div className="box-border flex h-fit" style={{ width, minWidth }}>
+      <div className={cn('box-border flex h-fit', className)} style={{ width, minWidth }}>
         <input
           ref={inputRef}
           id={id}

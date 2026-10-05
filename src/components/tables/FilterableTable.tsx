@@ -65,6 +65,7 @@ export interface FilterableTableProps<T, C extends string> {
   readonly getExportedTableFilename: GetExportedTableFilenameCallback;
   readonly sortColumnId?: C | undefined;
   readonly reversedSort?: boolean | undefined;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
   readonly historyId?: string | undefined;
   readonly getItemId?: ((item: T, index: number) => string | number) | undefined;
@@ -86,6 +87,7 @@ export function FilterableTable<T, C extends string>({
   getExportedTableFilename,
   sortColumnId,
   reversedSort,
+  className,
   style,
   historyId,
   getItemId,
@@ -102,6 +104,7 @@ export function FilterableTable<T, C extends string>({
         getExportedTableFilename={getExportedTableFilename}
         sortColumnId={sortColumnId}
         reversedSort={reversedSort}
+        className={className}
         style={style}
         historyId={historyId}
         getItemId={getItemId}
@@ -120,6 +123,7 @@ function Table<T, C extends string>({
   getExportedTableFilename,
   sortColumnId,
   reversedSort,
+  className,
   style,
   historyId,
   getItemId,
@@ -143,6 +147,7 @@ function Table<T, C extends string>({
       getExportedTableFilename={getExportedTableFilename}
       sortColumnId={sortColumnId}
       reversedSort={reversedSort}
+      className={className}
       style={style}
       historyId={historyId}
       getItemId={getItemId}

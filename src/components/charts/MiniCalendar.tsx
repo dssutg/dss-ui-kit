@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocale } from '@/locale';
+import { cn } from '@/util/cn';
 import { useEventListener } from '@/util/hooks/use_event_listener';
 import { useGranularEffect } from '@/util/hooks/use_granular_effect';
 import { StaticCalendar } from './StaticCalendar';
@@ -16,12 +17,14 @@ export function MiniCalendar({
   posX,
   posY,
   onClose,
+  className,
 }: {
   readonly visible: boolean;
   readonly date: Date;
   readonly posX: number;
   readonly posY: number;
   readonly onClose: () => void;
+  readonly className?: string | undefined;
 }): React.JSX.Element {
   const { t } = useLocale();
 
@@ -79,7 +82,10 @@ export function MiniCalendar({
       ref={windowRef}
       type="button"
       aria-label={t('Modal.close')}
-      className="fixed box-border w-60 cursor-default select-none rounded-2xl border-none bg-[var(--color-mini-calendar-bg)] p-4 text-left shadow-lg shadow-black"
+      className={cn(
+        'fixed box-border w-60 cursor-default select-none rounded-2xl border-none bg-[var(--color-mini-calendar-bg)] p-4 text-left shadow-lg shadow-black',
+        className,
+      )}
       style={{
         display: visible ? 'block' : 'none',
         top: curY,

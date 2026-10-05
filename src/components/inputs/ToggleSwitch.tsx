@@ -16,6 +16,7 @@ export function ToggleSwitch({
   locked = false,
   title,
   onLockedClick,
+  className,
   style,
   labelStyle,
   barStyle,
@@ -29,6 +30,7 @@ export function ToggleSwitch({
   readonly locked?: boolean | undefined;
   readonly title?: string | undefined;
   readonly onLockedClick?: (() => void) | undefined;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
   readonly labelStyle?: React.CSSProperties | undefined;
   readonly barStyle?: React.CSSProperties | undefined;
@@ -78,6 +80,7 @@ export function ToggleSwitch({
         'flex select-none items-center gap-4 border-none bg-transparent p-0 text-left',
         '[-webkit-tap-highlight-color:transparent]',
         locked ? 'brightness-75' : 'cursor-pointer',
+        className,
       )}
       style={style}
     >

@@ -32,12 +32,14 @@ export function isMUITabActive(tabContentElement: Readonly<HTMLElement>): boolea
 export function MUITabList<ID extends string>({
   tabs,
   rightComponent,
+  className,
   style,
   tabTriggerListStyle,
   tabTriggerStyle,
 }: {
   readonly tabs: readonly MUITabDescriptor<ID>[];
   readonly rightComponent?: React.ReactNode | undefined;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
   readonly tabTriggerListStyle?: React.CSSProperties | undefined;
   readonly tabTriggerStyle?: React.CSSProperties | undefined;
@@ -48,6 +50,7 @@ export function MUITabList<ID extends string>({
     <ControlledMUITabList
       tabs={tabs}
       rightComponent={rightComponent}
+      className={className}
       style={style}
       tabTriggerListStyle={tabTriggerListStyle}
       tabTriggerStyle={tabTriggerStyle}

@@ -13,11 +13,13 @@ import { useGranularEffect } from '@/util/hooks/use_granular_effect';
 export function LogOutputTextArea({
   output,
   dontWrapLongLines = false,
+  className,
   style,
   shouldScrollToEndOnUpdate = false,
 }: {
   readonly output: string;
   readonly dontWrapLongLines?: boolean | undefined;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
   readonly shouldScrollToEndOnUpdate?: boolean | undefined;
 }): React.JSX.Element {
@@ -48,6 +50,7 @@ export function LogOutputTextArea({
       className={cn(
         'bg-bpd text-tpl w-full flex-grow resize-none overflow-y-scroll rounded-2xl p-2 font-mono outline-none',
         dontWrapLongLines && 'overflow-x-scroll whitespace-pre',
+        className,
       )}
       style={style}
       value={output}

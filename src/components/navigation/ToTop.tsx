@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { IconButton } from '@/components/buttons/IconButton';
+import { cn } from '@/util/cn';
 import { useEventListener } from '@/util/hooks/use_event_listener';
 
 /**
@@ -12,9 +13,11 @@ import { useEventListener } from '@/util/hooks/use_event_listener';
  */
 export function ToTop({
   minAppearanceY = 300,
+  className,
   style,
 }: {
   readonly minAppearanceY?: number | undefined;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
 }): false | React.JSX.Element {
   const [visible, setVisible] = useState(false);
@@ -29,7 +32,10 @@ export function ToTop({
         onClick={() => window.scrollTo(0, 0)}
         icon="toTopArrow"
         iconClassName="size-14 fill-[var(--color-to-top-bg)]"
-        className="animate-fade-in fixed bottom-20 right-3 [clip-path:circle(50%_at_center)] sm:bottom-12 sm:right-8"
+        className={cn(
+          'animate-fade-in fixed bottom-20 right-3 [clip-path:circle(50%_at_center)] sm:bottom-12 sm:right-8',
+          className,
+        )}
         style={style}
         rippleColor="var(--color-ripple-icon-button)"
       />

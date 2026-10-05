@@ -13,19 +13,21 @@ export function Checkbox({
   checked,
   onChange,
   label,
+  className,
   style,
   labelStyle,
 }: {
   readonly checked: boolean;
   readonly onChange: (checked: boolean) => void;
   readonly label?: React.ReactNode | undefined;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
   readonly labelStyle?: React.CSSProperties | undefined;
 }): React.JSX.Element {
   const id = useId();
 
   return (
-    <div className="flex items-center select-none text-tpl" style={style}>
+    <div className={cn('flex items-center select-none text-tpl', className)} style={style}>
       <input
         id={id}
         type="checkbox"

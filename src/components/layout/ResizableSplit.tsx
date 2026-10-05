@@ -12,6 +12,7 @@ import { clamp } from '@/util/math';
  */
 export function ResizableSplit({
   panels,
+  className,
   style,
   orientation = 'horizontal',
   childrenOverflow = 'overflow-auto',
@@ -23,6 +24,7 @@ export function ResizableSplit({
     minSize?: number | undefined;
     maxSize?: number | undefined;
   }[];
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
   readonly orientation?: 'horizontal' | 'vertical' | undefined;
   readonly childrenOverflow?: string | undefined;
@@ -30,7 +32,10 @@ export function ResizableSplit({
   const vertical = orientation === 'vertical';
 
   return (
-    <div className={cn('flex flex-grow overflow-hidden', vertical && 'flex-col')} style={style}>
+    <div
+      className={cn('flex flex-grow overflow-hidden', vertical && 'flex-col', className)}
+      style={style}
+    >
       {panels.map((panel, index) => (
         <ResizablePanel
           key={panel.id}

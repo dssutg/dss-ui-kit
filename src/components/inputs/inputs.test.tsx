@@ -9,8 +9,10 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ByteFractionInput } from '@/components/inputs/ByteFractionInput';
 import { Checkbox } from '@/components/inputs/Checkbox';
+import { ColorfulYesNo } from '@/components/inputs/ColorfulYesNo';
 import { DecimalIntegerInput } from '@/components/inputs/DecimalIntegerInput';
 import { Input } from '@/components/inputs/Input';
+import { JsonEditor } from '@/components/inputs/JsonEditor';
 import { LockableToggleSwitch } from '@/components/inputs/LockableToggleSwitch';
 import { SearchInput } from '@/components/inputs/SearchInput';
 import { Select } from '@/components/inputs/Select';
@@ -35,9 +37,30 @@ describe('Input', () => {
 
     expect(onChange).toHaveBeenCalledTimes(1);
   });
+
+  it('merges the caller classes instead of replacing the field with them', async () => {
+    // The classes below are what makes a bare `<input>` look like the library's field. A caller
+    // naming one of them expects to change it, not to lose the rest along with it.
+    const { find } = await render(<Input className="w-full" />);
+
+    const className = find<HTMLInputElement>('input').className;
+
+    expect(className).toContain('w-full');
+    expect(className).toContain('bg-bin');
+    expect(className).toContain('rounded-lg');
+  });
 });
 
 describe('TextInput', () => {
+  it('puts the caller classes on the wrapper the field is laid out in', async () => {
+    // The field is a wrapper with the input inside it, and `style` has always gone on the wrapper, so
+    // `className` does too. A width named here is a width for the whole field, not for the input.
+    const { container, find } = await render(<TextInput className="w-1/2" />);
+
+    expect(container.firstElementChild?.className).toContain('w-1/2');
+    expect(find<HTMLInputElement>('input').className).not.toContain('w-1/2');
+  });
+
   it('reports both the event and the text, so a caller can take either', async () => {
     const onChange = vi.fn();
     const onChangeText = vi.fn();
@@ -117,6 +140,45 @@ describe('TextInput', () => {
 
     expect(find<HTMLInputElement>('input').type).toBe('text');
     expect(findAll<HTMLButtonElement>('button')[0]?.getAttribute('title')).toBe('Hide password');
+  });
+});
+
+describe('ColorfulYesNo', () => {
+  it('merges the caller classes whichever answer it is printing', async () => {
+    // The colour is `yesIsBad`'s opinion of the answer and the caller's classes are the caller's; the
+    // two never trade places, and neither of the two answers drops what the caller asked for.
+    const { update, container } = await render(<ColorfulYesNo yes className="font-bold" />);
+
+    expect(container.querySelector('span')?.className).toContain('font-bold');
+
+    await update(<ColorfulYesNo yes={false} className="font-bold" />);
+
+    expect(container.querySelector('span')?.className).toContain('font-bold');
+  });
+
+  it('lets the caller override the colour, because a colour is a decision rather than a guarantee', async () => {
+    const { container } = await render(<ColorfulYesNo yes className="text-tpd" />);
+
+    const className = container.querySelector('span')?.className;
+
+    expect(className).toContain('text-tpd');
+    expect(className).not.toContain('text-tok');
+  });
+});
+
+describe('JsonEditor', () => {
+  it('puts the caller classes on its wrapper and not on the textarea underneath it', async () => {
+    // The editor is a textarea under a highlighted `<pre>`, both positioned on top of each other. A
+    // class that reaches the wrong one of the two is applied to an element the caller never saw, and a
+    // font or an outline class applied to the wrapper below them reads as nothing happening at all.
+    const { container, find } = await render(
+      <JsonEditor code="{}" setCode={() => undefined} className="h-64" />,
+    );
+
+    expect(container.firstElementChild?.className).toContain('h-64');
+    expect(find<HTMLTextAreaElement>('textarea').className).not.toContain('h-64');
+    // The font belongs to the textarea, which is the element the operator types into.
+    expect(find<HTMLTextAreaElement>('textarea').className).toContain('font-mono');
   });
 });
 

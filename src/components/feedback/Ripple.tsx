@@ -1,24 +1,26 @@
-// Ensure that the component that uses this one has position 'relative'
-// or non-static one. Also, make sure that the component overflow is `hidden'.
-// Otherwise, the ripple effect goes beyond the component instead of
-
 import { useRef, useState } from 'react';
+import { cn } from '@/util/cn';
 import { useGranularEffect } from '@/util/hooks/use_granular_effect';
 import { uuidv4 } from '@/util/uuid';
 
-// staying inside of it.
 /**
  * A circular ripple expanding from the centre, used by {@link Button} for its pressed state.
  *
  * Purely visual: it is `aria-hidden`, and a caller who needs the pressed state announced needs a real
  * `aria-pressed`, which is the button's business and not this component's.
+ *
+ * Ensure that the component that uses this one has position 'relative' or non-static one. Also, make
+ * sure that the component's overflow is `hidden`. Otherwise, the ripple effect goes beyond the component
+ * instead of staying inside of it.
  */
 export function Ripple({
   color = 'rgba(128, 128, 255, 0.7)',
   duration = 600,
+  className,
 }: {
   readonly color?: string | undefined;
   readonly duration?: number | undefined;
+  readonly className?: string | undefined;
 }): false | React.JSX.Element {
   const wrapperRef = useRef<HTMLSpanElement>(null);
 
@@ -84,7 +86,7 @@ export function Ripple({
     color !== '' && (
       <span
         ref={wrapperRef}
-        className="pointer-events-none absolute left-0 top-0"
+        className={cn('pointer-events-none absolute left-0 top-0', className)}
         aria-hidden="true"
       >
         {ripples.map((ripple) => (

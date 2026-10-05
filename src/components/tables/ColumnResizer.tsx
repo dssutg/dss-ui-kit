@@ -1,4 +1,5 @@
 import { useLocale } from '@/locale';
+import { cn } from '@/util/cn';
 
 /** How far an arrow key moves a column edge, in pixels. */
 const KEYBOARD_RESIZE_STEP = 8;
@@ -12,12 +13,14 @@ const KEYBOARD_RESIZE_STEP = 8;
  * a caller can persist the layout once rather than on every pixel.
  */
 export function ColumnResizer({
+  className,
   style,
   onResize,
   onResizeDone,
   width,
   minWidth,
 }: {
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
   readonly onResize?: (movementX: number) => void;
   readonly onResizeDone?: () => void;
@@ -52,7 +55,10 @@ export function ColumnResizer({
       aria-valuemin={typeof minWidth === 'number' ? minWidth : 0}
       aria-valuemax={Number.MAX_SAFE_INTEGER}
       tabIndex={0}
-      className="absolute right-0 top-0 m-0 h-full w-2 cursor-col-resize select-none border-none"
+      className={cn(
+        'absolute right-0 top-0 m-0 h-full w-2 cursor-col-resize select-none border-none',
+        className,
+      )}
       onKeyDown={handleKeyDown}
       onMouseDown={(e) => {
         const originalMouseCursor = document.body.style.cursor;

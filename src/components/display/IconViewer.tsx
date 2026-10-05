@@ -1,17 +1,22 @@
 import { useCallback, useMemo, useState } from 'react';
 import { SearchInput } from '@/components/inputs/SearchInput';
 import { iconPaths } from '@/icons/index';
+import { cn } from '@/util/cn';
 import { copyToClipboard } from '@/util/dom';
 import { Icon, type IconName } from './Icon';
 
 /**
  * A searchable grid of every icon in the library, with each one's path data copyable.
  *
- * A development aid rather than a component an application renders: it takes no props, so it cannot
- * show a subset, and it exists so that a person looking for an icon can search for one instead of
- * reading the generated file.
+ * A development aid rather than a component an application renders: it has no prop for showing a
+ * subset, and it exists so that a person looking for an icon can search for one instead of reading the
+ * generated file.
  */
-export function IconViewer(): React.JSX.Element {
+export function IconViewer({
+  className,
+}: {
+  readonly className?: string | undefined;
+}): React.JSX.Element {
   const [searchText, setSearchText] = useState('');
 
   const iconNames = Object.keys(iconPaths) as IconName[];
@@ -32,7 +37,7 @@ export function IconViewer(): React.JSX.Element {
   const sortedIconNames = useMemo(() => iconNames.toSorted(), [iconNames]);
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className={cn('flex flex-col gap-2', className)}>
       <SearchInput value={searchText} placeholder={'Search Icon'} onChangeText={setSearchText} />
       <div
         style={{

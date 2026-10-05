@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { SearchInput } from '@/components/inputs/SearchInput';
 import { DropDownMenu } from '@/components/overlays/DropDownMenu';
 import { useLocale } from '@/locale';
+import { cn } from '@/util/cn';
 import { copyToClipboard } from '@/util/dom';
 import { serializeCSV } from '@/util/dsv';
 import { downloadStringAsPlainTextFile } from '@/util/file';
@@ -37,6 +38,7 @@ export function FilterableTableTopPanel<T>({
   countLabelPrefix,
   countLabel,
   minCountLabelWidth,
+  className,
   style,
   leftComponent,
   rightComponent,
@@ -51,6 +53,7 @@ export function FilterableTableTopPanel<T>({
   readonly countLabelPrefix?: string | undefined;
   readonly countLabel?: React.ReactNode | undefined;
   readonly minCountLabelWidth?: string | undefined;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
   readonly leftComponent?: React.ReactNode | undefined;
   readonly rightComponent?: React.ReactNode | undefined;
@@ -264,7 +267,7 @@ export function FilterableTableTopPanel<T>({
   }
 
   return (
-    <div className="flex gap-2 flex-wrap" style={style}>
+    <div className={cn('flex gap-2 flex-wrap', className)} style={style}>
       {leftComponent}
       {countLabel === undefined && countLabelPrefix !== undefined && (
         <CountLabel

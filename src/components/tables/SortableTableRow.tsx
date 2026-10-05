@@ -1,3 +1,4 @@
+import { cn } from '@/util/cn';
 import type {
   SortableTableCellRendererContext,
   SortableTableDescriptor,
@@ -16,6 +17,7 @@ export function SortableTableRow<T, C extends string>({
   columnWidths,
   row,
   rowIndex,
+  className,
   style,
   rowStyle,
 }: {
@@ -23,6 +25,7 @@ export function SortableTableRow<T, C extends string>({
   readonly columnWidths: number[];
   readonly row: SortableTableRowDescriptor<T>;
   readonly rowIndex: number;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
   readonly rowStyle?: React.CSSProperties | undefined;
 }): React.JSX.Element {
@@ -73,7 +76,7 @@ export function SortableTableRow<T, C extends string>({
 
   return (
     <tr
-      className="border-tpl odd:bg-bpl overflow-hidden border-b-2"
+      className={cn('border-tpl odd:bg-bpl overflow-hidden border-b-2', className)}
       style={{
         ...style,
         ...descriptor?.getRowStyle?.({ row, rowIndex }),

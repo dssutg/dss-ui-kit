@@ -231,9 +231,11 @@ export const Pointer = ({ className, color, left, top = 0.5 }: PointerProperties
 export interface SaturationBaseProperties {
   readonly hsva: HsvaColor;
   readonly onChange: (newColor: { s: number; v: number }) => void;
+  /** Merged over the control's own classes, so the caller's wins wherever the two conflict. */
+  readonly className?: string | undefined;
 }
 
-const SaturationBase = ({ hsva, onChange }: SaturationBaseProperties) => {
+const SaturationBase = ({ hsva, onChange, className }: SaturationBaseProperties) => {
   const handleMove = (interaction: Interaction) => {
     onChange({
       s: interaction.left * 100,
@@ -254,7 +256,7 @@ const SaturationBase = ({ hsva, onChange }: SaturationBaseProperties) => {
   };
 
   return (
-    <div className="color-picker-cn__saturation" style={containerStyle}>
+    <div className={cn('color-picker-cn__saturation', className)} style={containerStyle}>
       <Interactive
         onMove={handleMove}
         onKey={handleKey}

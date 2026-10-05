@@ -33,6 +33,27 @@ describe('Modal', () => {
     expect(container.textContent).toBe('');
   });
 
+  it('merges the caller classes onto the fixed root the dialog is portalled through', async () => {
+    // `style` has always gone on this root, so `className` does too. The card inside it is positioned
+    // and sized by the dialog itself; a caller naming a z-index is naming the root's.
+    const { query } = await render(
+      <Modal open onOpenChange={() => undefined} title="Settings" className="z-50">
+        <p>Body</p>
+      </Modal>,
+    );
+
+    // The dialog is portalled onto the body, so the query reaches for the document rather than the
+    // container. The backdrop button's parent is the root: the card below it is a `div` of its own
+    // and it is also `fixed`, so the two cannot be told apart by class alone.
+    const backdrop = query<HTMLButtonElement>('button.fixed');
+    const root = backdrop?.parentElement;
+
+    expect(root?.className).toContain('z-50');
+    expect(root?.className).toContain('fixed');
+    // The backdrop covers the viewport on its own and takes nothing from the caller.
+    expect(backdrop?.className).not.toContain('z-50');
+  });
+
   it('portals the dialog onto the body rather than inside its own place in the tree', async () => {
     const { container, findByText } = await render(
       <Modal open onOpenChange={() => undefined} title="Settings">

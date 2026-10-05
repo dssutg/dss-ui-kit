@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { minInArrayMapped } from '@/util/array';
+import { cn } from '@/util/cn';
 import { getPointerPosition } from '@/util/dom';
 import { useOutsideComponentClick } from '@/util/hooks/use_outside_component_click';
 import { clamp, cmp, lerp, unlerp } from '@/util/math';
@@ -29,6 +30,7 @@ export function Slider({
   trackHeight = 4,
   breakPoints,
   breakPointsVisible = false,
+  className,
 }: {
   readonly min: number;
   readonly max: number;
@@ -44,6 +46,7 @@ export function Slider({
   readonly trackHeight?: number | undefined;
   readonly breakPoints?: readonly number[] | undefined;
   readonly breakPointsVisible?: boolean | undefined;
+  readonly className?: string | undefined;
 }): React.JSX.Element {
   const minValue = Math.min(min, max);
   const maxValue = Math.max(min, max);
@@ -169,7 +172,7 @@ export function Slider({
   const toolTipWidth = toolTipRef.current?.getBoundingClientRect().width ?? 0;
 
   return (
-    <div className="flex w-full flex-col gap-1 text-base">
+    <div className={cn('flex w-full flex-col gap-1 text-base', className)}>
       <div
         ref={wrapperRef}
         tabIndex={0}

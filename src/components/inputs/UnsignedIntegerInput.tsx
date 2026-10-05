@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { cn } from '@/util/cn';
 import { clamp } from '@/util/math';
 
 /**
@@ -13,11 +14,13 @@ export function UnsignedIntegerInput({
   onChange,
   min = 0,
   max = 100,
+  className,
 }: {
   readonly value: number;
   readonly onChange: (value: number) => void;
   readonly min?: number | undefined;
   readonly max?: number | undefined;
+  readonly className?: string | undefined;
 }): React.JSX.Element {
   const actualMin = Math.max(min, 0);
   const actualMax = Math.min(max, Number.MAX_SAFE_INTEGER);
@@ -41,7 +44,7 @@ export function UnsignedIntegerInput({
   );
 
   return (
-    <div className="box-border flex w-32 min-w-full">
+    <div className={cn('box-border flex w-32 min-w-full', className)}>
       <input
         type="number"
         pattern="[0-9]{10}"

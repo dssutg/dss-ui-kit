@@ -25,6 +25,7 @@ export function OrderPanel<T extends number>({
   onResetDefaultOrder,
   onRemoveItem,
   noOrderControls = false,
+  className,
   style,
 }: {
   readonly title?: string | undefined;
@@ -36,6 +37,7 @@ export function OrderPanel<T extends number>({
   readonly onResetDefaultOrder?: () => void;
   readonly onRemoveItem?: (item: T, itemIndex: number) => void;
   readonly noOrderControls?: boolean | undefined;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
 }): React.JSX.Element {
   const { t } = useLocale();
@@ -148,7 +150,7 @@ export function OrderPanel<T extends number>({
   );
 
   return (
-    <div className="flex flex-col gap-4" style={style}>
+    <div className={cn('flex flex-col gap-4', className)} style={style}>
       <div className="flex gap-2 border-b-2 border-b-bsp pb-2 pt-0">
         {onResetDefaultOrder !== undefined && (
           <IconButton
@@ -216,18 +218,20 @@ function OrderPanelControlButton({
   icon,
   title,
   onClick,
+  className,
   style,
 }: {
   readonly icon: IconName;
   readonly title: string;
   readonly onClick: React.MouseEventHandler<HTMLButtonElement>;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
 }) {
   return (
     <IconButton
       icon={icon}
       iconClassName="size-6 fill-tpd p-1"
-      className="rounded-full"
+      className={cn('rounded-full', className)}
       bgClassName="hover:bg-bse"
       style={style}
       title={title}

@@ -135,11 +135,13 @@ export function getPieChartShareEndAngle(startAngle: number, sharePercent: numbe
 export function PieChart({
   shares,
   radius,
+  className,
   style,
   shareMarginDegrees = 0,
 }: {
   readonly shares: readonly PieChartShare[];
   readonly radius: number;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
   readonly shareMarginDegrees?: number | undefined;
 }): React.JSX.Element {
@@ -236,6 +238,7 @@ export function PieChart({
       width={diameter}
       height={diameter}
       onMouseMove={onMouseMove}
+      className={className}
       style={{ display: 'block', ...style }}
       title={title}
     />

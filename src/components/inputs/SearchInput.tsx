@@ -39,6 +39,7 @@ export function SearchInput({
   onChange,
   onClear,
   onChangeText,
+  className,
   style,
   inputStyle,
   autoFocus = false,
@@ -50,6 +51,7 @@ export function SearchInput({
   readonly onChange?: React.ChangeEventHandler<HTMLInputElement> | undefined;
   readonly onClear?: (() => void) | undefined;
   readonly onChangeText?: ((text: string) => void) | undefined;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
   readonly inputStyle?: React.CSSProperties | undefined;
   readonly autoFocus?: boolean | undefined;
@@ -132,7 +134,7 @@ export function SearchInput({
     // below reports its own focus now, and measures the wrapper for the history popover.
     <div
       ref={outerRef ?? null}
-      className="relative bg-bin flex flex-grow items-center rounded-lg px-2 py-1"
+      className={cn('relative bg-bin flex flex-grow items-center rounded-lg px-2 py-1', className)}
       style={style}
     >
       <Icon name="search" style={{ fill: 'var(--color-tpl)', width: '1rem', height: '1rem' }} />

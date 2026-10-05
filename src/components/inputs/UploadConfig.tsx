@@ -28,6 +28,7 @@ export interface UploadConfigProps {
   readonly onFileUploadCancel?: (file: File) => void;
   readonly onFileChange?: (file: File) => void;
   readonly hint?: string | undefined;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
   readonly progress?: number | undefined;
   readonly onlyDrop?: boolean | undefined;
@@ -51,6 +52,7 @@ export function UploadConfig({
   onFileUploadCancel,
   onFileChange,
   hint,
+  className,
   style,
   progress,
   onlyDrop = false,
@@ -299,7 +301,7 @@ export function UploadConfig({
   };
 
   return (
-    <div className="flex flex-col gap-4 p-6" style={style}>
+    <div className={cn('flex flex-col gap-4 p-6', className)} style={style}>
       {renderStatusLine()}
       {/* A button, because clicking the area opens the file picker: dropping a file on it is one way
           in and clicking it is the other, and a keyboard user needs the second. */}

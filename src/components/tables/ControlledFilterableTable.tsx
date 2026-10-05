@@ -24,6 +24,7 @@ export function ControlledFilterableTable<T, C extends string>({
   getExportedTableFilename,
   sortColumnId,
   reversedSort,
+  className,
   style,
   historyId,
   getItemId,
@@ -41,6 +42,7 @@ export function ControlledFilterableTable<T, C extends string>({
       getExportedTableFilename={getExportedTableFilename}
       sortColumnId={sortColumnId}
       reversedSort={reversedSort}
+      className={className}
       style={style}
       historyId={historyId}
       getItemId={getItemId}

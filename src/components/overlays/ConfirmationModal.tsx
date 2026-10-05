@@ -30,6 +30,7 @@ export function ConfirmationModal({
   destructive = false,
   onConfirm,
   onCancel,
+  className,
 }: {
   readonly open: boolean;
   readonly title: string;
@@ -41,6 +42,7 @@ export function ConfirmationModal({
   readonly destructive?: boolean | undefined;
   readonly onConfirm: () => void;
   readonly onCancel: () => void;
+  readonly className?: string | undefined;
 }): React.JSX.Element {
   const { t } = useLocale();
 
@@ -80,6 +82,7 @@ export function ConfirmationModal({
         }
       }}
       title={title}
+      className={className}
       innerStyle={{ width: 'auto', minWidth: '20rem' }}
     >
       {message !== undefined && <div className="text-tpl px-2 pb-2 text-center">{message}</div>}

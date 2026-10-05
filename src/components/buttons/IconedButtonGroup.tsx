@@ -12,15 +12,17 @@ export function IconedButtonGroup({
   group,
   value = 0,
   onChange,
+  className,
   style,
 }: {
   readonly group: { icon: IconName; title: string }[];
   readonly value?: number | undefined;
   readonly onChange?: (index: number) => void;
+  readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
 }): React.JSX.Element {
   return (
-    <div className="flex items-center justify-center" style={style}>
+    <div className={cn('flex items-center justify-center', className)} style={style}>
       {group.map((item, index) => (
         <button
           key={index}
