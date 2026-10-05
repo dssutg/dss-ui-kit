@@ -66,11 +66,13 @@
     "pack": "deno run --allow-read scripts/check-package-manifest.ts",
     "preview": "deno run -A npm:vite preview",
     "typecheck": "deno run -A npm:@typescript/native-preview --noEmit -p tsconfig.json && deno run -A npm:@typescript/native-preview --noEmit -p tsconfig.node.json",
-    "lint": "deno task lint:biome && deno task typecheck",
+    "lint": "deno task lint:biome && deno task lint:markdown && deno task typecheck",
     "lint:biome": "deno run -A npm:@biomejs/biome ci .",
+    "lint:markdown": "deno run -A npm:markdownlint-cli2",
     "lint:types": "deno task typecheck",
     "format": "deno run -A npm:@biomejs/biome check --write .",
     "format:check": "deno run -A npm:@biomejs/biome format .",
+    "format:markdown": "deno run -A npm:markdownlint-cli2 --fix",
     "install:frozen": "deno install --frozen",
     "test": "deno run -A npm:vitest run",
     "test:watch": "deno run -A npm:vitest",
@@ -82,6 +84,8 @@
     "changelog": "deno run --allow-read --allow-write --allow-run --allow-env scripts/release.ts --changelog-only",
     "publish": "deno run --allow-read --allow-write --allow-run --allow-env scripts/publish.ts",
     "publish:dry": "deno run --allow-read --allow-write --allow-run --allow-env scripts/publish.ts --dry-run",
-    "commitlint": "deno run --allow-read scripts/commitlint.ts"
-  }
+    "commitlint": "deno run --allow-read scripts/commitlint.ts",
+    "codemod": "deno run -A npm:codemod"
+  },
+  "allowScripts": ["npm:@ast-grep/cli"]
 }

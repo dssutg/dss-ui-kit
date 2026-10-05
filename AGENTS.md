@@ -71,7 +71,36 @@ comment in `biome.json`, so this cannot come back unnoticed. The reasons live he
   everywhere, no bracket spacing in object literals.
 - No `any`, no non-null assertions in library code, `import type` for type-only imports.
 
+### Never do what a deterministic tool does
 
+When a task ends in something a tool on this machine can produce deterministically, run the tool
+instead of writing, editing or checking the thing by hand. Reformatting to the style, reordering
+imports, mass-renaming an identifier, applying a lint rule's suggested fix across files —
+`deno task format` does all of it in one pass; a hand edit is slower, may disagree with the
+formatter, and turns the diff into lines nobody needs to read. The same holds for running and
+reading: `git log` beats guessing at history, `grep` beats eyeballing a file for a name, and the
+command list beats recalling a command. An agent's judgement belongs where tools stop — deciding
+*what* to build, noticing what a tool cannot, reading what a tool reports.
+
+The same principle has three dedicated tools:
+
+- **Markdown** — `deno task lint:markdown` checks every file the repository owns, so line length,
+  heading style, blank lines and the rest are read from the report, not inspected in the editor.
+  A finding is fixed at the source, or by `deno task format:markdown` when the rule can autofix;
+  do not reformat or rewrap Markdown by hand and expect agreement. The generated changelog
+  (`CHANGELOG.md`) and the TypeDoc output (`docs/api/`) are outside the check.
+- **Multi-file rewrites** — a mechanical change that touches many files belongs in a codemod
+  (`deno task codemod …`), not in one file edited at a time. Rename a symbol, move a module or
+  apply a repeated pattern with a codemod when the count is more than a handful, and let
+  `deno task format` settle the style afterwards; a long series of hand edits is how one missed
+  occurrence survives.
+- **AST search and rewrite** — [ast-grep](https://ast-grep.github.io)
+  (`node_modules/.bin/ast-grep`) matches code by syntax-tree pattern, so `$X as unknown as $T`
+  finds a cast without false hits on a comment or a string. Prefer it over text search-and-replace
+  when the change is structural, or spans several files:
+  `ast-grep run -p '<pattern>' --rewrite '<replacement>' <paths>` previews and rewrites in one
+  pass. Text `grep` is still the right tool for a plain name; reach for ast-grep when a text match
+  would need you to read every hit to be sure.
 
 ### No bare JavaScript
 
@@ -131,13 +160,11 @@ not a convenience.
 - The `@` alias is declared twice and both halves must agree — `resolve.alias` in `vite.config.ts`
   for the bundler, and `compilerOptions.paths` in `tsconfig.json` for the type checker.
 
-
-
 ## Layering
 
 **This is the rule the whole decoupling turns on.**
 
-```
+```text
 src/util/      hooks and framework-agnostic helpers   ← may import: src/util/ only
 src/components/  components                         ← may import: src/util/, src/components/,
                                                         and the infrastructure modules below
@@ -222,7 +249,8 @@ stays broken because the one person who noticed was working on something else. S
 *changed*, not what gets *mentioned*.
 
 - **Name it with its file and line**, and say what the code does against what it says. `OrderPanel`'s
-  bottom-border branch fell back to a top-border class, so `border-t-bsp` could never apply; that is a
+  bottom-border branch fell back to a top-border class, so `border-t-bsp` could never apply; that
+  is a
   fact the next reader needs, and "this looks like a typo" is not it.
 - **Say whether it is being fixed.** A defect the change touches gets fixed and the fix is called out.
   One outside the change gets reported and left alone — an unrequested edit is its own surprise, and
@@ -350,8 +378,10 @@ deno task install:frozen  # verify package.json and deno.lock agree (what CI doe
 deno task dev             # dev server
 deno task build           # production build into dist/
 deno task preview         # serve the production build
-deno task lint            # biome ci + typecheck
+deno task lint            # biome ci + markdownlint + typecheck
 deno task format          # biome check --write (apply safe fixes)
+deno task format:markdown # apply markdownlint's autofixes
+deno task codemod         # run a codemod for a mechanical multi-file rewrite
 deno task typecheck       # tsgo only
 deno task test            # unit tests
 deno task docs            # TypeDoc API reference into docs/api/
@@ -381,7 +411,7 @@ green pipeline and a green `deno task ci` mean the same thing.
 
 ## Project layout
 
-```
+```text
 src/
   index.ts                the package's public surface; the only entry point consumers need
   util/                   hooks and framework-agnostic helpers, one directory per group;
@@ -464,8 +494,8 @@ deno task docs:watch    # rebuilds on save
   it drifts out of date the first time a comment changes.
 - CI builds it, so a broken `@link` or an unresolvable type fails the pipeline. Edit the comment,
   never the HTML.
-- Write TSDoc for the **why**. A comment that restates the signature is noise; one that explains why a
-  missing value is never silently defaulted is documentation.
+- Write TSDoc for the **why**. A comment that restates the signature is noise; one that explains
+  why a missing value is never silently defaulted is documentation.
 - Document the public surface. Exported symbols that TypeDoc cannot resolve are reported as warnings
   — that is the signal that something is under-documented.
 - **Say it once, and only where it belongs.** Give every fact one home: the file layout, the
@@ -483,7 +513,8 @@ find that out by reading the types.
 - **Markdown documentation: English.** An acronym with no other sensible expansion is spelled out the
   first time it appears, in the document that uses it.
 
-The vocabulary the components arrived with is not being translated or renamed as part of this work. A
+The vocabulary the components arrived with is not being translated or renamed as part of this
+work. A
 key rename forces an edit in every consuming file and buys nothing but a cleaner-looking diff; if a
 name is wrong, that is a change with a migration, taken on its own.
 
@@ -492,7 +523,8 @@ name is wrong, that is a change with a migration, taken on its own.
 `deno task test` runs the suite. Add tests next to what they cover: `src/**/*.test.ts` beside the
 component or type, `scripts/**/*.test.ts` beside the helper. The repository-policy tests —
 `no-bare-javascript`, `module-boundary` and `no-russian-text` — are the exceptions: they guard
-repository-wide rules rather than one module, so they sit beside the tooling they protect and share its
+repository-wide rules rather than one module, so they sit beside the tooling they protect and
+share its
 tree walker (`scripts/util/source-tree.ts`).
 
 The suite covers the pure helpers that carry the most logic per line, the repository-policy rules, and
@@ -513,7 +545,8 @@ Three things about it are worth knowing before writing the first test against it
 - **`flush()` is part of rendering.** A component that measures itself is told about its size on a later
   turn, and one that draws at all waits for that: a table draws one row until the autosizer has been
   measured. `render` and `update` flush for you; `flush()` is exported for a test that has just changed
-  something itself. Under fake timers it advances the clock by nothing rather than waiting, because a
+  something itself. Under fake timers it advances the clock by nothing rather than waiting, because
+  a
   test that installed its own clock decides when deferred work happens.
 - **The queries search `document.body`, not the container**, because a modal, a dropdown and a tooltip
   are rendered through a portal onto the body. `container` is still there for the assertions about the
@@ -529,7 +562,7 @@ so it is inert in the `node`-environment tests.
 A `commit-msg` hook in `.githooks/` enforces this (it is wired up via `core.hooksPath`); a bad
 message will be rejected.
 
-```
+```text
 <type>(<scope>): <description>
 ```
 

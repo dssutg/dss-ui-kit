@@ -1,0 +1,14 @@
+{
+  "globs": ["**/*.md"],
+  "ignores": ["**/node_modules/**", "**/dist/**", "**/docs/api/**", "**/CHANGELOG.md"],
+  "config": {
+    "default": true,
+    "MD013": {
+      "line_length": 100,
+      "heading_line_length": 100,
+      "code_block_line_length": 100,
+      "tables": false
+    },
+    "MD060": false
+  }
+}

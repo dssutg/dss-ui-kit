@@ -130,8 +130,8 @@ describes.
 
 **Not for:** fetching, paging, or deciding what an item is. The table takes `items` and a property
 list; each property carries its own comparator, its own cell renderer and its own search extractor.
-`FilterableTable` holds the search text itself, `ControlledTable` takes it as a prop so it can live in
-a URL — the two differ in exactly that, and the rest is identical.
+`FilterableTable` holds the search text itself, `ControlledTable` takes it as a prop so it can
+live in a URL — the two differ in exactly that, and the rest is identical.
 
 ```tsx
 import { ControlledTable, type FilterableTablePropertyList } from 'dss-ui-kit';
@@ -287,8 +287,8 @@ hidden.
 **Not for:** navigating. There is no router here: `Link` renders an `<a href>` and reports
 `onNavigate`, so the URL is the application's. A menu that navigated on the library's say-so could not
 be put in a page that routes somewhere else. What a path *means* is here, though — `matchPath`,
-`dispatchPathMap` and `RouteSwitch` read a path the caller holds and say what it addresses, and none of
-them touches the location or the history.
+`dispatchPathMap` and `RouteSwitch` read a path the caller holds and say what it addresses, and
+none of them touches the location or the history.
 
 ```tsx
 import { Accordion, MenuTree, type TMenuTreeItem } from 'dss-ui-kit';
@@ -300,7 +300,8 @@ interface Node {
   readonly children: Node[];
 }
 
-/** `TMenuTreeItem` is the shape every level of the menu has, so one entry per node and its children. */
+/** `TMenuTreeItem` is the shape every level of the menu has, so one entry per node and its
+ * children. */
 const toMenuItems = (nodes: Node[], depth: number): TMenuTreeItem[] =>
   nodes.map((node) => ({
     id: node.id,
@@ -397,7 +398,8 @@ function RoutedPage({ path }: { readonly path: string }) {
       routes={[
         // Only the route that matches is built, so a page that reads state on construction is not
         // constructed for a path it is not on.
-        { path: '/serverRack/:rackId', render: (match) => <RackPage rackId={getPathParam(match, 'rackId') ?? ''} /> },
+        { path: '/serverRack/:rackId',
+          render: (match) => <RackPage rackId={getPathParam(match, 'rackId') ?? ''} /> },
         // The fallback is an ordinary entry: the path '*' matches whatever is left.
         { path: '*', render: () => <p>No such page</p> },
       ]}
@@ -417,7 +419,9 @@ import {
   type TMenuTreeItem,
 } from 'dss-ui-kit';
 
-function ApplicationShell({ path, menuItems }: { readonly path: string; readonly menuItems: TMenuTreeItem[] }) {
+function ApplicationShell(
+  { path, menuItems }: { readonly path: string; readonly menuItems: TMenuTreeItem[] },
+) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -494,8 +498,9 @@ function DeviceSummary({ device }: { readonly device: Device }) {
 
 ### Decoration across the viewport
 
-`LightRayOverlay` is a wash of light behind everything, drawn with an image the caller hands it. It takes
-no clicks and is hidden from the accessibility tree; how bright it is is a default that `className`
+`LightRayOverlay` is a wash of light behind everything, drawn with an image the caller hands it. It
+takes no clicks and is hidden from the accessibility tree; how bright it is is a default that
+`className`
 overrides, so a caller who wants it stronger does not have to edit the component.
 
 ```tsx
@@ -505,7 +510,7 @@ import rayImage from './ray.png';
 function DeviceScreen({ children }: { readonly children: ReactNode }) {
   return (
     <div className="relative">
-      {/* Behind the panel and out of the way of it: `pointer-events-none` is what keeps the panel clickable. */}
+      {/* Behind the panel: `pointer-events-none` keeps the panel itself clickable. */}
       <LightRayOverlay image={rayImage} className="opacity-70" />
       <div className="relative">{children}</div>
     </div>
@@ -560,7 +565,7 @@ function Panel({ version, loading, lines, children }: PanelProps) {
 
   return (
     <>
-      {/* `LogWidget` is the caller's window onto its own output: the text, and whether it is live. */}
+      {/* `LogWidget` is the caller's window onto its output: the text, and whether it is live. */}
       <LogWidget
         title="Output"
         playing
@@ -569,7 +574,7 @@ function Panel({ version, loading, lines, children }: PanelProps) {
         onPauseClick={() => undefined}
         onClearClick={() => undefined}
       />
-      {/* `version` goes into every report, so it is a prop rather than something read out of a global. */}
+      {/* `version` goes into every report, so it is a prop, not something read out of a global. */}
       <AppCrashGuard version={version} fallback={CrashFallback}>
         {children}
       </AppCrashGuard>
@@ -631,7 +636,7 @@ function ConsolePanel({ developerMode }: { readonly developerMode: boolean }) {
 
   return (
     <>
-      {/* Which key opens the console is the application's decision, so the button is the caller's. */}
+      {/* Which key opens the console is the application's; the button is the caller's. */}
       <button type="button" onClick={() => setOpen(true)}>
         Open the console
       </button>
@@ -646,10 +651,10 @@ function ConsolePanel({ developerMode }: { readonly developerMode: boolean }) {
 }
 ```
 
-**Not for:** the vocabulary of an application. A console that shipped its own commands would have to know
-what the application is about, so every command is the caller's; a command that changes application state
-is a closure over that state. The two built-ins are replaced by name if the caller wants a command called
-`help` or `clear` to mean something else.
+**Not for:** the vocabulary of an application. A console that shipped its own commands would have
+to know what the application is about, so every command is the caller's; a command that changes
+application state is a closure over that state. The two built-ins are replaced by name if the
+caller wants a command called `help` or `clear` to mean something else.
 
 ## layout
 

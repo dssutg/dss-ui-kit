@@ -9,8 +9,8 @@ deno task docs
 ```
 
 The output is written to `docs/api/` and is not committed, so the documentation cannot drift from
-the code. CI runs the generator and fails if it reports an unresolvable type, so a broken `@link` or a
-public signature that names something a consumer cannot import fails the pipeline too.
+the code. CI runs the generator and fails if it reports an unresolvable type, so a broken `@link`
+or a public signature that names something a consumer cannot import fails the pipeline too.
 
 ## What is covered
 

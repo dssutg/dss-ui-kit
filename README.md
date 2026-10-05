@@ -22,7 +22,8 @@ From JSR (the TypeScript source, not a bundle):
 deno add jsr:@dssutg/dss-ui-kit
 ```
 
-Preact is a peer dependency, so the library runs on the Preact your application already has. The code is
+Preact is a peer dependency, so the library runs on the Preact your application already has. The
+code is
 written against the React API and bundled with `preact/compat`, so `react`, `react-dom` and
 `react-dom/client` all resolve to Preact inside this package. The JSR package relies on the same
 aliasing: a Deno consumer needs
@@ -32,9 +33,9 @@ aliasing: a Deno consumer needs
 { "imports": { "react": "npm:preact@^10.19.0/compat" } }
 ```
 
-or the equivalent, since the source names `react` and JSR does not rewrite it — the imports map of the
-publish resolves it for the Deno checker, and a bundler consumer maps it as they do for npm (`react` →
-`preact/compat`).
+or the equivalent, since the source names `react` and JSR does not rewrite it — the imports map of
+the publish resolves it for the Deno checker, and a bundler consumer maps it as they do for npm
+(`react` → `preact/compat`).
 
 ## Use
 
@@ -72,8 +73,9 @@ is for, and what it deliberately leaves to its caller, is in
 
 ## Styling
 
-The design system is a set of CSS custom properties named `--color-*`, defined per theme and exposed as
-Tailwind colour utilities — `bg-bda`, `text-bdat`, `border-tpl`, `fill-tok`. A theme is data, not a
+The design system is a set of CSS custom properties named `--color-*`, defined per theme and
+exposed as Tailwind colour utilities — `bg-bda`, `text-bdat`, `border-tpl`, `fill-tok`. A theme is
+data, not a
 build artefact: switching theme sets a `data-theme` attribute on `<body>` and nothing recompiles.
 
 A consuming application has to do two things for the components to look right: scan the published
