@@ -22,3 +22,6 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 *.log
+
+# Tree-sitter tag cache written by the RepoMapper MCP server.
+.repomap.tags.cache.v1/
