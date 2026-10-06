@@ -45,6 +45,25 @@ function partialThemeTokens(): string[] {
     .filter((token) => !complete.has(token));
 }
 
+/** What the first group of `pattern` matches in `text`, dropping a group that did not participate. */
+function captured(text: string, pattern: RegExp): string[] {
+  return [...text.matchAll(pattern)].flatMap((match) => (match[1] === undefined ? [] : [match[1]]));
+}
+
+/**
+ * The stylesheet a consumer gets, assembled the way `src/css/index.css` assembles it: the entry
+ * itself plus every file its `@import` lines name. A file that nothing imports does not ship, so it
+ * is not read here either.
+ */
+function stylesheetSource(): string {
+  const entry = readFileSync(join(REPOSITORY_ROOT, 'src/css/index.css'), 'utf8');
+  const imported = captured(entry, /@import\s+"\.\/([^"]+)"/g).map((path) =>
+    readFileSync(join(REPOSITORY_ROOT, 'src/css', path), 'utf8'),
+  );
+
+  return [entry, ...imported].join('\n');
+}
+
 describe('design tokens', () => {
   it('maps every custom property the complete theme declares', () => {
     const missing = themeTokens(COMPLETE_THEME).filter(
@@ -80,13 +99,16 @@ describe('design tokens', () => {
 });
 
 /**
- * An animation utility a component renders has to be declared by the preset for the reason a colour
- * does: `.animate-ripple` is generated only if the config names it, and a class nothing declares is
- * a component that renders without its animation in every consuming application — a spinner that
- * does not spin, a circle that appears at full size and vanishes instead of one that expands.
+ * An animation utility a component renders has to be declared by the package for the reason a
+ * colour does: `.animate-ripple` is generated only if the config names it, and a class nothing
+ * declares is a component that renders without its animation in every consuming application — a
+ * spinner that does not spin, a circle that appears at full size and vanishes instead of one that
+ * expands.
  *
  * Every source file is scanned rather than one component, so a component that starts rendering an
  * undeclared animation is caught where it is written instead of when someone notices it not moving.
+ * A declaration lives in one of two places: the preset, which makes it a utility a content scan
+ * finds, or the stylesheet, which makes it a rule every importer gets.
  */
 describe('animation utilities', () => {
   /**
@@ -102,24 +124,29 @@ describe('animation utilities', () => {
       .map((path) => readFileSync(join(REPOSITORY_ROOT, path), 'utf8'))
       .join('\n');
 
-    return new Set(
-      [...source.matchAll(/animate-([a-z0-9-]+)/g)].flatMap((match) =>
-        match[1] === undefined ? [] : [match[1]],
-      ),
-    );
+    return new Set(captured(source, /animate-([a-z0-9-]+)/g));
   }
 
-  it('declares every animation utility the components render', () => {
+  /** Every `.animate-*` rule the stylesheet declares by hand, without the prefix. */
+  function handwrittenAnimations(): string[] {
+    return captured(stylesheetSource(), /\.animate-([a-z0-9-]+)\s*\{/g);
+  }
+
+  it('declares every animation utility the sources render', () => {
     const rendered = renderedAnimations();
 
     expect(rendered.size).toBeGreaterThan(0);
 
-    const declared = [...Object.keys(uiKitPreset.theme.extend.animation), ...TAILWIND_ANIMATIONS];
+    const declared = [
+      ...Object.keys(uiKitPreset.theme.extend.animation),
+      ...TAILWIND_ANIMATIONS,
+      ...handwrittenAnimations(),
+    ];
 
     expect([...rendered].filter((name) => !declared.includes(name))).toEqual([]);
   });
 
-  it('runs each declared animation under a keyframe of the same name', () => {
+  it('runs each animation the preset declares under a keyframe of the same name', () => {
     // The value is the animation shorthand, so the keyframe it names is what the class resolves to;
     // a renamed keyframe leaves the class declared, generated and doing nothing.
     const keyframes = new Set(Object.keys(uiKitPreset.theme.extend.keyframes));
@@ -128,5 +155,19 @@ describe('animation utilities', () => {
     );
 
     expect(declared.filter((name) => !keyframes.has(name))).toEqual([]);
+  });
+
+  it('pairs every hand-written animation with the keyframe it runs', () => {
+    // The first token of an `animation` shorthand is the keyframe it names. Both directions are
+    // compared: an animation with no keyframe does nothing, and a keyframe nothing runs is dead CSS
+    // in every stylesheet that ships it.
+    const stylesheet = stylesheetSource();
+    const running = captured(stylesheet, /animation:\s*([a-z-]+)/g);
+    const defined = captured(stylesheet, /@keyframes\s+([a-z-]+)/g);
+
+    expect(running.length).toBeGreaterThan(0);
+
+    expect(running.filter((name) => !defined.includes(name))).toEqual([]);
+    expect(defined.filter((name) => !running.includes(name))).toEqual([]);
   });
 });

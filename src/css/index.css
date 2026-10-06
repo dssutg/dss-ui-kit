@@ -1,4 +1,5 @@
 @import "./global.css";
+@import "./animations.css";
 @import "./themes/acme.css";
 @import "./themes/dark.css";
 @import "./themes/indigo.css";

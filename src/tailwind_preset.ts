@@ -194,6 +194,10 @@ export const uiKitPreset = {
        * A key is the class name without the `animate-` prefix and its value names the keyframe of the
        * same key, so the class and what it runs are one fact.
        *
+       * The animations no component renders live as hand-written rules in `src/css/animations.css`;
+       * one of them sets a `transform-origin` beside its animation, which an `animation` value has no
+       * way to carry.
+       *
        * The ripple is the one animation whose duration is not a literal: it reads `--ripple-duration`,
        * which every ripple sets on itself from its `duration` prop, so the circle is removed at
        * `duration - 100` — a little before it finishes — for every duration rather than only for the

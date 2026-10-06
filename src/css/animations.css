@@ -1,0 +1,70 @@
+/*
+ * The animations nothing in this library renders, as hand-written rules.
+ *
+ * `animate-*` is a Tailwind utility: a consumer's stylesheet emits it only if their config names
+ * it, so the animations the components render are declared in `src/tailwind_preset.ts` and reach a
+ * consumer along with `dss-ui-kit/tailwind`. These four are for a consumer's own markup instead, and
+ * a rule in the stylesheet reaches everyone who imports it without a content scan having to find it
+ * first. `.animate-scale-show` is here for a second reason as well: it sets `transform-origin`
+ * beside its animation, and a second declaration is not something an `animation` theme value can
+ * carry.
+ *
+ * A component that starts rendering one of these belongs in the preset instead, so its class is
+ * found the way every other class the library renders is found — see `src/tailwind_preset.ts`.
+ */
+
+.animate-blink-fast {
+  animation: blink 0.5s step-start infinite;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+}
+
+.animate-blink-slow {
+  animation: blink 1s step-start infinite;
+}
+
+.animate-scale-show {
+  animation: scale-show 0.5s;
+  transform-origin: top;
+}
+
+@keyframes scale-show {
+  0% {
+    transform: scaleY(0);
+  }
+
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+.animate-popup {
+  animation: popup 0.5s;
+}
+
+/*
+ * `display` and `filter` are declared here because the animation they belong to starts from a
+ * hidden, unfiltered element: without `display: none` at `0%` the element takes its space for the
+ * whole of the pop-in instead of appearing as it grows.
+ */
+@keyframes popup {
+  0% {
+    display: none;
+    transform: scale(0);
+    filter: none;
+  }
+
+  100% {
+    transform: scale(1);
+    filter: none;
+  }
+}
