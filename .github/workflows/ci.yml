@@ -26,7 +26,7 @@ concurrency:
 
 env:
   # Keep in sync with `engines.deno` in package.json.
-  DENO_VERSION: 2.9.6
+  DENO_VERSION: 2.9.7
   # The commit-message and release-preview jobs read history a shallow clone does not have.
   GIT_DEPTH: 0
 

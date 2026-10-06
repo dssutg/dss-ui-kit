@@ -13,7 +13,7 @@
     "dss"
   ],
   "engines": {
-    "deno": "2.9.6"
+    "deno": "2.9.7"
   },
   "main": "./dist/dss-ui-kit.umd.cjs",
   "module": "./dist/dss-ui-kit.js",
