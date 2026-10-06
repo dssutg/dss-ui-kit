@@ -33,5 +33,9 @@ export default {
     // written out whole somewhere in the source, which is what keeps the scanner honest.
     './dist/**/*.{js,cjs}',
   ],
-  plugins: [forms],
+  // The base strategy restyles every element the browser renders — white background, gray border,
+  // a blue focus ring in `blue.600` — and none of those colours are tokens a theme defines. It also
+  // contradicts `*:focus { outline: none }` in `src/css/global.css`, which leaves focus indication
+  // to the consumer. The class strategy keeps `.form-*` for a caller that wants the plugin's look.
+  plugins: [forms({ strategy: 'class' })],
 } satisfies Config;

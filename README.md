@@ -108,7 +108,9 @@ export default {
   // a path written in this repository would be resolved against whatever directory the
   // build that reads the config happens to run in.
   content: ['./src/**/*.{ts,tsx}', './node_modules/dss-ui-kit/dist/**/*.{js,cjs}'],
-  plugins: [forms],
+  // The class strategy only: the base strategy restyles every input, select and checkbox the
+  // browser renders and puts a blue focus ring on them, and this library styles its own controls.
+  plugins: [forms({ strategy: 'class' })],
 } satisfies Config;
 ```
 
