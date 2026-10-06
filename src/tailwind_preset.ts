@@ -185,23 +185,60 @@ export const uiKitPreset = {
       /**
        * The animations the components render, and the keyframes they run.
        *
-       * `animate-ripple` is a Tailwind utility like any other: a consumer's stylesheet generates it only
-       * if the config names it, so `Ripple` would render a class that resolves to nothing in every
-       * application that did not write these keyframes itself. Declaring them here is what makes the
-       * class exist — and it is why this belongs beside the colour map rather than in a stylesheet the
-       * consumer has to remember to import.
+       * `animate-*` is a Tailwind utility like any other: a consumer's stylesheet generates it only if
+       * the config names it, so a component rendering `animate-wsh-spinner-rotator` renders a class
+       * that resolves to nothing in every application that did not write this keyframe itself. The
+       * declaration is what makes the class exist, and it is why this belongs beside the colour map
+       * rather than in a stylesheet the consumer has to remember to import.
        *
-       * The duration is read from `--ripple-duration`, which every ripple sets on itself from its
-       * `duration` prop, so the circle is removed at `duration - 100` — a little before it finishes —
-       * for every duration rather than only for the 600ms default.
+       * A key is the class name without the `animate-` prefix and its value names the keyframe of the
+       * same key, so the class and what it runs are one fact.
+       *
+       * The ripple is the one animation whose duration is not a literal: it reads `--ripple-duration`,
+       * which every ripple sets on itself from its `duration` prop, so the circle is removed at
+       * `duration - 100` — a little before it finishes — for every duration rather than only for the
+       * 600ms default.
        */
       animation: {
+        'fade-in': 'fade-in 0.5s',
         ripple: 'ripple linear var(--ripple-duration, 600ms)',
+        'wsh-spinner-container': 'wsh-spinner-container 1.56823529647s linear infinite',
+        'wsh-spinner-left': 'wsh-spinner-left 1333ms cubic-bezier(0.4, 0, 0.2, 1) infinite both',
+        'wsh-spinner-right': 'wsh-spinner-right 1333ms cubic-bezier(0.4, 0, 0.2, 1) infinite both',
+        'wsh-spinner-rotator':
+          'wsh-spinner-rotator 5332ms cubic-bezier(0.4, 0, 0.2, 1) infinite both',
       },
       keyframes: {
+        'fade-in': {
+          '0%': { opacity: '0' },
+          to: { opacity: '1' },
+        },
         ripple: {
           '0%': { transform: 'scale(0)', opacity: '1' },
           to: { transform: 'scale(4)', opacity: '0' },
+        },
+        'wsh-spinner-container': {
+          to: { transform: 'rotate(360deg)' },
+        },
+        'wsh-spinner-left': {
+          '0%': { transform: 'rotate(130deg)' },
+          '50%': { transform: 'rotate(-5deg)' },
+          to: { transform: 'rotate(130deg)' },
+        },
+        'wsh-spinner-right': {
+          '0%': { transform: 'rotate(-130deg)' },
+          '50%': { transform: 'rotate(5deg)' },
+          to: { transform: 'rotate(-130deg)' },
+        },
+        'wsh-spinner-rotator': {
+          '12.5%': { transform: 'rotate(135deg)' },
+          '25%': { transform: 'rotate(270deg)' },
+          '37.5%': { transform: 'rotate(405deg)' },
+          '50%': { transform: 'rotate(540deg)' },
+          '62.5%': { transform: 'rotate(675deg)' },
+          '75%': { transform: 'rotate(810deg)' },
+          '87.5%': { transform: 'rotate(945deg)' },
+          to: { transform: 'rotate(1080deg)' },
         },
       },
     },

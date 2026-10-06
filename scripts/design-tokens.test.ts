@@ -82,26 +82,51 @@ describe('design tokens', () => {
 /**
  * An animation utility a component renders has to be declared by the preset for the reason a colour
  * does: `.animate-ripple` is generated only if the config names it, and a class nothing declares is
- * a component that renders without its animation in every consuming application — here, a circle
- * that appears at full size and vanishes instead of one that expands.
+ * a component that renders without its animation in every consuming application — a spinner that
+ * does not spin, a circle that appears at full size and vanishes instead of one that expands.
  *
- * `Ripple` is the component this was found on, so it is the one named here; another component that
- * renders `animate-*` without a declaration belongs in the same list.
+ * Every source file is scanned rather than one component, so a component that starts rendering an
+ * undeclared animation is caught where it is written instead of when someone notices it not moving.
  */
 describe('animation utilities', () => {
-  it('declares an animation for the utility Ripple renders', () => {
-    const source = readFileSync(
-      join(REPOSITORY_ROOT, 'src/components/feedback/Ripple.tsx'),
-      'utf8',
+  /**
+   * The animations Tailwind declares itself. The preset extends the default theme rather than
+   * replacing it, so these survive without an entry here and belong in this comparison.
+   */
+  const TAILWIND_ANIMATIONS = ['bounce', 'ping', 'pulse', 'spin'];
+
+  /** Every `animate-*` utility name the sources render, without the prefix. */
+  function renderedAnimations(): Set<string> {
+    const source = collectFiles('src')
+      .filter((path) => path.endsWith('.ts') || path.endsWith('.tsx'))
+      .map((path) => readFileSync(join(REPOSITORY_ROOT, path), 'utf8'))
+      .join('\n');
+
+    return new Set(
+      [...source.matchAll(/animate-([a-z0-9-]+)/g)].flatMap((match) =>
+        match[1] === undefined ? [] : [match[1]],
+      ),
     );
-    const rendered = [...source.matchAll(/animate-([a-z0-9-]+)/g)].flatMap((match) =>
-      match[1] === undefined ? [] : [match[1]],
+  }
+
+  it('declares every animation utility the components render', () => {
+    const rendered = renderedAnimations();
+
+    expect(rendered.size).toBeGreaterThan(0);
+
+    const declared = [...Object.keys(uiKitPreset.theme.extend.animation), ...TAILWIND_ANIMATIONS];
+
+    expect([...rendered].filter((name) => !declared.includes(name))).toEqual([]);
+  });
+
+  it('runs each declared animation under a keyframe of the same name', () => {
+    // The value is the animation shorthand, so the keyframe it names is what the class resolves to;
+    // a renamed keyframe leaves the class declared, generated and doing nothing.
+    const keyframes = new Set(Object.keys(uiKitPreset.theme.extend.keyframes));
+    const declared = Object.keys(uiKitPreset.theme.extend.animation).filter(
+      (name) => !TAILWIND_ANIMATIONS.includes(name),
     );
 
-    expect(rendered.length).toBeGreaterThan(0);
-
-    const declared = Object.keys(uiKitPreset.theme.extend.animation);
-
-    expect(rendered.filter((name) => !declared.includes(name))).toEqual([]);
+    expect(declared.filter((name) => !keyframes.has(name))).toEqual([]);
   });
 });
