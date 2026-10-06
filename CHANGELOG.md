@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Release notes are generated
 from [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) by `scripts/release.ts`.
 
+[0.5.1] — 2026-10-06
+
+[Full changelog](https://github.com/dssutg/dss-ui-kit/compare/v0.5.0...v0.5.1)
+
+### Bug Fixes
+
+- **styles:** resolve the notification date through --color-gray-light4 ([63100f4](https://github.com/dssutg/dss-ui-kit/commit/63100f4ea1384a49eb0e9927df2cce74d38a8f7d))
+- **locale:** let t resolve the caller's own keys too ([009834a](https://github.com/dssutg/dss-ui-kit/commit/009834a528e8efa5641b27b293875e2ffe01136a))
+- **styles:** stop the forms plugin from drawing a blue focus ring ([a77b313](https://github.com/dssutg/dss-ui-kit/commit/a77b31309efba1c6e7f0e34575e590dffbf27c44))
+
+**Contributors:** Daniil Stepanov
+
 [0.5.0] — 2026-10-06
 
 [Full changelog](https://github.com/dssutg/dss-ui-kit/compare/v0.4.0...v0.5.0)
