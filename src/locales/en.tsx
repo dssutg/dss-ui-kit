@@ -5,8 +5,8 @@ import type { LocaleDates } from './dates';
  *
  * The library ships no user-facing text of its own beyond these: a component holds a key and the
  * lookup happens in `src/locale.tsx`, where {@link MessageKey} is derived from this file with
- * `keyof` — so a component cannot name a key that is not here, and a key added here becomes
- * required in every other locale (`ru.tsx` types itself over {@link MessageKey}), not just optional
+ * `keyof` — so a key a component renders is looked up here first, and a key added here becomes
+ * required in every other locale (`ru.tsx` types itself over the same `keyof`), not just optional
  * in this one.
  */
 export const en = {

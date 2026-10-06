@@ -1,5 +1,6 @@
 import { getPluralizationIndex } from '@/util/pluralization';
 import type { LocaleDates } from './dates';
+import type { en } from './en';
 
 export const ru = {
   'BitField.bitNoPrefix': 'Бит ',
@@ -84,7 +85,7 @@ export const ru = {
   no: 'Нет',
   notChosen: 'Не выбрано',
   yes: 'Да',
-};
+} satisfies Record<keyof typeof en, string>;
 
 export const ruDates: LocaleDates = {
   names: {

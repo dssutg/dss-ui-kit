@@ -184,10 +184,24 @@ function mergeMessages(
  * The keys the library renders, derived from the English catalogue.
  *
  * Deriving from a value rather than declaring a union of string literals means a key exists because a
- * message was added, not because a type was edited, and a key that is used but never defined is a
- * compile error at the point of use.
+ * message was added, not because a type was edited: a catalogue typed `Record<MessageKey, string>` is
+ * a translation of this one, or it does not compile. {@link AnyMessageKey} widens the set for the one
+ * signature that has to take a caller's keys too.
  */
 export type MessageKey = keyof typeof en;
+
+/**
+ * A key {@link LocaleContextValue.t} resolves: one the library ships, or one the caller added.
+ *
+ * The `string` arm is what makes a caller's own key legal — the library cannot know the keys of a
+ * catalogue it has never seen — and `MessageKey` stays the named arm, so the library's keys are the
+ * ones autocomplete offers first and a caller still reads the union rather than a bare `string`.
+ *
+ * The same pattern as {@link LocaleName}, for the same reason: a language the library has never
+ * heard of is a supported locale rather than a type error, and a message of a catalogue it has
+ * never seen is a resolvable key rather than a type error too.
+ */
+export type AnyMessageKey = MessageKey | (string & {});
 
 /** Parameters substituted into a message, referenced as `{name}` in the text. */
 export type MessageParameters = Record<string, string | number | boolean | null | undefined>;
@@ -333,10 +347,10 @@ export function translate(
  * What {@link useLocale} returns: the locale in effect, its date data, and the two ways to resolve a
  * message.
  *
- * `t` and `tRaw` differ in what they accept and in nothing else: both resolve a message the same way,
- * down to returning an unknown key as itself. A caller that added its own keys uses `tRaw` for them
- * and `t` for the library's, which is what keeps a typo in a library key a type error rather than
- * something an operator finds on screen.
+ * `t` and `tRaw` differ in their name and in nothing else: both resolve a message the same way,
+ * down to returning an unknown key as itself, and both accept a key of the library's and a key the
+ * caller added to its own catalogue. `t` names the library's keys, so they are the ones autocomplete
+ * offers; `tRaw` is the name that claims nothing about where the key came from.
  */
 export interface LocaleContextValue {
   /** The locale in effect. */
@@ -344,7 +358,7 @@ export interface LocaleContextValue {
   /** The names, formats and relative phrases the date components render with. */
   readonly dates: LocaleDates;
   /**
-   * Resolves a message the library renders.
+   * Resolves a message, whether the library rendered it or the caller added it to a catalogue.
    *
    * A key no catalogue holds comes back as the key itself, which is what {@link translate} does and
    * what {@link LocaleContextValue.tRaw} does: a caller must not get a different answer for the same
@@ -352,12 +366,13 @@ export interface LocaleContextValue {
    * names the message that is missing — an operator seeing `Modal.close` knows to tell someone, where
    * a blank button tells nobody anything and cannot be looked up.
    */
-  readonly t: (key: MessageKey, parameters?: MessageParameters | null) => string;
+  readonly t: (key: AnyMessageKey, parameters?: MessageParameters | null) => string;
   /**
-   * Resolves an arbitrary string, for a message the caller added to its own catalogue.
+   * Resolves an arbitrary string, under a name that says nothing about where the key came from.
    *
-   * Behaves exactly as {@link LocaleContextValue.t} does, including returning an unknown key as-is.
-   * The two differ in what they accept, not in what they return.
+   * Behaves exactly as {@link LocaleContextValue.t}, including returning an unknown key as-is. The
+   * two differ in their name only, and both are kept because a caller may have written against
+   * either.
    */
   readonly tRaw: (key: string, parameters?: MessageParameters | null) => string;
   /** Switches the locale and persists the choice. */
@@ -421,7 +436,7 @@ export interface LocaleProviderProps {
    * This is how a caller translates the library into any language, and how it overrides a single
    * string without forking the library: a locale listed here keeps every message it already had and
    * takes the ones named here instead. Its own keys are welcome — the library never needs to know
-   * about them, and `tRaw` is what resolves them.
+   * about them, and {@link LocaleContextValue.t} resolves them beside its own.
    *
    * A caller's catalogue wins over a registered one for the same locale, because it is the more
    * specific of the two: a prop was passed to this provider, the registry was set up by the module
@@ -555,7 +570,7 @@ export function LocaleProvider({
   );
 
   const t = useCallback(
-    (key: MessageKey, parameters?: MessageParameters | null) => tRaw(key, parameters),
+    (key: AnyMessageKey, parameters?: MessageParameters | null) => tRaw(key, parameters),
     [tRaw],
   );
 

@@ -414,6 +414,7 @@ export {
   useFeatureFlag,
 } from './feature_flag';
 export type {
+  AnyMessageKey,
   LocaleContextValue,
   LocaleDefinition,
   LocaleName,

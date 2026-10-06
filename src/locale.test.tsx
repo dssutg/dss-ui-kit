@@ -1,8 +1,9 @@
 /**
  * The locale is the seam between what the library renders and what an operator reads, so these tests
  * are about who wins: the shipped catalogue, a locale a caller registered, or a `messages` prop passed
- * to one provider. They also pin the two ways a caller's own strings reach the screen — `t` for a key
- * the library owns, `tRaw` for one it does not.
+ * to one provider. They also pin that `t` resolves a key of the library's and one the caller added
+ * the same way, and that `tRaw` — the name that claims nothing about where the key came from — is no
+ * different.
  */
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
@@ -45,6 +46,7 @@ function LocaleProbe(): React.JSX.Element {
       <span data-testid="overridden">{t('Modal.close')}</span>
       <span data-testid="untouched">{t('ConfirmationModal.confirm')}</span>
       <span data-testid="own">{tRaw('MyApp.title')}</span>
+      <span data-testid="own-via-t">{t('MyApp.title')}</span>
       <span data-testid="unknown">{tRaw('Nothing.holds.this')}</span>
     </div>
   );
@@ -85,8 +87,8 @@ describe('a caller overriding one message', () => {
   });
 
   it('resolves a key the library does not own, through the catalogue the caller passed', async () => {
-    // `t` is typed to the library's keys so a typo in one is a compile error; a caller's own keys go
-    // through `tRaw`, and the two read the same merged catalogues.
+    // The library cannot know the keys of a catalogue it has never seen, so they are legal for `t`
+    // as they are for `tRaw`, and both read the same merged catalogues.
     const { find } = await render(
       <LocaleProvider
         initialLocale="en"
@@ -98,6 +100,7 @@ describe('a caller overriding one message', () => {
     );
 
     expect(find('[data-testid="own"]').textContent).toBe('Connections');
+    expect(find('[data-testid="own-via-t"]').textContent).toBe('Connections');
   });
 
   it('overrides a locale the library ships translations for', async () => {
@@ -188,9 +191,9 @@ describe('a key no catalogue holds', () => {
   });
 
   it('is returned the same way by t as by tRaw, so which one was called makes no difference', async () => {
-    // Every key `t` accepts is in the English catalogue, so the only way it reaches this is a locale
-    // that carries no catalogue at all standing in as the fallback — which is exactly the case a
-    // caller translating only some messages runs into.
+    // Neither of the two may answer differently for a key nothing holds. A locale that carries no
+    // catalogue at all standing in as the fallback is the sharpest case of it, and it is exactly the
+    // case a caller translating only some messages runs into.
     registerLocale('xg', {});
 
     const { find } = await render(
@@ -200,6 +203,7 @@ describe('a key no catalogue holds', () => {
     );
 
     expect(find('[data-testid="overridden"]').textContent).toBe('Modal.close');
+    expect(find('[data-testid="own-via-t"]').textContent).toBe('MyApp.title');
     expect(find('[data-testid="unknown"]').textContent).toBe('Nothing.holds.this');
   });
 
