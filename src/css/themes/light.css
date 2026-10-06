@@ -20,7 +20,7 @@ body[data-theme="light"] {
   --color-bse: hsl(0deg 0.21% 71.28%);
   --color-bpd2: #cecece;
   --color-bbp: #c5b8de;
-  --color-notification-panel-relative-date: var(----color-gray-light4);
+  --color-notification-panel-relative-date: var(--color-gray-light4);
   --color-bgt: var(--color-black);
   --color-bdat: #ffffff;
   --color-bsp: #000000;
