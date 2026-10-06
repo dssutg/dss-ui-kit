@@ -182,6 +182,28 @@ export const uiKitPreset = {
     extend: {
       colors: colorTokens,
       fontFamily: fontFamilies,
+      /**
+       * The animations the components render, and the keyframes they run.
+       *
+       * `animate-ripple` is a Tailwind utility like any other: a consumer's stylesheet generates it only
+       * if the config names it, so `Ripple` would render a class that resolves to nothing in every
+       * application that did not write these keyframes itself. Declaring them here is what makes the
+       * class exist — and it is why this belongs beside the colour map rather than in a stylesheet the
+       * consumer has to remember to import.
+       *
+       * The duration is read from `--ripple-duration`, which every ripple sets on itself from its
+       * `duration` prop, so the circle is removed at `duration - 100` — a little before it finishes —
+       * for every duration rather than only for the 600ms default.
+       */
+      animation: {
+        ripple: 'ripple linear var(--ripple-duration, 600ms)',
+      },
+      keyframes: {
+        ripple: {
+          '0%': { transform: 'scale(0)', opacity: '1' },
+          to: { transform: 'scale(4)', opacity: '0' },
+        },
+      },
     },
   },
 } satisfies Partial<Config>;

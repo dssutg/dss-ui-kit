@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { colorTokens } from '@/tailwind_preset';
+import { colorTokens, uiKitPreset } from '@/tailwind_preset';
 import { collectFiles, REPOSITORY_ROOT } from './util/source-tree.ts';
 
 /**
@@ -76,5 +76,32 @@ describe('design tokens', () => {
 
   it('leaves no custom property behind in a partial theme', () => {
     expect(partialThemeTokens()).toEqual([]);
+  });
+});
+
+/**
+ * An animation utility a component renders has to be declared by the preset for the reason a colour
+ * does: `.animate-ripple` is generated only if the config names it, and a class nothing declares is
+ * a component that renders without its animation in every consuming application — here, a circle
+ * that appears at full size and vanishes instead of one that expands.
+ *
+ * `Ripple` is the component this was found on, so it is the one named here; another component that
+ * renders `animate-*` without a declaration belongs in the same list.
+ */
+describe('animation utilities', () => {
+  it('declares an animation for the utility Ripple renders', () => {
+    const source = readFileSync(
+      join(REPOSITORY_ROOT, 'src/components/feedback/Ripple.tsx'),
+      'utf8',
+    );
+    const rendered = [...source.matchAll(/animate-([a-z0-9-]+)/g)].flatMap((match) =>
+      match[1] === undefined ? [] : [match[1]],
+    );
+
+    expect(rendered.length).toBeGreaterThan(0);
+
+    const declared = Object.keys(uiKitPreset.theme.extend.animation);
+
+    expect(rendered.filter((name) => !declared.includes(name))).toEqual([]);
   });
 });

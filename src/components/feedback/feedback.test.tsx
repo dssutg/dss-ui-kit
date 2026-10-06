@@ -182,6 +182,25 @@ describe('Ripple', () => {
 
     expect(container.querySelector('span')?.getAttribute('aria-hidden')).toBe('true');
   });
+
+  it('keeps one circle per click while each is still running', async () => {
+    const { container } = await render(
+      <button type="button" className="relative overflow-hidden">
+        <Ripple color="#fff" />
+      </button>,
+    );
+
+    const button = container.querySelector('button');
+
+    if (button === null) {
+      throw new Error('Ripple rendered no button to sit in.');
+    }
+
+    click(button);
+    click(button);
+
+    expect(container.querySelectorAll('.animate-ripple').length).toBe(2);
+  });
 });
 
 describe('ScrollProgressBar', () => {
