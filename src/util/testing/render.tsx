@@ -238,16 +238,22 @@ export async function render(element: ReactNode): Promise<RenderResult> {
 }
 
 /**
- * Dispatches a click that React's synthetic event system sees.
+ * Dispatches a click that React's synthetic event system sees, and hands the event back.
  *
  * `element.click()` fires an event that does not bubble through the delegation root Preact installs
  * on the container, so a component whose handler is on an ancestor is not called by it. The event is
- * constructed and dispatched instead, which is what a real click does.
+ * constructed and dispatched instead, which is what a real click does. `init` carries the modifiers —
+ * a Ctrl-click is a different decision for a link than a plain one — and the event comes back so a
+ * test can read what the handler did to it, `defaultPrevented` first among those.
  */
-export function click(element: Element): void {
+export function click(element: Element, init: MouseEventInit = {}): MouseEvent {
+  const event = new MouseEvent('click', { bubbles: true, cancelable: true, ...init });
+
   act(() => {
-    element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    element.dispatchEvent(event);
   });
+
+  return event;
 }
 
 /** Sets an input's value the way typing does, so the change handler sees a real change. */

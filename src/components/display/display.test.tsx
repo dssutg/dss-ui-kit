@@ -206,8 +206,9 @@ describe('Link', () => {
 
     expect(anchor.getAttribute('href')).toBe('/panel/1');
 
-    await click(anchor);
+    const event = click(anchor);
 
+    expect(event.defaultPrevented).toBe(true);
     expect(onNavigate).toHaveBeenCalledWith('/panel/1');
   });
 
@@ -220,19 +221,48 @@ describe('Link', () => {
 
     expect(anchor.getAttribute('href')).toBe('/panel/1');
     expect(anchor.getAttribute('target')).toBeNull();
+    expect(click(anchor).defaultPrevented).toBe(false);
   });
 
-  it('reports the plain click as well as the navigation', async () => {
+  it('passes a modified click to the browser, which is what opens the destination apart', async () => {
+    const onNavigate = vi.fn();
     const onClick = vi.fn();
     const { find } = await render(
-      <Link to="/panel/1" onClick={onClick}>
+      <Link to="/panel/1" onNavigate={onNavigate} onClick={onClick}>
         Panel
       </Link>,
     );
 
-    await click(find<HTMLAnchorElement>('a'));
+    const event = click(find<HTMLAnchorElement>('a'), { ctrlKey: true });
 
+    expect(event.defaultPrevented).toBe(false);
+    expect(onNavigate).not.toHaveBeenCalled();
     expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('reports the plain click as well as the navigation', async () => {
+    const onNavigate = vi.fn();
+    const onClick = vi.fn();
+    const { find } = await render(
+      <Link to="/panel/1" onNavigate={onNavigate} onClick={onClick}>
+        Panel
+      </Link>,
+    );
+
+    click(find<HTMLAnchorElement>('a'));
+
+    expect(onNavigate).toHaveBeenCalledTimes(1);
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders the title the caller gave the link, so the destination can be named in words', async () => {
+    const { find } = await render(
+      <Link to="/panel/1" title="Panel one">
+        Panel
+      </Link>,
+    );
+
+    expect(find('a').getAttribute('title')).toBe('Panel one');
   });
 });
 

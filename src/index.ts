@@ -18,8 +18,10 @@
  *
  * ## What is deliberately not exported
  *
- * The library is a design system and a set of presentational components. It has no data layer and no
- * router, and it names no application's subject matter: a component renders the shape it is handed.
+ * The library is a design system and a set of presentational components. It has no data layer —
+ * the store it exposes holds what a caller gives it, and fetches and persists nothing — and no
+ * router: it holds no history and listens to no navigation event, only the routing path a caller
+ * owns. It names no application's subject matter: a component renders the shape it is handed.
  * Anything a caller would otherwise have to reach into their own application for is a prop.
  */
 
@@ -390,6 +392,10 @@ export {
   matchPath,
   parsePathComponents,
 } from '@/util/routing';
+export type { RoutingStore, RoutingStoreOptions } from '@/util/routing/store';
+export { createRoutingStore } from '@/util/routing/store';
+export type { Store } from '@/util/store';
+export { createStore } from '@/util/store';
 export { uuidv4 } from '@/util/uuid';
 export type { VError, VSchema, VValidator } from '@/util/validator';
 export { vArray, vBoolean, vInt, vNumber, vString } from '@/util/validator';
