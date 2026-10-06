@@ -8,6 +8,7 @@
       "!**/dist",
       "!**/coverage",
       "!**/docs/api",
+      "!jsr.json",
       "!**/.deno",
       "!**/.vite",
       "!**/.idea",
