@@ -6,6 +6,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Release notes are generated
 from [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) by `scripts/release.ts`.
 
+[0.5.0] — 2026-10-06
+
+[Full changelog](https://github.com/dssutg/dss-ui-kit/compare/v0.4.0...v0.5.0)
+
+### Features
+
+- **styles:** ship the hand-written blink, scale-show and popup animations ([7444b31](https://github.com/dssutg/dss-ui-kit/commit/7444b31ba19df1a05058aac90ef6e59ed60a74f7))
+
+### Bug Fixes
+
+- **ui:** export RouteSwitchProps ([854dae7](https://github.com/dssutg/dss-ui-kit/commit/854dae7395fc884c6a019e87cf9e971fbf8d524d))
+- **styles:** declare the fade-in and wsh-spinner animations the preset never carried ([8ece5f8](https://github.com/dssutg/dss-ui-kit/commit/8ece5f8b6265bbc619bc22edadaedd8c9f412991))
+- **styles:** declare the ripple animation the preset never carried ([da564f7](https://github.com/dssutg/dss-ui-kit/commit/da564f703cb2c40c67b244acc66b95eea39b8cac))
+
+### Documentation
+
+- prefer semantic tools over raw text search-and-replace ([eb65561](https://github.com/dssutg/dss-ui-kit/commit/eb65561610754659f26a468349068a5647cdb7e7))
+- refresh README command list and add a table of contents ([b59f503](https://github.com/dssutg/dss-ui-kit/commit/b59f50343ba0a0c2e15711a63ace8f490cc52361))
+- add code re-use rule to the readability section ([6bfa6f1](https://github.com/dssutg/dss-ui-kit/commit/6bfa6f11d3501444e390d266ec44d05fea68e0fd))
+- require only needed words in comments and commit messages ([e020dac](https://github.com/dssutg/dss-ui-kit/commit/e020dac811eaec0eb4aed896f7e25e25786b791c))
+
+### Build
+
+- **config:** add ast-grep, codemod and markdownlint-cli2 tooling ([bbaca4c](https://github.com/dssutg/dss-ui-kit/commit/bbaca4c655f4b64db5648dde33105ac94cf65da5))
+
+### Chores
+
+- **config:** ignore the RepoMapper tag cache directory ([7b45030](https://github.com/dssutg/dss-ui-kit/commit/7b450306b9fa6a29bee49dc2b113f2e9e8568ad4))
+
+**Contributors:** Daniil Stepanov
+
 [0.4.0] — 2026-10-05
 
 [Full changelog](https://github.com/dssutg/dss-ui-kit/compare/v0.3.0...v0.4.0)
