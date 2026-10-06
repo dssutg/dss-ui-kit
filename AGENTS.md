@@ -102,6 +102,13 @@ The same principle has three dedicated tools:
   pass. Text `grep` is still the right tool for a plain name; reach for ast-grep when a text match
   would need you to read every hit to be sure.
 
+**Prefer the semantic tools to raw text search-and-replace.** Find code with the repo-mapper MCP
+(`repo_map` for a ranked map of the files a change touches, `search_identifiers` for where a name
+is defined and used), check behaviour with the playwright MCP against a running page instead of
+inferring it from markup, and use ast-grep and `deno task codemod` above to make the edit. Text
+search-and-replace is the fallback: reach for it only when a semantic tool is worse for the task
+at hand or is not available.
+
 ### No bare JavaScript
 
 **Everything this project owns is TypeScript.** No `.js`, `.jsx`, `.mjs` or `.cjs` file is allowed
