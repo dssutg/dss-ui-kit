@@ -128,8 +128,16 @@ translation is a type error rather than a blank label on a panel an operator is 
 ```tsx
 import { LocaleProvider, registerLocale, type LocaleDefinition } from 'dss-ui-kit';
 
+// A key the application owns is declared once, here or in its own types module. Every `t` call is
+// checked against the library's keys and these together.
+declare module 'dss-ui-kit' {
+  interface CustomMessages {
+    'app.title': string;
+  }
+}
+
 registerLocale('de', {
-  messages: { 'button.cancel': 'Abbrechen' },
+  messages: { 'button.cancel': 'Abbrechen', 'app.title': 'Betriebskonsole' },
   script: 'latin',
 } satisfies LocaleDefinition);
 
@@ -140,8 +148,11 @@ registerLocale('de', {
 ```
 
 `MessageKey` is derived from the English catalogue, so a key has to exist before a component can name
-it, and every other catalogue is typed `Record<MessageKey, string>`. A consumer adds its own keys by
-passing `messages` to the provider.
+it, and `t` takes a declared key: one of `MessageKey`, or one the consumer added by augmenting
+`CustomMessages` as above. An undeclared key does not compile, so a typo is caught at the desk rather
+than read off a panel by an operator. `tRaw` takes any string, for a key built at runtime or
+read out of data, and catalogues passed to `registerLocale` or the `messages` prop are checked the
+same way — `DeclaredCatalogue`, where every key must be declared.
 
 ## Theming
 

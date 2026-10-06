@@ -52,7 +52,12 @@ export type LocaleName = (typeof supportedLocales)[number] | (string & {});
 /** The locale used when nothing else applies, and the last resort for an unknown name. */
 export const fallbackLocale: LocaleName = 'en';
 
-/** A message catalogue: message keys mapped to their translation. */
+/**
+ * A message catalogue: message keys mapped to their translation, as the runtime holds it.
+ *
+ * Open by design — the merged maps the lookup walks carry keys from many sources. A caller writes
+ * one as {@link DeclaredCatalogue}, where every key is checked.
+ */
 export type MessageCatalogue = Record<string, string>;
 
 /** The writing system a locale uses, which some components lay out differently. */
@@ -66,8 +71,11 @@ export type LocaleScript = 'latin' | 'cyrillic' | 'rtl';
  * the fallback locale's data.
  */
 export interface LocaleDefinition {
-  /** Translations of the library's messages. Merged over the shipped catalogues. */
-  readonly messages?: MessageCatalogue | undefined;
+  /**
+   * Translations of the library's messages, keyed by declared messages. Merged over the shipped
+   * catalogues.
+   */
+  readonly messages?: DeclaredCatalogue | undefined;
   /** The names, formats and relative phrases the date components render with. */
   readonly dates?: LocaleDates | undefined;
   /** The writing system, for right-to-left and non-Latin layout. */
@@ -185,23 +193,62 @@ function mergeMessages(
  *
  * Deriving from a value rather than declaring a union of string literals means a key exists because a
  * message was added, not because a type was edited: a catalogue typed `Record<MessageKey, string>` is
- * a translation of this one, or it does not compile. {@link AnyMessageKey} widens the set for the one
- * signature that has to take a caller's keys too.
+ * a translation of this one, or it does not compile. This is the library's arm of
+ * {@link AnyMessageKey}; a caller's own keys join it through {@link CustomMessages}.
  */
 export type MessageKey = keyof typeof en;
 
 /**
- * A key {@link LocaleContextValue.t} resolves: one the library ships, or one the caller added.
+ * The message keys a consumer adds beside the library's, declared by module augmentation.
  *
- * The `string` arm is what makes a caller's own key legal — the library cannot know the keys of a
- * catalogue it has never seen — and `MessageKey` stays the named arm, so the library's keys are the
- * ones autocomplete offers first and a caller still reads the union rather than a bare `string`.
+ * The library cannot know the keys of a catalogue it has never seen, so a caller declares its own
+ * here — once, in the consumer's own types — and every {@link LocaleContextValue.t} call is checked
+ * against them beside {@link MessageKey}:
  *
- * The same pattern as {@link LocaleName}, for the same reason: a language the library has never
- * heard of is a supported locale rather than a type error, and a message of a catalogue it has
- * never seen is a resolvable key rather than a type error too.
+ * ```ts
+ * declare module 'dss-ui-kit' {
+ *   interface CustomMessages {
+ *     'app.title': string;
+ *   }
+ * }
+ * ```
+ *
+ * Then `t('app.title')` compiles, `t('app.titel')` is a compile error, and the library's keys are
+ * still the ones autocomplete offers first. The value type carries nothing — `keyof` is what the
+ * union is built from — so `string` is all a declaration needs. Multiple modules may each declare
+ * their own keys: interface merging adds them to one set, the way {@link registerLocale} merges the
+ * catalogues themselves.
+ *
+ * The interface is empty on purpose. An empty interface is what makes declaration merging possible;
+ * a consumer that never augments it gets the library's keys alone.
  */
-export type AnyMessageKey = MessageKey | (string & {});
+// biome-ignore lint/suspicious/noEmptyInterface: this is the extension point consumers merge into, and merging needs an interface
+export interface CustomMessages {}
+
+/**
+ * A key {@link LocaleContextValue.t} resolves: one the library ships, or one the caller declared in
+ * {@link CustomMessages}.
+ *
+ * A closed union rather than `string`: a string naming no declared message does not compile through
+ * `t`, so a typo is a compile error rather than an operator reading a key off a panel. A key the
+ * types cannot know — built at runtime, read out of data — goes through
+ * {@link LocaleContextValue.tRaw}, which takes any string.
+ *
+ * `MessageKey` stays the named arm, so the library's keys are the ones autocomplete offers first and
+ * a caller still reads the union rather than a bare `string`.
+ */
+export type AnyMessageKey = MessageKey | keyof CustomMessages;
+
+/**
+ * One locale's messages as a caller writes them: a catalogue whose keys are all declared.
+ *
+ * Every key must be an {@link AnyMessageKey} — the library's or the caller's own — because a key no
+ * declaration covers is one `t` refuses to resolve, and a catalogue holding it would be dead text.
+ * None is required: a caller translates the messages it has, not every message there is. A catalogue
+ * that is already typed `Record<string, string>` — one read from data rather than written in the
+ * source — remains assignable to it.
+ */
+export type DeclaredCatalogue = Partial<Record<AnyMessageKey, string>>;
 
 /** Parameters substituted into a message, referenced as `{name}` in the text. */
 export type MessageParameters = Record<string, string | number | boolean | null | undefined>;
@@ -347,10 +394,10 @@ export function translate(
  * What {@link useLocale} returns: the locale in effect, its date data, and the two ways to resolve a
  * message.
  *
- * `t` and `tRaw` differ in their name and in nothing else: both resolve a message the same way,
- * down to returning an unknown key as itself, and both accept a key of the library's and a key the
- * caller added to its own catalogue. `t` names the library's keys, so they are the ones autocomplete
- * offers; `tRaw` is the name that claims nothing about where the key came from.
+ * `t` and `tRaw` resolve a message the same way, down to returning an unknown key as itself, and
+ * both read the same merged catalogues. They differ in what the compiler checks: `t` takes a declared
+ * key — the library's or the caller's from {@link CustomMessages} — so a typo does not compile, and
+ * `tRaw` takes any string, for a key the types cannot know.
  */
 export interface LocaleContextValue {
   /** The locale in effect. */
@@ -358,21 +405,22 @@ export interface LocaleContextValue {
   /** The names, formats and relative phrases the date components render with. */
   readonly dates: LocaleDates;
   /**
-   * Resolves a message, whether the library rendered it or the caller added it to a catalogue.
+   * Resolves a message whose key is declared: one the library ships, one the caller added by
+   * augmenting {@link CustomMessages}.
    *
-   * A key no catalogue holds comes back as the key itself, which is what {@link translate} does and
-   * what {@link LocaleContextValue.tRaw} does: a caller must not get a different answer for the same
-   * missing string depending on which of the two it reached for. The key is worth showing because it
-   * names the message that is missing — an operator seeing `Modal.close` knows to tell someone, where
-   * a blank button tells nobody anything and cannot be looked up.
+   * A declared key no catalogue holds comes back as the key itself, which is what {@link translate}
+   * does and what {@link LocaleContextValue.tRaw} does: a caller must not get a different answer for
+   * the same missing string depending on which of the two it reached for. The key is worth showing
+   * because it names the message that is missing — an operator seeing `Modal.close` knows to tell
+   * someone, where a blank button tells nobody anything and cannot be looked up.
    */
   readonly t: (key: AnyMessageKey, parameters?: MessageParameters | null) => string;
   /**
-   * Resolves an arbitrary string, under a name that says nothing about where the key came from.
+   * Resolves an arbitrary string, under a name that claims nothing about where the key came from.
    *
    * Behaves exactly as {@link LocaleContextValue.t}, including returning an unknown key as-is. The
-   * two differ in their name only, and both are kept because a caller may have written against
-   * either.
+   * two differ in what the compiler accepts: this one takes any string, for a key built at runtime
+   * or read out of data, and it is kept because a caller may have written against it.
    */
   readonly tRaw: (key: string, parameters?: MessageParameters | null) => string;
   /** Switches the locale and persists the choice. */
@@ -435,14 +483,14 @@ export interface LocaleProviderProps {
    *
    * This is how a caller translates the library into any language, and how it overrides a single
    * string without forking the library: a locale listed here keeps every message it already had and
-   * takes the ones named here instead. Its own keys are welcome — the library never needs to know
-   * about them, and {@link LocaleContextValue.t} resolves them beside its own.
+   * takes the ones named here instead. Its own keys are welcome beside the library's — declared once
+   * in {@link CustomMessages}, where {@link LocaleContextValue.t} picks them up.
    *
    * A caller's catalogue wins over a registered one for the same locale, because it is the more
    * specific of the two: a prop was passed to this provider, the registry was set up by the module
    * that imported it first.
    */
-  readonly messages?: Readonly<Record<string, MessageCatalogue>> | undefined;
+  readonly messages?: Readonly<Record<string, DeclaredCatalogue>> | undefined;
   /**
    * Date data by locale, replacing the shipped data for the locales named here.
    *

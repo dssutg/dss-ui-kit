@@ -1,16 +1,18 @@
 /**
  * The locale is the seam between what the library renders and what an operator reads, so these tests
  * are about who wins: the shipped catalogue, a locale a caller registered, or a `messages` prop passed
- * to one provider. They also pin that `t` resolves a key of the library's and one the caller added
- * the same way, and that `tRaw` — the name that claims nothing about where the key came from — is no
- * different.
+ * to one provider. They also pin that `t` resolves a key of the library's and one the caller declared
+ * the same way, that `tRaw` is no different at runtime, and — at compile time — that `t` accepts only
+ * declared keys.
  */
 // @vitest-environment jsdom
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import {
+  type AnyMessageKey,
   builtinCatalogues,
   getLocaleDates,
   getLocaleDefinition,
+  type LocaleContextValue,
   LocaleProvider,
   type MessageCatalogue,
   mergeCatalogues,
@@ -19,6 +21,20 @@ import {
   useLocale,
 } from '@/locale';
 import { render } from '@/util/testing/render';
+
+/**
+ * What a consumer declares for its own keys, in the form it takes inside this repository: the probe
+ * and the merge tests below call `t` with these keys, so they are checked here the same way a
+ * consumer's keys are checked in an application.
+ */
+declare module '@/locale' {
+  interface CustomMessages {
+    'MyApp.title': string;
+    first: string;
+    second: string;
+    greeting: string;
+  }
+}
 
 /**
  * Reads one locale's messages out of a catalogue map.
@@ -51,6 +67,22 @@ function LocaleProbe(): React.JSX.Element {
     </div>
   );
 }
+
+describe('the type t is checked against', () => {
+  it('takes a declared key and nothing else', () => {
+    // Compile-time assertions: they hold or fail under `deno task typecheck`, which is the gate
+    // that runs before every commit. The first pins `t`'s parameter to the public union; the rest
+    // are the property itself — a library key and a declared key compile, a typo and a bare string
+    // do not.
+    type TKey = Parameters<LocaleContextValue['t']>[0];
+
+    expectTypeOf<TKey>().toEqualTypeOf<AnyMessageKey>();
+    expectTypeOf<'Modal.close'>().toExtend<TKey>();
+    expectTypeOf<'MyApp.title'>().toExtend<TKey>();
+    expectTypeOf<'Modal.clsoe'>().not.toExtend<TKey>();
+    expectTypeOf<string>().not.toExtend<TKey>();
+  });
+});
 
 describe('a caller overriding one message', () => {
   it('keeps every other message of that locale', async () => {
@@ -87,8 +119,8 @@ describe('a caller overriding one message', () => {
   });
 
   it('resolves a key the library does not own, through the catalogue the caller passed', async () => {
-    // The library cannot know the keys of a catalogue it has never seen, so they are legal for `t`
-    // as they are for `tRaw`, and both read the same merged catalogues.
+    // A key of a catalogue the caller passed is legal for `t` because the caller declared it in
+    // `CustomMessages`, and `tRaw` needs no declaration — both read the same merged catalogues.
     const { find } = await render(
       <LocaleProvider
         initialLocale="en"

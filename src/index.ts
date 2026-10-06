@@ -421,6 +421,8 @@ export {
 } from './feature_flag';
 export type {
   AnyMessageKey,
+  CustomMessages,
+  DeclaredCatalogue,
   LocaleContextValue,
   LocaleDefinition,
   LocaleName,

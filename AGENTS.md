@@ -352,6 +352,11 @@ an operator reads comes from the locale files, and a component holds a key, neve
 - `MessageKey` is **derived from the English locale**, so a key has to exist before a component can
   name it, and every other locale is typed `Record<MessageKey, string>` — a message missing from
   `ru.tsx` is a type error, not a blank label on a panel an operator is reading.
+- **`t` takes a declared key, `tRaw` takes any string**: `AnyMessageKey = MessageKey | keyof
+  CustomMessages` is the closed union `t` is checked against, `CustomMessages` is the empty interface
+  a consumer augments with its own keys, and catalogues a caller writes are `DeclaredCatalogue`,
+  where every key is declared. A key the types cannot know — built at runtime, read out of data —
+  goes through `tRaw`.
 - **A language the library does not ship is registered, not forked**: `registerLocale(name, definition)`
   takes messages, dates, a script and a plural rule, and `LocaleProvider` merges a caller's own
   `messages` and `dates` over the shipped catalogues. Two files per new language, not a fork.
