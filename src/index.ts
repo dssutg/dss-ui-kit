@@ -206,7 +206,7 @@ export type { MUITabDescriptor } from '@/components/navigation/MUITabList';
 export { isMUITabActive, MUITabList } from '@/components/navigation/MUITabList';
 export { NAV_BAR_BREADCRUMB_SEPARATOR, NavBar } from '@/components/navigation/NavBar';
 export { OrderPanel } from '@/components/navigation/OrderPanel';
-export type { RouteDescriptor } from '@/components/navigation/RouteSwitch';
+export type { RouteDescriptor, RouteSwitchProps } from '@/components/navigation/RouteSwitch';
 export { RouteSwitch } from '@/components/navigation/RouteSwitch';
 export { SlideMenu } from '@/components/navigation/SlideMenu';
 export { ToTop } from '@/components/navigation/ToTop';
