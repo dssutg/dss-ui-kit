@@ -9,23 +9,28 @@ import { collectFiles, REPOSITORY_ROOT } from './util/source-tree.ts';
  * every string, and a Russian phrase pasted straight into a component is a string no translator can
  * reach and no second language can display.
  *
- * The rule this checks is therefore the strict form of the convention: Russian text lives in
- * `src/locales/ru.tsx` and nowhere else, and everything else holds message keys. It is checked here
- * rather than left to review — this runs as part of `deno task ci`.
+ * The rule this checks is therefore the strict form of the convention: Russian prose lives in
+ * `src/locales/ru.tsx` and nowhere else, and everything else holds message keys — the only other
+ * files that may carry Cyrillic are the ones holding data about a language itself, listed with
+ * their reason below. It is checked here rather than left to review — this runs as part of
+ * `deno task ci`.
  */
 
 /** Extensions of the files a reader of this repository opens as text. */
 const TEXT_EXTENSIONS = ['.css', '.html', '.json', '.md', '.ts', '.tsx', '.yaml', '.yml'];
 
 /**
- * Files that are allowed to contain Russian text, each for a stated reason.
+ * Files that are allowed to contain Cyrillic text, each for a stated reason.
  *
  * `ru.tsx` is the point: it is the catalogue a translator works from, so it is the one file that
- * exists to hold Russian. Nothing else is exempt — not the README, not the changelog, not this
- * repository's own documentation, not a component. An exemption with nothing in it is a hole
- * waiting for the first paste.
+ * exists to hold Russian. Every other exemption has to name data rather than prose — an exemption
+ * with nothing in it is a hole waiting for the first paste.
+ *
+ * `lang-names.ts` holds endonyms keyed by ISO 639-1 code, so Abkhaz, Avar, Belarusian and the rest
+ * are written in the script those languages are written in. That is a fact about a language, not a
+ * phrase a translator reaches, and transliterating it would break the one thing the table is for.
  */
-const ALLOWED_FILES = ['src/locales/ru.tsx'];
+const ALLOWED_FILES = ['src/locales/ru.tsx', 'src/locales/lang-names.ts'];
 
 /** Any Cyrillic letter, in any of the languages written in it. */
 const CYRILLIC = /\p{Script=Cyrillic}/u;
@@ -55,7 +60,7 @@ function findRussianText(): string[] {
 }
 
 describe('repository policy', () => {
-  it('keeps Russian text in the locale file and nowhere else', () => {
+  it('keeps Russian prose in the locale file and nowhere else', () => {
     expect(findRussianText()).toEqual([]);
   });
 });

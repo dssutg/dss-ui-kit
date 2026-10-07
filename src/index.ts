@@ -279,6 +279,7 @@ export {
   unregisterIcon,
 } from '@/icons/registry';
 export type { LocaleDates } from '@/locales/dates';
+export { langNames } from '@/locales/lang-names';
 export { tryCatch, tryCatchAsync } from '@/util/catch';
 export { cn } from '@/util/cn';
 export type { RGBA32, RGBA32BreakPoint } from '@/util/color';
