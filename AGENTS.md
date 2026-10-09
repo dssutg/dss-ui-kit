@@ -570,8 +570,8 @@ so it is inert in the `node`-environment tests.
 ## Git and versioning
 
 **Every commit message must follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).**
-A commit message that does not is what `bump-version` reports: run `bump-version lint` before
-releasing.
+`bump-version add-hook` installs a `commit-msg` hook that rejects a bad message, and `bump-version
+lint` checks the history since the last release the same way; run it before releasing.
 
 ```text
 <type>(<scope>): <description>
