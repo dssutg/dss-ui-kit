@@ -14,8 +14,8 @@ import { collectFiles, REPOSITORY_ROOT } from './util/source-tree.ts';
  * config `deno.json` is not that file — a real `deno.json` beats a sibling `jsr.json` — this script
  * writes a self-contained `jsr.json` from two sources and publishes with `-c`:
  *
- * - `package.json` gives the version and the licence (the release script owns the version; the JSR
- *   copy of it is never edited by hand) and `deno.lock` gives the exact installed version every npm
+ * - `package.json` gives the version and the licence (bump-version owns the version; the JSR copy
+ *   of it is never edited by hand) and `deno.lock` gives the exact installed version every npm
  *   specifier in the map is pinned to;
  * - the module graph of the published files gives the rest of the imports map: every `@/` alias
  *   resolves to the exact file it names (with the directory entry's `index.*` included), the npm

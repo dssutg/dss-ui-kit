@@ -36,7 +36,7 @@ One tool per concern, and nothing else.
 | Type check       | tsgo (`@typescript/native-preview`) | `deno task typecheck`      |
 | Tests            | Vitest                               | `deno task test`           |
 | API docs         | TypeDoc 0.28                         | `deno task docs`           |
-| Release          | `scripts/release.ts`                 | `deno task release`        |
+| Release          | bump-version                         | `bump-version`             |
 | JSR publish      | `scripts/publish.ts`                 | `deno task publish`        |
 
 Everything runs through **Deno 2** — there is no npm/yarn/pnpm step, and Deno resolves
@@ -163,7 +163,7 @@ not a convenience.
   names exactly one file and cannot be misread. The rule is about not walking *up* the tree, and `./`
   does not.
 - `scripts/` runs directly under Deno, outside the Vite alias, so it keeps single-level
-  `./util/conventional.ts` imports. `../**` is still rejected.
+  `./util/source-tree.ts` imports. `../**` is still rejected.
 - The `@` alias is declared twice and both halves must agree — `resolve.alias` in `vite.config.ts`
   for the bundler, and `compilerOptions.paths` in `tsconfig.json` for the type checker.
 
@@ -402,15 +402,16 @@ deno task ci              # the full local gate, exactly what CI runs
 ```
 
 `deno task ci` must pass before any commit. It chains `install:frozen`, `format:check`, `lint`,
-`test`, `build` and `docs`, which is the whole of the GitHub Actions pipeline in one command. If Biome
-reports a fixable problem, run `deno task format` rather than editing by hand. The release commands
-are not here because they are the maintainer's alone — see [Releasing](#releasing).
+`test`, `build`, `pack` and `docs`, which is the whole of the GitHub Actions pipeline in one command.
+If Biome reports a fixable problem, run `deno task format` rather than editing by hand. Releases are
+not a task here because they are the maintainer's alone and run through an external tool — see
+[Releasing](#releasing).
 
 ## Continuous integration
 
 [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) defines a strict pipeline: `format`, `lint`,
-`typecheck`, `test`, `commit-message` → `build`, `docs`, plus a `release-preview` job on `v*` tags.
-`biome ci` treats formatting as an error, so an unformatted file fails the pipeline.
+`typecheck`, `test` → `build`, `docs`. `biome ci` treats formatting as an error, so an unformatted
+file fails the pipeline.
 
 Every job checks the repository out and then runs `.github/actions/setup/action.yml`, which installs
 the pinned Deno and runs `deno install --frozen`. A shared action rather than a copy per job: a
@@ -448,8 +449,6 @@ src/
     global.css            global element styles the components assume
   index.css               Tailwind entry point (index.css is the only global stylesheet)
 scripts/
-  commitlint.ts           Conventional Commits validator (used by the git hook)
-  release.ts              version and changelog from the git history
   publish.ts              writes jsr.json and publishes the source to JSR
   check-package-manifest.ts  verifies every path in package.json `files` exists in dist/
   bundle-icons.ts         bundles src/icons/*.svg into src/icons/index.tsx (run by `deno task icons`)
@@ -571,8 +570,8 @@ so it is inert in the `node`-environment tests.
 ## Git and versioning
 
 **Every commit message must follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).**
-A `commit-msg` hook in `.githooks/` enforces this (it is wired up via `core.hooksPath`); a bad
-message will be rejected.
+A commit message that does not is what `bump-version` reports: run `bump-version lint` before
+releasing.
 
 ```text
 <type>(<scope>): <description>
@@ -614,38 +613,46 @@ Everything else is a minor or a patch, however large the diff looks:
   build change, a test, a comment.
 
 When in doubt, ask what a consumer outside this repository would have to do differently. If the
-answer is "nothing", it is not breaking. `deno task release` turns a single `!` straight into a
-major bump, so the marker is not something to reach for to make a commit look important.
+answer is "nothing", it is not breaking. `bump-version` turns a single `!` straight into a major
+bump, so the marker is not something to reach for to make a commit look important.
 
 ## Releasing
 
-> **Only the project maintainer bumps the version.** Do not run `deno task release` to bump a
-> version, write the changelog or tag a release unless the maintainer has explicitly asked for it in
-> this session. The version is a statement the maintainer makes about the software; a release made
-> on their behalf is one they did not choose, and the number cannot be walked back without rewriting
+> **Only the project maintainer bumps the version.** Do not run `bump-version` to bump a version,
+> write the changelog or tag a release unless the maintainer has explicitly asked for it in this
+> session. The version is a statement the maintainer makes about the software; a release made on
+> their behalf is one they did not choose, and the number cannot be walked back without rewriting
 > the history. Reading the history and reporting what a release *would* produce is fine:
-> `deno task release --dry-run` writes nothing.
+> `bump-version -dry-run` writes nothing.
+
+Releases use [bump-version](https://github.com/dssutg/bump-version), the maintainer's own tool. It
+is not a task in this repository: install the binary on `PATH` (the project's README covers the
+build) and call it from the repository root. `bump-version.cfg` holds this repository's
+configuration — the version lives in `package.json`, the changelog in `CHANGELOG.md`, and tags are
+`v<version>`.
 
 ```bash
-deno task release --dry-run    # preview version + changelog entry
-deno task release              # bump package.json, write CHANGELOG.md, commit, tag
-deno task changelog            # rebuild CHANGELOG.md from git history
+bump-version -dry-run           # preview version + changelog entry
+bump-version                    # bump package.json, write CHANGELOG.md, commit, tag
+bump-version preview-changelog  # show this release's changelog without writing it
+bump-version lint               # list commits since the last release that are not Conventional Commits
+bump-version cancel             # undo a bump made too early
 ```
 
-The script reads the git history since the latest `v*` tag, derives the release type, writes the
-`package.json` version and the changelog entry, creates a `chore(release): <version>` commit and an
-annotated `v<version>` tag. It refuses to run with a dirty working tree or staged changes, and it
-runs `deno task lint` first.
+The tool reads the git history since the latest `v*` tag, derives the release type from the
+Conventional Commit kinds, writes the `package.json` version and the changelog entry, creates a
+`chore(release): <version>` commit and an annotated `v<version>` tag. It refuses to run with a dirty
+working tree or staged changes, and `-force` runs it non-interactively.
 
 Never hand-edit the `version` field in `package.json` or the generated sections in `CHANGELOG.md`.
-Both are owned by the script.
+Both are owned by the tool.
 
 ## Publishing to JSR
 
 The same version also ships as source: `deno task publish` publishes `src/` to
-[`@dssutg/dss-ui-kit`](https://jsr.io/@dssutg/dss-ui-kit), and CI runs it on `v*` tags after the same
-gates `deno task ci` runs. Like `docs/api/`, the `jsr.json` it publishes through is generated, not
-committed — a stale imports map resolves against files that have since moved.
+[`@dssutg/dss-ui-kit`](https://jsr.io/@dssutg/dss-ui-kit) from the maintainer's machine. Like
+`docs/api/`, the `jsr.json` it publishes through is generated, not committed — a stale imports map
+resolves against files that have since moved.
 
 The constraint that shapes it: `deno publish` type-checks the package with Deno, reading everything
 through the imports map of one config file. Three repository conventions do not survive that reading

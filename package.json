@@ -50,9 +50,7 @@
     "typecheck": "deno task typecheck",
     "test": "deno task test",
     "docs": "deno task docs",
-    "ci": "deno task ci",
-    "release": "deno task release",
-    "commitlint": "deno task commitlint"
+    "ci": "deno task ci"
   },
   "peerDependencies": {
     "preact": ">=10.19.0 <11"

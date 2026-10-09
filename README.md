@@ -243,6 +243,19 @@ deno task ci            # the full local gate, exactly what CI runs
 
 `deno task ci` is the gate: a green pipeline and a green `deno task ci` mean the same thing.
 
+### Releases
+
+Releases are made with [bump-version](https://github.com/dssutg/bump-version), the maintainer's tool,
+downloadable from its repository and configured for this project in `bump-version.cfg`. It derives
+the version from the Conventional Commit history, bumps `package.json`, writes `CHANGELOG.md`, and
+creates the release commit and tag. Build and install the binary (see its README), then run it from
+the repository root:
+
+```sh
+bump-version -dry-run   # preview the next version and changelog entry
+bump-version            # bump, write the changelog, commit and tag
+```
+
 The rules the code is held to — layering, the `@` import alias, the naming conventions, the no-`any`
 and no-non-null-assertion bans — are in [`AGENTS.md`](./AGENTS.md).
 
