@@ -1,3 +1,4 @@
+import type { TargetedEvent } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 import { Icon } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';
@@ -184,6 +185,7 @@ export function SortableTable<T, C extends string>({
   style,
   rowStyle,
   tableRef,
+  onScroll,
 }: {
   readonly descriptor: Readonly<SortableTableDescriptor<T, C>>;
   readonly sortColumnId?: C | undefined;
@@ -193,6 +195,8 @@ export function SortableTable<T, C extends string>({
   readonly className?: string | undefined;
   readonly rowStyle?: React.CSSProperties | undefined;
   tableRef?: React.MutableRefObject<HTMLTableSectionElement | null> | undefined;
+  /** Called when the table's own scrolling element is scrolled. */
+  readonly onScroll?: ((event: TargetedEvent<HTMLDivElement, Event>) => void) | undefined;
 }): React.JSX.Element {
   const { t } = useLocale();
 
@@ -321,6 +325,7 @@ export function SortableTable<T, C extends string>({
       ref={containerRef}
       className={cn('relative flex flex-col overflow-auto', className)}
       style={style}
+      onScroll={onScroll}
     >
       {
         // CSS Hacks:

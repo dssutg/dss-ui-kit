@@ -28,6 +28,7 @@ export function ControlledFilterableTable<T, C extends string>({
   style,
   historyId,
   getItemId,
+  onScroll,
   searchText,
   setSearchText,
 }: ControlledTableProps<T, C>): React.JSX.Element {
@@ -46,6 +47,7 @@ export function ControlledFilterableTable<T, C extends string>({
       style={style}
       historyId={historyId}
       getItemId={getItemId}
+      onScroll={onScroll}
       searchText={searchText}
       setSearchText={setSearchText}
     />

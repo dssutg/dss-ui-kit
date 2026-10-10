@@ -60,6 +60,7 @@ export function ControlledTable<T, C extends string>({
   style,
   historyId,
   getItemId,
+  onScroll,
   searchText,
   setSearchText,
 }: ControlledTableProps<T, C>): React.JSX.Element {
@@ -148,6 +149,7 @@ export function ControlledTable<T, C extends string>({
         }}
         sortColumnId={sortColumnId}
         reversedSort={reversedSort}
+        onScroll={onScroll}
       />
     </div>
   );

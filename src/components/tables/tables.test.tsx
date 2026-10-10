@@ -279,4 +279,43 @@ describe('FilterableTable', () => {
 
     expect(findByText('alpha')).toBeDefined();
   });
+
+  it('calls onScroll when its scrolling element is scrolled', async () => {
+    const onScroll = vi.fn();
+    const { container } = await render(
+      <FilterableTable
+        items={rows}
+        countLabelPrefix="Found"
+        minCountLabelWidth="3rem"
+        headerRowHeight={30}
+        rowHeight={30}
+        properties={[
+          {
+            id: 'name',
+            title: 'Name',
+            width: 200,
+            minWidth: 40,
+            cell: ({ data }: { readonly data: Row }) => <span>{data.name}</span>,
+            comparator: (
+              { data: a }: { readonly data: Row },
+              { data: b }: { readonly data: Row },
+            ) => a.name.localeCompare(b.name),
+            search: { type: 'string', extractValue: (item: Row) => item.name },
+          },
+        ]}
+        getExportedTableFilename={() => 'items.csv'}
+        onScroll={onScroll}
+      />,
+    );
+
+    const scrollContainer = container.querySelector('table')?.parentElement;
+
+    expect(scrollContainer).not.toBeNull();
+
+    act(() => {
+      scrollContainer?.dispatchEvent(new Event('scroll', { bubbles: true }));
+    });
+
+    expect(onScroll).toHaveBeenCalled();
+  });
 });

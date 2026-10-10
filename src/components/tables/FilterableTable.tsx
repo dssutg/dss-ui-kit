@@ -1,4 +1,5 @@
-import { type Context, createContext, useContext, useState } from 'react';
+import type { Context, TargetedEvent } from 'react';
+import { createContext, useContext, useState } from 'react';
 import { ControlledTable } from './ControlledTable';
 import type { SortableTableCellRenderer, SortableTableComparatorFunction } from './SortableTable';
 import type { GetExportedTableFilenameCallback } from './table_export';
@@ -69,6 +70,8 @@ export interface FilterableTableProps<T, C extends string> {
   readonly style?: React.CSSProperties | undefined;
   readonly historyId?: string | undefined;
   readonly getItemId?: ((item: T, index: number) => string | number) | undefined;
+  /** Called when the table's own scrolling element is scrolled. */
+  readonly onScroll?: ((event: TargetedEvent<HTMLDivElement, Event>) => void) | undefined;
 }
 
 /**
@@ -91,6 +94,7 @@ export function FilterableTable<T, C extends string>({
   style,
   historyId,
   getItemId,
+  onScroll,
 }: FilterableTableProps<T, C>): React.JSX.Element {
   return (
     <FilterableTableContextProvider>
@@ -108,6 +112,7 @@ export function FilterableTable<T, C extends string>({
         style={style}
         historyId={historyId}
         getItemId={getItemId}
+        onScroll={onScroll}
       />
     </FilterableTableContextProvider>
   );
@@ -127,6 +132,7 @@ function Table<T, C extends string>({
   style,
   historyId,
   getItemId,
+  onScroll,
 }: FilterableTableProps<T, C>) {
   const context = useContext(FilterableTableContext);
 
@@ -151,6 +157,7 @@ function Table<T, C extends string>({
       style={style}
       historyId={historyId}
       getItemId={getItemId}
+      onScroll={onScroll}
       searchText={searchText}
       setSearchText={setSearchText}
     />
