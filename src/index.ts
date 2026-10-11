@@ -83,10 +83,28 @@ export type { ColorInputProperties } from '@/components/color-picker/ColorInput'
 export { ColorInput } from '@/components/color-picker/ColorInput';
 export type { ColorPickerProperties } from '@/components/color-picker/ColorPicker';
 export { ColorPicker } from '@/components/color-picker/ColorPicker';
+export {
+  equalColorObjects,
+  equalColorString,
+  equalHex,
+  hexToHsva,
+  hslaStringToHsva,
+  hslaToHsva,
+  hsvaToHex,
+  hsvaToHsla,
+  hsvaToHslaString,
+  hsvaToRgba,
+  hsvaToRgbaString,
+  rgbaStringToHsva,
+  rgbaToHsva,
+} from '@/components/color-picker/color_picker_conversion';
 export type {
   AnyColor,
+  ColorInputBaseProperties,
+  ColorInputHTMLAttributes,
   ColorModel,
   ColorPickerBaseProperties,
+  ColorPickerHTMLAttributes,
   HslaColor,
   HslColor,
   HsvaColor,
@@ -286,6 +304,28 @@ export type { RGBA32, RGBA32BreakPoint } from '@/util/color';
 export { getCSSVariableValue, Rgba32Gradient } from '@/util/color';
 export type { CalendarLocale, DateFormatLocale, DateLocale, DateNames } from '@/util/date';
 export { formatRelativeDate, getDateComponents } from '@/util/date';
+export type { EventCallback, WCAttrChange } from '@/util/dom';
+export {
+  areDOMRectsEqual,
+  copyToClipboard,
+  DOMRectContainsPoint,
+  DragHandler,
+  debounce,
+  decompressJSON,
+  escapeHTMLValue,
+  firstTouch,
+  getDpr,
+  getPointerPosition,
+  getResponsiveSize,
+  hasUserFocusedInput,
+  html,
+  inViewport,
+  onBackdropClick,
+  sanitizeHTMLString,
+  scrollToElement,
+  templ,
+  WComponent,
+} from '@/util/dom';
 export { parseCSV, parseDSV, serializeCSV, serializeDSV } from '@/util/dsv';
 export { downloadStringAsPlainTextFile, formatByteSize } from '@/util/file';
 export { formatHexNumber } from '@/util/format';
@@ -370,6 +410,50 @@ export { getHttpStatusCategory, getHttpStatusCategoryName, getHttpStatusName } f
 export { ipv4Regex, parseIp } from '@/util/ipv4';
 export type { KeyMap, KeyMapActions, KeyMapHandler } from '@/util/key_map';
 export { getKeyMapCodeAsHotkey, handleKeyMapKeyDown } from '@/util/key_map';
+export {
+  bezier2d,
+  bezier3d,
+  binomial,
+  calculateSquareSizeFittingContainer,
+  cartesianToPolar,
+  clamp,
+  cmp,
+  degreesToRadians,
+  getMinDistanceBetweenRadians,
+  glMat4Identity,
+  glMat4Invert,
+  glMat4Multiply,
+  glMat4MultiplyMatrixAndVector,
+  glMat4Perspective,
+  glMat4Rotate,
+  glMat4Scale,
+  glMat4Translate,
+  gltMat4Ortho,
+  isPointWithinNormalizedDeviceCoordinates,
+  lerp,
+  lerpRange,
+  mat4From,
+  mergeIntegers,
+  mergeRanges,
+  modulo,
+  multiplyMatrices,
+  naturalCmp,
+  normalizeRadians,
+  polarToCartesian,
+  Rectangle,
+  radiansToDegrees,
+  rotatePoint2D,
+  roundToPowerOfTwo,
+  smoothStep,
+  step,
+  toFloat32Array,
+  transpose,
+  turn,
+  unlerp,
+  Vector2D,
+  vec4From,
+  wrapIndex,
+} from '@/util/math';
 export type { Point2D } from '@/util/math/angle';
 export type { Mat4 } from '@/util/math/matrix';
 export { Vector3D } from '@/util/math/vector3d';
@@ -397,6 +481,17 @@ export type { RoutingStore, RoutingStoreOptions } from '@/util/routing/store';
 export { createRoutingStore } from '@/util/routing/store';
 export type { Store } from '@/util/store';
 export { createStore } from '@/util/store';
+export type { RenderResult } from '@/util/testing/render';
+export {
+  act,
+  change,
+  cleanup,
+  click,
+  flush,
+  render,
+  type,
+  waitFor,
+} from '@/util/testing/render';
 export { uuidv4 } from '@/util/uuid';
 export type { VError, VSchema, VValidator } from '@/util/validator';
 export { vArray, vBoolean, vInt, vNumber, vString } from '@/util/validator';
