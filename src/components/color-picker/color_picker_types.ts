@@ -1,3 +1,5 @@
+import type { HslaColor } from '@/util/color';
+
 /** A colour as red, green and blue channels, each 0-255. */
 export interface RgbColor {
   r: number;
@@ -17,10 +19,7 @@ export interface HslColor {
   l: number;
 }
 
-/** An {@link HslColor} with an alpha from 0 to 1. */
-export interface HslaColor extends HslColor {
-  a: number;
-}
+export type { HslaColor };
 
 /**
  * A colour as hue in degrees, with saturation and value in percent.

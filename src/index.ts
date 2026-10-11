@@ -105,7 +105,6 @@ export type {
   ColorModel,
   ColorPickerBaseProperties,
   ColorPickerHTMLAttributes,
-  HslaColor,
   HslColor,
   HsvaColor,
   HsvColor,
@@ -300,8 +299,20 @@ export type { LocaleDates } from '@/locales/dates';
 export { langNames } from '@/locales/lang-names';
 export { tryCatch, tryCatchAsync } from '@/util/catch';
 export { cn } from '@/util/cn';
-export type { RGBA32, RGBA32BreakPoint } from '@/util/color';
-export { getCSSVariableValue, Rgba32Gradient } from '@/util/color';
+export type { HexColorBreakPoint, HslaColor, RGBA32, RGBA32BreakPoint } from '@/util/color';
+export {
+  cssColorTo6DigitHex,
+  darkenColor,
+  findBreakPointRange,
+  getColorBetweenBreakPoints,
+  getColorFromBreakPoints,
+  getCSSVariableValue,
+  getHslaColorString,
+  lerpRgba32,
+  parseHexColor,
+  Rgba32Gradient,
+} from '@/util/color';
+
 export type { CalendarLocale, DateFormatLocale, DateLocale, DateNames } from '@/util/date';
 export { formatRelativeDate, getDateComponents } from '@/util/date';
 export type { EventCallback, WCAttrChange } from '@/util/dom';
