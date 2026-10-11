@@ -14,9 +14,10 @@ import { afterEach, vi } from 'vitest';
  *
  * It lives in `src/util/` rather than beside the tests because the alternative is a copy per group:
  * `scripts/` sits outside the `@` alias, so importing from it would mean walking up the tree with
- * `../`, which the import rule forbids everywhere. Nothing in the public surface imports it, so it is
- * not in the bundle, and `package.json` publishes `dist/` and `src/css/` only, so it is not in the
- * package either.
+ * `../`, which the import rule forbids everywhere. The public surface reaches it only through the
+ * `dss-ui-kit/testing` subpath, never the main entry, so the consumer's runtime bundle carries no
+ * vitest; the JSR package excludes these files along with the subpath, so a JSR consumer has no
+ * test helpers, which is what a package without a vitest dependency loses.
  *
  * The imports are the React ones on purpose: `react-dom/client` and `react-dom/test-utils` resolve to
  * `preact/compat/client` and `preact/test-utils` through the alias in `vite.config.ts`, which is the

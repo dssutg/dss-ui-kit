@@ -17,6 +17,7 @@ have to reach into their own code for is a prop.
 - [Theming](#theming)
 - [Events](#events)
 - [WebGL](#webgl)
+- [Testing](#testing)
 - [Development](#development)
 - [Licence](#licence)
 
@@ -58,8 +59,10 @@ import { Button, ControlledTable, LocaleProvider, setTheme } from 'dss-ui-kit';
 import 'dss-ui-kit/style.css';
 ```
 
-A module that is not reachable from the root is not part of the library. Importing past it means
-depending on something the version number does not describe.
+A module that is not reachable from the root is not part of the runtime library. Three subpaths are
+deliberate, documented exceptions: the stylesheet (`style.css`), the token preset
+([Styling](#styling)) and the test helper ([Testing](#testing)). Anything else would be depending on
+something the version number does not describe.
 
 ### Components
 
@@ -220,6 +223,21 @@ projection, with per-face colours or a flat material. It is generic — it has n
 and it is exported in full (`createSceneRenderContext`, `renderScene`, `useGLCtx`,
 `convertBoxToQuads`, `generateTransformMatrices`, …) for an application that needs to draw its own
 scene in the same pipeline the components use.
+
+## Testing
+
+The render helper the library's own component tests use is published for a consumer who wants the
+same against their own suite:
+
+```tsx
+import { render } from 'dss-ui-kit/testing';
+```
+
+It renders through `preact/compat` against the Preact the consumer already has, and keeps `vitest`
+out of the runtime bundle: the `afterEach` it registers at import time resolves against the
+consumer's own runner, so a suite that imports the helper hooks into the vitest it started. It is a
+deliberate exception to the root being the whole public surface — the helper belongs to the tests
+that run it, not to the runtime — and a consumer who does not test components never imports it.
 
 ## Development
 

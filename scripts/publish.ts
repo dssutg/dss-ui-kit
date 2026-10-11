@@ -52,6 +52,9 @@ const PUBLISH_EXCLUDE: readonly string[] = [
   // The test-only render helper imports `vitest`, which the package does not depend on; it is
   // reachable from the test files alone, so a package without it loses nothing.
   'src/util/testing',
+  // Its npm-only subpath entry re-exports the same helper, so it is excluded with it. The npm
+  // package ships the built `./testing` entry; JSR serves source and offers no test helpers.
+  'src/testing.ts',
 ];
 
 /** The scope and package name the library publishes under on JSR. */

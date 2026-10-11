@@ -426,7 +426,7 @@ green pipeline and a green `deno task ci` mean the same thing.
 
 ```text
 src/
-  index.ts                the package's public surface; the only entry point consumers need
+  index.ts                the package's public surface; the runtime entry point consumers need
   util/                   hooks and framework-agnostic helpers, one directory per group;
                           an entry is index.* so the directory is the import specifier
     array/ assert/ catch/ color/ date/ dom/ dsv/ editor/ fetch/ file/ format/
@@ -677,8 +677,9 @@ Consequences worth knowing before touching the source:
 
 - A new specifier under `src/` that no candidate file backs (`@/util/new-thing` with no directory)
   fails the publish, by design — run `deno task publish:dry` after moving files.
-- The test-only render helper (`src/util/testing/`) is excluded from the package; it imports
-  `vitest`, which is not a package dependency.
+- The test helpers (`src/util/testing/`) are excluded from the package, together with the
+  `src/testing.ts` entry that publishes them for npm as `dss-ui-kit/testing`; JSR serves source,
+  and a package without a vitest dependency has no test helpers to ship.
 - The `.glsl` shaders are imported with the standard `with { type: 'text' }`, not Vite's `?raw`; the
   rollup `moduleTypes` in `vite.config.ts` is the reading Vite gives them.
 

@@ -492,17 +492,6 @@ export type { RoutingStore, RoutingStoreOptions } from '@/util/routing/store';
 export { createRoutingStore } from '@/util/routing/store';
 export type { Store } from '@/util/store';
 export { createStore } from '@/util/store';
-export type { RenderResult } from '@/util/testing/render';
-export {
-  act,
-  change,
-  cleanup,
-  click,
-  flush,
-  render,
-  type,
-  waitFor,
-} from '@/util/testing/render';
 export { uuidv4 } from '@/util/uuid';
 export type { VError, VSchema, VValidator } from '@/util/validator';
 export { vArray, vBoolean, vInt, vNumber, vString } from '@/util/validator';
