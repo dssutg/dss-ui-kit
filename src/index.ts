@@ -338,7 +338,18 @@ export {
   WComponent,
 } from '@/util/dom';
 export { parseCSV, parseDSV, serializeCSV, serializeDSV } from '@/util/dsv';
-export { downloadStringAsPlainTextFile, formatByteSize } from '@/util/file';
+export {
+  downloadCanvasAsFile,
+  downloadStringAsPlainTextFile,
+  downloadURLAsFile,
+  formatByteSize,
+  getFileExtension,
+  loadFileContent,
+  openFileDialog,
+  openPdfExporterForHtml,
+  postFormJSONToDownloadFile,
+  removeFileExtension,
+} from '@/util/file';
 export { formatHexNumber } from '@/util/format';
 export { fuzzySearch } from '@/util/fuzzy_search';
 export type { BoxFaceName, GLQuad } from '@/util/gl/geometry';
