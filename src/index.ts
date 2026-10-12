@@ -315,7 +315,7 @@ export {
 
 export type { CalendarLocale, DateFormatLocale, DateLocale, DateNames } from '@/util/date';
 export { formatRelativeDate, getDateComponents } from '@/util/date';
-export type { EventCallback, WCAttrChange } from '@/util/dom';
+export type { EventCallback, SanitizeSVGOptions, WCAttrChange } from '@/util/dom';
 export {
   areDOMRectsEqual,
   copyToClipboard,
@@ -331,8 +331,10 @@ export {
   hasUserFocusedInput,
   html,
   inViewport,
+  isSafeSVGString,
   onBackdropClick,
   sanitizeHTMLString,
+  sanitizeSVGString,
   scrollToElement,
   templ,
   WComponent,
