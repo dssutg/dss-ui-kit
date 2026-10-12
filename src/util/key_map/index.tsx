@@ -25,6 +25,26 @@ export type KeyMap<A> = Readonly<Record<string, KeyMapHandler<A>>>;
 export type KeyMapActions<A extends string> = Readonly<Record<A, () => void>>;
 
 /**
+ * The code bound to an action, and its handler.
+ *
+ * An action appears in the map once, so the first entry that names it is the whole answer. Throws
+ * when nothing is bound: an action the caller can name but the map cannot place is a defect in the
+ * map, and returning an empty hint would hide it behind a blank label.
+ */
+export function getKeyMapEntryByAction<A>(
+  keyMap: KeyMap<A>,
+  action: A,
+): [string, KeyMapHandler<A>] {
+  const entry = Object.entries(keyMap).find(([, handler]) => handler.action === action);
+
+  if (!entry) {
+    throw new Error(`No key is bound to the "${String(action)}" action.`);
+  }
+
+  return entry;
+}
+
+/**
  * A key code as it is written on a key cap: `KeyA` as `A`, `Digit4` as `4`, `ArrowLeft` as
  * `Arrow Left`, `BracketLeft` as `[`.
  *
@@ -42,6 +62,18 @@ export function getKeyMapCodeAsHotkey(code: string): string {
     .replace(/ArrowDown$/, 'Arrow Down')
     .replace(/BracketLeft$/, '[')
     .replace(/BracketRight$/, ']');
+}
+
+/**
+ * The key cap text for an action, so a control can name the binding that runs it without repeating
+ * the code.
+ *
+ * Composes on {@link getKeyMapEntryByAction}, so the label and the binding can never drift apart.
+ */
+export function getKeyMapHotkey<A>(keyMap: KeyMap<A>, action: A): string {
+  const [code] = getKeyMapEntryByAction(keyMap, action);
+
+  return getKeyMapCodeAsHotkey(code);
 }
 
 /**

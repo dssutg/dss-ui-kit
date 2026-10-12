@@ -5,7 +5,14 @@
  */
 
 import { describe, expect, test } from 'vitest';
-import { getKeyMapCodeAsHotkey, handleKeyMapKeyDown, type KeyMap, type KeyMapActions } from './';
+import {
+  getKeyMapCodeAsHotkey,
+  getKeyMapEntryByAction,
+  getKeyMapHotkey,
+  handleKeyMapKeyDown,
+  type KeyMap,
+  type KeyMapActions,
+} from './';
 
 /**
  * A `KeyboardEvent.code` becomes the label the key cap shows, and an unmapped code passes through
@@ -40,6 +47,36 @@ describe('getKeyMapCodeAsHotkey', () => {
   test('leaves a code it has no rendering for unchanged', () => {
     expect(getKeyMapCodeAsHotkey('Escape')).toBe('Escape');
     expect(getKeyMapCodeAsHotkey('Enter')).toBe('Enter');
+  });
+});
+
+/**
+ * Looking a binding up by the action it runs is what lets a control name its own shortcut without
+ * repeating the code beside the map — the lookup and the dispatch share one source.
+ */
+describe('getKeyMapEntryByAction', () => {
+  const keyMap: KeyMap<'copy' | 'paste' | 'selectAll'> = {
+    KeyC: { action: 'copy' },
+    KeyV: { action: 'paste' },
+  };
+
+  test('returns the code and handler bound to the action', () => {
+    expect(getKeyMapEntryByAction(keyMap, 'copy')).toEqual(['KeyC', { action: 'copy' }]);
+  });
+
+  test('throws when no key is bound to the action', () => {
+    expect(() => getKeyMapEntryByAction(keyMap, 'selectAll')).toThrow();
+  });
+});
+
+/**
+ * The hotkey hint is the key cap text of whatever code the map binds to the action.
+ */
+describe('getKeyMapHotkey', () => {
+  test('renders the key cap for the action', () => {
+    const keyMap: KeyMap<'zoomIn'> = { Equal: { action: 'zoomIn' } };
+
+    expect(getKeyMapHotkey(keyMap, 'zoomIn')).toBe('=');
   });
 });
 

@@ -420,7 +420,12 @@ export type { HttpStatus, HttpStatusCategory } from '@/util/http';
 export { getHttpStatusCategory, getHttpStatusCategoryName, getHttpStatusName } from '@/util/http';
 export { ipv4Regex, parseIp } from '@/util/ipv4';
 export type { KeyMap, KeyMapActions, KeyMapHandler } from '@/util/key_map';
-export { getKeyMapCodeAsHotkey, handleKeyMapKeyDown } from '@/util/key_map';
+export {
+  getKeyMapCodeAsHotkey,
+  getKeyMapEntryByAction,
+  getKeyMapHotkey,
+  handleKeyMapKeyDown,
+} from '@/util/key_map';
 export {
   bezier2d,
   bezier3d,
