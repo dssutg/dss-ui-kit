@@ -135,7 +135,7 @@ export function glMat4Perspective(
   aspect: number,
   near: number,
   far = Infinity,
-) {
+): Mat4 {
   const f = 1 / Math.tan(fovY / 2);
 
   out[0] = f / aspect;
@@ -196,7 +196,7 @@ export function gltMat4Ortho(
     readonly near: number;
     readonly far: number;
   },
-) {
+): Mat4 {
   const lr = 1 / (left - right);
   const bt = 1 / (bottom - top);
   const nf = 1 / (near - far);
@@ -224,7 +224,7 @@ export function gltMat4Ortho(
   return out;
 }
 
-export function transpose(out: Mat4, a: Mat4) {
+export function transpose(out: Mat4, a: Mat4): Mat4 {
   // If we are transposing ourselves we can skip a few steps but have to cache some values
   if (out === a) {
     const a01 = a[1];
@@ -390,7 +390,7 @@ export function glMat4Rotate(out: Mat4, a: Mat4, rad: number, axis: Vec3): Mat4 
   return out;
 }
 
-export function glMat4Scale(out: Mat4, a: Mat4, v: Vec3) {
+export function glMat4Scale(out: Mat4, a: Mat4, v: Vec3): Mat4 {
   const [x = 0, y = 0, z = 0] = v;
 
   out[0] = a[0] * x;
@@ -417,7 +417,7 @@ export function glMat4Scale(out: Mat4, a: Mat4, v: Vec3) {
 }
 
 // Multiply two 4x4 matrices
-export function glMat4Multiply(out: Mat4, a: Mat4, b: Mat4) {
+export function glMat4Multiply(out: Mat4, a: Mat4, b: Mat4): Mat4 {
   const a00 = a[0];
   const a01 = a[1];
   const a02 = a[2];
@@ -517,7 +517,7 @@ export function glMat4MultiplyMatrixAndVector(out: MutableVec4, a: Mat4, vec: Ve
 }
 
 // Invert 4x4 matrix
-export function glMat4Invert(out: Mat4, a: Mat4) {
+export function glMat4Invert(out: Mat4, a: Mat4): Mat4 | null {
   const a00 = a[0];
   const a01 = a[1];
   const a02 = a[2];
@@ -577,14 +577,14 @@ export function glMat4Invert(out: Mat4, a: Mat4) {
   return out;
 }
 
-export function isPointWithinNormalizedDeviceCoordinates(point: [number, number, number]) {
+export function isPointWithinNormalizedDeviceCoordinates(point: [number, number, number]): boolean {
   return Math.abs(point[0]) <= 1 && Math.abs(point[1]) <= 1 && Math.abs(point[2]) <= 1;
 }
 
 export function multiplyMatrices(
   a: readonly (readonly number[])[],
   b: readonly (readonly number[])[],
-) {
+): number[][] {
   if (a.length === 0 || b.length === 0) {
     throw new Error('Cannot multiply by an empty matrix.');
   }

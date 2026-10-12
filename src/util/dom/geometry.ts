@@ -10,7 +10,7 @@
  * `document.documentElement.clientHeight` is the fallback because `window.innerHeight` includes the
  * classic scrollbar and pre-dates `<html>`-based layouts.
  */
-export function inViewport(element: Readonly<HTMLElement>) {
+export function inViewport(element: Readonly<HTMLElement>): boolean {
   const { top, bottom, left, right } = element.getBoundingClientRect();
 
   return (

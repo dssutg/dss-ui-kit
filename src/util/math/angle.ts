@@ -14,19 +14,19 @@ export interface Point2D {
 
 export const turn = 2 * Math.PI;
 
-export function degreesToRadians(radians: number) {
+export function degreesToRadians(radians: number): number {
   return (radians * Math.PI) / 180;
 }
 
-export function radiansToDegrees(radians: number) {
+export function radiansToDegrees(radians: number): number {
   return (radians * 180) / Math.PI;
 }
 
-export function normalizeRadians(radians: number) {
+export function normalizeRadians(radians: number): number {
   return modulo(radians, turn);
 }
 
-export function getMinDistanceBetweenRadians(angle1: number, angle2: number) {
+export function getMinDistanceBetweenRadians(angle1: number, angle2: number): number {
   const a = angle1 % turn;
   const b = angle2 % turn;
 
@@ -43,13 +43,13 @@ export function polarToCartesian(angle: number, radius: number): Point2D {
   return { x, y };
 }
 
-export function cartesianToPolar(x: number, y: number) {
+export function cartesianToPolar(x: number, y: number): { angle: number; radius: number } {
   const angle = normalizeRadians(Math.atan2(y, x));
   const radius = Math.hypot(y, x);
   return { angle, radius };
 }
 
-export function rotatePoint2D(point: Point2D, angle: number) {
+export function rotatePoint2D(point: Point2D, angle: number): Point2D {
   const cos = Math.cos(angle);
   const sin = Math.sin(angle);
   const x = point.x * cos - point.y * sin;

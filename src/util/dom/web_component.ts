@@ -139,7 +139,7 @@ export abstract class WComponent extends HTMLElement {
   protected render() {}
 
   /** First element in the shadow root matching `selector`, or `null` — no throwing, unlike `on`. */
-  protected el(selector: string) {
+  protected el(selector: string): Element | null {
     return this.root.querySelector(selector);
   }
 

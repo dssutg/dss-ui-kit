@@ -1,17 +1,23 @@
 // Clamp a value between min and max inclusively
-export function clamp(value: number, min: number, max: number) {
+export function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
-export function lerp(min: number, max: number, progress: number) {
+export function lerp(min: number, max: number, progress: number): number {
   return (1 - progress) * min + progress * max;
 }
 
-export function unlerp(min: number, max: number, value: number) {
+export function unlerp(min: number, max: number, value: number): number {
   return (value - min) / (max - min);
 }
 
-export function lerpRange(min0: number, max0: number, min1: number, max1: number, value: number) {
+export function lerpRange(
+  min0: number,
+  max0: number,
+  min1: number,
+  max1: number,
+  value: number,
+): number {
   const progress = unlerp(min0, max0, value);
 
   return lerp(min1, max1, progress);
@@ -21,25 +27,25 @@ export function lerpRange(min0: number, max0: number, min1: number, max1: number
 // and m (right operand). However, this function also
 // considers negative operands and wraps the result number
 // accordingly that is returned.
-export function modulo(a: number, b: number) {
+export function modulo(a: number, b: number): number {
   return ((a % b) + b) % b;
 }
 
-export function wrapIndex(index: number, length: number) {
+export function wrapIndex(index: number, length: number): number {
   if (length === 0) {
     return 0;
   }
   return modulo(index, length);
 }
 
-export function step(x: number, threshold: number) {
+export function step(x: number, threshold: number): number {
   if (x >= threshold) {
     return 1;
   }
   return 0;
 }
 
-export function smoothStep(x: number, edge0: number, edge1: number) {
+export function smoothStep(x: number, edge0: number, edge1: number): number {
   const t = clamp(unlerp(edge0, edge1, x), 0, 1);
 
   return t * t * (3 - 2 * t);
@@ -77,7 +83,7 @@ export function roundToPowerOfTwo(n: number): number {
 // This function compares the arguments a and b, and
 // returns -1 if a < b, 1 if a > b, and 0 if a == b.
 // Useful for sorting comparators.
-export function cmp<T>(a: T, b: T) {
+export function cmp<T>(a: T, b: T): number {
   if (a > b) {
     return 1;
   }

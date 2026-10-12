@@ -8,7 +8,7 @@ export interface HslaColor {
   a: number;
 }
 
-export function cssColorTo6DigitHex(color: string) {
+export function cssColorTo6DigitHex(color: string): string | null {
   // Create a temporary DOM element to use the browser's parsing
   const temporaryElement = document.createElement('div');
 
@@ -90,7 +90,7 @@ export function parseHexColor(hexColor: string): {
   return { r, g, b };
 }
 
-export function getHslaColorString(color: HslaColor) {
+export function getHslaColorString(color: HslaColor): string {
   const { h, s, l, a } = color;
 
   return `hsla(${h}, ${s}%, ${l}%, ${a})`;
@@ -123,7 +123,10 @@ export function lerpRgba32(a: Readonly<RGBA32>, b: Readonly<RGBA32>, progress: n
 /** One stop of a gradient: a position from 0 to 1 and the colour there. */
 export type RGBA32BreakPoint = [number, RGBA32];
 
-export function findBreakPointRange(breakPoints: readonly RGBA32BreakPoint[], position: number) {
+export function findBreakPointRange(
+  breakPoints: readonly RGBA32BreakPoint[],
+  position: number,
+): { start: RGBA32BreakPoint; end: RGBA32BreakPoint } | null {
   const clampedPosition = clamp(position, 0, 1);
 
   for (let i = 0; i < breakPoints.length - 1; i++) {
@@ -150,7 +153,7 @@ export function getColorBetweenBreakPoints(
   a: RGBA32BreakPoint,
   b: RGBA32BreakPoint,
   position: number,
-) {
+): RGBA32 {
   const clampedPosition = clamp(position, 0, 1);
 
   const [start, startColor] = a;
@@ -198,7 +201,7 @@ export class Rgba32Gradient {
 
 const DEFAULT_COLOR = '#000000';
 
-export function darkenColor(color: string, percent: number) {
+export function darkenColor(color: string, percent: number): string {
   // Parsed RGB
   const match = color.match(/^\s*#([\dA-Fa-f]{2})([\dA-Fa-f]{2})([\dA-Fa-f]{2})\s*$/);
 

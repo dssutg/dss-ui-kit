@@ -26,11 +26,11 @@ export class Vector2D {
     this.y = y;
   }
 
-  static fromPoint2D({ x, y }: { readonly x: number; readonly y: number }) {
+  static fromPoint2D({ x, y }: { readonly x: number; readonly y: number }): Vector2D {
     return new Vector2D(x, y);
   }
 
-  static fromArray(components: [number, number]) {
+  static fromArray(components: [number, number]): Vector2D {
     const [x, y] = components;
 
     return new Vector2D(x, y);
@@ -134,7 +134,13 @@ export class Vector2D {
     return new Vector2D(Math.cos(angle), Math.sin(angle));
   }
 
-  static fromPolar({ radius, angle }: { readonly radius: number; readonly angle: number }) {
+  static fromPolar({
+    radius,
+    angle,
+  }: {
+    readonly radius: number;
+    readonly angle: number;
+  }): Vector2D {
     return Vector2D.fromPolarAngle(angle).scaleScalar(radius);
   }
 

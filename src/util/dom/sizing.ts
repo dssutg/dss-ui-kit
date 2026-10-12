@@ -8,7 +8,7 @@ import { clamp } from '@/util/math';
  * reporting `0` or a zoomed-out ratio below one would otherwise shrink the backing store and make
  * the output blurry on an ordinary screen too — one device pixel is the cheapest safe minimum.
  */
-export function getDpr() {
+export function getDpr(): number {
   return Math.max(1, window.devicePixelRatio || 1);
 }
 
@@ -31,7 +31,7 @@ export function getResponsiveSize(
   growFactor = 0,
   mediaWidth = 0,
   minDesktopWidth = 1,
-) {
+): number {
   const size = (growFactor * mediaWidth) / minDesktopWidth;
 
   return clamp(size, minSize, maxSize);

@@ -1,3 +1,5 @@
+import type { Point2D } from './angle';
+
 /**
  * The largest square side that fits `squaresToFit` squares into a container, rounded down to an
  * integer.
@@ -14,7 +16,7 @@ export function calculateSquareSizeFittingContainer(
   containerWidth: number,
   containerHeight: number,
   squaresToFit: number,
-) {
+): number {
   // Derived from chubakueno's answer:
   //   https://math.stackexchange.com/questions/466198/algorithm-to-get-the-maximum-size-of-n-squares-that-fit-into-a-rectangle-with-a
   const w = containerWidth;
@@ -81,19 +83,19 @@ export class Rectangle {
     this.height = height;
   }
 
-  copy() {
+  copy(): Rectangle {
     return new Rectangle(this.x, this.y, this.width, this.height);
   }
 
-  area() {
+  area(): number {
     return this.width * this.height;
   }
 
-  perimeter() {
+  perimeter(): number {
     return 2 * (this.width + this.height);
   }
 
-  getStartPoint() {
+  getStartPoint(): Point2D {
     return { x: this.x, y: this.y };
   }
 
@@ -104,16 +106,16 @@ export class Rectangle {
    * than touching the boundary, which is the distinction the callers that walk a grid cell by cell
    * care about.
    */
-  getStartPointExcludingStartBoundary() {
+  getStartPointExcludingStartBoundary(): Point2D {
     return { x: this.x + 1, y: this.y + 1 };
   }
 
-  getEndPoint() {
+  getEndPoint(): Point2D {
     return { x: this.x + this.width, y: this.y + this.height };
   }
 
   /** The end corner moved one unit inside — the last whole unit fully inside the rectangle. */
-  getEndPointExcludingEndBoundary() {
+  getEndPointExcludingEndBoundary(): Point2D {
     return { x: this.x + this.width - 1, y: this.y + this.height - 1 };
   }
 
@@ -122,19 +124,19 @@ export class Rectangle {
    *
    * Add the start point to it to get the centre in world coordinates.
    */
-  center() {
+  center(): Point2D {
     return { x: this.width / 2, y: this.height / 2 };
   }
 
-  hypot() {
+  hypot(): number {
     return Math.hypot(this.width, this.height);
   }
 
-  toString() {
+  toString(): string {
     return `Rectangle(x=${this.x}, y=${this.y}, width=${this.width}, height=${this.height})`;
   }
 
-  equals(other: Rectangle) {
+  equals(other: Rectangle): boolean {
     return (
       this.x === other.x &&
       this.y === other.y &&
@@ -149,7 +151,7 @@ export class Rectangle {
    * A zero-width or zero-height rectangle therefore contains no point at all, which makes the empty
    * rectangle a valid value rather than a degenerate case to special-case.
    */
-  containsPoint(pointX: number, pointY: number) {
+  containsPoint(pointX: number, pointY: number): boolean {
     return (
       pointX >= this.x &&
       pointX < this.x + this.width &&
@@ -159,7 +161,7 @@ export class Rectangle {
   }
 
   /** Whether `other` lies wholly inside this one, sharing edges allowed. */
-  contains(other: Rectangle) {
+  contains(other: Rectangle): boolean {
     return (
       other.x >= this.x &&
       other.x + other.width <= this.x + this.width &&
@@ -174,7 +176,7 @@ export class Rectangle {
    * Touching counts as intersecting because the comparison uses `<=` and `>=` on the edges, so a
    * caller that wants area overlap and not adjacency has to shrink one of the two before asking.
    */
-  intersects(other: Rectangle) {
+  intersects(other: Rectangle): boolean {
     return (
       other.x <= this.x + this.width &&
       other.x + other.width >= this.x &&

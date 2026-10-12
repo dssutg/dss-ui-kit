@@ -6,7 +6,7 @@
  * here (or {@link escapeHTMLValue}) before they land in markup — which is what the {@link html}
  * template does so a caller cannot forget.
  */
-export function sanitizeHTMLString(value: string) {
+export function sanitizeHTMLString(value: string): string {
   return value
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -25,7 +25,7 @@ export function sanitizeHTMLString(value: string) {
  * `"false"`. Objects are JSON-serialised and then run through {@link sanitizeHTMLString}, so a
  * nested `<script>` inside a data object cannot become markup either.
  */
-export function escapeHTMLValue(value: unknown) {
+export function escapeHTMLValue(value: unknown): string {
   if (value === null || value === undefined) {
     return '';
   }
@@ -53,7 +53,7 @@ export function escapeHTMLValue(value: unknown) {
  * accident. For genuinely raw markup there is no escape hatch by design; build the string from
  * escaped parts with this template or sanitize first with {@link sanitizeHTMLString}.
  */
-export function html(strings: TemplateStringsArray, ...values: unknown[]) {
+export function html(strings: TemplateStringsArray, ...values: unknown[]): string {
   return strings.reduce((result, stringPart, i) => {
     const value = values[i - 1];
     const safeValue = i > 0 ? escapeHTMLValue(value) : '';
@@ -70,7 +70,7 @@ export function html(strings: TemplateStringsArray, ...values: unknown[]) {
  * from a trusted source — the caller owns it — and the function's job is the deferred cloning
  * lifecycle, not sanitisation; {@link html} and {@link sanitizeHTMLString} are the escaping layer.
  */
-export function templ(htmlString: string) {
+export function templ(htmlString: string): HTMLTemplateElement {
   const element = document.createElement('template');
   element.innerHTML = htmlString;
   return element;

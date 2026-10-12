@@ -5,7 +5,7 @@
  * answers are '' for `README`, `Makefile` and `.gitignore` alike. Case is kept, not folded, so a
  * comparison a caller does on it is a case-sensitive one.
  */
-export function getFileExtension(filename: string) {
+export function getFileExtension(filename: string): string {
   const i = filename.lastIndexOf('.');
 
   if (i <= 0) {
@@ -21,7 +21,7 @@ export function getFileExtension(filename: string) {
  * The counterpart of {@link getFileExtension}, with the same rule: the dot of a dotfile is not an
  * extension, so `.gitignore` comes back whole.
  */
-export function removeFileExtension(filename: string) {
+export function removeFileExtension(filename: string): string {
   const i = filename.lastIndexOf('.');
 
   if (i <= 0) {
@@ -188,7 +188,7 @@ export function openPdfExporterForHtml(
     readonly width?: number | undefined;
     readonly height?: number | undefined;
   },
-) {
+): Window | null {
   const printWindow = window.open('', '', `height=${height},width=${width}`);
 
   if (printWindow === null) {

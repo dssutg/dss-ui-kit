@@ -188,7 +188,7 @@ export class DragHandler {
    * It is also the `mouseup`/`touchend` handler itself, hence the recursive `removeEventListener` —
    * removal is idempotent, so a touch end followed by the mouse path is harmless.
    */
-  removeTemporaryEventListeners = () => {
+  removeTemporaryEventListeners = (): void => {
     document.removeEventListener('mouseup', this.removeTemporaryEventListeners);
     document.removeEventListener('mousemove', this.internalOnMouseMoveHandler);
     this.isNowDrag = false;
@@ -199,7 +199,7 @@ export class DragHandler {
    * put on `document`. The only correct teardown for an instance going away — see the class comment
    * for why dropping an active instance is not safe by itself.
    */
-  removeAllEventListeners = () => {
+  removeAllEventListeners = (): void => {
     this.removeTemporaryEventListeners();
     this.dragTriggerElement.removeEventListener('mousedown', this.internalOnMouseDownHandler);
     this.dragTriggerElement.removeEventListener('touchstart', this.internalOnTouchStartHandler);
@@ -208,13 +208,13 @@ export class DragHandler {
   };
 
   /** Suppresses or resumes dragging without touching any listener: cheaper than, but not a substitute for, {@link DragHandler.removeAllEventListeners}. */
-  setEnabled = (enabled: boolean) => {
+  setEnabled = (enabled: boolean): void => {
     this.enabled = enabled;
   };
 
-  enable = () => this.setEnabled(true);
-  disable = () => this.setEnabled(false);
-  toggle = () => this.setEnabled(!this.enabled);
+  enable = (): void => this.setEnabled(true);
+  disable = (): void => this.setEnabled(false);
+  toggle = (): void => this.setEnabled(!this.enabled);
 
   /**
    * Hook for a caller that wants to constrain dragging beyond the non-negative floor applied by
@@ -239,7 +239,7 @@ export class DragHandler {
     y: number,
     shouldCorrectIfInvalidX = false,
     shouldCorrectIfInvalidY = true,
-  ) => {
+  ): void => {
     const validX = shouldCorrectIfInvalidX && x !== undefined ? Math.max(0, x) : x;
     const validY = shouldCorrectIfInvalidY && y !== undefined ? Math.max(0, y) : y;
 

@@ -11,7 +11,7 @@ import { DOMRectContainsPoint } from './geometry';
  * Reading `document.activeElement` off a detached document can return `null`, which is why the
  * falsy check rather than a tag test alone.
  */
-export function hasUserFocusedInput() {
+export function hasUserFocusedInput(): boolean {
   const focusedElement = document.activeElement;
 
   if (!focusedElement) {
