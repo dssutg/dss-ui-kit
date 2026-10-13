@@ -80,18 +80,16 @@ jobs:
           path: dist/
           retention-days: 7
 
-  # The same version ships to JSR as source, and the publish script resolves the `@/` alias, the
-  # `react`-as-Preact alias and the stylesheet onto exact files for `deno publish` to type-check.
-  # Running it dry here proves that mapping still holds: a file that moved with no specifier backing it
-  # fails now rather than mid-release. Nothing reaches the network — `--dry-run` writes jsr.json and
-  # stops.
-  publish:
-    name: Publish
+  # The same version ships to JSR as source, so every symbol reachable from `src/index.ts` has to
+  # declare its type — an inferred return type is a "slow type" the registry refuses. This runs JSR's
+  # `no-slow-types` rule against the same generated config a publish would use, without uploading.
+  return-types:
+    name: Return types
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
       - uses: ./.github/actions/setup
-      - run: deno task publish:dry
+      - run: deno task lint:return-types
 
   # The API reference is generated from the source. Building it here means it cannot drift from the
   # code, and a change that breaks the public surface (a bad @link, an unresolvable type) fails the

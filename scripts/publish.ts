@@ -36,7 +36,8 @@ import { collectFiles, REPOSITORY_ROOT } from './util/source-tree.ts';
  * publish command, which stops short of contacting the registry.
  */
 
-const JSR_JSON = 'jsr.json';
+/** The name of the generated package config, shared with the checks that read it. */
+export const JSR_JSON = 'jsr.json';
 const PACKAGE_JSON = 'package.json';
 
 /**
@@ -326,8 +327,13 @@ function collectPackageFiles(): string[] {
   );
 }
 
-/** Writes the package config `deno publish` reads with `-c jsr.json`. */
-function writeJsrConfig(): void {
+/**
+ * Writes the package config `deno publish` reads with `-c jsr.json`.
+ *
+ * Exported so `scripts/check-return-types.ts` can run JSR's slow-type rule against the same map a
+ * publish would use, without reaching the registry.
+ */
+export function writeJsrConfig(): void {
   const manifest = readManifest();
   const preactPin = readInstalledVersion('preact');
   if (!preactPin) {

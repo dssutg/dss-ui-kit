@@ -419,8 +419,8 @@ deno task ci              # the full local gate, exactly what CI runs
 ```
 
 `deno task ci` must pass before any commit. It chains `install:frozen`, `format:check`, `lint`,
-`test`, `build`, `pack`, `publish:dry` and `docs`, which is the whole of the GitHub Actions pipeline
-in one command.
+`test`, `build`, `pack`, `lint:return-types` and `docs`, which is the whole of the GitHub Actions
+pipeline in one command.
 If Biome reports a fixable problem, run `deno task format` rather than editing by hand. Releases are
 not a task here because they are the maintainer's alone and run through an external tool — see
 [Releasing](#releasing).
@@ -428,8 +428,8 @@ not a task here because they are the maintainer's alone and run through an exter
 ## Continuous integration
 
 [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) defines a strict pipeline: `format`, `lint`,
-`typecheck`, `test` → `build`, `publish`, `docs`. `biome ci` treats formatting as an error, so an
-unformatted file fails the pipeline.
+`typecheck`, `test` → `build`, `return-types`, `docs`. `biome ci` treats formatting as an error, so
+an unformatted file fails the pipeline.
 
 Every job checks the repository out and then runs `.github/actions/setup/action.yml`, which installs
 the pinned Deno and runs `deno install --frozen`. A shared action rather than a copy per job: a
@@ -469,6 +469,7 @@ src/
 scripts/
   publish.ts              writes jsr.json and publishes the source to JSR
   check-package-manifest.ts  verifies every path in package.json `files` exists in dist/
+  check-return-types.ts   runs JSR's no-slow-types rule against src/index.ts
   bundle-icons.ts         bundles src/icons/*.svg into src/icons/index.tsx (run by `deno task icons`)
   update-*-baseline.ts    regenerates a `*-baseline.json` ratchet; run through its `deno task *:baseline`
   *-baseline.json         the sets a release already shipped, which a test refuses to let grow or shrink
@@ -693,8 +694,9 @@ as-is, and the publish script carries each of them across instead of the source 
 
 The publish runs without a slow-types allowance, so a function or symbol the publish would flag
 (`missing-explicit-return-type`, `missing-explicit-type`) fails it: every exported symbol reachable
-from `src/index.ts` carries an explicit type. `deno task ci` runs `deno task publish:dry`, so this
-cannot reach `main` unchecked; run it before finishing a new export, and keep the pattern in new code.
+from `src/index.ts` carries an explicit type. `deno task lint:return-types` runs that rule alone —
+JSR's `no-slow-types` against the generated config — and `deno task ci` runs it, so this cannot reach
+`main` unchecked. Run it before finishing a new export, and keep the pattern in new code.
 
 Consequences worth knowing before touching the source:
 
