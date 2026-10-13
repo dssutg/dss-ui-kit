@@ -485,7 +485,8 @@ export {
   wrapIndex,
 } from '@/util/math';
 export type { Point2D } from '@/util/math/angle';
-export type { Mat4 } from '@/util/math/matrix';
+export type { Mat4, MutableVec4, Vec3, Vec4 } from '@/util/math/matrix';
+export type { Range } from '@/util/math/range';
 export { Vector3D } from '@/util/math/vector3d';
 export type { PluralRule } from '@/util/pluralization';
 export { getPluralizationIndex, registerPluralRule } from '@/util/pluralization';

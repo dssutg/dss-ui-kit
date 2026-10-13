@@ -119,7 +119,7 @@ function parseHue(value: string, unit?: string): number {
 
 /**
  * Parses a CSS `hsl(...)` or `hsla(...)` string into HSVA, accepting comma and space syntax, the
- * angle units in {@link angleUnits} and the alpha as 0-1 or as a percentage.
+ * CSS angle units (`deg`, `rad`, `grad`, `turn`) and the alpha as 0-1 or as a percentage.
  *
  * An unrecognised string parses to opaque black rather than failing: the string pickers hand it a
  * caller's text verbatim, and rejecting it would throw from inside a render.
