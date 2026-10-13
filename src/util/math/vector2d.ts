@@ -79,7 +79,7 @@ export class Vector2D {
   }
 
   isZero(tolerance: number = DEFAULT_EQUALITY_TOLERANCE): boolean {
-    return this.x < tolerance && this.y < tolerance;
+    return Math.abs(this.x) < tolerance && Math.abs(this.y) < tolerance;
   }
 
   isUnit(tolerance: number = DEFAULT_EQUALITY_TOLERANCE): boolean {

@@ -7,10 +7,12 @@ import {
   glMat4Rotate,
   glMat4Scale,
   glMat4Translate,
+  isPointWithinNormalizedDeviceCoordinates,
   type Mat4,
   mat4From,
   mergeIntegers,
   toFloat32Array,
+  transpose,
   vec4From,
 } from './';
 
@@ -198,6 +200,38 @@ describe('glMat4MultiplyMatrixAndVector', () => {
     expect(glMat4MultiplyMatrixAndVector([0, 0, 0, 0], glMat4Identity(), [1, 2, 3, 4])).toEqual([
       1, 2, 3, 4,
     ]);
+  });
+});
+
+describe('transpose', () => {
+  const source = mat4From([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
+  const expected = [0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15];
+
+  test('moves each component to its mirrored position', () => {
+    assertMatrixCloseTo(transpose(glMat4Identity(), mat4From(source)), expected);
+  });
+
+  // The in-place branch reads components after earlier ones were overwritten, so it has to cache the
+  // ones it still needs; the two branches must agree.
+  test('writes into its own input when the destination is the source', () => {
+    const inPlace = mat4From(source);
+    const result = transpose(inPlace, inPlace);
+
+    expect(result).toBe(inPlace);
+    assertMatrixCloseTo(result, expected);
+  });
+});
+
+describe('isPointWithinNormalizedDeviceCoordinates', () => {
+  test('accepts a point inside or on the unit cube', () => {
+    expect(isPointWithinNormalizedDeviceCoordinates([0, 0, 0])).toBe(true);
+    expect(isPointWithinNormalizedDeviceCoordinates([1, -1, 1])).toBe(true);
+  });
+
+  test('rejects a point outside on any axis', () => {
+    expect(isPointWithinNormalizedDeviceCoordinates([1.001, 0, 0])).toBe(false);
+    expect(isPointWithinNormalizedDeviceCoordinates([0, -1.001, 0])).toBe(false);
+    expect(isPointWithinNormalizedDeviceCoordinates([0, 0, 1.001])).toBe(false);
   });
 });
 

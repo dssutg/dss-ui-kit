@@ -239,7 +239,7 @@ export function transpose(out: Mat4, a: Mat4): Mat4 {
     out[3] = a[12];
     out[4] = a01;
     out[6] = a[9];
-    out[7] = a13;
+    out[7] = a[13];
     out[8] = a02;
     out[9] = a12;
     out[11] = a[14];

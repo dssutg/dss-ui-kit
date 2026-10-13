@@ -112,7 +112,9 @@ export class Vector3D {
   }
 
   isZero(tolerance: number = DEFAULT_EQUALITY_TOLERANCE): boolean {
-    return this.x < tolerance && this.y < tolerance && this.z < tolerance;
+    return (
+      Math.abs(this.x) < tolerance && Math.abs(this.y) < tolerance && Math.abs(this.z) < tolerance
+    );
   }
 
   isUnit(tolerance: number = DEFAULT_EQUALITY_TOLERANCE): boolean {
