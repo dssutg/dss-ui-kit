@@ -1,6 +1,6 @@
 import { useLocale } from '@/locale';
 import { formatHexNumber } from '@/util/format';
-import { getEnumLabel } from './ControlledTable';
+import { getEnumLabel } from './enum_label';
 import { formatDateAndTime } from './table_export';
 import type { SearchPropertySchema } from './use_filtered_items';
 

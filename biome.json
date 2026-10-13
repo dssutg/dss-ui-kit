@@ -137,7 +137,7 @@
         "noDuplicateTestHooks": "error",
         "noExportsInTest": "error",
         "noFocusedTests": "error",
-        "noImportCycles": "off",
+        "noImportCycles": "error",
         "noMisplacedAssertion": "error",
         "noUnassignedVariables": "error",
         "noUnusedExpressions": "error",

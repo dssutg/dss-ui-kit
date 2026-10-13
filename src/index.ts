@@ -243,9 +243,10 @@ export { ColumnResizer } from '@/components/tables/ColumnResizer';
 export type { ControlledFilterableTableProps } from '@/components/tables/ControlledFilterableTable';
 export { ControlledFilterableTable } from '@/components/tables/ControlledFilterableTable';
 export type { ControlledTableProps } from '@/components/tables/ControlledTable';
-export { ControlledTable, getEnumLabel } from '@/components/tables/ControlledTable';
+export { ControlledTable } from '@/components/tables/ControlledTable';
 export type { CountLabelProps } from '@/components/tables/CountLabel';
 export { CountLabel } from '@/components/tables/CountLabel';
+export { getEnumLabel } from '@/components/tables/enum_label';
 export type {
   FilterableTableColumnProperty,
   FilterableTableContext,

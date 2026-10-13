@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { cn } from '@/util/cn';
 import type { FilterableTableColumnProperty, FilterableTableProps } from './FilterableTable';
-import { type EnumOption, FilterableTableTopPanel } from './FilterableTableTopPanel';
+import { FilterableTableTopPanel } from './FilterableTableTopPanel';
 import {
   makeSortableTableCellRenderer,
   SortableTable,
@@ -10,19 +10,6 @@ import {
   type SortableTableDescriptor,
 } from './SortableTable';
 import { type SearchSchema, useFilteredItems } from './use_filtered_items';
-
-/**
- * The label a `enum` value is shown, searched and exported as.
- *
- * The caller's own label when it has one, and the raw value when it does not, so a value added to
- * the caller's data is still visible before they list it in `options`.
- */
-export function getEnumLabel(
-  property: { readonly options: readonly EnumOption[] },
-  value: string,
-): string {
-  return property.options.find((option) => option.value === value)?.label ?? value;
-}
 
 /**
  * A filterable table whose search text the caller holds.
