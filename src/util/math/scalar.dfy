@@ -78,3 +78,22 @@ lemma step_ensures(x: int, threshold: int)
   ensures ((x < threshold) ==> (step(x, threshold) == 0))
 {
 }
+
+method roundToPowerOfTwo(n: int) returns (res: int)
+  ensures ((n <= 0) ==> (res == 0))
+  ensures ((n > 0) ==> (res >= n))
+  ensures ((n > 0) ==> (res < (2 * n)))
+{
+  if (n <= 0) {
+    return 0;
+  }
+  var power := 1;
+  while (power < n)
+    invariant (power >= 1)
+    invariant (power < (2 * n))
+    decreases ((2 * n) - power)
+  {
+    power := (power * 2);
+  }
+  return power;
+}

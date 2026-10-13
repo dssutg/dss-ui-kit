@@ -578,6 +578,9 @@ export function glMat4Invert(out: Mat4, a: Mat4): Mat4 | null {
 }
 
 export function isPointWithinNormalizedDeviceCoordinates(point: [number, number, number]): boolean {
+  //@ verify
+  //@ requires point.length === 3
+  //@ ensures \result === (Math.abs(point[0]) <= 1 && Math.abs(point[1]) <= 1 && Math.abs(point[2]) <= 1)
   return Math.abs(point[0]) <= 1 && Math.abs(point[1]) <= 1 && Math.abs(point[2]) <= 1;
 }
 

@@ -86,11 +86,18 @@ export function binomial(n: number, k: number): number {
 }
 
 export function roundToPowerOfTwo(n: number): number {
+  //@ verify
+  //@ ensures n <= 0 ==> \result === 0
+  //@ ensures n > 0 ==> \result >= n
+  //@ ensures n > 0 ==> \result < 2 * n
   if (n <= 0) {
     return 0;
   }
   let power = 1;
   while (power < n) {
+    //@ invariant power >= 1
+    //@ invariant power < 2 * n
+    //@ decreases 2 * n - power
     power *= 2;
   }
   return power;
