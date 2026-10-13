@@ -73,6 +73,7 @@
     "autoprefixer": "10.6.1",
     "codemod": "1.18.3",
     "jsdom": "30.1.1",
+    "lemmascript": "0.6.4",
     "markdownlint-cli2": "0.23.3",
     "postcss": "8.5.28",
     "preact": "10.29.8",

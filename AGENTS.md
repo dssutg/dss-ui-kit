@@ -35,6 +35,7 @@ One tool per concern, and nothing else.
 | Format (write)   | Biome 2                              | `deno task format`         |
 | Type check       | tsgo (`@typescript/native-preview`) | `deno task typecheck`      |
 | Tests            | Vitest                               | `deno task test`           |
+| Verification     | LemmaScript (Dafny backend)          | `deno task lemmascript:gen` |
 | API docs         | TypeDoc 0.28                         | `deno task docs`           |
 | Release          | bump-version                         | `bump-version`             |
 | JSR publish      | `scripts/publish.ts`                 | `deno task publish`        |
@@ -420,6 +421,8 @@ deno task typecheck       # tsgo only
 deno task test            # unit tests
 deno task docs            # TypeDoc API reference into docs/api/
 deno task icons           # regenerate src/icons/index.tsx from the source SVGs
+deno task lemmascript:gen   # regenerate the Dafny artifacts from the annotated sources
+deno task lemmascript:check # regenerate and verify them, against the file list (Dafny 4.x)
 deno task <name>:baseline # regenerate a ratchet (design-tokens:, type-assertions:, duplication:)
 deno task ci              # the full local gate, exactly what CI runs
 ```
@@ -503,6 +506,7 @@ tsconfig.base.json        strict compiler options shared by both tsconfigs
 tsconfig.json             library compiler options and the @/ paths
 tsconfig.node.json        tooling compiler options (Vite, Tailwind, scripts/)
 biome.json                the single formatter and linter
+LemmaScript-files.txt     the sources CI verifies with LemmaScript, one path per line
 ```
 
 ### File naming
@@ -613,6 +617,25 @@ Three things about it are worth knowing before writing the first test against it
 `src/util/testing/setup.ts` supplies what jsdom does not implement and the components assume:
 `ResizeObserver`, `matchMedia`, `scrollIntoView` and fixed element dimensions. It guards on `window`
 so it is inert in the `node`-environment tests.
+
+## Verification
+
+The pure helpers under `src/util/` are checked with
+[LemmaScript](https://github.com/midspiral/LemmaScript), a toolchain that reads `//@` specification
+annotations in ordinary TypeScript and generates Dafny. They are comments: they change no
+behaviour, and the library still ships the plain source a consumer imports.
+
+- `//@ verify` opts a function in, and `//@ requires`, `//@ ensures`, `//@ invariant` and
+  `//@ decreases` state what it does; the specification is the reference for the whole
+  surface: [SPEC.md](https://github.com/midspiral/LemmaScript/blob/main/SPEC.md).
+- `LemmaScript-files.txt` at the repository root lists the verified sources, one path per line.
+  `deno task lemmascript:check` reads the same list, so a local run verifies what CI does.
+- Each source generates `foo.dfy.gen` (always regeneratable) and `foo.dfy` (the source of truth,
+  where proofs are added). The diff between them is additions only, and both are committed.
+- The pipeline is `.github/workflows/lemmascript.yml`, separate from `ci.yml`: it needs the Dafny
+  toolchain, which the Deno gate does not install, so `deno task ci` still runs wherever Deno does.
+- `//@ assume` is not used: it makes a proof vacuous, and a proof that says nothing is worse than no
+  proof at all.
 
 ## Git and versioning
 

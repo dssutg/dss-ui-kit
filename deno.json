@@ -82,6 +82,8 @@
     "docs": "deno run -A npm:typedoc",
     "docs:watch": "deno run -A npm:typedoc --watch",
     "icons": "deno run --allow-read --allow-write --allow-run scripts/bundle-icons.ts",
+    "lemmascript:gen": "deno run -A npm:lemmascript gen --backend=dafny",
+    "lemmascript:check": "deno run -A npm:lemmascript check --backend=dafny",
     "duplication:baseline": "deno run --allow-read --allow-write --allow-run --allow-env scripts/update-duplication-baseline.ts",
     "design-tokens:baseline": "deno run --allow-read --allow-write --allow-run scripts/update-design-token-baseline.ts",
     "type-assertions:baseline": "deno run --allow-read --allow-write --allow-run --allow-env scripts/update-type-assertion-baseline.ts",

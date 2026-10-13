@@ -1,0 +1,29 @@
+# LemmaScript verification pipeline.
+#
+# Runs the same events the main CI pipeline does, because the `//@` annotations live in the source
+# they describe and the generated Dafny sits beside it. `LemmaScript-files.txt` lists the sources
+# that are verified, one path per line; `deno task lemmascript:check` runs the same list locally.
+#
+# `typecheck` is off. The reusable workflow's typecheck step runs `npm ci && npm run typecheck`, and
+# this repository installs with Deno and checks types through `deno task typecheck` in ci.yml.
+# Verification is independent of that check, and the pipeline keeps one type gate rather than two.
+
+name: LemmaScript
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+concurrency:
+  group: lemmascript-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify
+    uses: midspiral/LemmaScript/.github/workflows/verify.yml@main
+    with:
+      backend: dafny
+      typecheck: false
