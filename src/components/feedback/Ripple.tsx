@@ -36,7 +36,7 @@ export function Ripple({
   useGranularEffect(
     () => {
       if (!wrapperRef.current) {
-        return undefined;
+        return;
       }
 
       function onClick(e: MouseEvent) {
@@ -71,7 +71,7 @@ export function Ripple({
       const { parentElement } = wrapperRef.current;
 
       if (!parentElement) {
-        return undefined;
+        return;
       }
 
       parentElement.addEventListener('click', onClick);

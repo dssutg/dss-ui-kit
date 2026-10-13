@@ -409,7 +409,9 @@ export function TreeView({
   const renderItemLabel = (item: TreeViewItem) => {
     return (
       <div className="truncate" style={itemLabelStyle}>
-        {item.checked !== undefined ? (
+        {item.checked === undefined ? (
+          item.label
+        ) : (
           <Checkbox
             checked={item.checked}
             onChange={(checked) => {
@@ -417,8 +419,6 @@ export function TreeView({
             }}
             label={item.label}
           />
-        ) : (
-          item.label
         )}
       </div>
     );
@@ -478,7 +478,7 @@ export function TreeView({
                         tabIndex={selectedItemId === item.id ? 0 : -1}
                         aria-level={item.level ?? 0}
                         aria-selected={selectedItemId === item.id}
-                        aria-expanded={item.children !== undefined ? item.expanded : undefined}
+                        aria-expanded={item.children === undefined ? undefined : item.expanded}
                         onClick={() => {
                           onSelectedItemIdChange(item.id);
                         }}
@@ -577,11 +577,11 @@ function updateTreeToSetItemCheck(items: TreeViewItem[], itemId: string, checked
         return {
           ...item,
           checked,
-          children: item.children !== undefined ? updateAll(item.children, checked) : undefined,
+          children: item.children === undefined ? undefined : updateAll(item.children, checked),
         };
       }
 
-      return item.children !== undefined ? { ...item, children: update(item.children) } : item;
+      return item.children === undefined ? item : { ...item, children: update(item.children) };
     });
   }
 
@@ -590,7 +590,7 @@ function updateTreeToSetItemCheck(items: TreeViewItem[], itemId: string, checked
       return {
         ...item,
         checked,
-        children: item.children !== undefined ? updateAll(item.children, checked) : undefined,
+        children: item.children === undefined ? undefined : updateAll(item.children, checked),
       };
     });
   }

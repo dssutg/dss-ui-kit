@@ -176,7 +176,7 @@ export function TextInput({
             onChangeText?.('');
             onClearClick?.(e);
           }}
-          title={value !== '' ? t('actions.clearInputTextField') : ''}
+          title={value === '' ? '' : t('actions.clearInputTextField')}
           inactive={value === ''}
         />
       </div>

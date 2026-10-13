@@ -36,7 +36,9 @@ function collectManifestPaths(manifest: PackageManifest): string[] {
       return;
     }
     if (value !== null && typeof value === 'object') {
-      for (const nested of Object.values(value)) walk(nested);
+      for (const nested of Object.values(value)) {
+        walk(nested);
+      }
     }
   };
 
@@ -61,7 +63,9 @@ if (import.meta.main) {
 
   if (missing.length > 0) {
     console.error('package.json points at files that the build did not produce:');
-    for (const path of missing) console.error(`  - ${path}`);
+    for (const path of missing) {
+      console.error(`  - ${path}`);
+    }
     console.error('');
     console.error('Run `deno task build` first. If the build succeeded, the manifest is wrong.');
     Deno.exit(1);

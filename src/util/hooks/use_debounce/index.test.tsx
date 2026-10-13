@@ -91,9 +91,9 @@ describe('useDebounce', () => {
   test('the callback runs once when a component with a pending debounce unmounts', async () => {
     vi.useFakeTimers();
 
-    const view = await render(<DebounceProbe delay={100} change={1} shouldCallOnUnmount />);
+    const view = await render(<DebounceProbe delay={100} change={1} shouldCallOnUnmount={true} />);
 
-    await view.update(<DebounceProbe delay={100} change={2} shouldCallOnUnmount />);
+    await view.update(<DebounceProbe delay={100} change={2} shouldCallOnUnmount={true} />);
     view.unmount();
 
     expect(calls).toEqual([2]);

@@ -35,7 +35,7 @@ export function HexAlphaColorPickerPopover({
   useEffect(() => setHotColor(color), [color]);
 
   return (
-    <Popover open={open} onOpenChange={setOpen} hasBackDrop trigger={trigger}>
+    <Popover open={open} onOpenChange={setOpen} hasBackDrop={true} trigger={trigger}>
       <div className={className}>
         <HexAlphaColorPicker color={hotColor} onChange={setHotColor} />
       </div>

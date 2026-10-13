@@ -51,7 +51,7 @@ export function compareArrays<T>(a: readonly T[], b: readonly T[]): number {
       return -1;
     }
     if (aNext.value > bNext.value) {
-      return +1;
+      return 1;
     }
   }
 
@@ -59,7 +59,7 @@ export function compareArrays<T>(a: readonly T[], b: readonly T[]): number {
     return -1;
   }
   if (a.length > b.length) {
-    return +1;
+    return 1;
   }
 
   return 0;

@@ -32,7 +32,7 @@ export function getDateComponents(dateObject: Date = new Date()): {
 export function hours24to12(hours = 0) {
   const ampm = hours >= 12 ? 'pm' : 'am';
   const wrappedHours = hours % 12;
-  const hours12 = wrappedHours !== 0 ? wrappedHours : 12;
+  const hours12 = wrappedHours === 0 ? 12 : wrappedHours;
 
   return { hours: hours12, ampm };
 }
@@ -205,7 +205,7 @@ export function minstrftime(
     const paddingSpecifier = format[index];
 
     const padding =
-      paddingSpecifier !== undefined ? parsePadding(paddingSpecifier) : defaultPadding;
+      paddingSpecifier === undefined ? defaultPadding : parsePadding(paddingSpecifier);
 
     const { padChar, padFactor, readPadChar, isDefault: isDefaultPadding } = padding;
 
@@ -264,9 +264,9 @@ export function minstrftime(
     const defaultChunkToAppend = `%${readPadChar}${formatSpecifier ?? ''}`;
 
     const chunkToAppend =
-      formatSpecifier !== undefined
-        ? (formatHandlerMap[formatSpecifier]?.() ?? defaultChunkToAppend)
-        : defaultChunkToAppend;
+      formatSpecifier === undefined
+        ? defaultChunkToAppend
+        : (formatHandlerMap[formatSpecifier]?.() ?? defaultChunkToAppend);
 
     result = result + chunkToAppend;
     index = index + 1;

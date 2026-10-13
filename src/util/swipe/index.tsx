@@ -153,7 +153,7 @@ export function useSwipePrevention(elementRef: React.RefObject<HTMLElement | nul
     const element = elementRef?.current;
 
     if (!element) {
-      return undefined;
+      return;
     }
 
     element.addEventListener('touchstart', stop, active);

@@ -305,7 +305,7 @@ describe('MiniCalendar', () => {
   it('shows itself when it is visible, and closes on a click anywhere', async () => {
     const onClose = vi.fn();
     const { find } = await render(
-      <MiniCalendar visible date={date} posX={10} posY={20} onClose={onClose} />,
+      <MiniCalendar visible={true} date={date} posX={10} posY={20} onClose={onClose} />,
     );
 
     expect(find<HTMLButtonElement>('button').style.display).toBe('block');

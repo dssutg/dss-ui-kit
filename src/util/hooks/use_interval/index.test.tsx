@@ -92,7 +92,7 @@ describe('useImmediateInterval', () => {
   test('calls back once before the first delay has passed', async () => {
     vi.useFakeTimers();
 
-    await render(<IntervalProbe delay={100} immediate />);
+    await render(<IntervalProbe delay={100} immediate={true} />);
 
     expect(tickCount).toBe(1);
 
@@ -106,7 +106,7 @@ describe('useImmediateInterval', () => {
   test('does nothing when delay is null, not even the immediate call', async () => {
     vi.useFakeTimers();
 
-    await render(<IntervalProbe delay={null} immediate />);
+    await render(<IntervalProbe delay={null} immediate={true} />);
 
     expect(tickCount).toBe(0);
   });

@@ -292,9 +292,7 @@ export function UploadConfig({
         type={status === 'chosen' ? 'regular' : 'inactive'}
         title={uploadTitle ?? t('UploadConfig.upload')}
         onClick={() => {
-          (async () => {
-            await upload();
-          })();
+          void upload();
         }}
       />
     );

@@ -67,7 +67,7 @@ export function FeedbackTooltip({
     () => {
       if (!visible) {
         setIsVisible(false);
-        return undefined;
+        return;
       }
 
       fixPos(trigger, wrapperRef.current);

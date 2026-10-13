@@ -67,7 +67,9 @@ describe('ColorInput', () => {
 describe('HexColorInput', () => {
   it('drops the characters that are not hexadecimal digits', async () => {
     const onChange = vi.fn();
-    const { find } = await render(<HexColorInput color="ff0000" prefixed onChange={onChange} />);
+    const { find } = await render(
+      <HexColorInput color="ff0000" prefixed={true} onChange={onChange} />,
+    );
 
     const field = find<HTMLInputElement>('input');
     await type(field, 'zz');
@@ -80,7 +82,9 @@ describe('HexColorInput', () => {
 
   it('shows the prefix but reports the colour without it', async () => {
     const onChange = vi.fn();
-    const { find } = await render(<HexColorInput color="ff0000" prefixed onChange={onChange} />);
+    const { find } = await render(
+      <HexColorInput color="ff0000" prefixed={true} onChange={onChange} />,
+    );
 
     await type(find<HTMLInputElement>('input'), '#00ff00');
 
@@ -89,7 +93,7 @@ describe('HexColorInput', () => {
 
   it('cuts the field to eight digits where alpha is allowed', async () => {
     const onChange = vi.fn();
-    const { find } = await render(<HexColorInput color="" alpha onChange={onChange} />);
+    const { find } = await render(<HexColorInput color="" alpha={true} onChange={onChange} />);
 
     await type(find<HTMLInputElement>('input'), 'ff0000ffaabbcc');
 

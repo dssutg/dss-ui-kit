@@ -45,8 +45,12 @@ function findRussianText(): string[] {
   const offenders: string[] = [];
 
   for (const path of collectFiles()) {
-    if (!TEXT_EXTENSIONS.some((extension) => path.endsWith(extension))) continue;
-    if (ALLOWED_FILES.includes(path)) continue;
+    if (!TEXT_EXTENSIONS.some((extension) => path.endsWith(extension))) {
+      continue;
+    }
+    if (ALLOWED_FILES.includes(path)) {
+      continue;
+    }
 
     const text = readFileSync(join(REPOSITORY_ROOT, path), 'utf8');
     const line = text.split('\n').find((candidate) => CYRILLIC.test(candidate));

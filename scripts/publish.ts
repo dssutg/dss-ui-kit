@@ -159,7 +159,9 @@ function extractSpecifiers(source: string): string[] {
   for (const pattern of patterns) {
     for (const match of source.matchAll(pattern)) {
       const specifier = match[1];
-      if (specifier) specifiers.push(specifier);
+      if (specifier) {
+        specifiers.push(specifier);
+      }
     }
   }
 

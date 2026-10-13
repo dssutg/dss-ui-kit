@@ -14,7 +14,7 @@ export function useDelayedVisibility(trigger: boolean, delayMilliseconds: number
     if (!trigger) {
       setIsVisible(false);
 
-      return undefined;
+      return;
     }
 
     const timer = setTimeout(() => {

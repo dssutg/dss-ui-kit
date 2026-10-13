@@ -341,7 +341,7 @@ export function CommandConsole({
   useGranularEffect(
     () => {
       if (!open) {
-        return undefined;
+        return;
       }
 
       function handleKeyDown(event: KeyboardEvent) {
@@ -367,7 +367,11 @@ export function CommandConsole({
 
   return (
     <div className={cn('bg-bpd flex flex-col gap-2 overflow-auto', className)} style={style}>
-      <LogOutputTextArea output={output} dontWrapLongLines={!wrapLines} shouldScrollToEndOnUpdate />
+      <LogOutputTextArea
+        output={output}
+        dontWrapLongLines={!wrapLines}
+        shouldScrollToEndOnUpdate={true}
+      />
       <div className="relative">
         <span className="before:text-tpd before:absolute before:left-2 before:top-1/2 before:-translate-y-1/2 before:content-['>']">
           <input

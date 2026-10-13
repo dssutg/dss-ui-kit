@@ -213,7 +213,7 @@ function PropertyStats<T>({
             },
           }}
           sortColumnId="count"
-          reversedSort
+          reversedSort={true}
           rowListOverScanCount={items.length < 50 ? items.length : undefined}
           style={{
             marginTop: '2rem',

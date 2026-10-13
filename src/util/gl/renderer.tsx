@@ -92,7 +92,7 @@ export function useGLCtx(canvas: HTMLCanvasElement | null): {
 
   useEffect(() => {
     if (!canvas) {
-      return undefined;
+      return;
     }
 
     // Initialize the GL context
@@ -100,7 +100,7 @@ export function useGLCtx(canvas: HTMLCanvasElement | null): {
 
     if (!gl) {
       console.error('Unable to initialize WebGL');
-      return undefined;
+      return;
     }
 
     gl.clearColor(0, 0, 0, 1);
@@ -111,7 +111,7 @@ export function useGLCtx(canvas: HTMLCanvasElement | null): {
     const shaderProgram = initShaderProgram(gl, vertexShaderSource, fragmentShaderSource);
 
     if (!shaderProgram) {
-      return undefined;
+      return;
     }
 
     // Collect all the info needed to use the shader program.

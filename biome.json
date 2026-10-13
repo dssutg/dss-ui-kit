@@ -48,6 +48,7 @@
         "noUselessLoneBlockStatements": "error",
         "noStaticOnlyClass": "error",
         "noThisInStatic": "error",
+        "noUselessUndefined": "error",
         "noExcessiveCognitiveComplexity": {
           "level": "error",
           "options": {
@@ -61,7 +62,8 @@
         "useExhaustiveDependencies": "error",
         "noUnusedVariables": "error",
         "noUnusedImports": "error",
-        "noUndeclaredVariables": "error"
+        "noUndeclaredVariables": "error",
+        "noPrivateImports": "error"
       },
       "style": {
         "useConst": "error",
@@ -79,6 +81,15 @@
         "useExportType": "error",
         "useComponentExportOnlyModules": "off",
         "noNestedTernary": "error",
+        "noCommonJs": "error",
+        "noImplicitBoolean": "error",
+        "noMultiAssign": "error",
+        "noNamespace": "error",
+        "noNegationElse": "error",
+        "noProcessEnv": "error",
+        "noSubstr": "error",
+        "noYodaExpression": "error",
+        "useBlockStatements": "error",
         "useCollapsedIf": "error",
         "useCollapsedElseIf": "error",
         "useNamingConvention": {
@@ -121,7 +132,21 @@
         "noPrototypeBuiltins": "error",
         "noThenProperty": "error",
         "noConfusingLabels": "error",
-        "noSelfCompare": "error"
+        "noSelfCompare": "error",
+        "noDuplicatedSpreadProps": "error",
+        "noDuplicateTestHooks": "error",
+        "noExportsInTest": "error",
+        "noFocusedTests": "error",
+        "noImportCycles": "off",
+        "noMisplacedAssertion": "error",
+        "noUnassignedVariables": "error",
+        "noUnusedExpressions": "error",
+        "noVar": "error"
+      },
+      "nursery": {
+        "noFloatingPromises": "error",
+        "noIdenticalTestTitle": "error",
+        "noUselessTypeConversion": "error"
       }
     }
   },

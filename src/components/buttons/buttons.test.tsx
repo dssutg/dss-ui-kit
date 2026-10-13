@@ -77,7 +77,7 @@ describe('IconButton', () => {
 
   it('drops the handler when inactive', async () => {
     const onClick = vi.fn();
-    const { find } = await render(<IconButton icon="plus" inactive onClick={onClick} />);
+    const { find } = await render(<IconButton icon="plus" inactive={true} onClick={onClick} />);
 
     await click(find<HTMLButtonElement>('button'));
 

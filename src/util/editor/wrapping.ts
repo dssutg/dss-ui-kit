@@ -17,7 +17,7 @@ export function wrapSelectionWithPair(
     value:
       value.slice(0, Math.max(0, selectionStart)) +
       chars[0] +
-      value.substring(selectionStart, selectionEnd) +
+      value.slice(selectionStart, selectionEnd) +
       chars[1] +
       value.slice(Math.max(0, selectionEnd)),
     // Update caret position

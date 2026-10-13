@@ -319,7 +319,7 @@ export function SearchInput({
         iconClassName={cn('fill-tpl size-2 mr-0.5', value === '' && 'opacity-0')}
         className={cn('rounded-full p-2', value !== '' && 'hover:bg-bse')}
         rippleColor="var(--color-ripple-icon-button)"
-        title={value !== '' ? t('SearchInput.clear') : ''}
+        title={value === '' ? '' : t('SearchInput.clear')}
         onClick={(e) => {
           e.stopPropagation();
           onClear?.();

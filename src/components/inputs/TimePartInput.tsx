@@ -47,7 +47,7 @@ export function TimePartInput({
         minValue={min}
         maxValue={max}
         onChange={(value) => onChange(value ?? min)}
-        shouldResetEmptyInput
+        shouldResetEmptyInput={true}
         inputStyle={{ width: '3rem' }}
       />
       <IconButton

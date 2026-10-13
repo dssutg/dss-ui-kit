@@ -121,8 +121,8 @@ describe('TextInput', () => {
     const { find, findAll, update } = await render(
       <TextInput
         value="secret"
-        hiddenText
-        hasShowPasswordButton
+        hiddenText={true}
+        hasShowPasswordButton={true}
         onShowPasswordClick={onShowPasswordClick}
       />,
     );
@@ -135,7 +135,11 @@ describe('TextInput', () => {
     expect(onShowPasswordClick).toHaveBeenCalledTimes(1);
 
     await update(
-      <TextInput value="secret" hasShowPasswordButton onShowPasswordClick={onShowPasswordClick} />,
+      <TextInput
+        value="secret"
+        hasShowPasswordButton={true}
+        onShowPasswordClick={onShowPasswordClick}
+      />,
     );
 
     expect(find<HTMLInputElement>('input').type).toBe('text');
@@ -147,7 +151,7 @@ describe('ColorfulYesNo', () => {
   it('merges the caller classes whichever answer it is printing', async () => {
     // The colour is `yesIsBad`'s opinion of the answer and the caller's classes are the caller's; the
     // two never trade places, and neither of the two answers drops what the caller asked for.
-    const { update, container } = await render(<ColorfulYesNo yes className="font-bold" />);
+    const { update, container } = await render(<ColorfulYesNo yes={true} className="font-bold" />);
 
     expect(container.querySelector('span')?.className).toContain('font-bold');
 
@@ -157,7 +161,7 @@ describe('ColorfulYesNo', () => {
   });
 
   it('lets the caller override the colour, because a colour is a decision rather than a guarantee', async () => {
-    const { container } = await render(<ColorfulYesNo yes className="text-tpd" />);
+    const { container } = await render(<ColorfulYesNo yes={true} className="text-tpd" />);
 
     const className = container.querySelector('span')?.className;
 
@@ -206,7 +210,7 @@ describe('Select', () => {
 
   it('disables the select when told to', async () => {
     const { find } = await render(
-      <Select value="a" onChange={() => undefined} disabled>
+      <Select value="a" onChange={() => undefined} disabled={true}>
         <option value="a">First</option>
       </Select>,
     );
@@ -237,14 +241,16 @@ describe('ToggleSwitch', () => {
   });
 
   it('reports the enabled state it was given', async () => {
-    const { find } = await render(<ToggleSwitch enabled />);
+    const { find } = await render(<ToggleSwitch enabled={true} />);
 
     expect(find<HTMLButtonElement>('button').getAttribute('aria-checked')).toBe('true');
   });
 
   it('is aria-disabled rather than disabled when locked, so it stays focusable', async () => {
     const onChange = vi.fn();
-    const { find } = await render(<ToggleSwitch enabled locked onChange={onChange} />);
+    const { find } = await render(
+      <ToggleSwitch enabled={true} locked={true} onChange={onChange} />,
+    );
 
     const button = find<HTMLButtonElement>('button');
 
@@ -266,7 +272,7 @@ describe('LockableToggleSwitch', () => {
       <LockableToggleSwitch
         label="Verbose logging"
         enabled={false}
-        locked
+        locked={true}
         lockReasonTitle="Turn it on first"
         onChange={onChange}
       />,

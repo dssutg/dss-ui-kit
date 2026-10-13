@@ -167,7 +167,7 @@ export function DecimalIntegerInput({
         iconClassName={cn('fill-tpl size-2', value === undefined && 'opacity-0')}
         className={cn('rounded-full p-2', value !== undefined && 'hover:bg-bse')}
         rippleColor="var(--color-ripple-icon-button)"
-        title={value !== undefined ? t('DecimalIntegerInput.clear') : ''}
+        title={value === undefined ? '' : t('DecimalIntegerInput.clear')}
         onClick={(e) => {
           e.stopPropagation();
           if (shouldResetEmptyInput || onClear === undefined) {

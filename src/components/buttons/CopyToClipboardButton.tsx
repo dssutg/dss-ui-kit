@@ -36,11 +36,9 @@ export function CopyToClipboardButton({
   const [feedbackShown, setFeedbackShown] = useState(false);
 
   const onClick = useCallback(() => {
-    if (typeof contentToCopy === 'function') {
-      copyToClipboard(contentToCopy());
-    } else {
-      copyToClipboard(contentToCopy);
-    }
+    const text = typeof contentToCopy === 'function' ? contentToCopy() : contentToCopy;
+
+    void copyToClipboard(text);
     showFeedbackTooltip(setFeedbackShown);
   }, [contentToCopy]);
 

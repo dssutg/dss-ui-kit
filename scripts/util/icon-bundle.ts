@@ -162,7 +162,9 @@ export function roundPathData(pathData: string): string {
     text += pathData.slice(end, index);
 
     const printed = formatRounded(match[0]);
-    if (endsWithDigit(text) && /\d/.test(printed.charAt(0))) text += ' ';
+    if (endsWithDigit(text) && /\d/.test(printed.charAt(0))) {
+      text += ' ';
+    }
 
     text += printed;
     end = index + match[0].length;

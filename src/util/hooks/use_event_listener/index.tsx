@@ -29,7 +29,7 @@ export function useEventListener<E>(
 
   useEffect(() => {
     if (element === null || element === undefined) {
-      return undefined;
+      return;
     }
 
     const handler: EventListener = (event: Event) => {

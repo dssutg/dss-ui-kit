@@ -523,7 +523,12 @@ export class AutoSizer extends Component<AutoSizerProps, AutoSizerState> {
       // Using just global can result into onResize events not being emitted in cases with multiple realms
       const ResizeObserverInstance = parentNode.ownerDocument.defaultView.ResizeObserver;
 
-      if (ResizeObserverInstance != null) {
+      if (ResizeObserverInstance == null) {
+        // Defer requiring resize handler in order to support server-side rendering.
+        // See issue #41
+        this.detectElementResize = createDetectElementResize(nonce);
+        this.detectElementResize.addResizeListener(parentNode, this.onResize);
+      } else {
         this.resizeObserver = new ResizeObserverInstance(() => {
           // Guard against "ResizeObserver loop limit exceeded" error;
           // could be triggered if the state update causes the ResizeObserver handler to run long.
@@ -531,11 +536,6 @@ export class AutoSizer extends Component<AutoSizerProps, AutoSizerState> {
           this.timeoutId = setTimeout(this.onResize, 0);
         });
         this.resizeObserver.observe(parentNode);
-      } else {
-        // Defer requiring resize handler in order to support server-side rendering.
-        // See issue #41
-        this.detectElementResize = createDetectElementResize(nonce);
-        this.detectElementResize.addResizeListener(parentNode, this.onResize);
       }
 
       this.onResize();

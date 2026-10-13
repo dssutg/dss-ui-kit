@@ -126,7 +126,7 @@ export function OrderPanel<T extends number>({
         visibilityMap === undefined || visibilityMap[item] ? 'text-tpl' : 'text-tpd',
       )}
     >
-      {itemIndexFormatter !== undefined ? itemIndexFormatter(item, index) : item}
+      {itemIndexFormatter === undefined ? item : itemIndexFormatter(item, index)}
     </p>
   );
 

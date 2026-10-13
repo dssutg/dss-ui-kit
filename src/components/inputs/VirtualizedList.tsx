@@ -195,7 +195,7 @@ export function useVirtualizedList({
     const element = actualContainerElement;
 
     if (element === null) {
-      return undefined;
+      return;
     }
 
     const resizeObserver = new ResizeObserver(updateVisibleItems);
@@ -221,7 +221,7 @@ export function useVirtualizedList({
   return {
     startIndex,
     endIndex,
-    containerRef: ref !== undefined ? ref : containerRef,
+    containerRef: ref === undefined ? containerRef : ref,
     getItemStyle,
   };
 }

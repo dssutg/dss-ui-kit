@@ -85,7 +85,7 @@ export function TimelineViewerModal<T>({
       open={open}
       title={t('TimelineViewerModal.title')}
       onOpenChange={onOpenChange}
-      noWidthRestriction
+      noWidthRestriction={true}
       className={className}
     >
       {items.length !== 0 && (
@@ -225,11 +225,11 @@ function TimelineViewer<T>({
           const timestamp = getTimeStampAtX(x);
 
           if (timestamp === undefined) {
-            return undefined;
+            return;
           }
 
           if (timeSetPerProp[prop]?.has(timestamp) !== true) {
-            return undefined;
+            return;
           }
 
           return propIndexToY(propIndex);

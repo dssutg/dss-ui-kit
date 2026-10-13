@@ -40,7 +40,7 @@ export function JsonEditor({
           }}
           tabSize={expandingTab ? tabSize : 1}
           insertSpaces={expandingTab}
-          autoFocus
+          autoFocus={true}
           textareaClassName="min-h-full font-mono outline-none"
           textareaStyle={{
             fontFamily: 'var(--font-mono)',

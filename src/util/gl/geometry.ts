@@ -470,7 +470,7 @@ export function convertBoxToQuads(box: BoxSceneObject): GLQuad[] {
       topRightColor: getFaceColor(box.material, 'front'),
       topLeftColor: getFaceColor(box.material, 'front'),
 
-      ...(box.frontUV !== undefined ? { uv: box.frontUV } : {}),
+      ...(box.frontUV === undefined ? {} : { uv: box.frontUV }),
     },
 
     // Back
@@ -485,7 +485,7 @@ export function convertBoxToQuads(box: BoxSceneObject): GLQuad[] {
       topRightColor: getFaceColor(box.material, 'back'),
       topLeftColor: getFaceColor(box.material, 'back'),
 
-      ...(box.backUV !== undefined ? { uv: box.backUV } : {}),
+      ...(box.backUV === undefined ? {} : { uv: box.backUV }),
     },
 
     // Top
@@ -500,7 +500,7 @@ export function convertBoxToQuads(box: BoxSceneObject): GLQuad[] {
       topRightColor: getFaceColor(box.material, 'top'),
       topLeftColor: getFaceColor(box.material, 'top'),
 
-      ...(box.topUV !== undefined ? { uv: box.topUV } : {}),
+      ...(box.topUV === undefined ? {} : { uv: box.topUV }),
     },
 
     // Bottom
@@ -515,7 +515,7 @@ export function convertBoxToQuads(box: BoxSceneObject): GLQuad[] {
       topRightColor: getFaceColor(box.material, 'bottom'),
       topLeftColor: getFaceColor(box.material, 'bottom'),
 
-      ...(box.bottomUV !== undefined ? { uv: box.bottomUV } : {}),
+      ...(box.bottomUV === undefined ? {} : { uv: box.bottomUV }),
     },
 
     // Right
@@ -530,7 +530,7 @@ export function convertBoxToQuads(box: BoxSceneObject): GLQuad[] {
       topRightColor: getFaceColor(box.material, 'right'),
       topLeftColor: getFaceColor(box.material, 'right'),
 
-      ...(box.rightUV !== undefined ? { uv: box.rightUV } : {}),
+      ...(box.rightUV === undefined ? {} : { uv: box.rightUV }),
     },
 
     // Left
@@ -545,7 +545,7 @@ export function convertBoxToQuads(box: BoxSceneObject): GLQuad[] {
       topRightColor: getFaceColor(box.material, 'left'),
       topLeftColor: getFaceColor(box.material, 'left'),
 
-      ...(box.leftUV !== undefined ? { uv: box.leftUV } : {}),
+      ...(box.leftUV === undefined ? {} : { uv: box.leftUV }),
     },
   ];
 }

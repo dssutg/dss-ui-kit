@@ -110,7 +110,7 @@ describe('useDraggablePanel', () => {
 
     expect(panel.style.transform).toBe('translateX(-1024px)');
 
-    await update(<Panel visible onVisibleChange={() => undefined} />);
+    await update(<Panel visible={true} onVisibleChange={() => undefined} />);
 
     expect(panel.style.transform).toBe('translateX(0px)');
   });
@@ -124,7 +124,7 @@ describe('useDraggablePanel', () => {
 
     expect(overlay.style.opacity).toBe('0');
 
-    await update(<Panel visible onVisibleChange={() => undefined} />);
+    await update(<Panel visible={true} onVisibleChange={() => undefined} />);
 
     expect(overlay.style.opacity).toBe('0.5');
   });
@@ -168,7 +168,7 @@ describe('useDraggablePanel', () => {
   it('closes a panel whose drag is released short of halfway, and puts it back off the edge', async () => {
     const onVisibleChange = vi.fn();
 
-    const { container } = await render(<Panel visible onVisibleChange={onVisibleChange} />);
+    const { container } = await render(<Panel visible={true} onVisibleChange={onVisibleChange} />);
 
     const { panel } = elements(container);
 
@@ -184,7 +184,7 @@ describe('useDraggablePanel', () => {
   it('leaves a panel open when a drag of it does not reach halfway', async () => {
     const onVisibleChange = vi.fn();
 
-    const { container } = await render(<Panel visible onVisibleChange={onVisibleChange} />);
+    const { container } = await render(<Panel visible={true} onVisibleChange={onVisibleChange} />);
 
     const { panel } = elements(container);
 
@@ -211,7 +211,7 @@ describe('useDraggablePanel', () => {
   });
 
   it('takes a drag that starts on the panel, wherever on the panel it started', async () => {
-    const { container } = await render(<Panel visible onVisibleChange={() => undefined} />);
+    const { container } = await render(<Panel visible={true} onVisibleChange={() => undefined} />);
 
     const { panel } = elements(container);
 
@@ -262,7 +262,7 @@ describe('useDraggablePanel', () => {
   it('hands a mostly vertical drag back to the panel, which may need to scroll', async () => {
     const onVisibleChange = vi.fn();
 
-    const { container } = await render(<Panel visible onVisibleChange={onVisibleChange} />);
+    const { container } = await render(<Panel visible={true} onVisibleChange={onVisibleChange} />);
 
     const { panel } = elements(container);
 

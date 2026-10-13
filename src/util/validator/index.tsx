@@ -228,7 +228,7 @@ export function vUndefined(): VValidator<undefined> {
     if (value !== undefined) {
       throw new VError('Value must be undefined');
     }
-    return undefined;
+    return;
   };
 }
 

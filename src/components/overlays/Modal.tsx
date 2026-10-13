@@ -55,7 +55,7 @@ export function Modal({
   useGranularEffect(
     () => {
       if (!open) {
-        return undefined;
+        return;
       }
 
       function handleKeyDown(event: KeyboardEvent) {

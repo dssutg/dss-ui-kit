@@ -34,7 +34,7 @@ describe('Accordion', () => {
     expect(onExpansionChange).toHaveBeenCalledWith(true);
 
     await update(
-      <Accordion expanded onExpansionChange={onExpansionChange} triggerTitle="Details">
+      <Accordion expanded={true} onExpansionChange={onExpansionChange} triggerTitle="Details">
         <p>Body</p>
       </Accordion>,
     );
@@ -74,7 +74,7 @@ describe('Accordion', () => {
     // putting these on the wrong one of the two is the mistake a caller cannot see.
     const { container } = await render(
       <Accordion
-        expanded
+        expanded={true}
         onExpansionChange={() => undefined}
         triggerTitle="Details"
         contentClassName="gap-8"
@@ -401,7 +401,7 @@ describe('MenuTree', () => {
   const renderTree = (onItemClick: MenuTreeItemClickCallback) =>
     render(
       <MenuTree
-        expanded
+        expanded={true}
         width={200}
         menuItems={menuItems}
         currentItemId="overview"
@@ -439,7 +439,7 @@ describe('MenuTree', () => {
   it('renders an item with neither a title nor a key as nothing, rather than as a raw key', async () => {
     const { findAll } = await render(
       <MenuTree
-        expanded
+        expanded={true}
         width={200}
         menuItems={[{ id: 'nameless', titleKey: undefined, subitems: [] }]}
         currentItemId="nameless"
@@ -526,7 +526,7 @@ describe('SlideMenu', () => {
     expect(onOpenChange).toHaveBeenCalledWith(true);
 
     await update(
-      <SlideMenu open onOpenChange={onOpenChange}>
+      <SlideMenu open={true} onOpenChange={onOpenChange}>
         <p>Menu</p>
       </SlideMenu>,
     );
@@ -549,7 +549,7 @@ describe('SlideMenu', () => {
   it('closes when its backdrop is clicked, which is the only thing the backdrop does', async () => {
     const onOpenChange = vi.fn();
     const { findAll } = await render(
-      <SlideMenu open onOpenChange={onOpenChange}>
+      <SlideMenu open={true} onOpenChange={onOpenChange}>
         <p>Menu item</p>
       </SlideMenu>,
     );
@@ -573,7 +573,7 @@ describe('SlideMenu', () => {
 
   it('leaves the panel to the width and offset the caller gives it', async () => {
     const { find } = await render(
-      <SlideMenu open onOpenChange={() => undefined} width="30rem" topOffset="3rem">
+      <SlideMenu open={true} onOpenChange={() => undefined} width="30rem" topOffset="3rem">
         <p>Menu item</p>
       </SlideMenu>,
     );

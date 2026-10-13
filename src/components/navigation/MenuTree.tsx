@@ -761,7 +761,7 @@ function MenuTreeItem({
         item={subitem}
         last={isLast}
         currentItemId={currentItemId}
-        expanded
+        expanded={true}
         getMenuItemDepth={getMenuItemDepth}
         onClick={onClick}
         onContextMenu={onContextMenu}

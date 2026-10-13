@@ -37,7 +37,7 @@ export function HslaStringColorPickerPopover({
   useEffect(() => setHotColor(color), [color]);
 
   return (
-    <Popover open={open} onOpenChange={setOpen} hasBackDrop trigger={trigger}>
+    <Popover open={open} onOpenChange={setOpen} hasBackDrop={true} trigger={trigger}>
       <div className={className}>
         <HslaStringColorPicker color={hotColor} onChange={setHotColor} />
       </div>

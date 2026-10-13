@@ -44,7 +44,9 @@ const MODULE_PATH = join(ICONS_DIRECTORY, 'index.tsx');
  */
 function collectIconFiles(): string[] {
   return readdirSync(ICONS_DIRECTORY).filter((file) => {
-    if (file.endsWith('.svg')) return true;
+    if (file.endsWith('.svg')) {
+      return true;
+    }
 
     if (file.toLowerCase().endsWith('.svg')) {
       throw new Error(`${file} must have a lowercase .svg extension`);

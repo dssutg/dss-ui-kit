@@ -122,7 +122,7 @@ export function Accordion({
 export function useAccordion(
   expanded: boolean,
   mode: 'vertical' | 'horizontal' = 'vertical',
-  fixedSize: number | undefined = undefined,
+  fixedSize?: number,
 ): {
   contentRef: RefObject<HTMLDivElement>;
   contentStyle: {

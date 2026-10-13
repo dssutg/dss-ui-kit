@@ -47,7 +47,7 @@ describe('AppCrashGuard', () => {
   it('shows the default fallback in place of the subtree that threw', async () => {
     const { find, textContent } = await render(
       <AppCrashGuard version="1.0.0">
-        <Exploding explode />
+        <Exploding explode={true} />
       </AppCrashGuard>,
     );
 
@@ -61,7 +61,7 @@ describe('AppCrashGuard', () => {
     // which nothing read, so the default fallback rendered whatever the caller passed.
     const { find, query } = await render(
       <AppCrashGuard version="1.0.0" fallback={({ error }) => <p>handled: {error.message}</p>}>
-        <Exploding explode />
+        <Exploding explode={true} />
       </AppCrashGuard>,
     );
 
@@ -76,7 +76,7 @@ describe('AppCrashGuard', () => {
         getContext={() => ({ screen: 'devices' })}
         fallback={({ report }) => <p>report: {report?.errorMessage ?? 'none'}</p>}
       >
-        <Exploding explode />
+        <Exploding explode={true} />
       </AppCrashGuard>,
     );
 
@@ -90,7 +90,7 @@ describe('AppCrashGuard', () => {
 
     await render(
       <AppCrashGuard version="1.0.0" onCrash={onCrash} fallback={() => <p>handled</p>}>
-        <Exploding explode />
+        <Exploding explode={true} />
       </AppCrashGuard>,
     );
 
@@ -111,7 +111,7 @@ describe('AppCrashGuard', () => {
           throw new Error('the handler failed');
         }}
       >
-        <Exploding explode />
+        <Exploding explode={true} />
       </AppCrashGuard>,
     );
 
@@ -122,7 +122,7 @@ describe('AppCrashGuard', () => {
   it("merges a className over the fallback's own", async () => {
     const { find } = await render(
       <AppCrashGuard version="1.0.0" className="h-12 border border-red-500">
-        <Exploding explode />
+        <Exploding explode={true} />
       </AppCrashGuard>,
     );
 
@@ -230,7 +230,7 @@ describe('LogOutputTextArea', () => {
 
     expect(find('textarea').className).not.toContain('whitespace-pre');
 
-    await update(<LogOutputTextArea output="x" dontWrapLongLines />);
+    await update(<LogOutputTextArea output="x" dontWrapLongLines={true} />);
 
     expect(find('textarea').className).toContain('whitespace-pre');
   });
@@ -247,7 +247,7 @@ describe('LogWidget', () => {
     const { find, findByText, update } = await render(
       <LogWidget
         title="Output"
-        playing
+        playing={true}
         output="ready"
         onPlayClick={onPlayClick}
         onPauseClick={onPauseClick}
@@ -343,7 +343,9 @@ describe('CommandConsole', () => {
 
   /** A console with the caller's commands registered, plus whatever a test changes about it. */
   function console(props: Partial<CommandConsoleProps> = {}) {
-    return <CommandConsole open onOpenChange={() => undefined} commands={commands} {...props} />;
+    return (
+      <CommandConsole open={true} onOpenChange={() => undefined} commands={commands} {...props} />
+    );
   }
 
   /** The output pane, which is where everything a command said ends up. */
@@ -376,7 +378,7 @@ describe('CommandConsole', () => {
 
   it('asks to close on Escape, because the caller owns what is open', async () => {
     const onOpenChange = vi.fn();
-    await render(<CommandConsole open onOpenChange={onOpenChange} commands={commands} />);
+    await render(<CommandConsole open={true} onOpenChange={onOpenChange} commands={commands} />);
 
     act(() => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
@@ -532,7 +534,7 @@ describe('CommandConsole', () => {
 
     await render(
       <CommandConsole
-        open
+        open={true}
         onOpenChange={() => undefined}
         commands={{ ...commands, alias: aliased }}
       />,
@@ -554,7 +556,7 @@ describe('CommandConsole', () => {
 
     await render(
       <CommandConsole
-        open
+        open={true}
         onOpenChange={() => undefined}
         commands={{ ...commands, alias: aliased }}
       />,
@@ -569,7 +571,7 @@ describe('CommandConsole', () => {
   it('cuts a line at the console line length, because an unbroken line is unreadable', async () => {
     await render(
       <CommandConsole
-        open
+        open={true}
         onOpenChange={() => undefined}
         commands={commands}
         initialMaxLineLength={6}
@@ -584,7 +586,7 @@ describe('CommandConsole', () => {
   it('keeps the newest output when there is more of it than the console holds', async () => {
     await render(
       <CommandConsole
-        open
+        open={true}
         onOpenChange={() => undefined}
         commands={commands}
         maxOutputLength={20}

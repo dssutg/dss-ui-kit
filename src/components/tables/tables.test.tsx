@@ -36,7 +36,7 @@ describe('AutoSizer', () => {
   it('reports a resize, and passes on only the axis it was asked for', async () => {
     const onResize = vi.fn();
     const { findByText } = await render(
-      <AutoSizer disableWidth onResize={onResize}>
+      <AutoSizer disableWidth={true} onResize={onResize}>
         {(size) => <p>height {size.height}</p>}
       </AutoSizer>,
     );

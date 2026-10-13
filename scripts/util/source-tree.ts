@@ -44,7 +44,9 @@ function collectFilesIn(directory: string): string[] {
     const absolute = join(directory, entry.name);
     const relativePath = toPosixPath(relative(REPOSITORY_ROOT, absolute));
 
-    if (IGNORED_PATHS.includes(relativePath)) continue;
+    if (IGNORED_PATHS.includes(relativePath)) {
+      continue;
+    }
 
     if (entry.isDirectory()) {
       found.push(...collectFilesIn(absolute));

@@ -207,7 +207,9 @@ export async function render(element: ReactNode): Promise<RenderResult> {
     },
     unmount: () => {
       const index = mountedTrees.indexOf(mounted);
-      if (index >= 0) mountedTrees.splice(index, 1);
+      if (index >= 0) {
+        mountedTrees.splice(index, 1);
+      }
 
       act(() => {
         root.unmount();

@@ -156,7 +156,7 @@ export function ZoomableCanvas({
       const canvas = internalCanvasRef.current;
 
       if (!canvas) {
-        return undefined;
+        return;
       }
 
       function handlePointerStart(event: Event, x: number, y: number) {

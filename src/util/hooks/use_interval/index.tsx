@@ -29,7 +29,7 @@ export function useInterval(callback: () => void, delay: number | null, deps?: u
       return () => clearInterval(id);
     }
 
-    return undefined;
+    return;
   }, [delay, ...(deps ?? [])]);
 }
 
@@ -63,6 +63,6 @@ export function useImmediateInterval(callback: () => void, delay: number | null,
       return () => clearInterval(id);
     }
 
-    return undefined;
+    return;
   }, [delay, ...(deps ?? [])]);
 }

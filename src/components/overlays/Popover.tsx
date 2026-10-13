@@ -77,7 +77,7 @@ export function Popover({
       const trigger = triggerRef.current;
 
       if (trigger === null) {
-        return undefined;
+        return;
       }
 
       function updateRootTriggerBox() {

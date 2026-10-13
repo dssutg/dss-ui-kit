@@ -54,7 +54,7 @@ export function LogOutputTextArea({
       )}
       style={style}
       value={output}
-      readOnly
+      readOnly={true}
     />
   );
 }

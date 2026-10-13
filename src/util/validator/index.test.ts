@@ -31,7 +31,11 @@ import {
   vUndefined,
 } from './';
 
-const expectVErrored = (run: () => unknown, message: string) => {
+/**
+ * Throws rather than calling `expect` so the helper can live outside a `test` callback, which is
+ * where `noMisplacedAssertion` requires assertions to be.
+ */
+const assertVErrored = (run: () => unknown, message: string): void => {
   let caught: unknown;
 
   try {
@@ -40,8 +44,14 @@ const expectVErrored = (run: () => unknown, message: string) => {
     caught = error;
   }
 
-  expect(caught).toBeInstanceOf(VError);
-  expect((caught as VError).message).toBe(message);
+  if (!(caught instanceof VError)) {
+    throw new Error(`expected a VError, but got ${String(caught)}`);
+  }
+  if (caught.message !== message) {
+    throw new Error(
+      `expected VError message ${JSON.stringify(message)}, got ${JSON.stringify(caught.message)}`,
+    );
+  }
 };
 
 /** The thrown error is a real `Error` a catch can identify by its `name`. */
@@ -63,7 +73,7 @@ describe('vBoolean', () => {
   });
 
   test('rejects everything else', () => {
-    expectVErrored(() => vBoolean()('true'), 'Value must be a boolean');
+    assertVErrored(() => vBoolean()('true'), 'Value must be a boolean');
   });
 });
 
@@ -75,7 +85,7 @@ describe('vNumber', () => {
   });
 
   test('rejects a non-number', () => {
-    expectVErrored(() => vNumber()('1'), 'Value must be a number');
+    assertVErrored(() => vNumber()('1'), 'Value must be a number');
   });
 });
 
@@ -87,11 +97,11 @@ describe('vInt', () => {
   });
 
   test('rejects a fraction', () => {
-    expectVErrored(() => vInt()(3.5), 'Value must be an integer');
+    assertVErrored(() => vInt()(3.5), 'Value must be an integer');
   });
 
   test('rejects a number too large to be exact', () => {
-    expectVErrored(() => vInt()(Number.MAX_SAFE_INTEGER + 2), 'Value must be an integer');
+    assertVErrored(() => vInt()(Number.MAX_SAFE_INTEGER + 2), 'Value must be an integer');
   });
 });
 
@@ -103,7 +113,7 @@ describe('vString', () => {
   });
 
   test('rejects a non-string', () => {
-    expectVErrored(() => vString()(5), 'Value must be a string');
+    assertVErrored(() => vString()(5), 'Value must be a string');
   });
 });
 
@@ -114,23 +124,23 @@ describe('vString', () => {
 describe('comparison validators', () => {
   test('vLt accepts only below the threshold', () => {
     expect(vLt(10)(9)).toBe(9);
-    expectVErrored(() => vLt(10)(10), 'Value must be an integer less than 10');
-    expectVErrored(() => vLt(10)('x'), 'Value must be an integer less than 10');
+    assertVErrored(() => vLt(10)(10), 'Value must be an integer less than 10');
+    assertVErrored(() => vLt(10)('x'), 'Value must be an integer less than 10');
   });
 
   test('vLe accepts the threshold itself', () => {
     expect(vLe(10)(10)).toBe(10);
-    expectVErrored(() => vLe(10)(11), 'Value must be an integer less than or equal to 10');
+    assertVErrored(() => vLe(10)(11), 'Value must be an integer less than or equal to 10');
   });
 
   test('vGt accepts only above the threshold', () => {
     expect(vGt(10)(11)).toBe(11);
-    expectVErrored(() => vGt(10)(10), 'Value must be an integer greater than 10');
+    assertVErrored(() => vGt(10)(10), 'Value must be an integer greater than 10');
   });
 
   test('vGe accepts the threshold itself', () => {
     expect(vGe(10)(10)).toBe(10);
-    expectVErrored(() => vGe(10)(9), 'Value must be an integer greater than or equal to 10');
+    assertVErrored(() => vGe(10)(9), 'Value must be an integer greater than or equal to 10');
   });
 });
 
@@ -143,28 +153,28 @@ describe('vRegex, vMin, vMax and vLength', () => {
     const text = 'abc';
 
     expect(vRegex(/^a/)(text)).toBe(text);
-    expectVErrored(() => vRegex(/^a/)('bcd'), 'Value must be a string that matches regexp /^a/');
+    assertVErrored(() => vRegex(/^a/)('bcd'), 'Value must be a string that matches regexp /^a/');
   });
 
   test('vMin bounds the length below', () => {
     expect(vMin(2)('ab')).toBe('ab');
-    expectVErrored(() => vMin(2)('a'), 'Value must be at least 2 characters long');
+    assertVErrored(() => vMin(2)('a'), 'Value must be at least 2 characters long');
   });
 
   test('vMax bounds the length above', () => {
     expect(vMax(2)('ab')).toBe('ab');
-    expectVErrored(() => vMax(2)('abc'), 'Value must be at most 2 characters long');
+    assertVErrored(() => vMax(2)('abc'), 'Value must be at most 2 characters long');
   });
 
   test('vLength pins the length', () => {
     expect(vLength(2)('ab')).toBe('ab');
-    expectVErrored(() => vLength(2)('a'), 'Value must be 2 characters long');
+    assertVErrored(() => vLength(2)('a'), 'Value must be 2 characters long');
   });
 
   test('vArrayLength pins the element count', () => {
     expect(vArrayLength(2)([1, 2])).toEqual([1, 2]);
-    expectVErrored(() => vArrayLength(2)([1]), 'Value must be an array of exactly 2 elements');
-    expectVErrored(() => vArrayLength(2)('ab'), 'Value must be an array of exactly 2 elements');
+    assertVErrored(() => vArrayLength(2)([1]), 'Value must be an array of exactly 2 elements');
+    assertVErrored(() => vArrayLength(2)('ab'), 'Value must be an array of exactly 2 elements');
   });
 });
 
@@ -172,12 +182,12 @@ describe('vRegex, vMin, vMax and vLength', () => {
 describe('vNull and vUndefined', () => {
   test('vNull only accepts null', () => {
     expect(vNull()(null)).toBeNull();
-    expectVErrored(() => vNull()(undefined), 'Value must be null');
+    assertVErrored(() => vNull()(undefined), 'Value must be null');
   });
 
   test('vUndefined only accepts undefined', () => {
     expect(vUndefined()(undefined)).toBeUndefined();
-    expectVErrored(() => vUndefined()(null), 'Value must be undefined');
+    assertVErrored(() => vUndefined()(null), 'Value must be undefined');
   });
 });
 
@@ -195,11 +205,11 @@ describe('vObject', () => {
   });
 
   test('rejects a non-object', () => {
-    expectVErrored(() => vObject(schema)(null), 'Value must be an object');
+    assertVErrored(() => vObject(schema)(null), 'Value must be an object');
   });
 
   test('names the field that failed', () => {
-    expectVErrored(
+    assertVErrored(
       () => vObject(schema)({ x: 'no', label: 'origin' }),
       'Error in field "x": Value must be an integer',
     );
@@ -213,11 +223,11 @@ describe('vArray', () => {
   });
 
   test('rejects a non-array', () => {
-    expectVErrored(() => vArray(vInt())({ length: 0 }), 'Value must be an array');
+    assertVErrored(() => vArray(vInt())({ length: 0 }), 'Value must be an array');
   });
 
   test('points at a failing element', () => {
-    expectVErrored(() => vArray(vInt())([1, 'x']), 'Error in array item: Value must be an integer');
+    assertVErrored(() => vArray(vInt())([1, 'x']), 'Error in array item: Value must be an integer');
   });
 });
 
@@ -230,7 +240,7 @@ describe('vEnum', () => {
   });
 
   test('rejects everything else, listing what was allowed', () => {
-    expectVErrored(() => vEnum(allowed)('third'), 'Value must be one of: first, second');
+    assertVErrored(() => vEnum(allowed)('third'), 'Value must be one of: first, second');
   });
 });
 
@@ -240,7 +250,7 @@ describe('vPipe', () => {
     const piped = vPipe(vString(), vMin(2));
 
     expect(piped('long enough')).toBe('long enough');
-    expectVErrored(() => piped('x'), 'Value must be at least 2 characters long');
+    assertVErrored(() => piped('x'), 'Value must be at least 2 characters long');
   });
 });
 
@@ -259,7 +269,7 @@ describe('vOr', () => {
   });
 
   test('rejects a value none of them accepts', () => {
-    expectVErrored(
+    assertVErrored(
       () => vOr(vInt(), vInt())('text' as never),
       'Value must satisfy at least one of the validators',
     );

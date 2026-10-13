@@ -367,16 +367,16 @@ export function SortableTable<T, C extends string>({
                 aria-sort={getHeaderSortState(column.id, currentSortColumnId, currentReversedSort)}
                 className="border-tpl bg-bpd shadow-tpl sticky top-0 box-border select-none border-r-2 pb-1 font-normal shadow-[inset_0px_-2px_0px_0px] last:border-r-0"
                 style={{
-                  ...(index !== descriptor.headerColumns.length - 1
+                  ...(index === descriptor.headerColumns.length - 1
                     ? {
-                        width: columnWidths[index],
                         minWidth: columnWidths[index],
-                        maxWidth: columnWidths[index],
+                        width: '100%',
                         height: descriptor.headerRowHeight,
                       }
                     : {
+                        width: columnWidths[index],
                         minWidth: columnWidths[index],
-                        width: '100%',
+                        maxWidth: columnWidths[index],
                         height: descriptor.headerRowHeight,
                       }),
                   ...column.style,

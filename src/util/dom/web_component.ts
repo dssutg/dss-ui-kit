@@ -101,7 +101,7 @@ export abstract class WComponent extends HTMLElement {
   private scheduleRender() {
     if (!this.needsRender) {
       this.needsRender = true;
-      Promise.resolve().then(() => {
+      void Promise.resolve().then(() => {
         this.needsRender = false;
         this.render();
       });

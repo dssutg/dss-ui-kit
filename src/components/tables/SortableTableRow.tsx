@@ -55,15 +55,15 @@ export function SortableTableRow<T, C extends string>({
         key={columnId}
         className="group border-tpl relative box-border overflow-hidden border-r-2 px-2 font-normal last:border-r-0"
         style={{
-          ...(columnIndex !== descriptor.headerColumns.length - 1
+          ...(columnIndex === descriptor.headerColumns.length - 1
             ? {
+                minWidth: columnWidths[columnIndex],
+                width: '100%',
+              }
+            : {
                 width: columnWidths[columnIndex],
                 minWidth: columnWidths[columnIndex],
                 maxWidth: columnWidths[columnIndex],
-              }
-            : {
-                minWidth: columnWidths[columnIndex],
-                width: '100%',
               }),
           height: style?.height ?? 0,
           ...rowStyle,

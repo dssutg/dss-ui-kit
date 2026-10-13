@@ -21,9 +21,7 @@ export function getEnumLabel(
   property: { readonly options: readonly EnumOption[] },
   value: string,
 ): string {
-  const asString = value.toString();
-
-  return property.options.find((option) => option.value === asString)?.label ?? asString;
+  return property.options.find((option) => option.value === value)?.label ?? value;
 }
 
 /**
@@ -116,7 +114,7 @@ export function ControlledTable<T, C extends string>({
     ) as SortableTableColumnComparatorTable<T, C>,
     rows: filteredItems.map((item, index) => ({
       id:
-        getItemId !== undefined ? getItemId(item, index).toString() : JSON.stringify([item, index]),
+        getItemId === undefined ? JSON.stringify([item, index]) : getItemId(item, index).toString(),
       data: item,
     })),
   };

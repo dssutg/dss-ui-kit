@@ -105,7 +105,7 @@ export function useFetch<T = unknown>(
         }
       }
 
-      fetchData();
+      void fetchData();
 
       return () => {
         abortController.abort();
@@ -124,7 +124,7 @@ export async function postJson<T>(input: string | URL | globalThis.Request, body
     headers: {
       'Content-Type': 'application/json',
     },
-    body: body !== undefined ? JSON.stringify(body) : null,
+    body: body === undefined ? null : JSON.stringify(body),
   });
 
   return response;

@@ -47,7 +47,10 @@ export function copyToClipboard(text: string): Promise<void> {
 
   return new Promise((resolve, reject) => {
     // Check for the clipboard API
-    if (navigator.clipboard !== undefined) {
+    if (navigator.clipboard === undefined) {
+      // Fallback for older browsers and non-secure contexts
+      fallbackCopy(text, resolve, reject);
+    } else {
       // Use the clipboard API if available
       navigator.clipboard
         .writeText(text)
@@ -56,9 +59,6 @@ export function copyToClipboard(text: string): Promise<void> {
           console.error('Failed to copy using clipboard API: ', error);
           fallbackCopy(text, resolve, reject);
         });
-    } else {
-      // Fallback for older browsers and non-secure contexts
-      fallbackCopy(text, resolve, reject);
     }
   });
 }

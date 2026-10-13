@@ -219,7 +219,7 @@ function DefaultCrashFallback({
           <div className="mx-auto mt-8 flex max-w-[800px] items-start gap-2">
             <textarea
               className="bg-bin mt-2 h-64 w-full resize-none rounded-lg p-2"
-              readOnly
+              readOnly={true}
               value={reportJson}
             />
             <IconButton

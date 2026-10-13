@@ -148,7 +148,7 @@ export function EditableAccordionList({
                       }
                       tryRenameItem(item);
                     }}
-                    autoFocus
+                    autoFocus={true}
                   />
                 </>
               ) : (

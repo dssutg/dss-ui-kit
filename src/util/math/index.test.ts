@@ -14,12 +14,24 @@ import {
   vec4From,
 } from './';
 
-/** Matrices hold numbers that are close but not identical, so comparisons allow for a rounding error. */
-function expectMatrixToBeCloseTo(actual: Mat4, expected: readonly number[]) {
-  expect(actual).toHaveLength(16);
+/**
+ * Matrices hold numbers that are close but not identical, so comparisons allow for a rounding error.
+ *
+ * Throws rather than calling `expect` so the helper can live outside a `test` callback, which is
+ * where `noMisplacedAssertion` requires assertions to be.
+ */
+function assertMatrixCloseTo(actual: Mat4, expected: readonly number[]): void {
+  if (actual.length !== 16) {
+    throw new Error(`expected matrix to have 16 components, got ${actual.length}`);
+  }
 
   for (const [index, expectedValue] of expected.entries()) {
-    expect(actual[index]).toBeCloseTo(expectedValue ?? 0, 6);
+    const actualValue = actual[index] ?? 0;
+    if (Math.abs(actualValue - (expectedValue ?? 0)) >= 1e-6 / 2) {
+      throw new Error(
+        `expected component ${index} to be close to ${expectedValue ?? 0}, got ${actualValue}`,
+      );
+    }
   }
 }
 
@@ -63,7 +75,7 @@ describe('glMat4Identity', () => {
     const identity = glMat4Identity();
     const product = glMat4Multiply(glMat4Identity(), identity, identity);
 
-    expectMatrixToBeCloseTo(product, identity);
+    assertMatrixCloseTo(product, identity);
   });
 });
 
@@ -71,14 +83,14 @@ describe('glMat4Multiply', () => {
   test('multiplying by the identity leaves a matrix alone', () => {
     const a = mat4From([2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 4, 0, 5, 6, 7, 1]);
 
-    expectMatrixToBeCloseTo(glMat4Multiply(glMat4Identity(), a, glMat4Identity()), a);
+    assertMatrixCloseTo(glMat4Multiply(glMat4Identity(), a, glMat4Identity()), a);
   });
 
   test('multiplies two scales componentwise', () => {
     const scaleByTwo = mat4From([2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1]);
     const scaleByThree = mat4From([3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1]);
 
-    expectMatrixToBeCloseTo(
+    assertMatrixCloseTo(
       glMat4Multiply(glMat4Identity(), scaleByTwo, scaleByThree),
       mat4From([6, 0, 0, 0, 0, 6, 0, 0, 0, 0, 6, 0, 0, 0, 0, 1]),
     );
@@ -94,7 +106,7 @@ describe('glMat4Multiply', () => {
     const separateResult = glMat4Multiply(glMat4Identity(), separate, separate);
 
     expect(inPlaceResult).toBe(inPlace);
-    expectMatrixToBeCloseTo(inPlaceResult, separateResult);
+    assertMatrixCloseTo(inPlaceResult, separateResult);
   });
 });
 
@@ -102,7 +114,7 @@ describe('glMat4Scale', () => {
   test('scales each axis and leaves the translation alone', () => {
     const subject = mat4From([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 5, 6, 7, 1]);
 
-    expectMatrixToBeCloseTo(
+    assertMatrixCloseTo(
       glMat4Scale(glMat4Identity(), subject, [2, 3, 4]),
       mat4From([2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 4, 0, 5, 6, 7, 1]),
     );
@@ -111,7 +123,7 @@ describe('glMat4Scale', () => {
 
 describe('glMat4Translate', () => {
   test('puts the vector into the translation column', () => {
-    expectMatrixToBeCloseTo(
+    assertMatrixCloseTo(
       glMat4Translate(glMat4Identity(), glMat4Identity(), [10, 20, 30]),
       mat4From([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 20, 30, 1]),
     );
@@ -134,17 +146,17 @@ describe('glMat4Rotate', () => {
     const turned = glMat4Rotate(glMat4Identity(), subject, 2 * Math.PI, [0, 1, 0]);
 
     if (turned === null) {
-      throw new Error(String('the y axis is a valid axis to rotate about'));
+      throw new Error('the y axis is a valid axis to rotate about');
     }
 
-    expectMatrixToBeCloseTo(turned, subject);
+    assertMatrixCloseTo(turned, subject);
   });
 
   test('rotating the x axis a quarter turn about y lands it on the z axis', () => {
     const turned = glMat4Rotate(glMat4Identity(), glMat4Identity(), Math.PI / 2, [0, 1, 0]);
 
     if (turned === null) {
-      throw new Error(String('the y axis is a valid axis to rotate about'));
+      throw new Error('the y axis is a valid axis to rotate about');
     }
 
     const turnedXAxis = glMat4MultiplyMatrixAndVector([0, 0, 0, 0], turned, [1, 0, 0, 1]);
@@ -169,7 +181,7 @@ describe('glMat4Invert', () => {
       throw new Error('a matrix with a non-zero diagonal is invertible');
     }
 
-    expectMatrixToBeCloseTo(glMat4Multiply(glMat4Identity(), inverse, subject), glMat4Identity());
+    assertMatrixCloseTo(glMat4Multiply(glMat4Identity(), inverse, subject), glMat4Identity());
   });
 
   // A matrix with no inverse is a real answer, not an error: a ray hit test against a degenerate

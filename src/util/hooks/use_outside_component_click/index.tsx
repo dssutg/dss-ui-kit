@@ -13,7 +13,7 @@ export function useOutsideComponentClick(
 ) {
   useEffect(() => {
     if (!componentRef?.current) {
-      return undefined;
+      return;
     }
 
     const element = componentRef.current;

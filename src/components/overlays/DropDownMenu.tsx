@@ -206,7 +206,7 @@ export function DropDownMenu({
     const trigger = triggerRef.current;
 
     if (trigger === null) {
-      return undefined;
+      return;
     }
 
     // The element is captured in a closure below, which ends the narrowing the check above did.
@@ -447,7 +447,7 @@ function DropDownMenuPanel({
       const list = listRef.current;
 
       if (list === null) {
-        return undefined;
+        return;
       }
 
       const resizeObserver = new ResizeObserver(updatePos);
@@ -530,7 +530,9 @@ function DropDownMenuItemElement({
   const content = (
     <>
       <Ripple color="var(--color-ripple-button)" />
-      {item.icon !== undefined ? (
+      {item.icon === undefined ? (
+        <div style={iconSizeStyle} />
+      ) : (
         <Icon
           name={item.icon}
           style={{
@@ -539,11 +541,11 @@ function DropDownMenuItemElement({
             ...menuItemIconStyle,
           }}
         />
-      ) : (
-        <div style={iconSizeStyle} />
       )}
       <div className="truncate">{item.title}</div>
-      {item.submenu !== undefined ? (
+      {item.submenu === undefined ? (
+        <div className="ml-2 size-4" />
+      ) : (
         <Icon
           name="triangleDown"
           style={{
@@ -555,8 +557,6 @@ function DropDownMenuItemElement({
             ...menuItemIconMoreStyle,
           }}
         />
-      ) : (
-        <div className="ml-2 size-4" />
       )}
     </>
   );

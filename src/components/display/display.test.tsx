@@ -57,7 +57,7 @@ describe('Icon', () => {
   });
 
   it('hides the icon but keeps its space, so a row of icons does not jump', async () => {
-    const { container } = await render(<Icon name="save" invisible />);
+    const { container } = await render(<Icon name="save" invisible={true} />);
 
     // An SVG element's `className` is an SVGAnimatedString, not a string, so the attribute is read.
     expect(container.querySelector('svg')?.getAttribute('class')).toContain('invisible');

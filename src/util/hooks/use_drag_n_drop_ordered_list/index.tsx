@@ -124,7 +124,7 @@ export function useDragNDropOrderedList<ListItemDataType>(
   };
 
   function isDragTarget(itemIndex: number) {
-    return dragAndDrop.draggedTo === Number(itemIndex);
+    return dragAndDrop.draggedTo === itemIndex;
   }
 
   function isBeforeStart(itemIndex: number) {

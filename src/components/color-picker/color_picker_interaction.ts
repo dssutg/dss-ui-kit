@@ -108,7 +108,9 @@ export const getRelativePosition = (
  * still cancellable and still need it.
  */
 export const preventDefaultMove = (event: MouseEvent | TouchEvent): void => {
-  !isTouch(event) && event.preventDefault();
+  if (!isTouch(event)) {
+    event.preventDefault();
+  }
 };
 
 /**

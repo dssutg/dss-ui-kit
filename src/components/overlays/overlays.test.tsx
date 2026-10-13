@@ -37,7 +37,7 @@ describe('Modal', () => {
     // `style` has always gone on this root, so `className` does too. The card inside it is positioned
     // and sized by the dialog itself; a caller naming a z-index is naming the root's.
     const { query } = await render(
-      <Modal open onOpenChange={() => undefined} title="Settings" className="z-50">
+      <Modal open={true} onOpenChange={() => undefined} title="Settings" className="z-50">
         <p>Body</p>
       </Modal>,
     );
@@ -56,7 +56,7 @@ describe('Modal', () => {
 
   it('portals the dialog onto the body rather than inside its own place in the tree', async () => {
     const { container, findByText } = await render(
-      <Modal open onOpenChange={() => undefined} title="Settings">
+      <Modal open={true} onOpenChange={() => undefined} title="Settings">
         <p>Body</p>
       </Modal>,
     );
@@ -67,7 +67,7 @@ describe('Modal', () => {
 
   it('asks to close on Escape, after the closing animation has been asked for', async () => {
     const onOpenChange = vi.fn();
-    await render(<Modal open onOpenChange={onOpenChange} title="Settings" />);
+    await render(<Modal open={true} onOpenChange={onOpenChange} title="Settings" />);
 
     act(() => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
@@ -86,7 +86,7 @@ describe('Modal', () => {
 
   it('offers a close button, and the backdrop is one too', async () => {
     const { findAll } = await render(
-      <Modal open onOpenChange={() => undefined} title="Settings" />,
+      <Modal open={true} onOpenChange={() => undefined} title="Settings" />,
     );
 
     const buttons = findAll<HTMLButtonElement>('button');
@@ -97,7 +97,7 @@ describe('Modal', () => {
 
   it('keeps the panel unfocusable while it is animating in, so an invisible dialog cannot be clicked', async () => {
     const { container } = await render(
-      <Modal open onOpenChange={() => undefined} title="Settings" />,
+      <Modal open={true} onOpenChange={() => undefined} title="Settings" />,
     );
 
     expect(container.textContent).toBe('');
@@ -121,7 +121,7 @@ describe('ConfirmationModal', () => {
 
   const question = (onConfirm: () => void, onCancel: () => void, destructive = false) => (
     <ConfirmationModal
-      open
+      open={true}
       title="Delete the configuration?"
       onConfirm={onConfirm}
       onCancel={onCancel}
@@ -192,7 +192,12 @@ describe('ConfirmationModal', () => {
     );
 
     await update(
-      <ConfirmationModal open title="Delete?" onConfirm={onConfirm} onCancel={() => undefined} />,
+      <ConfirmationModal
+        open={true}
+        title="Delete?"
+        onConfirm={onConfirm}
+        onCancel={() => undefined}
+      />,
     );
 
     const { confirm } = theAnswers();
@@ -207,7 +212,12 @@ describe('ConfirmationModal', () => {
       />,
     );
     await update(
-      <ConfirmationModal open title="Delete?" onConfirm={onConfirm} onCancel={() => undefined} />,
+      <ConfirmationModal
+        open={true}
+        title="Delete?"
+        onConfirm={onConfirm}
+        onCancel={() => undefined}
+      />,
     );
 
     await click(theAnswers().confirm);
@@ -238,7 +248,7 @@ describe('ConfirmationModal', () => {
 describe('Popover', () => {
   it('renders its panel in the tree while closed, so a caller can measure it', async () => {
     const { findByText } = await render(
-      <Popover open={false} onOpenChange={() => undefined} forceMount>
+      <Popover open={false} onOpenChange={() => undefined} forceMount={true}>
         <p>Panel body</p>
       </Popover>,
     );
@@ -249,7 +259,7 @@ describe('Popover', () => {
   it('closes on Escape and returns the focus to the trigger', async () => {
     const onOpenChange = vi.fn();
     await render(
-      <Popover open onOpenChange={onOpenChange}>
+      <Popover open={true} onOpenChange={onOpenChange}>
         <p>Panel body</p>
       </Popover>,
     );
@@ -271,7 +281,7 @@ describe('FeedbackTooltip', () => {
     expect(hidden.getAttribute('aria-hidden')).toBe('true');
     expect(hidden.textContent).toBe('Copied');
 
-    await update(<FeedbackTooltip visible title="Copied" />);
+    await update(<FeedbackTooltip visible={true} title="Copied" />);
 
     const shown = find('.scale-y-1');
 
@@ -281,7 +291,7 @@ describe('FeedbackTooltip', () => {
 
   it('renders the title as a child when there is one, rather than as text', async () => {
     const { findByText } = await render(
-      <FeedbackTooltip visible>
+      <FeedbackTooltip visible={true}>
         <strong>Done</strong>
       </FeedbackTooltip>,
     );

@@ -45,12 +45,24 @@ const INFRASTRUCTURE_MODULES = [
 
 /** Which layer a source file belongs to. */
 function layerOf(path: string): Layer {
-  if (path === 'src/index.ts') return 'index';
-  if (path.startsWith('src/util/')) return 'lib';
-  if (path.startsWith('src/components/')) return 'components';
-  if (path.startsWith('src/icons/')) return 'icons';
-  if (path.startsWith('src/locales/')) return 'locales';
-  if (INFRASTRUCTURE_MODULES.includes(path)) return 'infrastructure';
+  if (path === 'src/index.ts') {
+    return 'index';
+  }
+  if (path.startsWith('src/util/')) {
+    return 'lib';
+  }
+  if (path.startsWith('src/components/')) {
+    return 'components';
+  }
+  if (path.startsWith('src/icons/')) {
+    return 'icons';
+  }
+  if (path.startsWith('src/locales/')) {
+    return 'locales';
+  }
+  if (INFRASTRUCTURE_MODULES.includes(path)) {
+    return 'infrastructure';
+  }
   return 'index';
 }
 
@@ -74,9 +86,14 @@ function resolveRelative(specifier: string, fromPath: string): string {
   const parts = fromPath.split('/').slice(0, -1);
 
   for (const segment of withoutExtension.split('/')) {
-    if (segment === '.') continue;
-    if (segment === '..') parts.pop();
-    else parts.push(segment);
+    if (segment === '.') {
+      continue;
+    }
+    if (segment === '..') {
+      parts.pop();
+    } else {
+      parts.push(segment);
+    }
   }
 
   return parts.join('/');
@@ -105,7 +122,9 @@ function findForbiddenImports(): string[] {
   const offenders: string[] = [];
 
   for (const path of collectFiles('src')) {
-    if (!path.endsWith('.ts') && !path.endsWith('.tsx')) continue;
+    if (!path.endsWith('.ts') && !path.endsWith('.tsx')) {
+      continue;
+    }
 
     const layer = layerOf(path);
     const allowed = LAYERS[layer].allows;
@@ -113,10 +132,14 @@ function findForbiddenImports(): string[] {
 
     for (const specifier of importSpecifiers(text)) {
       const target = resolveSpecifier(specifier, path);
-      if (target === undefined) continue;
+      if (target === undefined) {
+        continue;
+      }
 
       const targetLayer = layerOf(target);
-      if (allowed.includes(targetLayer)) continue;
+      if (allowed.includes(targetLayer)) {
+        continue;
+      }
 
       offenders.push(`${path} imports ${target} (${layer} may not import ${targetLayer})`);
     }
