@@ -23,6 +23,29 @@ const EXACT_FIELDS = ['dependencies', 'devDependencies', 'optionalDependencies']
 /** An exact semantic version, including a prerelease and build metadata, and nothing else. */
 const EXACT_VERSION = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 
+/** The manifest fields the peer-dependency rules read. */
+interface DependencyManifest {
+  readonly dependencies?: Readonly<Record<string, string>> | undefined;
+  readonly peerDependencies?: Readonly<Record<string, string>> | undefined;
+}
+
+/** `package.json`, read for the dependency fields alone. */
+function dependencyManifest(): DependencyManifest {
+  return JSON.parse(
+    readFileSync(join(REPOSITORY_ROOT, 'package.json'), 'utf8'),
+  ) as DependencyManifest;
+}
+
+/** The version a manifest field declares for `name`, read through a variable so neither the literal
+ * key rule nor `noPropertyAccessFromIndexSignature` is at odds with the other. */
+function declaredVersion(
+  manifest: DependencyManifest,
+  field: keyof DependencyManifest,
+  name: string,
+): string | undefined {
+  return manifest[field]?.[name];
+}
+
 /** The dependencies whose declared version is a range rather than an exact version. */
 function findUnpinned(): string[] {
   const manifest = JSON.parse(readFileSync(join(REPOSITORY_ROOT, 'package.json'), 'utf8')) as {
@@ -49,5 +72,26 @@ function findUnpinned(): string[] {
 describe('dependency versions', () => {
   it('pins every installable dependency to an exact version', () => {
     expect(findUnpinned()).toEqual([]);
+  });
+});
+
+/**
+ * Preact is the peer the library runs on, and bundling its own copy would put two renderers in one
+ * bundle. The two things that make that true are checkable: it is a peer and not a runtime
+ * dependency, and the peer it declares is a range so every compatible Preact satisfies it.
+ */
+describe('the Preact peer dependency', () => {
+  it('is declared as a peer and never as a runtime dependency', () => {
+    const manifest = dependencyManifest();
+
+    expect(declaredVersion(manifest, 'peerDependencies', 'preact')).toBeDefined();
+    expect(declaredVersion(manifest, 'dependencies', 'preact')).toBeUndefined();
+  });
+
+  it('states a range rather than an exact version, so any compatible Preact installs', () => {
+    const peer = declaredVersion(dependencyManifest(), 'peerDependencies', 'preact');
+
+    expect(peer).toBeTypeOf('string');
+    expect(EXACT_VERSION.test(peer ?? '')).toBe(false);
   });
 });

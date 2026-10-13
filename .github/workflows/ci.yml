@@ -27,6 +27,9 @@ concurrency:
 env:
   # Keep in sync with `engines.deno` in package.json.
   DENO_VERSION: 2.9.7
+  # The release of bump-version this pipeline installs to lint commit messages. Pinned like every
+  # other tool, so a lint failure comes from the history and not from a newer checker.
+  BUMP_VERSION: 2.1.1
 
 jobs:
   format:
@@ -45,6 +48,26 @@ jobs:
       - uses: actions/checkout@v5
       - uses: ./.github/actions/setup
       - run: deno task lint:biome
+
+  # Conventional Commits is a rule the whole history is held to, and it used to live only in a local
+  # `commit-msg` hook that a clone does not install. bump-version is the maintainer's own tool — the
+  # same one a release runs — installed here from a pinned release, so the history is checked by the
+  # tool that reads it. `fetch-depth: 0` brings the tags and the full history the lint walks; the
+  # default shallow checkout has neither.
+  commits:
+    name: Commit messages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+      - name: Install bump-version
+        run: |
+          curl -fsSL -o bump-version.zip "https://github.com/dssutg/bump-version/releases/download/v${BUMP_VERSION}/linux-amd64.zip"
+          unzip -o bump-version.zip -d bump-version
+          install -m 0755 bump-version/linux-amd64/bump-version /usr/local/bin/bump-version
+      - run: deno task lint:commits
 
   typecheck:
     name: Typecheck
@@ -74,6 +97,10 @@ jobs:
       - uses: ./.github/actions/setup
       - run: deno task build
       - run: deno task pack
+      # The same version ships to JSR as source, and that reading resolves the `@/` alias, the
+      # `react` alias and the shaders through a generated config. A dry publish is what proves the
+      # source still loads under Deno's resolver, without contacting the registry.
+      - run: deno task publish:dry
       - uses: actions/upload-artifact@v4
         with:
           name: dist

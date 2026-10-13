@@ -290,6 +290,8 @@ imports by rewriting them to `preact/...`.
 - JSX uses the automatic runtime with `jsxImportSource: "preact"`. No `import React` needed.
 - **Preact is a peer dependency, not a dependency.** The library runs on the Preact the consumer
   already has; bundling its own would put two copies in one bundle and break hooks.
+- `scripts/no-preact-subpath-imports.test.ts` fails on a `preact` or `preact/*` specifier under
+  `src/`, so the rewrite the first paragraph forbids cannot land unnoticed.
 
 ## Styling
 
@@ -343,10 +345,12 @@ about which properties exist.
 
 ### Class names
 
-The copy concatenates class strings with template literals and appends a `className` prop directly,
-so a caller's `className` loses to the component's own when both set the same property. The
-components take a `cn()` helper built on `tailwind-merge`, so `className` from the caller wins and the
-two do not fight.
+A component's classes go through the `cn()` helper, built on `tailwind-merge`, so a `className` from
+the caller wins where the two would otherwise set the same property. Building the string with a
+template literal or a `+` instead appends rather than merges, which lets the order the classes were
+written in decide the winner, and it hides the class from the Tailwind scanner — a class assembled
+from a fragment and a variable is generated for nobody. `scripts/no-raw-class-strings.test.ts` reads
+the syntax tree and fails on a `className` built that way.
 
 ## Localisation
 
@@ -408,6 +412,7 @@ deno task dev             # dev server
 deno task build           # production build into dist/
 deno task preview         # serve the production build
 deno task lint            # biome ci + markdownlint + typecheck
+deno task lint:commits    # bump-version lint: the history since the last release is Conventional Commits
 deno task format          # biome check --write (apply safe fixes)
 deno task format:markdown # apply markdownlint's autofixes
 deno task codemod         # run a codemod for a mechanical multi-file rewrite
@@ -415,12 +420,15 @@ deno task typecheck       # tsgo only
 deno task test            # unit tests
 deno task docs            # TypeDoc API reference into docs/api/
 deno task icons           # regenerate src/icons/index.tsx from the source SVGs
+deno task <name>:baseline # regenerate a ratchet (design-tokens:, type-assertions:, duplication:)
 deno task ci              # the full local gate, exactly what CI runs
 ```
 
 `deno task ci` must pass before any commit. It chains `install:frozen`, `format:check`, `lint`,
-`test`, `build`, `pack`, `lint:return-types` and `docs`, which is the whole of the GitHub Actions
-pipeline in one command.
+`lint:commits`, `test`, `build`, `pack`, `lint:return-types`, `publish:dry` and `docs`, which is the
+whole of the GitHub Actions pipeline in one command. `lint:commits` runs the `bump-version` binary,
+which must be on `PATH`; CI installs a pinned release of it, and a clone that does not have it runs
+every other task unchanged.
 If Biome reports a fixable problem, run `deno task format` rather than editing by hand. Releases are
 not a task here because they are the maintainer's alone and run through an external tool — see
 [Releasing](#releasing).
@@ -428,8 +436,8 @@ not a task here because they are the maintainer's alone and run through an exter
 ## Continuous integration
 
 [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) defines a strict pipeline: `format`, `lint`,
-`typecheck`, `test` → `build`, `return-types`, `docs`. `biome ci` treats formatting as an error, so
-an unformatted file fails the pipeline.
+`commits`, `typecheck`, `test` → `build`, `return-types`, `docs`. `biome ci` treats formatting as an
+error, so an unformatted file fails the pipeline.
 
 Every job checks the repository out and then runs `.github/actions/setup/action.yml`, which installs
 the pinned Deno and runs `deno install --frozen`. A shared action rather than a copy per job: a
@@ -437,8 +445,16 @@ lockfile that has to agree with `package.json` is checked the same way everywher
 The checkout is a separate step because a local action is loaded from the working directory — the
 action cannot be the thing that put it there.
 
+The `commits` job fetches the full history and the tags, installs the pinned `bump-version` release
+and runs `deno task lint:commits`, so the history is held to Conventional Commits by the same tool a
+release reads it with, and not only by the local hook a clone may not have installed. The `build` job
+also runs `deno task publish:dry` after `pack`, so the source is proven to load under Deno's resolver
+before the maintainer publishes it.
+
 The pipeline keeps one gate deliberately: every job runs the same commands `deno task ci` runs, so a
-green pipeline and a green `deno task ci` mean the same thing.
+green pipeline and a green `deno task ci` mean the same thing. `scripts/ci-parity.test.ts` holds the
+two lists together: a command added to a job and not to the `ci` task fails, because it would be a
+check no contributor runs.
 
 ## Project layout
 
@@ -554,13 +570,20 @@ name is wrong, that is a change with a migration, taken on its own.
 ## Testing
 
 `deno task test` runs the suite. Add tests next to what they cover: `src/**/*.test.ts` beside the
-component or type, `scripts/**/*.test.ts` beside the helper. The repository-policy tests —
-`no-bare-javascript`, `module-boundary`, `no-russian-text`, `no-hardcoded-ui-text`,
-`no-type-assertions` and `design-tokens` — are the exceptions: they guard repository-wide rules rather
-than one module, so they sit beside the tooling they protect and share its tree walker
-(`scripts/util/source-tree.ts`). `alias-agreement`, `no-stylesheet-import` and `pinned-dependencies`
-each guard one repository-wide fact and read the file that states it — the two configs,
-`src/index.ts`, `package.json`.
+component or type, `scripts/**/*.test.ts` beside the helper. The repository-policy tests guard
+repository-wide rules rather than one module, so they sit beside the tooling they protect and walk
+the source tree through its shared walker (`scripts/util/source-tree.ts`):
+
+- `no-bare-javascript`, `module-boundary`, `no-russian-text`, `no-hardcoded-ui-text`,
+  `no-raw-class-strings`, `no-preact-subpath-imports`, `no-type-assertions`, `component-group-tests`
+  and `design-tokens`.
+- `duplicated-code` is the ratchet over the same tree: it tokenizes the source and fails on a block
+  that is written elsewhere, against `scripts/duplication-baseline.json`.
+
+A second group guards one repository-wide fact and reads the file that states it, rather than
+walking the tree: `alias-agreement`, `no-stylesheet-import`, `pinned-dependencies`, `version-sync`,
+`ci-parity`, `jsdom-test-pragma`, `generated-artefacts` and `lint-overrides` — the two configs,
+`src/index.ts`, `package.json`, `deno.json`, `biome.json`, the workflow and the Git index.
 
 The suite covers the pure helpers that carry the most logic per line, the repository-policy rules, and
 every component group with at least one render test.
@@ -594,8 +617,10 @@ so it is inert in the `node`-environment tests.
 ## Git and versioning
 
 **Every commit message must follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).**
-`bump-version add-hook` installs a `commit-msg` hook that rejects a bad message, and `bump-version
-lint` checks the history since the last release the same way; run it before releasing.
+`bump-version add-hook` installs a `commit-msg` hook that rejects a bad message, and the CI `commits`
+job runs `deno task lint:commits` — the same `bump-version lint` — over the history since the last
+release, so the rule is enforced on the server rather than only by a hook a clone may not have
+installed.
 
 ```text
 <type>(<scope>): <description>

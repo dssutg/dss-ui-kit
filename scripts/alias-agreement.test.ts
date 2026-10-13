@@ -112,4 +112,31 @@ describe('the @ alias', () => {
     expect(viteAliases().get('@')).toContain('./src/');
     expect(typescriptAliases().get('@/*')).toEqual(['./src/*']);
   });
+
+  it('maps the whole React family onto Preact in both halves', () => {
+    // The library is written against the React API and runs on Preact through the compat layer, so
+    // every `react*` specifier has to resolve to a Preact module in the bundler and in the type
+    // checker. Comparing the key sets above cannot see a target that was changed to something else,
+    // and a `react` that resolves to a real React would put two renderers in one bundle.
+    const isReactFamily = (name: string): boolean =>
+      name === 'react' || name.startsWith('react/') || name.startsWith('react-');
+
+    const viteOffenders = [...viteAliases()]
+      .filter(([name, target]) => isReactFamily(name) && !target.includes('preact'))
+      .map(([name, target]) => `${name} -> ${target}`);
+
+    const typescriptOffenders = [...typescriptAliases()]
+      .filter(([name, targets]) => isReactFamily(aliasName(name)) && !targets.some(isPreact))
+      .map(([name, targets]) => `${name} -> ${targets.join(', ')}`);
+
+    expect({ vite: viteOffenders, typescript: typescriptOffenders }).toEqual({
+      vite: [],
+      typescript: [],
+    });
+  });
 });
+
+/** Whether a `compilerOptions.paths` target points into the Preact package. */
+function isPreact(path: string): boolean {
+  return path.includes('preact');
+}
