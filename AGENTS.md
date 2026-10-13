@@ -573,6 +573,11 @@ name is wrong, that is a change with a migration, taken on its own.
 
 ## Testing
 
+**A bug fix ships with a test that fails without it.** The test is written first, against the
+behaviour that was wrong, so it fails on the unfixed code and passes on the fixed code — a test
+written after the fix proves only that the fix ran. It sits beside what it covers like any other
+test, and the failing-then-passing sequence is what makes the fix verifiable rather than asserted.
+
 `deno task test` runs the suite. Add tests next to what they cover: `src/**/*.test.ts` beside the
 component or type, `scripts/**/*.test.ts` beside the helper. The repository-policy tests guard
 repository-wide rules rather than one module, so they sit beside the tooling they protect and walk
