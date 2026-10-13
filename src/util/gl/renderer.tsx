@@ -491,6 +491,13 @@ function renderFontAtlasChars({
     }
   }
 
+  // Every call site draws the atlas from the characters used, collected into a `Set`, so the list
+  // it gets has no repetitions; the grid was sized to hold that count, and the run-out branch above
+  // returns before this check is read. A completed pass therefore added each distinct character
+  // exactly once, and the error below cannot fire — a duplicate or a shortfall would need a grid
+  // and a character list that disagree about their own lengths. The guard stays as the check a
+  // maintainer can lean on later, and the coverage gate leaves the unreached arm alone.
+  // v8 ignore next
   if (handledChars.size !== chars.length) {
     console.error('Could not add all used characters to font atlas', {
       added: handledChars,

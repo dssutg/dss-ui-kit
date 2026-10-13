@@ -18,6 +18,11 @@ export function useInterval(callback: () => void, delay: number | null, deps?: u
   // Set up the interval
   useEffect(() => {
     function tick() {
+      // Preact flushes this component's effects in declaration order, so the storing effect above
+      // has already run before any tick can fire, and the ref is never reset afterwards: a tick can
+      // never see an unset callback. The guard is kept for the ref's optional type; the unreached
+      // arm stays out of the coverage gate.
+      // v8 ignore next
       if (savedCallback.current) {
         savedCallback.current();
       }
@@ -50,6 +55,9 @@ export function useImmediateInterval(callback: () => void, delay: number | null,
   // Set up the interval
   useEffect(() => {
     function tick() {
+      // As in `useInterval`: the storing effect above has already flushed, so a tick is never the
+      // one that finds the ref unset. The unreached arm stays out of the coverage gate.
+      // v8 ignore next
       if (savedCallback.current) {
         savedCallback.current();
       }

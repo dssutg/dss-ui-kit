@@ -56,6 +56,10 @@ export function escapeHTMLValue(value: unknown): string {
 export function html(strings: TemplateStringsArray, ...values: unknown[]): string {
   return strings.reduce((result, stringPart, i) => {
     const value = values[i - 1];
+    // `reduce` without an initial value starts the callback at index 1, so `i` is never `0` here:
+    // the empty arm is only for a one-part template, which reduce never calls the callback on. The
+    // unreached arm stays out of the coverage gate.
+    // v8 ignore next
     const safeValue = i > 0 ? escapeHTMLValue(value) : '';
     return result + safeValue + stringPart;
   });

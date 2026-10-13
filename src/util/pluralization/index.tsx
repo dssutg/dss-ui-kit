@@ -47,6 +47,10 @@ export function registerPluralRule(locale: string, rule: PluralRule): void {
 }
 
 function primarySubtag(locale: string): string {
+  // `split` always returns at least a first element, so the guarded read is only for the compiler:
+  // with `noUncheckedIndexedAccess` it cannot see the element, and an assertion would trade a
+  // question for a claim. The unreached defensive arm stays out of the coverage gate for that.
+  // v8 ignore next
   return locale.split('-')[0]?.toLowerCase() ?? '';
 }
 
@@ -59,5 +63,9 @@ function primarySubtag(locale: string): string {
  */
 export function getPluralizationIndex(locale: string, count: number): number {
   const rule = pluralRules.get(primarySubtag(locale)) ?? pluralRules.get('en');
+  // `pluralRules` is module-private and 'en' is registered in its declaration, so `rule` is only
+  // undefined to the compiler: `Map.get` returns an optional and nothing here can delete the entry
+  // the fallback would guard against. The unreached arm stays out of the coverage gate for that.
+  // v8 ignore next
   return rule === undefined ? 0 : rule(count);
 }

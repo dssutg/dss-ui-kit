@@ -13,6 +13,7 @@ import {
   escapeHTMLValue,
   html,
   sanitizeHTMLString,
+  templ,
 } from './';
 
 /**
@@ -63,6 +64,26 @@ describe('debounce', () => {
 
     expect(calls).toEqual([]);
   });
+
+  /**
+   * The wrapper's own `this` is what the callback would otherwise see, so the original `this`
+   * must arrive through the explicit `thisObject` argument — the reason for the extra parameter.
+   */
+  test('reads the thisObject argument as the callback this', () => {
+    vi.useFakeTimers();
+    const receivers: unknown[] = [];
+    const debounced = debounce(function (this: unknown, ...args: readonly unknown[]): void {
+      receivers.push(this);
+      receivers.push(args[0]);
+    }, 100);
+
+    const thisObject = { marker: 'sent' };
+    debounced(thisObject, 'arg');
+    expect(receivers).toEqual([]);
+
+    vi.advanceTimersByTime(100);
+    expect(receivers).toEqual([thisObject, 'arg']);
+  });
 });
 
 /**
@@ -108,6 +129,10 @@ describe('escapeHTMLValue', () => {
   test('reads an empty array as nothing', () => {
     expect(escapeHTMLValue([])).toBe('');
   });
+
+  test('serialises a non-empty array as escaped JSON', () => {
+    expect(escapeHTMLValue(['<v>'])).toBe('[&quot;&lt;v&gt;&quot;]');
+  });
 });
 
 describe('html', () => {
@@ -119,6 +144,33 @@ describe('html', () => {
 
   test('leaves the static parts of the template alone', () => {
     expect(html`<p>static</p>`).toBe('<p>static</p>');
+  });
+});
+
+/**
+ * A `<template>` is inert: its content is parsed but detached, scripts inside never run and
+ * nothing it names is fetched, which is what makes the wrapper safe for markup from a trusted
+ * source. The suite asserts both halves — content available for cloning, script not executed.
+ */
+describe('templ', () => {
+  test('wraps the markup in a template that is not in the document', () => {
+    const wrapped = templ('<p>hi</p>');
+
+    expect(wrapped).toBeInstanceOf(HTMLTemplateElement);
+    expect(document.body.contains(wrapped)).toBe(false);
+    expect(wrapped.content.querySelector('p')?.textContent).toBe('hi');
+  });
+
+  test('does not run a script carried in the markup', () => {
+    templ('<script>document.title = "executed"</script>');
+
+    expect(document.title).toBe('');
+  });
+
+  test('does not load an image the markup names', () => {
+    templ('<image href="https://example.invalid/pixel.png">');
+
+    expect(document.body.querySelectorAll('img, image')).toHaveLength(0);
   });
 });
 

@@ -1,14 +1,17 @@
 /**
  * The date helpers feed form fields and clock renders, so the suite holds the pieces the components
  * assemble UI from: 1-based field components, the strftime subset `minstrftime` implements with its
- * padding specifiers, and the duration formatters that answer an unknown-time placeholder rather
- * than throwing on absent input.
+ * padding specifiers, the duration formatters that answer an unknown-time placeholder rather
+ * than throwing on absent input, and the relative-date wording a locale supplies for both
+ * directions of a time difference.
  */
 import { describe, expect, test } from 'vitest';
 import {
+  type DateLocale,
   defaultDateNames,
   formatMillisecondsAsHM,
   formatMillisecondsAsHMSU,
+  formatRelativeDate,
   getDateComponents,
   getMillisecondsAsHMSUComponents,
   hours24to12,
@@ -67,9 +70,34 @@ describe('minstrftime', () => {
     expect(minstrftime('%r', date)).toBe('02:07:09 PM');
   });
 
+  test('formats a numeric date with %D', () => {
+    expect(minstrftime('%D', date)).toBe('01/05/24');
+  });
+
+  test('writes the weekday number with %w', () => {
+    expect(minstrftime('%w', date)).toBe('5');
+  });
+
+  test('writes the lower-case half-day with %P', () => {
+    expect(minstrftime('%P', date)).toBe('pm');
+  });
+
+  test('writes epoch seconds and the raw millisecond timestamp with %s and %u', () => {
+    // A UTC-anchored date keeps both expectations independent of the machine's time zone.
+    const fixed = new Date('2024-01-05T14:07:09Z');
+
+    expect(minstrftime('%s', fixed)).toBe('1704463629');
+    expect(minstrftime('%u', fixed)).toBe('1704463629000');
+  });
+
   test('pads with zeroes by default and not at all with the - specifier', () => {
     expect(minstrftime('%d', date)).toBe('05');
     expect(minstrftime('%-d', date)).toBe('5');
+  });
+
+  test('pads with zeroes by an explicitly written 0 specifier', () => {
+    // `%0d` selects the zero-padding handler outright instead of falling through the default.
+    expect(minstrftime('%0d', date)).toBe('05');
   });
 
   test('pads with spaces with the _ specifier', () => {
@@ -122,6 +150,7 @@ describe('minstrftime', () => {
   test('degrades a name outside the name arrays to empty rather than failing', () => {
     // A malformed locale is not allowed to stop a clock from rendering.
     expect(minstrftime('%A', date, { weekdayNames: [], monthNames: [] })).toBe('');
+    expect(minstrftime('%B', date, { weekdayNames: [], monthNames: [] })).toBe('');
   });
 });
 
@@ -184,5 +213,80 @@ describe('isNowAfter', () => {
 
   test('rejects an unparseable target rather than answering wrongly', () => {
     expect(() => isNowAfter('not a date')).toThrow('Invalid target date');
+  });
+});
+
+/**
+ * A locale with a distinct phrase per step, so each assertion names the exact step the interval
+ * selected and a boundary that landed on the wrong one cannot hide behind a near miss.
+ */
+const relativeLocale: DateLocale = {
+  daysAgo: (days) => `${days}d ago`,
+  yesterday: 'yesterday',
+  hoursAgo: (hours) => `${hours}h ago`,
+  oneHourAgo: 'an hour ago',
+  minutesAgo: (minutes) => `${minutes}m ago`,
+  oneMinuteAgo: 'a minute ago',
+  secondsAgo: (seconds) => `${seconds}s ago`,
+  justThen: 'just then',
+  inSeconds: (seconds) => `in ${seconds}s`,
+  inOneMinute: 'in a minute',
+  inMinutes: (minutes) => `in ${minutes}m`,
+  inOneHour: 'in an hour',
+  inHours: (hours) => `in ${hours}h`,
+  tomorrow: 'tomorrow',
+  inDays: (days) => `in ${days}d`,
+};
+
+/**
+ * Both directions of the difference answer the same questions in the same order, so the boundaries
+ * are paired: each step is asserted just inside it and just outside it, and the first step an
+ * interval matches decides the phrase.
+ */
+describe('formatRelativeDate', () => {
+  const relativeTo = new Date('2024-06-10T12:00:00Z');
+  const secondsBefore = (seconds: number) => new Date(relativeTo.getTime() - seconds * 1_000);
+  const secondsAfter = (seconds: number) => new Date(relativeTo.getTime() + seconds * 1_000);
+
+  test('writes the past, one step per interval', () => {
+    // Within 30 seconds either way reads as "just then".
+    expect(formatRelativeDate(secondsBefore(0), relativeTo, relativeLocale)).toBe('just then');
+    expect(formatRelativeDate(secondsBefore(29), relativeTo, relativeLocale)).toBe('just then');
+    expect(formatRelativeDate(secondsBefore(30), relativeTo, relativeLocale)).toBe('30s ago');
+    expect(formatRelativeDate(secondsBefore(59), relativeTo, relativeLocale)).toBe('59s ago');
+    expect(formatRelativeDate(secondsBefore(60), relativeTo, relativeLocale)).toBe('a minute ago');
+    expect(formatRelativeDate(secondsBefore(119), relativeTo, relativeLocale)).toBe('a minute ago');
+    expect(formatRelativeDate(secondsBefore(120), relativeTo, relativeLocale)).toBe('2m ago');
+    expect(formatRelativeDate(secondsBefore(3_599), relativeTo, relativeLocale)).toBe('59m ago');
+    expect(formatRelativeDate(secondsBefore(3_600), relativeTo, relativeLocale)).toBe(
+      'an hour ago',
+    );
+    expect(formatRelativeDate(secondsBefore(7_199), relativeTo, relativeLocale)).toBe(
+      'an hour ago',
+    );
+    expect(formatRelativeDate(secondsBefore(7_200), relativeTo, relativeLocale)).toBe('2h ago');
+    expect(formatRelativeDate(secondsBefore(86_399), relativeTo, relativeLocale)).toBe('23h ago');
+    expect(formatRelativeDate(secondsBefore(86_400), relativeTo, relativeLocale)).toBe('yesterday');
+    expect(formatRelativeDate(secondsBefore(172_799), relativeTo, relativeLocale)).toBe(
+      'yesterday',
+    );
+    expect(formatRelativeDate(secondsBefore(172_800), relativeTo, relativeLocale)).toBe('2d ago');
+  });
+
+  test('writes the future with the same steps', () => {
+    expect(formatRelativeDate(secondsAfter(29), relativeTo, relativeLocale)).toBe('just then');
+    expect(formatRelativeDate(secondsAfter(30), relativeTo, relativeLocale)).toBe('in 30s');
+    expect(formatRelativeDate(secondsAfter(59), relativeTo, relativeLocale)).toBe('in 59s');
+    expect(formatRelativeDate(secondsAfter(60), relativeTo, relativeLocale)).toBe('in a minute');
+    expect(formatRelativeDate(secondsAfter(119), relativeTo, relativeLocale)).toBe('in a minute');
+    expect(formatRelativeDate(secondsAfter(120), relativeTo, relativeLocale)).toBe('in 2m');
+    expect(formatRelativeDate(secondsAfter(3_599), relativeTo, relativeLocale)).toBe('in 59m');
+    expect(formatRelativeDate(secondsAfter(3_600), relativeTo, relativeLocale)).toBe('in an hour');
+    expect(formatRelativeDate(secondsAfter(7_199), relativeTo, relativeLocale)).toBe('in an hour');
+    expect(formatRelativeDate(secondsAfter(7_200), relativeTo, relativeLocale)).toBe('in 2h');
+    expect(formatRelativeDate(secondsAfter(86_399), relativeTo, relativeLocale)).toBe('in 23h');
+    expect(formatRelativeDate(secondsAfter(86_400), relativeTo, relativeLocale)).toBe('tomorrow');
+    expect(formatRelativeDate(secondsAfter(172_799), relativeTo, relativeLocale)).toBe('tomorrow');
+    expect(formatRelativeDate(secondsAfter(172_800), relativeTo, relativeLocale)).toBe('in 2d');
   });
 });

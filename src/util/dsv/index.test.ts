@@ -136,6 +136,10 @@ describe('serializeDSVColumn', () => {
 });
 
 describe('parseDSV', () => {
+  it('returns no columns for an empty input, rather than one empty field', () => {
+    expect(parseDSV('', ',').columns).toEqual([]);
+  });
+
   it('splits on the delimiter', () => {
     expect(parseDSV('a,b,c', ',').columns).toEqual(['a', 'b', 'c']);
   });
@@ -146,6 +150,17 @@ describe('parseDSV', () => {
 
   it('reads an escape at the end of the input as an empty field', () => {
     expect(parseDSV('a\\', ',').columns).toEqual(['a']);
+  });
+
+  // An escape as the very first character has no accumulated column to append to, and a delimiter
+  // as the very first character closes a field nothing was ever read into: both are the "no column
+  // yet" arm of the two fallbacks in the reader.
+  it('reads a leading escape as text after an empty column', () => {
+    expect(parseDSV('\\a', ',').columns).toEqual(['a']);
+  });
+
+  it('reads a leading delimiter as an empty first field', () => {
+    expect(parseDSV(',a', ',').columns).toEqual(['', 'a']);
   });
 
   it('refuses a backslash delimiter, which could not be escaped', () => {

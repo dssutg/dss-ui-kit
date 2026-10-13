@@ -66,6 +66,25 @@ describe('getHttpStatusCategoryName', () => {
   test('reports a code with no category as unknown rather than returning undefined', () => {
     expect(getHttpStatusCategoryName(600)).toBe('Unknown category of HTTP status code 600');
   });
+
+  test('names a known category as unknown when the names table carries no entry for it', () => {
+    // The code list and the names list are kept in step by hand, and the `??` covers the drift
+    // between them; the entry is removed and restored so nothing else reads the mutated table.
+    Reflect.deleteProperty(httpStatusCategoryNames, HttpStatusCategory.SERVER_ERROR);
+
+    try {
+      expect(getHttpStatusCategoryName(500)).toBe('Unknown HTTP status category 500');
+    } finally {
+      Object.defineProperty(httpStatusCategoryNames, HttpStatusCategory.SERVER_ERROR, {
+        value: 'Server Error',
+        enumerable: true,
+        writable: true,
+        configurable: true,
+      });
+    }
+
+    expect(getHttpStatusCategoryName(500)).toBe('Server Error');
+  });
 });
 
 /** The category table stays in step with the names table: every category has a display name. */

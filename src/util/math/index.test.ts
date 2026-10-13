@@ -4,13 +4,16 @@ import {
   glMat4Invert,
   glMat4Multiply,
   glMat4MultiplyMatrixAndVector,
+  glMat4Perspective,
   glMat4Rotate,
   glMat4Scale,
   glMat4Translate,
+  gltMat4Ortho,
   isPointWithinNormalizedDeviceCoordinates,
   type Mat4,
   mat4From,
   mergeIntegers,
+  multiplyMatrices,
   toFloat32Array,
   transpose,
   vec4From,
@@ -49,6 +52,13 @@ describe('mat4From', () => {
   test('rejects a matrix that is not sixteen components long', () => {
     expect(() => mat4From([1, 2, 3])).toThrow(RangeError);
     expect(() => mat4From(new Array(17).fill(0))).toThrow(/16 components, got 17/);
+  });
+
+  // A length of sixteen satisfies the length guard, so a hole inside it is what the per-component
+  // check is for: a sparse array is the only caller-visible way to write one, which is what a
+  // caller coming from JavaScript can hand over.
+  test('reports a missing component inside a sixteen-component-long array', () => {
+    expect(() => mat4From(new Array(16))).toThrow(/expected a component at index 0/);
   });
 });
 
@@ -140,6 +150,16 @@ describe('glMat4Translate', () => {
 
     expect(point).toEqual([2, 2, 2, 1]);
   });
+
+  test('shifts its own translation column in place when the destination is the source', () => {
+    const inPlace = glMat4Translate(glMat4Identity(), glMat4Identity(), [10, 20, 30]);
+
+    // Translating in place composes with the translation already in the matrix.
+    const result = glMat4Translate(inPlace, inPlace, [1, 2, 3]);
+
+    expect(result).toBe(inPlace);
+    assertMatrixCloseTo(result, [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 11, 22, 33, 1]);
+  });
 });
 
 describe('glMat4Rotate', () => {
@@ -170,6 +190,30 @@ describe('glMat4Rotate', () => {
 
   test('rejects a zero-length axis rather than dividing by zero', () => {
     expect(glMat4Rotate(glMat4Identity(), glMat4Identity(), 1, [0, 0, 0])).toBeNull();
+  });
+
+  test('rotates in place, writing into its own input', () => {
+    const inPlace = glMat4Translate(glMat4Identity(), glMat4Identity(), [0, 0, -5]);
+    const separate = glMat4Translate(glMat4Identity(), glMat4Identity(), [0, 0, -5]);
+
+    const result = glMat4Rotate(inPlace, inPlace, Math.PI / 2, [0, 1, 0]);
+
+    if (result === null) {
+      throw new Error('the y axis is a valid axis to rotate about');
+    }
+
+    expect(result).toBe(inPlace);
+
+    const separateResult = glMat4Rotate(glMat4Identity(), separate, Math.PI / 2, [0, 1, 0]);
+
+    if (separateResult === null) {
+      throw new Error('the y axis is a valid axis to rotate about');
+    }
+
+    // Both shapes have to agree, which is what makes the cached reads in the in-place branch worth
+    // testing separately from the separate-destination branch.
+    assertMatrixCloseTo(result, separateResult);
+    assertMatrixCloseTo(result, [0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, -5, 1]);
   });
 });
 
@@ -258,5 +302,113 @@ describe('mergeIntegers', () => {
 
   test('sorts before merging, so the input order does not matter', () => {
     expect(mergeIntegers([5, 1, 3, 2, 4])).toEqual([{ start: 1, end: 5 }]);
+  });
+});
+
+describe('glMat4Perspective', () => {
+  test('projects with an open far plane when no far is given', () => {
+    const out = mat4From(new Array(16).fill(0));
+
+    glMat4Perspective(out, Math.PI / 2, 2, 1);
+
+    // A quarter-turn field of view over an aspect of two halves the horizontal focal length and
+    // leaves the vertical one whole.
+    expect(out[0]).toBeCloseTo(0.5, 10);
+    expect(out[5]).toBeCloseTo(1, 10);
+    expect(out[10]).toBe(-1);
+    expect(out[11]).toBe(-1);
+    expect(out[14]).toBe(-2);
+    expect(out[15]).toBe(0);
+  });
+
+  test('treats an explicit Infinity as an open far plane', () => {
+    const out = mat4From(new Array(16).fill(0));
+
+    glMat4Perspective(out, Math.PI / 2, 2, 1, Infinity);
+
+    expect(out[10]).toBe(-1);
+    expect(out[14]).toBe(-2);
+  });
+
+  test('maps the near and far planes onto the depth range', () => {
+    const out = mat4From(new Array(16).fill(0));
+
+    glMat4Perspective(out, Math.PI / 2, 2, 1, 3);
+
+    expect(out[10]).toBe(-2);
+    expect(out[14]).toBe(-3);
+    expect(out[15]).toBe(0);
+  });
+});
+
+describe('gltMat4Ortho', () => {
+  test('maps a unit-frame frustum onto the unit cube', () => {
+    const out = mat4From(new Array(16).fill(0));
+
+    gltMat4Ortho(out, { left: -1, right: 1, bottom: -1, top: 1, near: 0, far: 1 });
+
+    assertMatrixCloseTo(out, [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -2, 0, 0, 0, -1, 1]);
+  });
+
+  test('scales each axis to the span of its bounds', () => {
+    const out = mat4From(new Array(16).fill(0));
+
+    gltMat4Ortho(out, { left: 0, right: 2, bottom: 0, top: 4, near: 1, far: 5 });
+
+    assertMatrixCloseTo(out, [1, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, -0.5, 0, -1, -1, -1.5, 1]);
+  });
+});
+
+describe('multiplyMatrices', () => {
+  test('multiplies rows of the first by columns of the second', () => {
+    expect(
+      multiplyMatrices(
+        [
+          [1, 2],
+          [3, 4],
+        ],
+        [
+          [5, 6],
+          [7, 8],
+        ],
+      ),
+    ).toEqual([
+      [19, 22],
+      [43, 50],
+    ]);
+  });
+
+  test('rejects an empty matrix on either side', () => {
+    expect(() => multiplyMatrices([], [[1]])).toThrow(/Cannot multiply by an empty matrix/);
+    expect(() => multiplyMatrices([[1]], [])).toThrow(/Cannot multiply by an empty matrix/);
+  });
+
+  test('rejects dimensions that do not agree', () => {
+    expect(() => multiplyMatrices([[1]], [[], [], []])).toThrow(
+      /Number of columns in the first matrix must equal the number of rows/,
+    );
+  });
+
+  test('reads a later row of the second matrix that is shorter than the first as zeros', () => {
+    expect(multiplyMatrices([[1, 2]], [[1], []])).toEqual([[1]]);
+  });
+
+  // Sparse entries are the caller-visible way to reach the absent-component reads: the declared
+  // parameter types cannot express a hole, but a caller coming from JavaScript can pass one, and
+  // the documented contract is that a missing entry contributes nothing.
+  test('reads an absent row entry as a zero', () => {
+    const a = new Array(2);
+    a[0] = [1];
+
+    expect(multiplyMatrices(a, [[1]])).toEqual([[1], [0]]);
+  });
+
+  test('reads an absent first row as a matrix with zero columns', () => {
+    expect(() => multiplyMatrices(new Array(2), [[1]])).toThrow(
+      /Number of columns in the first matrix must equal the number of rows/,
+    );
+    expect(() => multiplyMatrices([[1]], new Array(2))).toThrow(
+      /Number of columns in the first matrix must equal the number of rows/,
+    );
   });
 });

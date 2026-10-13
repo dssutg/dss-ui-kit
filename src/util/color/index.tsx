@@ -211,6 +211,12 @@ export function darkenColor(color: string, percent: number): string {
 
   const [red, green, blue] = match.slice(1).map((sequence) => parseInt(sequence, 16));
 
+  // The anchored regex above matched exactly three two-hex-digit groups, so `match.slice(1)` is a
+  // dense three-element list and `parseInt` maps every element: the destructured values cannot be
+  // undefined at runtime. The guard is only for the compiler, which with `noUncheckedIndexedAccess`
+  // cannot see that, and an assertion would trade a question for a claim. The unreached arm stays
+  // out of the coverage gate.
+  // v8 ignore next
   if (red === undefined || green === undefined || blue === undefined) {
     return DEFAULT_COLOR;
   }
@@ -273,7 +279,8 @@ export function getColorFromBreakPoints(
 
   // Both indexes come from the array's own bounds, so these fallbacks cannot be reached for a list
   // that got past the empty check above. They are spelled out because the compiler cannot see that,
-  // and an assertion would trade a question for a claim.
+  // and an assertion would trade a question for a claim. The unreached arm stays out of the gate.
+  // v8 ignore next
   const below = breakPoints[index] ?? firstBreakPoint;
 
   if (!interpolate) {

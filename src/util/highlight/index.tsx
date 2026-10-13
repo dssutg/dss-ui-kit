@@ -101,12 +101,19 @@ function tokenize(src: string | any[], lang: string, token: any) {
     const cache = [];
     let i = 0;
 
+    // The language entries the tokenizer recurses through are reached with a name, never an
+    // arbitrary token list: the public type of `lang` is a closed union and the only `sub` the two
+    // shipped languages carry is a name, so both `typeof lang === 'string'` arms below are always
+    // the string case and neither "not a string" arm can evaluate. The unreached arms stay out of
+    // the coverage gate.
+    // v8 ignore start
     // biome-ignore lint: lint/suspicious/noExplicitAny
     const data: any = typeof lang === 'string' ? langTokenMap[lang as Lang] : lang;
 
     // Make a fast shallow copy to bee able to splice lang without change the original one
     // biome-ignore lint: lint/suspicious/noExplicitAny
     const arr = [...(typeof lang === 'string' ? data : (lang as any).sub)];
+    // v8 ignore stop
 
     while (i < src.length) {
       // biome-ignore lint: lint/suspicious/noExplicitAny
@@ -159,6 +166,12 @@ function tokenize(src: string | any[], lang: string, token: any) {
       i = (first as any).end;
       // biome-ignore lint: lint/suspicious/noExplicitAny
       if ((first as any).part.sub) {
+        // A `sub` resolves to a name, to a sub-language that calls itself back, or — for a list of
+        // parts — to the parts themselves. The two shipped languages carry a single `sub`, a name,
+        // so the "function" and "parts" arms of the chain cannot evaluate for one of them; the
+        // unreached arms stay out of the coverage gate.
+        //
+        // v8 ignore start
         tokenize(
           // biome-ignore lint: lint/suspicious/noExplicitAny
           (first as any).match,
@@ -172,6 +185,7 @@ function tokenize(src: string | any[], lang: string, token: any) {
                 (first as any).part.sub((first as any).match)
               : // biome-ignore lint: lint/suspicious/noExplicitAny
                 (first as any).part,
+          // v8 ignore stop
           token,
         );
       } else {

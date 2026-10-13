@@ -211,4 +211,54 @@ describe('deepClone', () => {
     expect(deepClone(null)).toBeNull();
     expect(deepClone('text')).toBe('text');
   });
+
+  test('copies an accessor as an accessor rather than running it', () => {
+    let reads = 0;
+    const original = {
+      get value(): number {
+        reads = reads + 1;
+        return 42;
+      },
+    };
+
+    const copy = deepClone(original);
+
+    // Cloning must not have invoked the getter: the accessor is the thing copied.
+    expect(reads).toBe(0);
+    expect(copy.value).toBe(42);
+    expect(reads).toBe(1);
+  });
+
+  test('copies a write-only accessor so writes land on the copy', () => {
+    let stored = 0;
+    const original = {
+      set value(value: number) {
+        stored = value;
+      },
+    };
+
+    const copy = deepClone(original);
+
+    copy.value = 7;
+
+    expect(stored).toBe(7);
+  });
+
+  test('skips a key that reports no property descriptor for itself', () => {
+    // A proxy may list a key in `ownKeys` while answering no descriptor for it; the clone must skip
+    // it without failing and copy the keys that do have one.
+    const proxy = new Proxy(
+      { real: 1 },
+      {
+        ownKeys: () => ['ghost', 'real'],
+        getOwnPropertyDescriptor: (target, key) =>
+          key === 'ghost' ? undefined : Reflect.getOwnPropertyDescriptor(target, key),
+      },
+    );
+
+    const copy = deepClone(proxy);
+
+    expect(copy).toEqual({ real: 1 });
+    expect('ghost' in copy).toBe(false);
+  });
 });

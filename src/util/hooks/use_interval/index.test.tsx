@@ -2,10 +2,17 @@
  * The interval hooks run a callback on a period the caller can pause with a `null` delay; the
  * immediate variant fires once on mount as well, which a poll that cannot wait a whole period for
  * its first result relies on. The suite drives both on the fake clock and holds the difference
- * between the two variants.
+ * between the two variants, plus the `deps` restart that a callback whose period depends on
+ * something needs.
+ *
+ * The `tick` guard `if (savedCallback.current)` has no reachable false side: the callback is stored
+ * by the effect that is always declared and flushed first, so by the time a tick can run the ref
+ * holds a function. The guard stays as the source has it; the two uncovered branch outcomes (lines
+ * 21 and 53) are that unreachable check.
  */
 // @vitest-environment jsdom
 
+import { useCallback } from 'react';
 import { act } from 'react-dom/test-utils';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { render } from '@/util/testing/render';
@@ -109,5 +116,74 @@ describe('useImmediateInterval', () => {
     await render(<IntervalProbe delay={null} immediate={true} />);
 
     expect(tickCount).toBe(0);
+  });
+
+  test('restarts the timer on a change of deps, with the callback held stable', async () => {
+    vi.useFakeTimers();
+
+    let stableTicks = 0;
+
+    const StableCallbackProbe = ({ dep }: { readonly dep: string }) => {
+      // The identity of the callback does not change, so only `deps` can restart the timer — which
+      // is what a callback whose period depends on something needs.
+      const tick = useCallback(() => {
+        stableTicks += 1;
+      }, []);
+
+      useImmediateInterval(tick, 100, [dep]);
+
+      return <div />;
+    };
+
+    const view = await render(<StableCallbackProbe dep="one" />);
+
+    expect(stableTicks).toBe(1);
+
+    await act(() => {
+      vi.advanceTimersByTime(100);
+    });
+
+    expect(stableTicks).toBe(2);
+
+    await view.update(<StableCallbackProbe dep="two" />);
+
+    // The restart calls the tick immediately, so the count grows without the clock.
+    expect(stableTicks).toBe(3);
+
+    await act(() => {
+      vi.advanceTimersByTime(100);
+    });
+
+    expect(stableTicks).toBe(4);
+  });
+
+  test('the plain interval with deps does not call immediately on a restart', async () => {
+    vi.useFakeTimers();
+
+    let stableTicks = 0;
+
+    const StableCallbackProbe = ({ dep }: { readonly dep: string }) => {
+      const tick = useCallback(() => {
+        stableTicks += 1;
+      }, []);
+
+      useInterval(tick, 100, [dep]);
+
+      return <div />;
+    };
+
+    const view = await render(<StableCallbackProbe dep="one" />);
+
+    expect(stableTicks).toBe(0);
+
+    await view.update(<StableCallbackProbe dep="two" />);
+
+    expect(stableTicks).toBe(0);
+
+    await act(() => {
+      vi.advanceTimersByTime(100);
+    });
+
+    expect(stableTicks).toBe(1);
   });
 });

@@ -63,6 +63,13 @@ describe('rp.boolean', () => {
     expect(rp.boolean('true')).toBe(true);
     expect(rp.boolean('anything')).toBe(true);
   });
+
+  test('reads the types no earlier branch handles as false', () => {
+    // A function, a symbol and a bigint fall through every type check above the default.
+    expect(rp.boolean(() => 1)).toBe(false);
+    expect(rp.boolean(Symbol('x'))).toBe(false);
+    expect(rp.boolean(1n)).toBe(false);
+  });
 });
 
 /**
@@ -95,6 +102,11 @@ describe('rp.decimalInt', () => {
     expect(rp.decimalInt('42')).toBe(42);
     expect(rp.decimalInt('-7')).toBe(-7);
     expect(rp.decimalInt('+3')).toBe(3);
+  });
+
+  test('reads a numeral-less numeral-shaped string as zero', () => {
+    // A string that is all separators matches the fast path but parses to NaN, which folds to 0.
+    expect(rp.decimalInt('.')).toBe(0);
   });
 
   test('strips the characters that are not part of a number', () => {
@@ -150,6 +162,11 @@ describe('rp.hexInt', () => {
     expect(rp.hexInt(Number.NaN)).toBe(0);
   });
 
+  test('reads a boolean as its number', () => {
+    expect(rp.hexInt(true)).toBe(1);
+    expect(rp.hexInt(false)).toBe(0);
+  });
+
   test('reads null, undefined and the empty string as zero', () => {
     expect(rp.hexInt(null)).toBe(0);
     expect(rp.hexInt(undefined)).toBe(0);
@@ -158,6 +175,11 @@ describe('rp.hexInt', () => {
 
   test('reads garbage as zero rather than NaN', () => {
     expect(rp.hexInt('xyz')).toBe(0);
+  });
+
+  test('reads a numeral-less numeral-shaped string as zero', () => {
+    // '.' survives the fast-path filter but parses to nothing, which folds to 0.
+    expect(rp.hexInt('.')).toBe(0);
   });
 });
 

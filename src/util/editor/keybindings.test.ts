@@ -1,10 +1,31 @@
-// The key handling is pure: no DOM is touched, and the node environment is the one a keystroke
-// arrives in outside a browser. This file does not need document at all.
+// The key handling is pure: no DOM is touched, but the platform constants (`isMacLike`,
+// `isWindows`) are read from `navigator.platform` once at module load, so the suites that drive
+// those branches reload the module under a redefined platform. jsdom ships an empty platform, which
+// leaves the module on the every-other-OS branch the default instance covers.
 // @vitest-environment jsdom
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 import { getLines } from './history';
 import { type EditorKeyHandlers, handleEditorKeyDown } from './keybindings';
+
+afterEach(() => {
+  delete (window.navigator as unknown as { platform?: string }).platform;
+  vi.resetModules();
+});
+
+/**
+ * A fresh copy of the keybindings module with `navigator.platform` set to `platform` first, since
+ * the module reads the platform into constants at import time and nothing else can change them.
+ */
+async function loadForPlatform(platform: string): Promise<typeof import('./keybindings')> {
+  vi.resetModules();
+  Object.defineProperty(window.navigator, 'platform', {
+    configurable: true,
+    value: platform,
+  });
+
+  return await import('./keybindings');
+}
 
 const KEYCODES = {
   Z: 90,
@@ -130,6 +151,21 @@ describe('handleEditorKeyDown', () => {
     ]);
   });
 
+  test('Shift+Tab over lines that carry no indent records no edit', () => {
+    const handlers = handlersWithRecorder();
+    const event = keyDownEvent({
+      key: 'Tab',
+      shiftKey: true,
+      value: 'a\nb',
+      selectionStart: 0,
+      selectionEnd: 3,
+    });
+
+    handleEditorKeyDown(event, handlers);
+
+    expect(handlers.edits).toEqual([]);
+  });
+
   test('Tab inserts the tab character at the caret when nothing is selected', () => {
     const handlers = handlersWithRecorder();
     const event = keyDownEvent({ key: 'Tab', value: 'ab', selectionStart: 1, selectionEnd: 1 });
@@ -248,11 +284,275 @@ describe('handleEditorKeyDown', () => {
 
     expect(toggles).toEqual([false]);
   });
+
+  test('Tab is left to the browser while tab capture is off', () => {
+    const handlers = handlersWithRecorder({ capture: false });
+    const event = keyDownEvent({ key: 'Tab', value: 'ab', selectionStart: 1, selectionEnd: 1 });
+
+    handleEditorKeyDown(event, handlers);
+
+    expect(handlers.edits).toEqual([]);
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  test('Backspace without an indent unit behind the caret is left to the browser', () => {
+    const handlers = handlersWithRecorder();
+    const event = keyDownEvent({
+      key: 'Backspace',
+      value: 'ab',
+      selectionStart: 2,
+      selectionEnd: 2,
+    });
+
+    handleEditorKeyDown(event, handlers);
+
+    expect(handlers.edits).toEqual([]);
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  test('Enter over a selection is left to the browser', () => {
+    const handlers = handlersWithRecorder();
+    const event = keyDownEvent({
+      key: 'Enter',
+      value: '  text',
+      selectionStart: 1,
+      selectionEnd: 4,
+    });
+
+    handleEditorKeyDown(event, handlers);
+
+    expect(handlers.edits).toEqual([]);
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  test('a wrapping key without a selection is left to the browser', () => {
+    const handlers = handlersWithRecorder();
+    const event = keyDownEvent({
+      keyCode: KEYCODES.PARENS,
+      shiftKey: true,
+      value: 'ab',
+      selectionStart: 1,
+      selectionEnd: 1,
+    });
+
+    handleEditorKeyDown(event, handlers);
+
+    expect(handlers.edits).toEqual([]);
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  test('an unshifted parenthesis opens no pair at all', () => {
+    const handlers = handlersWithRecorder();
+    const event = keyDownEvent({
+      key: '(',
+      keyCode: KEYCODES.PARENS,
+      value: 'ab',
+      selectionStart: 0,
+      selectionEnd: 2,
+    });
+
+    handleEditorKeyDown(event, handlers);
+
+    expect(handlers.edits).toEqual([]);
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  test('a quote key wraps with the shift-matched quote character', () => {
+    const handlers = handlersWithRecorder();
+    const shifted = keyDownEvent({
+      keyCode: KEYCODES.QUOTE,
+      shiftKey: true,
+      value: 'ab',
+      selectionStart: 0,
+      selectionEnd: 2,
+    });
+
+    handleEditorKeyDown(shifted, handlers);
+
+    expect(handlers.edits[0]?.value).toBe('"ab"');
+
+    const unshifted = keyDownEvent({
+      key: "'",
+      keyCode: KEYCODES.QUOTE,
+      value: 'ab',
+      selectionStart: 0,
+      selectionEnd: 2,
+    });
+
+    handleEditorKeyDown(unshifted, handlers);
+
+    expect(handlers.edits[1]?.value).toBe("'ab'");
+  });
+
+  test('a shifted bracket key wraps with braces', () => {
+    const handlers = handlersWithRecorder();
+    const event = keyDownEvent({
+      key: '{',
+      keyCode: KEYCODES.BRACKETS,
+      shiftKey: true,
+      value: 'ab',
+      selectionStart: 0,
+      selectionEnd: 2,
+    });
+
+    handleEditorKeyDown(event, handlers);
+
+    expect(handlers.edits[0]?.value).toBe('{ab}');
+  });
+
+  test('an unshifted back quote wraps with back quotes', () => {
+    const handlers = handlersWithRecorder();
+    const event = keyDownEvent({
+      key: '`',
+      keyCode: KEYCODES.BACK_QUOTE,
+      value: 'ab',
+      selectionStart: 0,
+      selectionEnd: 2,
+    });
+
+    handleEditorKeyDown(event, handlers);
+
+    expect(handlers.edits[0]?.value).toBe('`ab`');
+  });
+
+  test('Ctrl+Alt+Z is neither undo nor redo', () => {
+    const undoCalls: number[] = [];
+    const redoCalls: number[] = [];
+    const handlers = handlersWithRecorder({
+      undoEdit: () => undoCalls.push(1),
+      redoEdit: () => redoCalls.push(1),
+    });
+    const event = keyDownEvent({ keyCode: KEYCODES.Z, ctrlKey: true, altKey: true });
+
+    handleEditorKeyDown(event, handlers);
+
+    expect(undoCalls).toEqual([]);
+    expect(redoCalls).toEqual([]);
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  test('Ctrl+Shift+Alt+Z is redo without the alt modifier', () => {
+    const undoCalls: number[] = [];
+    const redoCalls: number[] = [];
+    const handlers = handlersWithRecorder({
+      undoEdit: () => undoCalls.push(1),
+      redoEdit: () => redoCalls.push(1),
+    });
+    const event = keyDownEvent({
+      keyCode: KEYCODES.Z,
+      ctrlKey: true,
+      shiftKey: true,
+      altKey: true,
+    });
+
+    handleEditorKeyDown(event, handlers);
+
+    expect(undoCalls).toEqual([]);
+    expect(redoCalls).toEqual([]);
+    expect(event.defaultPrevented).toBe(false);
+  });
 });
 
 describe('getLines', () => {
   test('answers the lines up to and including the one the caret is in', () => {
     expect(getLines('one\ntwo\nthree', 8)).toEqual(['one', 'two', '']);
     expect(getLines('one', 3)).toEqual(['one']);
+  });
+});
+
+describe('handleEditorKeyDown on a Mac', () => {
+  test('Cmd+Z undoes and Ctrl+Z does nothing here', async () => {
+    const keybindings = await loadForPlatform('MacIntel');
+    const undoCalls: number[] = [];
+    const redone: boolean[] = [];
+    const handlers = handlersWithRecorder({
+      undoEdit: () => undoCalls.push(1),
+      redoEdit: () => redone.push(true),
+    });
+
+    keybindings.handleEditorKeyDown(keyDownEvent({ keyCode: KEYCODES.Z, metaKey: true }), handlers);
+
+    expect(undoCalls).toEqual([1]);
+
+    keybindings.handleEditorKeyDown(keyDownEvent({ keyCode: KEYCODES.Z, ctrlKey: true }), handlers);
+
+    expect(undoCalls).toEqual([1]);
+    expect(redone).toEqual([]);
+  });
+
+  test('Cmd+Shift+Z redoes, which undo with shift is not allowed to swallow', async () => {
+    const keybindings = await loadForPlatform('MacIntel');
+    const redoCalls: number[] = [];
+    const handlers = handlersWithRecorder({
+      redoEdit: () => redoCalls.push(1),
+    });
+
+    keybindings.handleEditorKeyDown(
+      keyDownEvent({ keyCode: KEYCODES.Z, metaKey: true, shiftKey: true }),
+      handlers,
+    );
+
+    expect(redoCalls).toEqual([1]);
+  });
+
+  test('Ctrl+Shift+M toggles tab capture and Ctrl+M alone does not', async () => {
+    const keybindings = await loadForPlatform('MacIntel');
+    const toggles: boolean[] = [];
+    const handlers = handlersWithRecorder({
+      setCapture: (update: (previous: boolean) => boolean) => {
+        toggles.push(update(true));
+      },
+    });
+
+    keybindings.handleEditorKeyDown(keyDownEvent({ keyCode: KEYCODES.M, ctrlKey: true }), handlers);
+
+    expect(toggles).toEqual([]);
+
+    keybindings.handleEditorKeyDown(
+      keyDownEvent({ keyCode: KEYCODES.M, ctrlKey: true, shiftKey: true }),
+      handlers,
+    );
+
+    expect(toggles).toEqual([false]);
+  });
+});
+
+describe('handleEditorKeyDown on Windows', () => {
+  test('Ctrl+Y redoes, Ctrl+Z undoes, and Ctrl+Shift+Z does not redo here', async () => {
+    const keybindings = await loadForPlatform('Win32');
+    const undoCalls: number[] = [];
+    const redoCalls: number[] = [];
+    const handlers = handlersWithRecorder({
+      undoEdit: () => undoCalls.push(1),
+      redoEdit: () => redoCalls.push(1),
+    });
+
+    keybindings.handleEditorKeyDown(keyDownEvent({ keyCode: KEYCODES.Y, ctrlKey: true }), handlers);
+
+    expect(redoCalls).toEqual([1]);
+
+    keybindings.handleEditorKeyDown(keyDownEvent({ keyCode: KEYCODES.Z, ctrlKey: true }), handlers);
+
+    expect(undoCalls).toEqual([1]);
+    expect(redoCalls).toEqual([1]);
+  });
+
+  test('Ctrl+M toggles tab capture, with or without Shift', async () => {
+    const keybindings = await loadForPlatform('Win32');
+    const toggles: boolean[] = [];
+    const handlers = handlersWithRecorder({
+      setCapture: (update: (previous: boolean) => boolean) => {
+        toggles.push(update(true));
+      },
+    });
+
+    keybindings.handleEditorKeyDown(keyDownEvent({ keyCode: KEYCODES.M, ctrlKey: true }), handlers);
+
+    keybindings.handleEditorKeyDown(
+      keyDownEvent({ keyCode: KEYCODES.M, ctrlKey: true, shiftKey: true }),
+      handlers,
+    );
+
+    expect(toggles).toEqual([false, false]);
   });
 });

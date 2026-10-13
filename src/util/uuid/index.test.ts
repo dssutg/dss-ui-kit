@@ -2,7 +2,7 @@
  * `uuidv4` is used for keys where uniqueness is the only requirement, so the suite holds it to
  * exactly that: an identifier shaped as RFC 4122 version 4 and one that does not repeat.
  */
-import { describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 import { uuidv4 } from './';
 
 /**
@@ -22,4 +22,16 @@ describe('uuidv4', () => {
 
     expect(seen.size).toBe(100);
   });
+
+  test('degrades to the clobbered template when the random read yields nothing', () => {
+    // The `?? 0` beside the byte read is the answer to a getRandomValues result with no first
+    // element: every clobber no-ops, and the value is the template itself rather than a crash.
+    vi.stubGlobal('crypto', { getRandomValues: () => new Uint8Array(0) });
+
+    expect(uuidv4()).toBe('10000000-1000-4000-8000-100000000000');
+  });
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
 });

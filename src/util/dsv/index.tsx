@@ -183,6 +183,11 @@ export function parseCSV(csv: string): string[][] {
   }
 
   while (characterIndex < csv.length) {
+    // The loop condition bounds `characterIndex` to the string's own indices, so the read cannot
+    // land outside it; the guarded form is only for the compiler, which with
+    // `noUncheckedIndexedAccess` cannot see a string index as present, and an assertion would
+    // trade a question for a claim. The unreached fallback arm stays out of the coverage gate.
+    // v8 ignore next
     const currentCharacter = csv[characterIndex] ?? '';
     const nextCharacter = csv[characterIndex + 1] ?? '';
 

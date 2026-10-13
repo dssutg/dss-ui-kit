@@ -12,11 +12,14 @@ import {
   darkenColor,
   findBreakPointRange,
   getColorBetweenBreakPoints,
+  getColorFromBreakPoints,
   getCSSVariableValue,
   getHslaColorString,
+  type HexColorBreakPoint,
   lerpRgba32,
   parseHexColor,
   type RGBA32,
+  type RGBA32BreakPoint,
   Rgba32Gradient,
 } from './';
 
@@ -46,6 +49,12 @@ describe('cssColorTo6DigitHex', () => {
 
   test('keeps a colour css already writes in six digits', () => {
     expect(cssColorTo6DigitHex('rgb(16, 32, 48)')).toBe('#102030');
+  });
+
+  test('answers null when the computed colour carries no digits', () => {
+    // A keyword the parser cannot resolve computes through unchanged, so there are no rgb values
+    // to convert; the function answers null rather than inventing a colour.
+    expect(cssColorTo6DigitHex('revert')).toBeNull();
   });
 });
 
@@ -117,6 +126,23 @@ describe('findBreakPointRange', () => {
 
     expect(findBreakPointRange([first], 0)).toBeNull();
   });
+
+  test('answers null when a stop between two others is missing', () => {
+    // A JS array can hold holes, which read as undefined, so the guard the bounds cannot reach for
+    // a dense list is still reachable at runtime; the function stops rather than reading a hole.
+    const first = breakPoints[0];
+    const last = breakPoints[2];
+
+    if (first === undefined || last === undefined) {
+      throw new Error('the list is a literal, so these entries cannot be missing');
+    }
+
+    const sparse = new Array<RGBA32BreakPoint>(3);
+    sparse[0] = first;
+    sparse[2] = last;
+
+    expect(findBreakPointRange(sparse, 0.25)).toBeNull();
+  });
 });
 
 /** The colour a two-stop segment shows at a position, clamped to the stops at either end. */
@@ -169,6 +195,87 @@ describe('Rgba32Gradient', () => {
     const gradient = new Rgba32Gradient([[0.4, white]]);
 
     expect(gradient.getBreakPointColor(9)).toEqual({ red: 0, green: 0, blue: 0, alpha: 0 });
+  });
+});
+
+/**
+ * The hex colour scale is read from the top: the last breakpoint at or below the value is picked,
+ * and blending runs the value up towards the next breakpoint without clamping to it, so the scale
+ * is one ramp and only a channel pushed out of range settles at the end colour.
+ */
+describe('getColorFromBreakPoints', () => {
+  const scaleStops: HexColorBreakPoint[] = [
+    [0, '#000000'],
+    [0.5, '#ff0000'],
+    [1, '#0000ff'],
+  ];
+
+  test('answers an empty string when there are no breakpoints at all', () => {
+    expect(getColorFromBreakPoints([], 0.5, true)).toBe('');
+    expect(getColorFromBreakPoints([], 0.5, false)).toBe('');
+  });
+
+  test('holds the colour of the last breakpoint at or below the value', () => {
+    expect(getColorFromBreakPoints(scaleStops, 0.6, false)).toBe('rgb(255 0 0)');
+    expect(getColorFromBreakPoints(scaleStops, 0.2, false)).toBe('rgb(0 0 0)');
+    expect(getColorFromBreakPoints(scaleStops, 2, false)).toBe('rgb(0 0 255)');
+  });
+
+  test('holds the first breakpoint colour for a value below it when not interpolating', () => {
+    const lateStops: HexColorBreakPoint[] = [
+      [0.5, '#ff0000'],
+      [1, '#00ff00'],
+    ];
+
+    expect(getColorFromBreakPoints(lateStops, 0.2, false)).toBe('rgb(255 0 0)');
+  });
+
+  test('interpolates towards the next breakpoint and truncates the channels', () => {
+    expect(getColorFromBreakPoints(scaleStops, 0.25, true)).toBe('rgb(127 0 0)');
+    expect(getColorFromBreakPoints(scaleStops, 0.75, true)).toBe('rgb(127 0 127)');
+  });
+
+  test('does not clamp a value below the first breakpoint, so the ramp continues outwards', () => {
+    const lateStops: [number, string][] = [
+      [0.5, '#ff0000'],
+      [1, '#00ff00'],
+    ];
+
+    // The weight goes negative: red is pushed past its channel ceiling and green below its floor,
+    // and the endpoint colour is only reached by that per-channel clamp.
+    expect(getColorFromBreakPoints(lateStops, 0.2, true)).toBe('rgb(255 0 0)');
+  });
+
+  test('holds the last colour above the top breakpoint, where no next colour exists', () => {
+    expect(getColorFromBreakPoints(scaleStops, 2, true)).toBe('rgb(0 0 255)');
+  });
+
+  test('blends with a zero weight between two breakpoints at one position', () => {
+    const doubled: HexColorBreakPoint[] = [
+      [0.5, '#ff0000'],
+      [0.5, '#0000ff'],
+    ];
+
+    // The scan reads from the top, so the later of two stops at one position is the one held,
+    // and the zero range between them weights nothing in either direction.
+    expect(getColorFromBreakPoints(doubled, 0.5, true)).toBe('rgb(0 0 255)');
+  });
+
+  test('falls back to the lower colour when the next breakpoint is a hole', () => {
+    // Holes read as undefined at runtime, and the fallback the bounds cannot see is what answers;
+    // the scale then blends nothing in and holds the lower colour.
+    const sparse = new Array<HexColorBreakPoint>(3);
+    const first = scaleStops[0];
+    const last = scaleStops[2];
+
+    if (first === undefined || last === undefined) {
+      throw new Error('the stops are a literal, so their entries cannot be missing');
+    }
+
+    sparse[0] = first;
+    sparse[2] = last;
+
+    expect(getColorFromBreakPoints(sparse, 0.4, true)).toBe('rgb(0 0 0)');
   });
 });
 

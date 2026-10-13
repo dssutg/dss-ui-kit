@@ -84,6 +84,10 @@ jobs:
       - uses: actions/checkout@v5
       - uses: ./.github/actions/setup
       - run: deno task test
+      # The helper layer carries a coverage floor — every statement, branch, function and line under
+      # `src/util/` — enforced by the thresholds in `vitest.config.ts`. A separate step so a missing
+      # branch reads as a coverage failure and not as a test failure.
+      - run: deno task test:coverage
 
   # A library is judged on what it hands a consumer: the bundle, the type declarations and the
   # stylesheet. `deno task build` produces all three, and `deno task pack` proves the manifest points

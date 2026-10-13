@@ -214,6 +214,21 @@ describe('vObject', () => {
       'Error in field "x": Value must be an integer',
     );
   });
+
+  test('reports the raw thrown value when a field validator throws a non-Error', () => {
+    // The message wording is `(error)?.message ?? error`: an error with no message is named by
+    // its value instead, so the field's failure is still reported rather than swallowed.
+    const throwingSchema: VSchema<{ x: number }> = {
+      x: (value: number): number => {
+        if (value !== 1) {
+          throw null;
+        }
+        return value;
+      },
+    };
+
+    assertVErrored(() => vObject(throwingSchema)({ x: 2 }), 'Error in field "x": null');
+  });
 });
 
 /** Validates every element with the element schema, rejecting non-arrays and naming the index. */
@@ -228,6 +243,17 @@ describe('vArray', () => {
 
   test('points at a failing element', () => {
     assertVErrored(() => vArray(vInt())([1, 'x']), 'Error in array item: Value must be an integer');
+  });
+
+  test('reports the raw thrown value when an item validator throws a non-Error', () => {
+    const itemValidator = (value: number): number => {
+      if (value === 2) {
+        throw null;
+      }
+      return value;
+    };
+
+    assertVErrored(() => vArray(itemValidator)([1, 2]), 'Error in array item: null');
   });
 });
 

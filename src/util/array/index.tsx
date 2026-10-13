@@ -79,6 +79,10 @@ export function getStringArrayAsColumnLines(strings: readonly string[], columnCo
     const columns = strings.slice(i, i + columnCount);
 
     for (let j = 0; j < columnCount; j++) {
+      // Both reads below are within the widths array's own length, which `.fill(0)` made dense, so
+      // the index is always present; the guarded form is only for the compiler, which with
+      // `noUncheckedIndexedAccess` cannot see it. The unreached fallback arm stays out of the gate.
+      // v8 ignore next
       const widestSoFar = columnWidths[j] ?? 0;
       columnWidths[j] = Math.max(columns[j]?.length ?? 0, widestSoFar);
     }
@@ -91,6 +95,8 @@ export function getStringArrayAsColumnLines(strings: readonly string[], columnCo
     const columns = strings.slice(i, i + columnCount);
 
     for (let j = 0; j < columnCount; j++) {
+      // As in the measuring loop above: the index cannot be outside the dense array.
+      // v8 ignore next
       const width = columnWidths[j] ?? 0;
 
       line = `${line}${(columns[j] ?? '').padEnd(width, ' ')}  `;

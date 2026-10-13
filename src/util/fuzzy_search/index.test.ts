@@ -24,6 +24,16 @@ describe('fuzzySearch', () => {
     expect(fuzzySearch('xyz', names, clean, (item) => item)).toEqual([]);
   });
 
+  test('ranks a fuzzy match by how early and tight the query lands', () => {
+    // Neither item contains 'alp', so both are scored character by character: 'palapa' lands its
+    // letters a(1) l(2) p(4) and 'ablap' lands a(0) l(2) p(4), which scores lower for its looser
+    // middle match; 'delta' has no 'p' at all and is dropped.
+    expect(fuzzySearch('alp', ['delta', 'ablap', 'palapa'], clean, (item) => item)).toEqual([
+      'palapa',
+      'ablap',
+    ]);
+  });
+
   test('an outright match outranks every fuzzy match', () => {
     expect(fuzzySearch('beta', names, clean, (item) => item)[0]).toBe('beta');
   });

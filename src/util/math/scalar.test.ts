@@ -163,4 +163,15 @@ describe('naturalCmp', () => {
   test('answers zero for equal strings', () => {
     expect(naturalCmp('same', 'same')).toBe(0);
   });
+
+  // `match` answers null for a string with nothing in it, and a side that ran out of segments is
+  // read as an empty one, which sorts before any text.
+  test('compares the side that ran out of segments as empty', () => {
+    expect(naturalCmp('a1', 'a')).toBe(1);
+    expect(naturalCmp('a', 'a1')).toBe(-1);
+  });
+
+  test('answers zero for empty strings, whose segment lists are null matches', () => {
+    expect(naturalCmp('', '')).toBe(0);
+  });
 });

@@ -75,6 +75,10 @@ export function openFileDialog(
   fileInput.addEventListener('change', (event: Event) => {
     const target = event.target as HTMLInputElement;
 
+    // The listener is only ever called for a dispatch on this input, and a DOM dispatch always
+    // names the node it was dispatched on, so `target` cannot be null at runtime: the guard is
+    // for the compiler only. The unreached arm stays out of the coverage gate.
+    // v8 ignore next
     if (target === null) {
       return;
     }

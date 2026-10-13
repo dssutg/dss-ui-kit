@@ -190,6 +190,10 @@ function consumeDoctypeCharacter(character: string, state: DoctypeScanState): bo
 
 /** The code point of the first character of `value`, or `0` for the empty string. */
 function codePointOf(value: string): number {
+  // Both call sites iterate a string, whose loop always yields non-empty characters, so the read
+  // never lands on an absent index at runtime; the guarded form is for the compiler, which with
+  // `noUncheckedIndexedAccess` cannot see it. The unreached fallback arm stays out of the gate.
+  // v8 ignore next
   return value.codePointAt(0) ?? 0;
 }
 
@@ -255,6 +259,10 @@ function isLocalOrDataURL(value: string): boolean {
  */
 function hasExternalURL(value: string): boolean {
   for (const match of value.matchAll(CSS_URL)) {
+    // The quote group in `CSS_URL` can match the empty string, and a matching-empty group always
+    // participates in the match, so `match[2]` is always a string — `undefined` would need a group
+    // that the whole match skipped. The unreached fallback arm stays out of the coverage gate.
+    // v8 ignore next
     if (!isLocalOrDataURL(match[2] ?? '')) {
       return true;
     }
@@ -422,6 +430,10 @@ function copyChildren(
         target.appendChild(element);
       }
     } else if (child.nodeType === Node.TEXT_NODE || child.nodeType === Node.CDATA_SECTION_NODE) {
+      // A text node or CDATA section holds its own data as its text content, never `null` — `null`
+      // is what a `Document` reports, not what one of these nodes is. The unreached fallback arm
+      // stays out of the coverage gate.
+      // v8 ignore next
       target.appendChild(outDocument.createTextNode(child.textContent ?? ''));
     }
   }
@@ -433,6 +445,10 @@ function copyStyleElement(
   target: Element,
   options: SanitizeSVGOptions,
 ): Element | null {
+  // An element's text content is the data of its descendant text nodes, an empty string when there
+  // are none, and `null` only what a `Document` or a doctype reports: a `<style>` element reports a
+  // string. The unreached fallback arm stays out of the coverage gate.
+  // v8 ignore next
   const css = sanitizeCSS(source.textContent ?? '', options);
 
   if (css === null || css.trim() === '') {

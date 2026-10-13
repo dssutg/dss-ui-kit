@@ -5,7 +5,7 @@
  * asserted to survive byte for byte.
  */
 // @vitest-environment jsdom
-import { describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 import { isSafeSVGString, sanitizeSVGString } from './svg';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -247,5 +247,235 @@ describe('isSafeSVGString', () => {
 
     expect(isSafeSVGString(external)).toBe(false);
     expect(isSafeSVGString(external, { allowExternalReferences: true })).toBe(true);
+  });
+});
+
+/**
+ * The parser jsdom never throws from, but that another conforming implementation can: a
+ * synchronous failure out of `parseFromString` must leave the caller with the empty string, the
+ * same answer a parse error produces.
+ */
+describe('a DOMParser that fails synchronously', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  test('yields the empty string through the guard on the parse call', () => {
+    vi.stubGlobal(
+      'DOMParser',
+      class ThrowingParser {
+        parseFromString(): Document {
+          throw new Error('simulated parser crash');
+        }
+      },
+    );
+
+    expect(sanitizeSVGString(svg('<rect/>'))).toBe('');
+  });
+});
+
+/**
+ * The grammar-level protections the suite asserts through a parser that returns a document the
+ * XML grammar should never have produced — a non-spec implementation with `parsererror` handling a
+ * browser might disagree with. What is under test is the sanitizer's own defence: a value carrying
+ * a control character, or a `url()` nobody local, must not survive wherever it arrived from.
+ */
+describe('values a laxer parser could deliver', () => {
+  /** A parser that returns a fixed document built with the live DOM API. */
+  const parserReturning = (source: () => Document): void => {
+    vi.stubGlobal(
+      'DOMParser',
+      class StubParser {
+        parseFromString(): Document {
+          return source();
+        }
+      },
+    );
+  };
+
+  /** An `<svg>` in the drawing namespace holding one `<rect>`. */
+  const svgDocument = (): Document => document.implementation.createDocument(SVG_NS, 'svg', null);
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  test('drops an attribute whose value holds a control character', () => {
+    parserReturning(() => {
+      const doc = svgDocument();
+      const rect = doc.createElementNS(SVG_NS, 'rect');
+      rect.setAttribute('fill', 'red\u0001');
+
+      doc.documentElement?.appendChild(rect);
+
+      return doc;
+    });
+
+    expect(sanitizeSVGString(svg('<rect fill="anything"/>'))).toBe(svg('<rect/>'));
+  });
+
+  test('keeps an allowed element of the same document', () => {
+    parserReturning(() => {
+      const doc = svgDocument();
+      const rect = doc.createElementNS(SVG_NS, 'rect');
+      rect.setAttribute('width', '10');
+
+      doc.documentElement?.appendChild(rect);
+
+      return doc;
+    });
+
+    const sanitized = sanitizeSVGString(svg('<rect/>'));
+
+    expect(sanitized).toContain('<svg');
+    expect(sanitized).toContain('<rect');
+    expect(sanitized).toContain('width="10"');
+  });
+});
+
+describe('namespaced attributes the policy keeps in check', () => {
+  const XLINK_NS = 'http://www.w3.org/1999/xlink';
+
+  test('keeps an xml:space hint and drops the xml attributes it does not keep', () => {
+    const source = `<svg xmlns="${SVG_NS}"><rect xml:space="preserve" xml:lang="en"/></svg>`;
+    const sanitized = sanitizeSVGString(source);
+
+    expect(sanitized).toContain('xml:space="preserve"');
+    expect(sanitized).not.toContain('xml:lang');
+  });
+
+  test('keeps xlink:href beside the other xlink attributes on an allowed element', () => {
+    const source =
+      `<svg xmlns="${SVG_NS}" xmlns:xlink="${XLINK_NS}">` +
+      '<use xlink:title="ignored" xlink:href="#s"/></svg>';
+    const sanitized = sanitizeSVGString(source);
+
+    expect(sanitized).toContain('href="#s"');
+    expect(sanitized).toContain(XLINK_NS);
+    expect(sanitized).not.toContain('ignored');
+  });
+
+  test('drops an external xlink:href on an allowed element', () => {
+    const source =
+      `<svg xmlns="${SVG_NS}" xmlns:xlink="${XLINK_NS}">` +
+      '<use xlink:href="https://evil.test/x.svg#a"/></svg>';
+    const sanitized = sanitizeSVGString(source);
+
+    expect(sanitized).not.toContain('evil.test');
+  });
+
+  test('keeps an external xlink:href only when external references are allowed', () => {
+    const source =
+      `<svg xmlns="${SVG_NS}" xmlns:xlink="${XLINK_NS}">` +
+      '<use xlink:href="https://example.test/x.svg#a"/></svg>';
+
+    expect(sanitizeSVGString(source, { allowExternalReferences: true })).toContain('example.test');
+  });
+
+  test('does not deliver the DEL character in an attribute value', () => {
+    const payload = svg(`<rect fill="red${String.fromCharCode(127)}"/>`);
+    const sanitized = sanitizeSVGString(payload);
+
+    expect(sanitized.toLowerCase()).not.toContain('red');
+  });
+
+  test('scrubs a javascript: scheme out of a kept attribute like fill', () => {
+    const payload = svg('<rect fill="javascript:alert(1)"/>');
+    const sanitized = sanitizeSVGString(payload);
+
+    expect(sanitized).not.toContain('javascript');
+    expect(sanitized).toContain('<rect');
+  });
+});
+
+describe('css scrubbed inside the document', () => {
+  test('keeps a local url() reference through a style attribute', () => {
+    const source = svg('<rect style="fill:url(#g)"/>');
+
+    expect(sanitizeSVGString(source)).toBe(source);
+  });
+
+  test('keeps an embedded raster image through a style attribute', () => {
+    const source = svg('<rect style="fill:url(data:image/png;base64,iVBORw0KGgo=)"/>');
+
+    expect(sanitizeSVGString(source)).toBe(source);
+  });
+
+  test('keeps a remote url() in CSS only when external references are allowed', () => {
+    const source = svg('<style>.a{fill:url(https://example.test/x.css)}</style><rect class="a"/>');
+
+    expect(sanitizeSVGString(source, { allowExternalReferences: true })).toContain('example.test');
+    expect(sanitizeSVGString(source)).not.toContain('example.test');
+  });
+
+  test('drops a style attribute whose value is a remote url()', () => {
+    const source = svg('<rect fill="url(https://evil.test/x)"/>');
+
+    const sanitized = sanitizeSVGString(source);
+
+    expect(sanitized).not.toContain('evil.test');
+    expect(sanitized).toContain('<rect');
+  });
+
+  test('drops a style element consisting only of a comment', () => {
+    const source = svg('<style>/* nothing */</style>');
+
+    expect(sanitizeSVGString(source)).toBe(EMPTY_SVG);
+  });
+
+  test('drops a style element whose CSS holds expression()', () => {
+    const payload = svg('<style>.a{width:expression(alert(1))}</style>');
+
+    expect(sanitizeSVGString(payload)).toBe(EMPTY_SVG);
+  });
+
+  test('treats a url() with an empty target as external and drops the attribute', () => {
+    const payload = svg('<rect fill="url()"/>');
+
+    expect(sanitizeSVGString(payload)).toBe(svg('<rect/>'));
+  });
+});
+
+describe('references the policy admits only partly', () => {
+  test('drops a data: payload that is neither raster nor a known-safe document', () => {
+    const payload = svg('<image href="data:text/plain,hi"/>');
+
+    expect(sanitizeSVGString(payload)).not.toContain('data:');
+  });
+
+  test('keeps a text node inside a CDATA section', () => {
+    const source = svg('<text><![CDATA[kept text]]></text>');
+    const sanitized = sanitizeSVGString(source);
+
+    expect(sanitized).toContain('<text>');
+    expect(sanitized).toContain('kept text');
+  });
+
+  test('drops a comment child without dropping its siblings', () => {
+    const source = svg('<!-- gone --><rect/>');
+
+    expect(sanitizeSVGString(source)).toBe(`<svg xmlns="${SVG_NS}"><rect/></svg>`);
+  });
+
+  test('answers empty for an svg root outside the drawing namespace', () => {
+    const payload = '<svg xmlns="http://example.com/ns"><rect/></svg>';
+
+    expect(sanitizeSVGString(payload)).toBe('');
+  });
+
+  test('cuts a doctype that never ends', () => {
+    expect(sanitizeSVGString('<!DOCTYPE svg')).toBe('');
+  });
+
+  test('cuts a doctype whose internal subset carries quoted brackets and angle brackets', () => {
+    const source = `<!DOCTYPE svg [<!ENTITY q 'a>b']]>${svg('<rect/>')}`;
+
+    expect(sanitizeSVGString(source)).toBe(`<svg xmlns="${SVG_NS}"><rect/></svg>`);
+  });
+
+  test('cuts a doctype the entity subset closes, leaving the document to parse empty with it', () => {
+    const source = `<!DOCTYPE svg [<!ENTITY q 'a>b'>]>${svg('<text>&q;</text>')}`;
+
+    expect(sanitizeSVGString(source)).toBe('');
   });
 });

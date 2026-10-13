@@ -1,4 +1,5 @@
 import { defineConfig, mergeConfig } from 'vitest/config';
+import { COVERAGE_EXCEPTIONS } from './scripts/coverage-exceptions.ts';
 import viteConfig from './vite.config.ts';
 
 /**
@@ -23,6 +24,34 @@ export default defineConfig(
       // Loaded for every environment, and a no-op in the ones that need nothing: the browser APIs jsdom
       // does not implement are listed there rather than in each test file that trips over one.
       setupFiles: ['./src/util/testing/setup.ts'],
+      // The repository-policy tests parse the whole source tree with the TypeScript scanner, which
+      // is a few seconds of a single worker's time in an empty runner but competes for cores with
+      // every other worker in a loaded coverage run — the default 5s made one of them report a
+      // failure that was only a slow machine. The budget is for the scan, not an excuse for a hung
+      // test: a genuinely stuck test still fails the suite, just later.
+      testTimeout: 10_000,
+      coverage: {
+        provider: 'v8',
+        // The helper layer is what the gate covers. `src/util/` names the directory AGENTS.md calls
+        // "hooks and framework-agnostic helpers", and it is the layer most worth a coverage floor:
+        // pure logic a component reads, with no rendering to make a missing branch invisible.
+        include: ['src/util/**/*.{ts,tsx}'],
+        // A test is not something to cover, and a shader is not TypeScript. The exceptions are read
+        // from the list whose reasons are checked by `scripts/coverage-exceptions.test.ts`.
+        exclude: [
+          'src/util/**/*.test.{ts,tsx}',
+          ...COVERAGE_EXCEPTIONS.map((exception) => exception.path),
+        ],
+        reporter: ['text'],
+        // The whole gate: a partial threshold is met by covering the easy half, which is the number
+        // this repository refuses to game. Exceptions belong in the list above, with a reason.
+        thresholds: {
+          statements: 100,
+          branches: 100,
+          functions: 100,
+          lines: 100,
+        },
+      },
     },
   }),
 );

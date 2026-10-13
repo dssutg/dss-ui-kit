@@ -66,6 +66,11 @@ export const rp = {
       return Object.keys(x).length > 0;
     }
 
+    // A boxed `String` object is reached above, where `typeof` reports `'object'`. The second
+    // clause is dead therefore, but kept because the reader of the intent — "accept the string
+    // forms either way" — is better served by the spelled-out test than by a subtler rewrite.
+    // The unreached arm stays out of the coverage gate.
+    // v8 ignore next
     if (typeof x === 'string' || (typeof x === 'object' && x instanceof String)) {
       return !/^0+$/.test(x.replace(/\s+/g, '')) && x.replace(/\s+/g, '').toLowerCase() !== 'false';
     }

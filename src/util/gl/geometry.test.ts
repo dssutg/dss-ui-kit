@@ -1,10 +1,17 @@
 import { describe, expect, test } from 'vitest';
-import { glMat4Invert, glMat4MultiplyMatrixAndVector, Vector3D, vec4From } from '@/util/math';
+import {
+  degreesToRadians,
+  glMat4Invert,
+  glMat4MultiplyMatrixAndVector,
+  Vector3D,
+  vec4From,
+} from '@/util/math';
 import {
   calcNormal,
   convertBoxToQuads,
   convertHexColorToGL,
   flattenSceneObjects,
+  generateTransformMatrices,
   getBoxCropUV,
   getCameraWorldPos,
   getFaceColor,
@@ -18,6 +25,7 @@ import type {
   BoxFaceColors,
   BoxSceneObject,
   Camera,
+  GLQuadUV,
   GroupSceneObject,
   Vector3Array,
   Vector4Array,
@@ -283,22 +291,187 @@ describe('convertBoxToQuads', () => {
   });
 
   test('carries the texture coordinates a face was given', () => {
-    const uv: [[number, number], [number, number], [number, number], [number, number]] = [
+    const uv: GLQuadUV = [
       [0, 0],
       [1, 0],
       [1, 1],
       [0, 1],
     ];
 
-    const [front, back] = convertBoxToQuads({
+    const otherUV: GLQuadUV = [
+      [1, 1],
+      [1, 0],
+      [0, 0],
+      [0, 1],
+    ];
+
+    const [front, back, top, bottom, right, left] = convertBoxToQuads({
       type: 'box',
       pos: [0, 0, 0],
       material: WHITE,
       frontUV: uv,
       backUV: uv,
+      topUV: otherUV,
+      bottomUV: otherUV,
+      rightUV: otherUV,
+      leftUV: otherUV,
     });
 
     expect(front?.uv).toEqual(uv);
     expect(back?.uv).toEqual(uv);
+    expect(top?.uv).toEqual(otherUV);
+    expect(bottom?.uv).toEqual(otherUV);
+    expect(right?.uv).toEqual(otherUV);
+    expect(left?.uv).toEqual(otherUV);
+  });
+
+  test('a bare box stands at the origin, drawn as a unit box', () => {
+    const quads = convertBoxToQuads({ type: 'box', material: WHITE });
+
+    expect(quads).toHaveLength(6);
+    expect(quads[0]?.bottomLeft).toEqual([-1, -1, 1]);
+  });
+});
+
+describe('makeTransformationMatrix defaults', () => {
+  test('a bare object stands at the origin, unscaled and unrotated', () => {
+    const matrix = makeTransformationMatrix({ type: 'box', material: WHITE });
+
+    const centre = glMat4MultiplyMatrixAndVector([0, 0, 0, 0], matrix, vec4From([0, 0, 0, 1]));
+
+    expect(centre.slice(0, 3)).toEqual([0, 0, 0]);
+  });
+});
+
+describe('generateTransformMatrices', () => {
+  const IDENTITY_CAMERA = { pos: [0, 0, 0], rotation: [0, 0, 0], scale: [1, 1, 1] } as Camera;
+
+  test('projects with a 45 degree field of view, the given aspect and 0.1..100 depth', () => {
+    const { projectionMatrix } = generateTransformMatrices({ camera: IDENTITY_CAMERA, aspect: 1 });
+
+    // The standard perspective matrix: focal length from the field of view, then the depth bounds
+    // written with the classic near minus far denominator.
+    const focal = 1 / Math.tan(degreesToRadians(45) / 2);
+    const near = 0.1;
+    const far = 100;
+    const depthFactor = 1 / (near - far);
+
+    expect(projectionMatrix).toEqual([
+      focal,
+      0,
+      0,
+      0,
+      0,
+      focal,
+      0,
+      0,
+      0,
+      0,
+      (far + near) * depthFactor,
+      -1,
+      0,
+      0,
+      2 * far * near * depthFactor,
+      0,
+    ]);
+  });
+
+  test('projects a point at the near plane to -1 and at the far plane to +1 depth', () => {
+    const { projectionMatrix: projection } = generateTransformMatrices({
+      camera: IDENTITY_CAMERA,
+      aspect: 1,
+    });
+
+    const nearClip = glMat4MultiplyMatrixAndVector(
+      [0, 0, 0, 0],
+      projection,
+      vec4From([0, 0, -0.1, 1]),
+    );
+    const farClip = glMat4MultiplyMatrixAndVector(
+      [0, 0, 0, 0],
+      projection,
+      vec4From([0, 0, -100, 1]),
+    );
+
+    expect(nearClip[2] / nearClip[3]).toBeCloseTo(-1);
+    expect(farClip[2] / farClip[3]).toBeCloseTo(1);
+  });
+
+  test('narrows the horizontal view as the aspect widens', () => {
+    const { projectionMatrix } = generateTransformMatrices({ camera: IDENTITY_CAMERA, aspect: 2 });
+    const focal = 1 / Math.tan(degreesToRadians(45) / 2);
+
+    expect(projectionMatrix[0]).toBeCloseTo(focal / 2);
+  });
+
+  test('the model-view of a camera at the identity draws a point where it is', () => {
+    const { modelViewMatrix } = generateTransformMatrices({ camera: IDENTITY_CAMERA, aspect: 1 });
+
+    expect(modelViewMatrix).toEqual([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+  });
+
+  test('moves scene points by the camera position', () => {
+    const camera = { pos: [5, -6, 7], rotation: [0, 0, 0], scale: [1, 1, 1] } as Camera;
+
+    const { modelViewMatrix } = generateTransformMatrices({ camera, aspect: 1 });
+    const moved = glMat4MultiplyMatrixAndVector(
+      [0, 0, 0, 0],
+      modelViewMatrix,
+      vec4From([0, 0, 0, 1]),
+    );
+
+    expect(moved.slice(0, 3)).toEqual([5, -6, 7]);
+  });
+
+  test('scales before rotating and before translating', () => {
+    const camera = {
+      pos: [10, 0, 0],
+      rotation: [0, 0, Math.PI / 2],
+      scale: [2, 1, 1],
+    } as Camera;
+
+    const { modelViewMatrix } = generateTransformMatrices({ camera, aspect: 1 });
+    const drawn = glMat4MultiplyMatrixAndVector(
+      [0, 0, 0, 0],
+      modelViewMatrix,
+      vec4From([1, 0, 0, 1]),
+    );
+
+    // A point one unit out is scaled to two, turned a quarter way about z, then placed at the camera.
+    expect(drawn[0]).toBeCloseTo(10, 10);
+    expect(drawn[1]).toBeCloseTo(2, 10);
+    expect(drawn[2]).toBeCloseTo(0, 10);
+  });
+
+  test('turns points about y', () => {
+    const camera = { pos: [0, 0, 0], rotation: [0, Math.PI / 2, 0], scale: [1, 1, 1] } as Camera;
+
+    const { modelViewMatrix } = generateTransformMatrices({ camera, aspect: 1 });
+    const drawn = glMat4MultiplyMatrixAndVector(
+      [0, 0, 0, 0],
+      modelViewMatrix,
+      vec4From([1, 0, 0, 1]),
+    );
+
+    // A quarter turn carries the x axis onto the negative z axis, as a right-handed turn does.
+    expect(drawn[0]).toBeCloseTo(0, 10);
+    expect(drawn[1]).toBeCloseTo(0, 10);
+    expect(drawn[2]).toBeCloseTo(-1, 10);
+  });
+
+  test('turns points about x', () => {
+    const camera = { pos: [0, 0, 0], rotation: [Math.PI / 2, 0, 0], scale: [1, 1, 1] } as Camera;
+
+    const { modelViewMatrix } = generateTransformMatrices({ camera, aspect: 1 });
+    const drawn = glMat4MultiplyMatrixAndVector(
+      [0, 0, 0, 0],
+      modelViewMatrix,
+      vec4From([0, 1, 0, 1]),
+    );
+
+    // A quarter pitch carries +y onto +z.
+    expect(drawn[0]).toBeCloseTo(0, 10);
+    expect(drawn[1]).toBeCloseTo(0, 10);
+    expect(drawn[2]).toBeCloseTo(1, 10);
   });
 });

@@ -419,6 +419,7 @@ deno task format:markdown # apply markdownlint's autofixes
 deno task codemod         # run a codemod for a mechanical multi-file rewrite
 deno task typecheck       # tsgo only
 deno task test            # unit tests
+deno task test:coverage   # unit tests with the coverage gate on src/util/
 deno task docs            # TypeDoc API reference into docs/api/
 deno task icons           # regenerate src/icons/index.tsx from the source SVGs
 deno task lemmascript:gen   # regenerate the Dafny artifacts from the annotated sources
@@ -428,8 +429,9 @@ deno task ci              # the full local gate, exactly what CI runs
 ```
 
 `deno task ci` must pass before any commit. It chains `install:frozen`, `format:check`, `lint`,
-`lint:commits`, `test`, `build`, `pack`, `lint:return-types`, `publish:dry` and `docs`, which is the
-whole of the GitHub Actions pipeline in one command. `lint:commits` runs the `bump-version` binary,
+`lint:commits`, `test`, `test:coverage`, `build`, `pack`, `lint:return-types`, `publish:dry` and
+`docs`, which is the whole of the GitHub Actions pipeline in one command. `lint:commits` runs the
+`bump-version` binary,
 which must be on `PATH`; CI installs a pinned release of it, and a clone that does not have it runs
 every other task unchanged.
 If Biome reports a fixable problem, run `deno task format` rather than editing by hand. Releases are
@@ -578,14 +580,29 @@ behaviour that was wrong, so it fails on the unfixed code and passes on the fixe
 written after the fix proves only that the fix ran. It sits beside what it covers like any other
 test, and the failing-then-passing sequence is what makes the fix verifiable rather than asserted.
 
-`deno task test` runs the suite. Add tests next to what they cover: `src/**/*.test.ts` beside the
+`deno task test` runs the suite, and `deno task test:coverage` runs it with the coverage gate the
+same thresholds in `vitest.config.ts` hold the helper layer to: **`src/util/` is covered at 100% —
+every statement, branch, function and line.** A partial threshold is a number a partial test can
+meet, so the floor is the whole one. The gate is enforced by `deno task ci`, which runs the coverage
+task beside the plain one.
+
+An exception to that floor is one of two kinds, and both carry their reason with them: a file
+excluded by name in [scripts/coverage-exceptions.ts](scripts/coverage-exceptions.ts) — currently the
+test infrastructure under `src/util/testing/`, which is not published code — and a branch that
+provably cannot execute, marked in place with a `v8 ignore next` (or `start`/`stop`) comment that
+says why. A defensive arm the TypeScript compiler's opinion of an index forces into the source can
+never be driven by a test; the comment is where the claim lives, and a reviewer disagrees with
+either there rather than in a config. `scripts/coverage-exceptions.test.ts` checks the file-level
+list against the tree, so an entry that stops naming a file fails.
+
+Add tests next to what they cover: `src/**/*.test.ts` beside the
 component or type, `scripts/**/*.test.ts` beside the helper. The repository-policy tests guard
 repository-wide rules rather than one module, so they sit beside the tooling they protect and walk
 the source tree through its shared walker (`scripts/util/source-tree.ts`):
 
 - `no-bare-javascript`, `module-boundary`, `no-russian-text`, `no-hardcoded-ui-text`,
-  `no-raw-class-strings`, `no-preact-subpath-imports`, `no-type-assertions`, `component-group-tests`
-  and `design-tokens`.
+  `no-raw-class-strings`, `no-preact-subpath-imports`, `no-type-assertions`, `component-group-tests`,
+  `design-tokens` and `coverage-exceptions`.
 - `duplicated-code` is the ratchet over the same tree: it tokenizes the source and fails on a block
   that is written elsewhere, against `scripts/duplication-baseline.json`.
 
