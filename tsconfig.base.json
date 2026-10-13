@@ -23,6 +23,12 @@
     "noUncheckedSideEffectImports": true,
     "noPropertyAccessFromIndexSignature": true,
     "exactOptionalPropertyTypes": true,
-    "allowUnreachableCode": false
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "noImplicitThis": true,
+    "useUnknownInCatchVariables": true,
+    "noErrorTruncation": true,
+    "forceConsistentCasingInFileNames": true,
+    "strictBuiltinIteratorReturn": true
   }
 }

@@ -119,7 +119,9 @@
         "noEmptyInterface": "error",
         "useAwait": "error",
         "noPrototypeBuiltins": "error",
-        "noThenProperty": "error"
+        "noThenProperty": "error",
+        "noConfusingLabels": "error",
+        "noSelfCompare": "error"
       }
     }
   },
