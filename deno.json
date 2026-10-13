@@ -81,7 +81,9 @@
     "docs:watch": "deno run -A npm:typedoc --watch",
     "icons": "deno run --allow-read --allow-write --allow-run scripts/bundle-icons.ts",
     "duplication:baseline": "deno run --allow-read --allow-write --allow-run --allow-env scripts/update-duplication-baseline.ts",
-    "ci": "deno task install:frozen && deno task format:check && deno task lint && deno task test && deno task build && deno task pack && deno task docs",
+    "design-tokens:baseline": "deno run --allow-read --allow-write --allow-run scripts/update-design-token-baseline.ts",
+    "type-assertions:baseline": "deno run --allow-read --allow-write --allow-run --allow-env scripts/update-type-assertion-baseline.ts",
+    "ci": "deno task install:frozen && deno task format:check && deno task lint && deno task test && deno task build && deno task pack && deno task publish:dry && deno task docs",
     "publish": "deno run --allow-read --allow-write --allow-run --allow-env scripts/publish.ts",
     "publish:dry": "deno run --allow-read --allow-write --allow-run --allow-env scripts/publish.ts --dry-run",
     "codemod": "deno run -A npm:codemod"

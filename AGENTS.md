@@ -166,6 +166,8 @@ not a convenience.
   `./util/source-tree.ts` imports. `../**` is still rejected.
 - The `@` alias is declared twice and both halves must agree — `resolve.alias` in `vite.config.ts`
   for the bundler, and `compilerOptions.paths` in `tsconfig.json` for the type checker.
+  `scripts/alias-agreement.test.ts` reads both and fails when a key is added to one and not the other,
+  which is the drift a build would not report until a consumer imported the missing specifier.
 
 ## Layering
 
@@ -236,7 +238,11 @@ stylistic preferences; each one has caught a real problem.
 - **Keep functions short and named for what they do.** Biome's `noExcessiveCognitiveComplexity`
   allows 12; a function that reaches it is doing more than one job and wants splitting.
 - **Do not widen a type to silence a check.** A cast is a claim you could not prove. Narrow the
-  input instead, or make the function return the type you actually meant.
+  input instead, or make the function return the type you actually meant. `scripts/no-type-assertions.test.ts`
+  counts every non-`const` assertion per file against `scripts/type-assertion-baseline.json`: a new
+  assertion fails, and the baseline may only be lowered, by `deno task type-assertions:baseline`,
+  never raised. The casts that predate the rule are recorded, not endorsed — the next change to a file
+  still removes one it can.
 - **Name things for what they are, not for how they are built**: `DEFAULT_SECTION_HEADING`, not
   `SECTION_FALLBACK`.
 - **Leave code better typed than you found it.** If a new lint rule flags something you did not
@@ -306,6 +312,10 @@ them as `{ bda: 'var(--color-bda)' }`, so the class name and the custom property
 **These names are part of the package's contract.** A consumer that wants `bg-bda` has to have the
 `--color-bda` variable defined, so the theme files and the Tailwind config ship together and neither
 is optional. Renaming a token is a breaking change; adding one is not.
+`scripts/design-tokens.test.ts` reads the map and the theme files against each other and against
+`scripts/design-token-baseline.json`, the set a release already shipped: the two files catching each
+other cannot see a rename applied to both, so a name missing from the baseline is what reports the
+rename. Adding a token means adding it to the baseline, by `deno task design-tokens:baseline`.
 
 **A theme is data, not a build artefact.** `--color-bda` is resolved at runtime by CSS, so switching
 theme is a `data-theme` attribute on `<body>` and nothing is recompiled.
@@ -365,12 +375,19 @@ A component that needs a literal of its own — an identifier, a version string 
 data. Only text meant to be read by an operator belongs in a locale file.
 
 A test walks the tree and fails on a Cyrillic letter anywhere outside the locale files, so Russian
-text cannot drift back into a component between reviews.
+text cannot drift back into a component between reviews. `scripts/no-hardcoded-ui-text.test.ts`
+closes the other direction: it reads the syntax tree and fails on a letter in the text between JSX
+tags or in the value of an attribute whose content is read — `aria-label` and its kin, `title`,
+`placeholder`, `alt` — so English pasted straight into a component is caught as the unlocalisable
+literal it is.
 
 ## Dependency versions
 
 **Every version in `package.json` is pinned exactly — no `^`, no `~`.** Reproducible installs are a
 release requirement, so an unpinned version is a bug, not a convenience.
+`scripts/pinned-dependencies.test.ts` checks `dependencies`, `devDependencies` and
+`optionalDependencies` against an exact-version pattern, and leaves `peerDependencies` alone
+because a peer range (`"preact": ">=10.19.0 <11"`) is the constraint that must be loose.
 
 After editing dependencies, always refresh the lockfile and commit it:
 
@@ -402,7 +419,8 @@ deno task ci              # the full local gate, exactly what CI runs
 ```
 
 `deno task ci` must pass before any commit. It chains `install:frozen`, `format:check`, `lint`,
-`test`, `build`, `pack` and `docs`, which is the whole of the GitHub Actions pipeline in one command.
+`test`, `build`, `pack`, `publish:dry` and `docs`, which is the whole of the GitHub Actions pipeline
+in one command.
 If Biome reports a fixable problem, run `deno task format` rather than editing by hand. Releases are
 not a task here because they are the maintainer's alone and run through an external tool — see
 [Releasing](#releasing).
@@ -410,8 +428,8 @@ not a task here because they are the maintainer's alone and run through an exter
 ## Continuous integration
 
 [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) defines a strict pipeline: `format`, `lint`,
-`typecheck`, `test` → `build`, `docs`. `biome ci` treats formatting as an error, so an unformatted
-file fails the pipeline.
+`typecheck`, `test` → `build`, `publish`, `docs`. `biome ci` treats formatting as an error, so an
+unformatted file fails the pipeline.
 
 Every job checks the repository out and then runs `.github/actions/setup/action.yml`, which installs
 the pinned Deno and runs `deno install --frozen`. A shared action rather than a copy per job: a
@@ -452,6 +470,8 @@ scripts/
   publish.ts              writes jsr.json and publishes the source to JSR
   check-package-manifest.ts  verifies every path in package.json `files` exists in dist/
   bundle-icons.ts         bundles src/icons/*.svg into src/icons/index.tsx (run by `deno task icons`)
+  update-*-baseline.ts    regenerates a `*-baseline.json` ratchet; run through its `deno task *:baseline`
+  *-baseline.json         the sets a release already shipped, which a test refuses to let grow or shrink
   *.test.ts               the repository-policy tests
   util/                   helpers for the scripts above, including the shared tree walker
 docs/
@@ -503,8 +523,9 @@ deno task docs:watch    # rebuilds on save
   of icon names, not a map of path data.
 - `docs/api/` is gitignored. The HTML is a build output, not source; committing it would guarantee
   it drifts out of date the first time a comment changes.
-- CI builds it, so a broken `@link` or an unresolvable type fails the pipeline. Edit the comment,
-  never the HTML.
+- CI builds it, so a broken `@link`, an unresolvable type, or a type referenced by a public signature
+  but not exported fails the pipeline: `treatValidationWarningsAsErrors` in `typedoc.json` turns
+  TypeDoc's validation warnings into errors. Edit the comment, never the HTML.
 - Write TSDoc for the **why**. A comment that restates the signature is noise; one that explains
   why a missing value is never silently defaulted is documentation.
 - Document the public surface. Exported symbols that TypeDoc cannot resolve are reported as warnings
@@ -533,10 +554,12 @@ name is wrong, that is a change with a migration, taken on its own.
 
 `deno task test` runs the suite. Add tests next to what they cover: `src/**/*.test.ts` beside the
 component or type, `scripts/**/*.test.ts` beside the helper. The repository-policy tests —
-`no-bare-javascript`, `module-boundary` and `no-russian-text` — are the exceptions: they guard
-repository-wide rules rather than one module, so they sit beside the tooling they protect and
-share its
-tree walker (`scripts/util/source-tree.ts`).
+`no-bare-javascript`, `module-boundary`, `no-russian-text`, `no-hardcoded-ui-text`,
+`no-type-assertions` and `design-tokens` — are the exceptions: they guard repository-wide rules rather
+than one module, so they sit beside the tooling they protect and share its tree walker
+(`scripts/util/source-tree.ts`). `alias-agreement`, `no-stylesheet-import` and `pinned-dependencies`
+each guard one repository-wide fact and read the file that states it — the two configs,
+`src/index.ts`, `package.json`.
 
 The suite covers the pure helpers that carry the most logic per line, the repository-policy rules, and
 every component group with at least one render test.
@@ -670,8 +693,8 @@ as-is, and the publish script carries each of them across instead of the source 
 
 The publish runs without a slow-types allowance, so a function or symbol the publish would flag
 (`missing-explicit-return-type`, `missing-explicit-type`) fails it: every exported symbol reachable
-from `src/index.ts` carries an explicit type. Run `deno task publish:dry` before finishing a new
-export, and keep the pattern in new code.
+from `src/index.ts` carries an explicit type. `deno task ci` runs `deno task publish:dry`, so this
+cannot reach `main` unchecked; run it before finishing a new export, and keep the pattern in new code.
 
 Consequences worth knowing before touching the source:
 

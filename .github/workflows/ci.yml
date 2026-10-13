@@ -80,12 +80,26 @@ jobs:
           path: dist/
           retention-days: 7
 
+  # The same version ships to JSR as source, and the publish script resolves the `@/` alias, the
+  # `react`-as-Preact alias and the stylesheet onto exact files for `deno publish` to type-check.
+  # Running it dry here proves that mapping still holds: a file that moved with no specifier backing it
+  # fails now rather than mid-release. Nothing reaches the network — `--dry-run` writes jsr.json and
+  # stops.
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup
+      - run: deno task publish:dry
+
   # The API reference is generated from the source. Building it here means it cannot drift from the
   # code, and a change that breaks the public surface (a bad @link, an unresolvable type) fails the
   # pipeline.
   #
-  # TypeDoc warns rather than fails when the `origin` remote is not configured, which only affects
-  # the "view source" links, so this job gates on errors, not on warnings.
+  # `treatValidationWarningsAsErrors` in typedoc.json makes a documented-but-unreachable type an
+  # error. The one warning left is `origin` being unconfigured, which only affects "view source"
+  # links and is not a validation warning.
   docs:
     name: Docs
     runs-on: ubuntu-latest

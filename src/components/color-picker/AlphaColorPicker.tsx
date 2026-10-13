@@ -1,4 +1,5 @@
 import { type JSX, useRef } from 'react';
+import { useLocale } from '@/locale';
 import { cn } from '@/util/cn';
 import { clamp } from '@/util/math';
 import {
@@ -61,6 +62,8 @@ interface AlphaProperties {
 }
 
 function Alpha({ className, hsva, onChange }: AlphaProperties): JSX.Element {
+  const { t } = useLocale();
+
   const handleMove = (interaction: Interaction) => {
     onChange({ a: interaction.left });
   };
@@ -88,7 +91,7 @@ function Alpha({ className, hsva, onChange }: AlphaProperties): JSX.Element {
       <Interactive
         onMove={handleMove}
         onKey={handleKey}
-        aria-label="Alpha"
+        aria-label={t('AlphaColorPicker.alpha')}
         aria-valuetext={`${ariaValue}%`}
         ariaValueNow={ariaValue}
         aria-valuemin="0"

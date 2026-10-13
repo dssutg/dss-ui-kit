@@ -4,6 +4,12 @@
   "entryPointStrategy": "resolve",
   "entryPoints": ["src/index.ts"],
   "intentionallyNotExported": ["iconPaths", "en"],
+  "validation": {
+    "notExported": true,
+    "invalidLink": true,
+    "rewrittenLink": true
+  },
+  "treatValidationWarningsAsErrors": true,
   "tsconfig": "tsconfig.docs.json",
   "out": "docs/api",
   "excludePrivate": true,

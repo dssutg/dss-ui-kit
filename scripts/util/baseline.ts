@@ -1,0 +1,50 @@
+import { writeFileSync } from 'node:fs';
+import { REPOSITORY_ROOT } from './source-tree.ts';
+
+/**
+ * The shape every `update-*-baseline.ts` generator follows: write the snapshot, then hand its layout
+ * to Biome.
+ *
+ * A baseline is generated rather than hand-written because a hand-written copy of a detector's output
+ * is a second opinion about what the detector found, and the two drift. Formatting it here rather than
+ * in each generator keeps `deno task format:check` passing without every generator repeating the
+ * `Deno.Command` invocation, which the duplicated-code guard treats as a clone for good reason.
+ */
+
+/** Writes `value` to `path` as JSON with a trailing newline, then formats it with Biome. */
+export function writeBaseline(path: string, value: unknown): void {
+  writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`);
+  formatBaseline(path);
+}
+
+/**
+ * Runs a baseline generator as a program: no-op when the module is imported, and an error is reported
+ * and turned into a non-zero exit when it is the entry point.
+ */
+export function runBaseline(main: () => void): void {
+  if (!import.meta.main) {
+    return;
+  }
+
+  try {
+    main();
+  } catch (error) {
+    console.error(`\n✖ ${error instanceof Error ? error.message : String(error)}`);
+    Deno.exit(1);
+  }
+}
+
+/** Formats the file that was just written, so the repository's formatter owns its layout too. */
+function formatBaseline(path: string): void {
+  const { code, stderr } = new Deno.Command('deno', {
+    args: ['run', '-A', 'npm:@biomejs/biome', 'format', '--write', path],
+    cwd: REPOSITORY_ROOT,
+    stdout: 'piped',
+    stderr: 'piped',
+  }).outputSync();
+
+  if (code !== 0) {
+    console.error(new TextDecoder().decode(stderr));
+    throw new Error('Biome could not format the baseline');
+  }
+}

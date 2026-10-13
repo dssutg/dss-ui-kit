@@ -3,8 +3,12 @@ import type { LocaleDates } from './dates';
 import type { en } from './en';
 
 export const ru = {
+  'AlphaColorPicker.alpha': 'Альфа',
   'BitField.bitNoPrefix': 'Бит ',
   'Chart.axis': 'Подписи осей графика',
+  'ColorPickerControls.color': 'Цвет',
+  'ColorPickerControls.hue': 'Оттенок',
+  'ColorPickerControls.saturationValue': 'Насыщенность {saturation}%, Яркость {brightness}%',
   'ConfigurableOrderPanel.hide': 'Скрыть',
   'ConfigurableOrderPanel.hideAll': 'Скрыть все',
   'ConfigurableOrderPanel.moveDown': 'Переместить вниз',
@@ -58,6 +62,7 @@ export const ru = {
   'FilterableTableStatsModal.propertySelect.label': 'Столбец: ',
   'FilterableTableStatsModal.title': 'Статистика',
   'FilterableTableStatsModal.totalItems': 'Всего строк в таблице: ',
+  'IconViewer.search': 'Поиск иконки',
   'LogWidget.clearMessageOutput': 'Очистить вывод сообщений',
   'LogWidget.disableMessageOutput': 'Приостановить вывод сообщений',
   'LogWidget.enableMessageOutput': 'Продолжить вывод сообщений',

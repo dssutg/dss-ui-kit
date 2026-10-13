@@ -10,8 +10,12 @@ import type { LocaleDates } from './dates';
  * in this one.
  */
 export const en = {
+  'AlphaColorPicker.alpha': 'Alpha',
   'BitField.bitNoPrefix': 'Bit ',
   'Chart.axis': 'Chart axis labels',
+  'ColorPickerControls.color': 'Color',
+  'ColorPickerControls.hue': 'Hue',
+  'ColorPickerControls.saturationValue': 'Saturation {saturation}%, Brightness {brightness}%',
   'ConfigurableOrderPanel.hide': 'Hide',
   'ConfigurableOrderPanel.hideAll': 'Hide all',
   'ConfigurableOrderPanel.moveDown': 'Move down',
@@ -65,6 +69,7 @@ export const en = {
   'FilterableTableStatsModal.propertySelect.label': 'Column: ',
   'FilterableTableStatsModal.title': 'Stats',
   'FilterableTableStatsModal.totalItems': 'Total rows: ',
+  'IconViewer.search': 'Search Icon',
   'LogWidget.clearMessageOutput': 'Clear message output',
   'LogWidget.disableMessageOutput': 'Pause message output',
   'LogWidget.enableMessageOutput': 'Resume message output',

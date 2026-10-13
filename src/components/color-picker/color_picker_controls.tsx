@@ -11,6 +11,7 @@
  */
 
 import { type JSX, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocale } from '@/locale';
 import { cn } from '@/util/cn';
 import { clamp } from '@/util/math';
 import { equalColorObjects, hsvaToHslString, round } from './color_picker_conversion';
@@ -44,6 +45,8 @@ export interface HueBaseProperties {
  * exposed as a hue in degrees.
  */
 export function HueBase({ className, hue, onChange }: HueBaseProperties) {
+  const { t } = useLocale();
+
   const handleMove = (interaction: Interaction) => {
     onChange({ h: 360 * interaction.left });
   };
@@ -62,7 +65,7 @@ export function HueBase({ className, hue, onChange }: HueBaseProperties) {
       <Interactive
         onMove={handleMove}
         onKey={handleKey}
-        aria-label="Hue"
+        aria-label={t('ColorPickerControls.hue')}
         ariaValueNow={round(hue)}
         aria-valuemax="360"
         aria-valuemin="0"
@@ -236,6 +239,8 @@ export interface SaturationBaseProperties {
 }
 
 const SaturationBase = ({ hsva, onChange, className }: SaturationBaseProperties) => {
+  const { t } = useLocale();
+
   const handleMove = (interaction: Interaction) => {
     onChange({
       s: interaction.left * 100,
@@ -260,8 +265,11 @@ const SaturationBase = ({ hsva, onChange, className }: SaturationBaseProperties)
       <Interactive
         onMove={handleMove}
         onKey={handleKey}
-        aria-label="Color"
-        aria-valuetext={`Saturation ${round(hsva.s)}%, Brightness ${round(hsva.v)}%`}
+        aria-label={t('ColorPickerControls.color')}
+        aria-valuetext={t('ColorPickerControls.saturationValue', {
+          saturation: round(hsva.s),
+          brightness: round(hsva.v),
+        })}
       >
         <Pointer
           className="color-picker-cn__saturation-pointer"

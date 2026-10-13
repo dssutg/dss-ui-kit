@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { SearchInput } from '@/components/inputs/SearchInput';
 import { getIconNames } from '@/icons/registry';
+import { useLocale } from '@/locale';
 import { cn } from '@/util/cn';
 import { copyToClipboard } from '@/util/dom';
 import { Icon } from './Icon';
@@ -18,6 +19,8 @@ export function IconViewer({
 }: {
   readonly className?: string | undefined;
 }): React.JSX.Element {
+  const { t } = useLocale();
+
   const [searchText, setSearchText] = useState('');
 
   const iconNames = getIconNames();
@@ -39,7 +42,11 @@ export function IconViewer({
 
   return (
     <div className={cn('flex flex-col gap-2', className)}>
-      <SearchInput value={searchText} placeholder={'Search Icon'} onChangeText={setSearchText} />
+      <SearchInput
+        value={searchText}
+        placeholder={t('IconViewer.search')}
+        onChangeText={setSearchText}
+      />
       <div
         style={{
           display: 'grid',
