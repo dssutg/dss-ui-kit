@@ -195,11 +195,29 @@ export function maxInArrayMapped<T>(
   return { max: best.value, maxElement: best.element, maxElementIndex: best.index };
 }
 
+/**
+ * The spec-only definition of the running sum: `sumFrom(xs, i)` is the sum of `xs[i..]`.
+ *
+ * It exists only to be named in {@link sumArray}'s contract, mirroring the `sortedFrom` helper in
+ * LemmaScript's binary search example.
+ */
+export function sumFrom(xs: readonly number[], i: number): number {
+  //@ verify
+  //@ type i nat
+  //@ decreases xs.length - i
+  return i >= xs.length ? 0 : (xs[i] ?? 0) + sumFrom(xs, i + 1);
+}
+
 /** Adds the elements up. An empty array sums to zero, which is what a total of nothing is. */
 export function sumArray(array: readonly number[]) {
+  //@ verify
+  //@ ensures \result === sumFrom(array, 0)
   let sum = 0;
-  for (const element of array) {
-    sum += element;
+  for (let i = 0; i < array.length; i++) {
+    //@ invariant 0 <= i && i <= array.length
+    //@ invariant sum + sumFrom(array, i) === sumFrom(array, 0)
+    //@ decreases array.length - i
+    sum += array[i] ?? 0;
   }
   return sum;
 }

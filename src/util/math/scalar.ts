@@ -1,9 +1,16 @@
 // Clamp a value between min and max inclusively
 export function clamp(value: number, min: number, max: number): number {
+  //@ verify
+  //@ requires min <= max
+  //@ ensures \result >= min && \result <= max
+  //@ ensures value < min ==> \result === min
+  //@ ensures value > max ==> \result === max
   return Math.max(min, Math.min(max, value));
 }
 
 export function lerp(min: number, max: number, progress: number): number {
+  //@ verify
+  //@ ensures \result === (1 - progress) * min + progress * max
   return (1 - progress) * min + progress * max;
 }
 
@@ -28,10 +35,16 @@ export function lerpRange(
 // considers negative operands and wraps the result number
 // accordingly that is returned.
 export function modulo(a: number, b: number): number {
+  //@ verify
+  //@ requires b > 0
+  //@ ensures \result >= 0 && \result < b
   return ((a % b) + b) % b;
 }
 
 export function wrapIndex(index: number, length: number): number {
+  //@ verify
+  //@ requires length > 0
+  //@ ensures \result >= 0 && \result < length
   if (length === 0) {
     return 0;
   }
@@ -39,6 +52,9 @@ export function wrapIndex(index: number, length: number): number {
 }
 
 export function step(x: number, threshold: number): number {
+  //@ verify
+  //@ ensures x >= threshold ==> \result === 1
+  //@ ensures x < threshold ==> \result === 0
   if (x >= threshold) {
     return 1;
   }

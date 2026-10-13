@@ -1,0 +1,3 @@
+src/util/array/index.tsx
+src/util/math/scalar.ts
+src/util/string/index.tsx

@@ -17,9 +17,17 @@ export function capitalize(sequence = '') {
  * original string reference whenever nothing has to change rather than always allocating a copy.
  */
 export function trimEndNewlines(str: string) {
+  //@ verify
+  //@ ensures \result.length <= str.length
+  //@ ensures str.slice(0, \result.length) === \result
+  //@ ensures forall(k, \result.length <= k && k < str.length ==> (str.charCodeAt(k) === 10 || str.charCodeAt(k) === 13))
+  //@ ensures \result.length === 0 || (str.charCodeAt(\result.length - 1) !== 10 && str.charCodeAt(\result.length - 1) !== 13)
   let end = str.length;
 
   while (end > 0) {
+    //@ invariant 0 <= end && end <= str.length
+    //@ invariant forall(k, end <= k && k < str.length ==> (str.charCodeAt(k) === 10 || str.charCodeAt(k) === 13))
+    //@ decreases end
     const c = str.charCodeAt(end - 1);
     if (c !== 10 && c !== 13) {
       // \n = 10, \r = 13

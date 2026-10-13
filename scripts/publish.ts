@@ -50,6 +50,10 @@ const PACKAGE_JSON = 'package.json';
 const PUBLISH_EXCLUDE: readonly string[] = [
   'src/**/*.test.ts',
   'src/**/*.test.tsx',
+  // The Dafny LemmaScript generates for the annotated sources: committed for the verification
+  // pipeline, but proof artefacts a consumer of the TypeScript package cannot use.
+  'src/**/*.dfy',
+  'src/**/*.dfy.gen',
   // The test-only render helper imports `vitest`, which the package does not depend on; it is
   // reachable from the test files alone, so a package without it loses nothing.
   'src/util/testing',
@@ -323,6 +327,8 @@ function collectPackageFiles(): string[] {
     (file) =>
       !file.endsWith('.test.ts') &&
       !file.endsWith('.test.tsx') &&
+      !file.endsWith('.dfy') &&
+      !file.endsWith('.dfy.gen') &&
       ![...excluded].some((path) => file === path || file.startsWith(`${path}/`)),
   );
 }
