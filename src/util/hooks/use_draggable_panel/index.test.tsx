@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `useDraggablePanel` slides a panel in from the edge of the viewport and back out, following a drag
  * the pointer makes on it or near the edge it slides in from, writing the panel's and the backdrop's

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Whether the browser tab the application runs in is the one on screen.
  *

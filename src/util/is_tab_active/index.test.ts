@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Whether the application's tab is on screen, cached in module state by a listener installed at
  * import. The value is read off `document.hidden` the moment `visibilitychange` fires, so the test

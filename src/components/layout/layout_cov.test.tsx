@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The measuring half of the layout group, driven the way the base suite leaves it: the resize paths
  * `AutoSizer` takes when the realm has no ResizeObserver (the scroll-driven detector), the axes it is

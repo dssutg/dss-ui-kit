@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A panel anchored to its trigger, closed from outside or by escape.
+
 import { createPortal, useCallback, useRef, useState } from 'react';
 import { useLocale } from '@/locale';
 import { cn } from '@/util/cn';

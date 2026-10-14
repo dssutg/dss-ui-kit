@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The progress ring's arc and its break-point colours.
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { RingProgress } from '@/components/charts/RingProgress';

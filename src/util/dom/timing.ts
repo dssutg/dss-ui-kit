@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Collapses a burst of calls into the last one, run after a quiet period of `delay`.
  *

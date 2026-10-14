@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// An integer input that repairs the typed text into a number.
+
 import { useCallback } from 'react';
 import { IconButton } from '@/components/buttons/IconButton';
 import { useLocale } from '@/locale';

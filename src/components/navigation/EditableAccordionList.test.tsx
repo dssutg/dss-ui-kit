@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The editable accordion list's rename, remove and order.
 // @vitest-environment jsdom
 
 import { useState } from 'react';

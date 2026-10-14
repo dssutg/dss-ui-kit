@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// One row of a SortableTable: a cell per column, at the widths currently set.
+
 import { cn } from '@/util/cn';
 import type {
   SortableTableCellRendererContext,

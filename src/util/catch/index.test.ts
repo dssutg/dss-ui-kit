@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Tests for the try/catch wrappers that turn a throwing getter or a rejected promise into a
  * `[value, error]` result. A failure here would mean an exception escapes code that was told it

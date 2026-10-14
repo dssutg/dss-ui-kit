@@ -1,4 +1,7 @@
 #!/usr/bin/env -S deno run --allow-read
+// SPDX-License-Identifier: MIT
+// Checks every path in the files list of package.json exists in the build.
+
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { REPOSITORY_ROOT } from './util/source-tree.ts';

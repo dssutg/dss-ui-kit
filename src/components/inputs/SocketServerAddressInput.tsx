@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The text field for the address of a WebSocket server, validated by shape.
+
 import { TextInput } from './TextInput';
 
 /**

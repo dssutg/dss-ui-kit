@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The modal where a filter over any property type is chosen and added.
+
 import { useState } from 'react';
 import { Button } from '@/components/buttons/Button';
 import { DecimalIntegerInput } from '@/components/inputs/DecimalIntegerInput';

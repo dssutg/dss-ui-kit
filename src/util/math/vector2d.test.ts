@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The planar vector every chart and canvas transform is built on. The suite pins the behaviours
  * callers cannot re-derive from the names: comparisons are tolerant by default and strictly-less

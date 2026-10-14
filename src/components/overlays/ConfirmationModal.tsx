@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A dialog that asks a question and reports each answer separately.
+
 import { useCallback, useRef } from 'react';
 import { Button } from '@/components/buttons/Button';
 import { Modal } from '@/components/overlays/Modal';

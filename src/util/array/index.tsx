@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The list arithmetic the components share: chunking, reordering and path comparison.
+
 import { cmp, wrapIndex } from '@/util/math';
 
 /**

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A yes/no indicator coloured by the answer, for a status the caller states.
+
 import { useLocale } from '@/locale';
 import { cn } from '@/util/cn';
 

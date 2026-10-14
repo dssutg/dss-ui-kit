@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The tooltip a control reports feedback in, coloured by outcome.
+
 import { createPortal, useRef, useState } from 'react';
 import { cn } from '@/util/cn';
 import { useGranularEffect } from '@/util/hooks/use_granular_effect';

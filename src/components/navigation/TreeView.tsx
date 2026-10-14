@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 // This is a TreeView UI component with supporting these features:
 //
 //   - Keyboard Navigation:

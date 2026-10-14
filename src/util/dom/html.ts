@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Escapes every character that could start markup in a string.
  *

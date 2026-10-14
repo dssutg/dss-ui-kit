@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The one writer every baseline generator shares, so snapshots are formatted alike.
+
 import { writeFileSync } from 'node:fs';
 import { REPOSITORY_ROOT } from './source-tree.ts';
 

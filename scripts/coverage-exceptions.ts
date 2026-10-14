@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The code the coverage gate does not require.
  *

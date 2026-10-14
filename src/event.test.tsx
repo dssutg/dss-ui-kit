@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The event bus is generic, so the tests exercise it through its own untyped surface and through the
  * typed wrappers a consumer's declaration merging enables. The typed functions are reached with a

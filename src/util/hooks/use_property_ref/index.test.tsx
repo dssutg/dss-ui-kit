@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `usePropertyRef` exists so a callback can be created once and still read the newest property
  * through it — the mechanism event listeners and every dependency-list hook here build on. The

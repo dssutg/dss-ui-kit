@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A progress ring from a minimum to a maximum.
+
 import { useEffect, useMemo, useRef } from 'react';
 import { cssColorTo6DigitHex, getColorFromBreakPoints } from '@/util/color';
 import { getDpr } from '@/util/dom';

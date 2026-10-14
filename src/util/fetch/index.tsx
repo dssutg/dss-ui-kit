@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The request hook a data panel renders through.
+
 import { useEffect, useRef, useState } from 'react';
 import { useGranularEffect } from '@/util/hooks/use_granular_effect';
 

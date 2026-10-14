@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The structured date data every locale carries, as shapes only.
+
 import type { CalendarLocale, DateFormatLocale, DateLocale, DateNames } from '@/util/date';
 
 /**

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// One row's cells against the widths the header is drawn from.
 // @vitest-environment jsdom
 
 import { describe, expect, it, vi } from 'vitest';

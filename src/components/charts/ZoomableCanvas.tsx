@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A canvas the wheel zooms and the pointer pans around.
+
 import { useRef, useState } from 'react';
 import { DOMRectContainsPoint } from '@/util/dom';
 import { useGranularEffect } from '@/util/hooks/use_granular_effect';

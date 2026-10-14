@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `firstTouch` and `getPointerPosition` answer one question two ways — where the pointer is — for
  * events whose shape differs: a `TouchEvent` may arrive while no touch is down (`touchend` is

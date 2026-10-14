@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The in-order fuzzy matcher the search inputs rank with.
+
 import { cmp } from '@/util/math';
 
 /** The score of an item that matched at least one character of the query. */

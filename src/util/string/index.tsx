@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Upper-cases the first character and hands the rest back untouched.
  *

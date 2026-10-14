@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The searchable, expandable menu tree of a navigation panel.
+
 import { useEffect, useState } from 'react';
 import { IconButton } from '@/components/buttons/IconButton';
 import { Icon, type IconName } from '@/components/display/Icon';

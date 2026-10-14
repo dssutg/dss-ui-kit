@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The sortable, column-resizable table the other tables compose.
+
 import type { TargetedEvent } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 import { Icon } from '@/components/display/Icon';

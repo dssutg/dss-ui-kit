@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `WComponent` is the plumbing every custom element the library defines builds on: an open shadow
  * root attached in the constructor, a render pass coalesced onto a microtask, scoped style

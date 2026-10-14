@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The advanced members of the input group, from the editor to the uploads.
 // @vitest-environment jsdom
 
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react';

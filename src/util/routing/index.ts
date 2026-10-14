@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The path helpers: split, match and build a path.
+
 import { parseDSV, serializeDSV } from '@/util/dsv';
 
 /**

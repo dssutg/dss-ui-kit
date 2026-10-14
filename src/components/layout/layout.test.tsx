@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The layout group's two components, which are the ones that measure rather than be measured.
  *

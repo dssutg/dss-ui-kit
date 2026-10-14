@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A section heading with an icon beside it.
+
 import { cn } from '@/util/cn';
 import { Icon, type IconName } from './Icon';
 

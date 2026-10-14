@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Number ranges: containment, iteration and merging.
+
 import { cmp } from './scalar';
 
 /**

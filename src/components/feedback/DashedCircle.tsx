@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * A dashed ring that spins while `active` and stops when it is not.
  *

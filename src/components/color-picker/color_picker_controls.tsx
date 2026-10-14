@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The pieces a colour picker is built from: the saturation field, the hue bar, the alpha bar, the
  * pointer each of them drags, and the shared HSVA state.

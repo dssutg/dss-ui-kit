@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The inline-style types that admit CSS custom properties.
+
 import type { CSSProperties } from 'react';
 
 /**

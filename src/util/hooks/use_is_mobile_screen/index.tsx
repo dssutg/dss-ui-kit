@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Whether the window is narrower than the desktop breakpoint.
+
 import { useEffect, useState } from 'react';
 
 /**

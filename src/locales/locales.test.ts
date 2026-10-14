@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The locale data files: the shipped catalogues and dates, and the language endonyms. The catalogues
  * are exercised through `locale.test.tsx`; this file reaches the parts no component calls yet — the

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The month grid's locale data and the dates the caller marks.
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import { StaticCalendar } from '@/components/charts/StaticCalendar';

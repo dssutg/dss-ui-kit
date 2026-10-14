@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The pluralization rules decide how many forms a count selects between, per locale. A wrong index
  * renders a count against the wrong form — "one files", in effect — which an operator reads as

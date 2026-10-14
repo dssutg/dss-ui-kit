@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A ref that always holds the newest value of a property.
+
 import { type RefObject, useEffect, useRef } from 'react';
 
 /**

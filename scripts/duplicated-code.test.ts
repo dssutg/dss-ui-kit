@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Fails on a source block the duplication baseline does not already record.
+
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';

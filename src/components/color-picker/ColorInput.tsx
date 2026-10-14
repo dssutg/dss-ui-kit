@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The text field the hex and RGB colour inputs are built on, validation passed in.
+
 import { type JSX, useCallback, useEffect, useState } from 'react';
 import { useEventCallback } from './color_picker_controls';
 import type { ColorInputBaseProperties } from './color_picker_types';

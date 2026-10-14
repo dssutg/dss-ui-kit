@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The locale is the seam between what the library renders and what an operator reads, so these tests
  * are about who wins: the shipped catalogue, a locale a caller registered, or a `messages` prop passed

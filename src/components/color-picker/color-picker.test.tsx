@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The colour models of the pickers: defaults, conversions and equality.
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
 import { ColorInput } from '@/components/color-picker/ColorInput';

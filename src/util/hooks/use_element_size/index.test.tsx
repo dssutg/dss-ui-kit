@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `useElementSize` measures an element at mount and again on every resize, from a `ResizeObserver`.
  * The size starts at zero — nothing has been measured before the first effect — and the observer's

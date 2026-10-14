@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `fuzzySearch` is what the search inputs narrow a list with, so the suite pins the ranking contract
  * the dropdown's order comes from: in-order containment only, an outright match first, earlier

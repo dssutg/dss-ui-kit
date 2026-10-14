@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The scrollbar width, re-measured on resize.
+
 import { useEffect, useState } from 'react';
 
 /**

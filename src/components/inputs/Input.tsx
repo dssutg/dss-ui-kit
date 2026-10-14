@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The native input with the styling of the design system and no behaviour of its own.
+// The native input with the styling of the design system and no behaviour of its own.
 import { cn } from '@/util/cn';
 
 /**

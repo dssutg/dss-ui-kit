@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Reorders a list by drag, committing once at the drop.
+
 import { type TargetedEvent, useState } from 'react';
 
 interface State<ListItemDataType> {

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Framework-agnostic helpers over plain records and objects: counting a list into a map,
  * string substitution, deep equality and deep cloning.

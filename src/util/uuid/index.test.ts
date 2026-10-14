@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `uuidv4` is used for keys where uniqueness is the only requirement, so the suite holds it to
  * exactly that: an identifier shaped as RFC 4122 version 4 and one that does not repeat.

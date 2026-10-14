@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * A theme is data plus a document attribute plus storage. The tests cover the fallback chain — storage,
  * then the document, then the default — and the two failure arms around an unavailable `localStorage`.

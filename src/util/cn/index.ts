@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The class-name merge the components build with.
+
 import { type ClassNameValue, twMerge } from 'tailwind-merge';
 
 /**

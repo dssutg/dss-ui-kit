@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Mouse and touch dragging of one element by another.
+
 import type { Point2D } from '@/util/math';
 import { getPointerPosition } from './pointer';
 

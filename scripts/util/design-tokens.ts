@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Reads the --color-* tokens a theme file declares, shared by the token test.
+
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { collectFiles, REPOSITORY_ROOT } from './source-tree.ts';

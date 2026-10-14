@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Renders the one route the current path addresses.
+
 import type React from 'react';
 import { matchPath, type PathMatch } from '@/util/routing';
 

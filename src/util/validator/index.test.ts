@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Tests for the composable validation schema: base validators that accept a value or throw a
  * `VError` with a readable message, refinements, and the combinators that turn them into field

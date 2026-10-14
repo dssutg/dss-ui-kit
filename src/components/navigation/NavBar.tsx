@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The top bar: menu button, title and breadcrumb.
+
 import type React from 'react';
 import { IconButton } from '@/components/buttons/IconButton';
 import { useLocale } from '@/locale';

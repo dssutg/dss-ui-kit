@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Whether the document is in fullscreen, now and on every change.
+
 import { useEffect, useRef } from 'react';
 
 /** Called with whether the document is in fullscreen. */

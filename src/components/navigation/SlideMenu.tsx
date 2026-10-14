@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A panel that slides in from the left edge over a backdrop, draggable too.
+
 import { createPortal, useCallback } from 'react';
 import { IconButton } from '@/components/buttons/IconButton';
 import { useLocale } from '@/locale';

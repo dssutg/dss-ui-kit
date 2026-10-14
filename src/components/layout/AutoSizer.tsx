@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Measures its container and sizes its child with the result.
+
 import React, { Component, type HTMLAttributes, type ReactNode } from 'react';
 
 type ResizeHandler = (element: HTMLElement, onResize: () => void) => void;

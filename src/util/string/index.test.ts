@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Tests for the string helpers the components share: capitalising the first character and
  * trimming trailing line breaks without touching anything else. A failure here would mean

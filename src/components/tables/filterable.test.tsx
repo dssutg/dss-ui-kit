@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The filterable table's filtering, from schema to filtered order.
 // @vitest-environment jsdom
 
 import type { Mock } from 'vitest';

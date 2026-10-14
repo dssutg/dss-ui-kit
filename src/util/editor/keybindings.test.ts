@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 // The key handling is pure: no DOM is touched, but the platform constants (`isMacLike`,
 // `isWindows`) are read from `navigator.platform` once at module load, so the suites that drive
 // those branches reload the module under a redefined platform. jsdom ships an empty platform, which

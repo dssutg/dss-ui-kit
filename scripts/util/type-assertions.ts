@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Finds the type assertions in the source for the ratchet.
+
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';

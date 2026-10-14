@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `useEditorHistory` is the editor's undo stack: `applyEdits` is the only way an edit enters it and
  * the textarea it drives, `recordChange` extends it without touching the input, and undo/redo walk

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The navigation group's components, held to the shared contracts.
 // @vitest-environment jsdom
 
 import { useState } from 'react';

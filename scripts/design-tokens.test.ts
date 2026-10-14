@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Checks the token map, the theme files and the shipped baseline name the same tokens.
+
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';

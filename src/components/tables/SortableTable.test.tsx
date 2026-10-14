@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The sortable table's ordering and the rows it renders.
 // @vitest-environment jsdom
 
 import { afterEach, describe, expect, it, vi } from 'vitest';

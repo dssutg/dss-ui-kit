@@ -1,4 +1,7 @@
 #!/usr/bin/env -S deno run --allow-read --allow-write --allow-run
+// SPDX-License-Identifier: MIT
+// Regenerates the type-assertion baseline from the casts currently in the source.
+
 import { join } from 'node:path';
 import { runBaseline, writeBaseline } from './util/baseline.ts';
 import { REPOSITORY_ROOT } from './util/source-tree.ts';

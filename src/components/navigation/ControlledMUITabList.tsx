@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The tab list whose selected tab the caller owns.
+
 import { useCallback, useId, useRef } from 'react';
 import { Ripple } from '@/components/feedback/Ripple';
 import { cn } from '@/util/cn';

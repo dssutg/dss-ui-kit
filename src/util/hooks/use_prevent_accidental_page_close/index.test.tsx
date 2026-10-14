@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `usePreventAccidentalPageClose` asks the browser to confirm before the page closes, while
  * `enabled` holds. The message is the browser's own, so the only thing a test can assert is the

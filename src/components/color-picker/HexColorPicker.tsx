@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A hex colour picker over the shared HSV model.
+
 import type { JSX } from 'react';
 import {
   type ColorModel,

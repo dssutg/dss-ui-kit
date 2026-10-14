@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The matrix tests, held to a rounding tolerance.
+
 import { describe, expect, test } from 'vitest';
 import {
   glMat4Identity,

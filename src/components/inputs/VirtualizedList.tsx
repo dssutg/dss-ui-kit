@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A windowed list of fixed-height rows, rendering only what is in view.
+
 import type { TargetedEvent } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForceUpdate } from '@/util/hooks/use_force_update';

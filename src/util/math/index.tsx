@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The math group's entry point, re-exporting its modules so the import specifier is the directory.
  *

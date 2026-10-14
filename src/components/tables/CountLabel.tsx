@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The row count a table shows, reduced to a plain count when nothing is filtered out.
+
 import { cn } from '@/util/cn';
 
 /**

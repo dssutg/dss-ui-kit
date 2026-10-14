@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A two-pixel bar of how far through the document the reader is.
+
 import { cn } from '@/util/cn';
 import { useDocumentScrollPercentage } from '@/util/hooks/use_document_scroll_percentage';
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The slack two components are allowed to differ by and still compare equal.
  *

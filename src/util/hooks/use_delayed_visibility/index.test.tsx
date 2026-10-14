@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `useDelayedVisibility` decides whether something should be shown yet: the answer turns true only
  * once `trigger` has held for the given delay, so a spinner does not flash over a request that

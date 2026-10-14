@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `useFetch` owns the request lifecycle a panel renders: hot `data` goes null again while a refetch
  * is in flight, `savedData` keeps the last successful payload so panels do not flicker, and one

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The on/off switch with its bar and knob, lockable when needed.
+
 import { cn } from '@/util/cn';
 
 /**

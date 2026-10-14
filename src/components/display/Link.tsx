@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * What {@link Link} takes.
  *

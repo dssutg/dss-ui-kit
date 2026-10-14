@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Checks the Deno version the workflow pins matches the one package.json declares.
+
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';

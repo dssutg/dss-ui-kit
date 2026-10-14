@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Runs something that can fail and hands back the value or the error, never a thrown exception.
  *

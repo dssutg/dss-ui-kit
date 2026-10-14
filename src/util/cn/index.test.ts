@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Tests for the class-name merge the components use. A failure here would mean a caller could not
  * override a class the component already set, or that an unrelated class was dropped on the way.

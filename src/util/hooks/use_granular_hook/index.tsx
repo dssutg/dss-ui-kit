@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Applies the two-list effect split to a hook of the same shape.
+
 import { useRef } from 'react';
 
 /**

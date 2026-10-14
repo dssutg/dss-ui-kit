@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The overlay paths the base suite does not drive: the dialog edges a caller is responsible for (the
  * cancel button, the alignment and width props), the popover's own trigger keys and the interval that

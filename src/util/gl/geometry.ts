@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Geometry for the WebGL scene renderer: colours, transforms, and turning scene objects into quads.
  *

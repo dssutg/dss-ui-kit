@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The SVG sanitizer is the security boundary for untrusted SVG a consumer stores or renders, so the
  * suite is the payload corpus the contract is held to rather than a sample of it: each vector a

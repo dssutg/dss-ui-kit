@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Colour parsing, model conversion and equality, for the pickers and the charts.
+
 import { clamp, lerp } from '@/util/math';
 
 /** A colour as hue in degrees, with saturation and lightness in percent, and an alpha from 0 to 1. */

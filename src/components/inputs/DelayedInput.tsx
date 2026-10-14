@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A text input that only reports settled values.
+
 import { useEffect, useRef, useState } from 'react';
 
 /**

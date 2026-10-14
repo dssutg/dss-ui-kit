@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Thrown when a value does not validate, carrying a message written for whoever is looking at the
  * form rather than for a stack trace.

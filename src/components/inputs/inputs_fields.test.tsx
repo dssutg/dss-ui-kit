@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The field-shaped inputs and the values they repair and report.
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
 import { ByteFractionInput } from '@/components/inputs/ByteFractionInput';

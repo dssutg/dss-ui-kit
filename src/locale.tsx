@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Message lookup, locale registration, detection and the useLocale hook.
+
 import {
   createContext,
   type JSX,

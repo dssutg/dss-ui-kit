@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The label an enum value is shown, searched and exported as.
+
 import type { EnumOption } from './GeneralizedSearchModal';
 
 /**

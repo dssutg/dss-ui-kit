@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Fails to compile when it is reached, and throws when it somehow runs anyway.
  *

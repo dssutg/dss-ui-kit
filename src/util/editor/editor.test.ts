@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Tests for the pure text transforms behind the code editor: line splitting, tab and indent
  * handling, indentation of selected lines, auto-indent after Enter and bracket wrapping. Each

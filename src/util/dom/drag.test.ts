@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `DragHandler` wires a panel's handle to a panel: a press on the handle claims the drag, each move
  * applies a delta from the last cursor position, and the release detaches the document-level

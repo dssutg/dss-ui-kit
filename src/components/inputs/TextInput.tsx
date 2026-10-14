@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The library's own text field: clear behaviour, password mode and controlled text.
+
 import { IconButton } from '@/components/buttons/IconButton';
 import { useLocale } from '@/locale';
 import { cn } from '@/util/cn';

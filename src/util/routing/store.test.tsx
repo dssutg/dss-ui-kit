@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The routing store's path state, navigation and reload.
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createRoutingStore } from '@/util/routing/store';

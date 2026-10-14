@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The line chart's series, on the canvas it autosizes to.
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SimpleLineChart } from '@/components/charts/SimpleLineChart';

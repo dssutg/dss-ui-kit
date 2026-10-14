@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Browser-facing DOM helpers: pointer and drag handling, geometry, sizing, clipboard, escaping and
  * timing.

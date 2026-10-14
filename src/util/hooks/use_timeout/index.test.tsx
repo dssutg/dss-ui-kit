@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `useTimeout` is the mechanism under debounces and any deferred-hide behaviour: the suite holds it
  * to run its callback exactly once on the fake clock, stay inert on a `null` delay, and answer

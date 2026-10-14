@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Asks the browser to confirm closing, while enabled.
+
 import { useEventListener } from '@/util/hooks/use_event_listener';
 
 /**

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The column divider's drag and its keyboard resize steps.
 // @vitest-environment jsdom
 
 import { describe, expect, it, vi } from 'vitest';

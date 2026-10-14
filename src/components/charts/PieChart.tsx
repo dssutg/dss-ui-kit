@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A pie or donut chart over a series of labelled values.
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { cartesianToPolar, clamp, polarToCartesian, turn } from '@/util/math';
 

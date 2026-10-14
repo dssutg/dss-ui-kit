@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Fails on user-facing text hard-coded outside the locale files.
+
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';

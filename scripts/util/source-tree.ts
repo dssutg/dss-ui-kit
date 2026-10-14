@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The file collector the repository-policy tests start from.
+
 import { readdirSync } from 'node:fs';
 import { dirname, join, relative, sep } from 'node:path';
 

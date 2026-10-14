@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Keeps the public surface free of a stylesheet import.
+
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';

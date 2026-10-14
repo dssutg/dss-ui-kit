@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `unreachable` is the exhaustiveness check a `switch` over a union leans on: it can never be reached
  * in a compile-clean program, so the only behaviour to test is the one runtime case — that it throws,

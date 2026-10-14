@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The bundler configuration: the React-to-Preact aliasing and the CSS pipeline.
+
 import preact from '@preact/preset-vite';
 import autoprefixer from 'autoprefixer';
 import tailwindcss from 'tailwindcss';

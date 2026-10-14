@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The line chart with a fixed grid the other chart components are built from.
+
 import { AutoSizer } from '@/components/layout/AutoSizer';
 import { useLocale } from '@/locale';
 import type { KeyMap } from '@/util/key_map';

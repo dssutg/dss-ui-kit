@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Tests for the version comparison. A failure here would mean a caller decides it is running a newer
  * build than it actually is, which is the one thing this helper exists to prevent.

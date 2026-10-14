@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Feature flags are a registry with an event on top. The tests drive the registry directly and the
  * hook through rendered components, because the hook's whole job is to re-render on a toggle it did

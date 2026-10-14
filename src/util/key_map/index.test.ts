@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Tests for the key map: how a `KeyboardEvent.code` is rendered as a hotkey label a user reads,
  * and how a key-down dispatches the action bound to the code, honouring Shift. A failure here

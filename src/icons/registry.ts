@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The registration a caller adds its own icons through.
+
 import { iconPaths } from './index';
 
 /**

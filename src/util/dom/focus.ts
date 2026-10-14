@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Answers whether the focus of the user is in a text-entry input.
+
 import { DOMRectContainsPoint } from './geometry';
 
 /**

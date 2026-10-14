@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The pie chart's slices and the values they are drawn from.
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {

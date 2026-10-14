@@ -1,3 +1,6 @@
+/* SPDX-License-Identifier: MIT */
+/* The classes the syntax highlighter names, and the colours they take. */
+
 [class*="shj-lang-"] {
   white-space: pre;
   margin: 10px 0;

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The native select styled to the design system.
+
 import { useTheme } from '@/theme';
 import { cn } from '@/util/cn';
 import { getCSSVariableValue } from '@/util/color';

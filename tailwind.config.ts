@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// This repository's own Tailwind config, consuming the preset it publishes.
+
 import forms from '@tailwindcss/forms';
 import type { Config } from 'tailwindcss';
 import { uiKitPreset } from './src/tailwind_preset.ts';

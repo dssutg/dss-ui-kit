@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// One deferred callback, clearable and resettable.
+
 import { useCallback, useEffect, useRef } from 'react';
 import { useGranularEffect } from '@/util/hooks/use_granular_effect';
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `useDragNDropOrderedList` reorders a list by dragging: nothing is reordered while the drag is in
  * progress, a preview is computed on each hover, and only the drop commits it through `onChange`. A

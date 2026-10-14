@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A toggle switch that can be locked against changing.
+
 import { useState } from 'react';
 import { FeedbackTooltip, showFeedbackTooltip } from '@/components/overlays/FeedbackTooltip';
 import { cn } from '@/util/cn';

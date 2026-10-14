@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A row of icon buttons with one selected position.
+
 import { Icon, type IconName } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';
 import { cn } from '@/util/cn';

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// An unsigned integer input, repaired as typed.
+
 import { useCallback } from 'react';
 import { cn } from '@/util/cn';
 import { clamp } from '@/util/math';

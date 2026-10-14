@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The panel that reorders and hides a list of items, by drag or by arrows.
+
 import { useCallback } from 'react';
 import { Button } from '@/components/buttons/Button';
 import { IconButton } from '@/components/buttons/IconButton';

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Tests for the exhaustive-switch sentinel and its `ExhaustiveVoid` companion type: together they
  * force every branch of a switch over a union to return or throw. A failure here would mean a

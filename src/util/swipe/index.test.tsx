@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Touch-gesture recognition, driven with real events against a real element: a touch comes down
  * somewhere in the allowed range, the first move where the two travel distances can be compared

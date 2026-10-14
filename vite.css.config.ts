@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The build of the standalone stylesheet published as dss-ui-kit/style.css.
+
 import autoprefixer from 'autoprefixer';
 import tailwindcss from 'tailwindcss';
 import { defineConfig } from 'vite';

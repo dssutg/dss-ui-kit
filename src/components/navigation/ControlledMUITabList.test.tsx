@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The controlled tab list's selection, held by the caller.
 // @vitest-environment jsdom
 
 import { describe, expect, it, vi } from 'vitest';

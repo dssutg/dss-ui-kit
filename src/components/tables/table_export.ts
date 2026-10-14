@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The export formats a filtered table offers and the naming its downloads use.
+
 import type { LocaleDates } from '@/locale';
 import { minstrftime } from '@/util/date';
 

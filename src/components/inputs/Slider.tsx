@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The range slider over a minimum and maximum.
+
 import { useCallback, useRef, useState } from 'react';
 import { minInArrayMapped } from '@/util/array';
 import { cn } from '@/util/cn';

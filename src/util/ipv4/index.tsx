@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * A dotted-quad IPv4 address and nothing else: four decimal octets, each 0–255, with no leading zero
  * on a multi-digit octet and no extra text around it.

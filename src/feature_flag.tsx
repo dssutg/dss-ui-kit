@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The feature flags and the hook that re-renders on their toggle.
+
 import { useCallback, useState } from 'react';
 import { useForceUpdate } from '@/util/hooks/use_force_update';
 import { emitEvent, useEvent } from './event';

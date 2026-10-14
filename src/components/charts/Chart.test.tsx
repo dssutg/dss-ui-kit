@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The base chart's drawing and interaction, on its scales.
 // @vitest-environment jsdom
 import { createRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// An RGBA colour picker over the shared model.
+
 import {
   AlphaColorPicker,
   type ColorModel,

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The button group's contract follows the library's controlled-component rule: every control renders
  * the state it was handed and reports the state it would move to. The suite also pins the two

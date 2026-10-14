@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The WebGL renderer's contract, against a fake GL context.
  *

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The rectangle arithmetic the layout code builds on. The suite pins the boundary readings callers
  * cannot re-derive from the names: `containsPoint` is start-inclusive and end-exclusive, `contains`

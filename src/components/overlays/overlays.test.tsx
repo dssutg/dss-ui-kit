@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The overlay group: panels that appear above the page. The contract the suite holds is the standard
  * closed-component rule — open state is the caller's — plus the overlay-specific edges: the modal

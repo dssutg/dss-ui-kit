@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Round-trip tests for the DSV parser and serializer.
+
 import { describe, expect, it } from 'vitest';
 import {
   formatObjectToCommaSeparatedString,

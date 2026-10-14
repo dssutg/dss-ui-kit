@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The hex formatters render register values and identifiers the way a manual writes them: upper
  * case, grouped in byte pairs and zero-padded to a width, so columns of them line up. Padding must

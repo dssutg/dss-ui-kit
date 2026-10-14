@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `decompressJSON` is the escape hatch for transport payloads: gzip + base64 in, untyped JSON out,
  * and a malformed payload is a throw rather than a silent default. The suite builds its fixtures

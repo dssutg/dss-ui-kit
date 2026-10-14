@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * What {@link WComponent.onAttrChange} receives for one attribute, before the re-render it triggers.
  *

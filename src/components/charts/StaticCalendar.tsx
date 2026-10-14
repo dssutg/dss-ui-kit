@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A month grid of a caller's dates, in the locale.
+
 import { useLocale } from '@/locale';
 import { cn } from '@/util/cn';
 import type { CalendarLocale } from '@/util/date';

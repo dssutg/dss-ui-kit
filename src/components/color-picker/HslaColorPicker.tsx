@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// An HSLA colour picker over the shared model.
+
 import {
   AlphaColorPicker,
   type ColorModel,

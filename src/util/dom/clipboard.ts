@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Copies text to the clipboard, resolving once the copy has happened.
  *

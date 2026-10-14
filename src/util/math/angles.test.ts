@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The geometry the charts and the scene renderer draw with: angle conversion and normalisation,
  * polar/cartesian conversion for arcs, Bézier sampling for curves and range merging for axes. The

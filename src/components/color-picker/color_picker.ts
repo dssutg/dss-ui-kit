@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The colour picker family in one import site: the two pickers every other one is built from, the
  * text field for a colour, and the conversions and shared types.

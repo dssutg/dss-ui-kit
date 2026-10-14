@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The accordion's open state and the animation around it.
 // @vitest-environment jsdom
 
 import { describe, expect, it, vi } from 'vitest';

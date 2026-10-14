@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `useSyncScroll` keeps two scrollable elements at the same scroll position — two views of one
  * document side by side, mirroring the position and not the content. The suite drives real `scroll`

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The button every control of the library renders on: label, optional icon and pressed ripple.
+
 import { Icon, type IconName } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';
 import { cn } from '@/util/cn';

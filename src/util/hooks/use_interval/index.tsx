@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Runs a callback on a period, pausable with a null delay.
+
 import { useEffect, useRef } from 'react';
 
 /**

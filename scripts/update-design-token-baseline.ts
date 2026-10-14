@@ -1,4 +1,7 @@
 #!/usr/bin/env -S deno run --allow-read --allow-write --allow-run
+// SPDX-License-Identifier: MIT
+// Regenerates the design-token baseline from the current token map.
+
 import { join } from 'node:path';
 import { runBaseline, writeBaseline } from './util/baseline.ts';
 import { declaredTokens } from './util/design-tokens.ts';

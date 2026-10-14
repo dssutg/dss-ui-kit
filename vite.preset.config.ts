@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The build of the Tailwind preset published as dss-ui-kit/tailwind.
+
 import { defineConfig } from 'vite';
 
 /**

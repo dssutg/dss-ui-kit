@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The coercion table that turns untyped data into renderable values.
+
 import { clamp } from '@/util/math';
 import { isRecord } from '@/util/record';
 

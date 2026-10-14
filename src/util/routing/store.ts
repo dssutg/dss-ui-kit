@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The store that holds the current path of the application.
+
 import { createStore } from '@/util/store';
 
 /** What {@link createRoutingStore} is told about the paths an application answers to. */

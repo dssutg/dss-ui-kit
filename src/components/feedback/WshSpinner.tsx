@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The largest spinner in the set, drawn in a fixed box so panels do not shift.
+
 import { cn } from '@/util/cn';
 import type { CSSStyleWithCustomProperties } from '@/util/style';
 

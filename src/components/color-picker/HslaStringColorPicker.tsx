@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// An hsla() string colour picker over the shared model.
+
 import type { JSX } from 'react';
 
 import {

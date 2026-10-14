@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The dotted-quad IP address input.
+
 import { useCallback } from 'react';
 import { ipv4Regex } from '@/util/ipv4';
 import { clamp } from '@/util/math';

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A titled log panel with play, pause and clear over the output area.
+
 import { IconButton } from '@/components/buttons/IconButton';
 import { PlayPauseButton } from '@/components/buttons/PlayPauseButton';
 import { useLocale } from '@/locale';

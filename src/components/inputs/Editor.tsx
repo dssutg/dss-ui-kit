@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The code editor: a textarea with undo history and the tab, indent and bracket keys.
+
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import type { EditorHistory } from '@/util/editor/history';
 import { useEditorHistory } from '@/util/editor/history';

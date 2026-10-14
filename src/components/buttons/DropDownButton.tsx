@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A trigger button that opens a drop-down menu.
+
 import { DropDownMenu, type DropDownMenuItem } from '@/components/overlays/DropDownMenu';
 import { cn } from '@/util/cn';
 

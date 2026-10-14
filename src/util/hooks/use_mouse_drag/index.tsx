@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Tracks the movement of an ongoing drag.
+
 import { useState } from 'react';
 import { getPointerPosition } from '@/util/dom';
 import { useEventListener } from '@/util/hooks/use_event_listener';

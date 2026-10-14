@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Sanitizing an SVG string into one that is safe to store or render.
  *

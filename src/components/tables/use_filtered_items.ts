@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The search schema and the filtered items a filterable table is built on.
+
 import { useLocale } from '@/locale';
 import { clamp } from '@/util/math';
 import { getEnumLabel } from './enum_label';

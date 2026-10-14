@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `inViewport` is the visibility check every "is this still on screen" caller — toasts, dropdowns,
  * validation messages — sits on, and its comparisons run against the visual viewport rather than

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `hasUserFocusedInput` answers whether keyboard shortcuts should be suppressed because the user is
  * typing, so the suite pins exactly which focused elements count (real `INPUT`/`TEXTAREA`, nothing

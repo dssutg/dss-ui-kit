@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Requires every test file that renders to ask for jsdom before its imports.
+
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';

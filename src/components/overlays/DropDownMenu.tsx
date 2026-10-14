@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A menu of actions and submenus, portalled under its trigger.
+
 import { createPortal, useCallback, useEffect, useRef, useState } from 'react';
 import { Icon, type IconName } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';

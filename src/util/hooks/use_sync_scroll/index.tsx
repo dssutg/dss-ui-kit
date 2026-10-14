@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Keeps two scrollable elements at one scroll position.
+
 import { useEventListener } from '@/util/hooks/use_event_listener';
 
 /**

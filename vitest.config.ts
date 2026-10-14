@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The test runtime: environments, the shared setup and the coverage gate.
+
 import { defineConfig, mergeConfig } from 'vitest/config';
 import { COVERAGE_EXCEPTIONS } from './scripts/coverage-exceptions.ts';
 import viteConfig from './vite.config.ts';

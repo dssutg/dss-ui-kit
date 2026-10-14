@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The configuration panel for uploading a file: drop area, chosen file and controls.
+
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Button } from '@/components/buttons/Button';
 import { Icon, type IconName } from '@/components/display/Icon';

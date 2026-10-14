@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Tests the icon bundler: SVG reading, path rounding and the generated module.
+
 import { describe, expect, it } from 'vitest';
 import {
   isValidIconName,

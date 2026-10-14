@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The public surface of the DSS UI Kit.
  *

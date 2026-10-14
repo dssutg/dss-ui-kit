@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Theme names, registration and the current theme.
+
 import { useCallback, useEffect, useState } from 'react';
 import { emitEvent, useEvent } from './event';
 

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The calendar grid's navigation, marking and clicked-day reports.
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
 import { MiniCalendar } from '@/components/charts/MiniCalendar';

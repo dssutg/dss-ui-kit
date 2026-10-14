@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The rows per value of one property, as a pie chart and a table.
+
 import { useId, useState } from 'react';
 import { mapToShares, PieChart } from '@/components/charts/PieChart';
 import { Select } from '@/components/inputs/Select';

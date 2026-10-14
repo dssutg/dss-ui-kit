@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A set of buttons over one selection, generic over the id the items carry.
+
 import { Ripple } from '@/components/feedback/Ripple';
 import { cn } from '@/util/cn';
 import { wrapIndex } from '@/util/math';

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The feedback group's contract, split the way the components are built: `Spinner`,
  * `ContinuousCircleSpinner`, `Ripple` and `ScrollProgressBar` are self-contained decoration that

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * One binding in a key map: the action it runs, and nothing else.
  *

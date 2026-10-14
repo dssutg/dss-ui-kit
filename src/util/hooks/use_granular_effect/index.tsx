@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// useEffect with two dependency lists, one of which only feeds reads.
+
 import { type EffectCallback, useEffect } from 'react';
 import { useGranularHook } from '@/util/hooks/use_granular_hook';
 

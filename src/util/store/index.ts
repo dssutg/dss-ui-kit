@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// State outside React, subscribed and selected through a store.
+
 import { useSyncExternalStore } from 'react';
 
 /**

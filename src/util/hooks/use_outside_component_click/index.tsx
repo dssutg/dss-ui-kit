@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Calls back on a click that lands outside the given element.
+
 import { useEffect } from 'react';
 
 /**

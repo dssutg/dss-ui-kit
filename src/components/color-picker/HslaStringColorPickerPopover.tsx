@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A swatch opening an hsla() picker popover, reporting debounced.
+
 import { useEffect, useState } from 'react';
 import { Popover } from '@/components/overlays/Popover';
 import { useDebounce } from '@/util/hooks/use_debounce';

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The tree view's expand and select, and the item a click reports.
 // @vitest-environment jsdom
 
 import { useState } from 'react';

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The order panel's reorder, hide and reset controls.
 // @vitest-environment jsdom
 
 import { afterEach, describe, expect, it, vi } from 'vitest';

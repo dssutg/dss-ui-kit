@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The record helpers are what component code narrows `unknown` data with, so the suite pins the
  * type-guard edges (`isRecord`, `hasRecordKey`), the helpers that keep caller-owned data intact

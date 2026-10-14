@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The interval hooks run a callback on a period the caller can pause with a `null` delay; the
  * immediate variant fires once on mount as well, which a poll that cannot wait a whole period for

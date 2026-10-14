@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Whether the element sits fully inside the visual viewport, edges inclusive.
  *

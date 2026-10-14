@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// An hour, minute and second as three time-part fields.
+
 import { cn } from '@/util/cn';
 import { TimePartInput } from './TimePartInput';
 

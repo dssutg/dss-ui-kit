@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The event bus the components and the application talk through.
+
 import { useEffect, useRef, useState } from 'react';
 
 /**

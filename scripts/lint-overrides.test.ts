@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Fails on a comment in biome.json, which would make Biome discard its overrides.
+
 import { describe, expect, it } from 'vitest';
 
 /**

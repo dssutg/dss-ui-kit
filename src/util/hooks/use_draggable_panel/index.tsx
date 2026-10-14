@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Slides a panel in from an edge of the viewport, by drag or by trigger.
+
 import { type RefObject, useCallback, useEffect, useRef } from 'react';
 import { getPointerPosition } from '@/util/dom';
 import { useGranularEffect } from '@/util/hooks/use_granular_effect';

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The row above a filterable table: search, count, export and modal openers.
+
 import { StrictMode, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { SearchInput } from '@/components/inputs/SearchInput';

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Tests for the HTTP status catalogue: the numeric codes, how they sort into the five categories
  * by their hundreds digit, and the display names reported for codes and categories. A failure

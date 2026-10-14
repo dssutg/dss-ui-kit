@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The browser APIs jsdom does not implement, stubbed for the tests that need them.
  *

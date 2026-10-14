@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The pointer helpers: first active touch and pointer position.
+
 import type { Point2D } from '@/util/math';
 
 /**

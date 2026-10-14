@@ -1,4 +1,8 @@
+// SPDX-License-Identifier: MIT
+// The scalar helpers the library clamps, interpolates and sorts with.
+
 // Clamp a value between min and max inclusively
+
 export function clamp(value: number, min: number, max: number): number {
   //@ verify
   //@ requires min <= max

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `useFullScreenChange` reports whether the document is in fullscreen, now and on every change — the
  * document's state, not the element's, because a chart that has to redraw on leaving fullscreen must

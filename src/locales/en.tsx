@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The English messages: the file the message key set comes from.
+
 import type { LocaleDates } from './dates';
 
 /**

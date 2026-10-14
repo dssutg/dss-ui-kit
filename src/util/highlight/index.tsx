@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The token lists behind the Lua and JSON syntax highlighting.
+
 const luaTokenPatterns: readonly TokenPattern[] = [
   {
     match: /^#!.*|--(\[(=*)\[((?!--]\2])[\s\S])*--]\2]|.*)/g,

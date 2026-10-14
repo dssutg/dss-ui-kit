@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A line chart over one or more series, drawn on a ZoomableCanvas.
+
 import { useRef } from 'react';
 import { AutoSizer } from '@/components/layout/AutoSizer';
 import { useTheme } from '@/theme';

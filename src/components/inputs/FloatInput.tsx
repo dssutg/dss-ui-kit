@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A float input that repairs the typed text into a number.
+
 import { useCallback } from 'react';
 import { TextInput } from './TextInput';
 

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The filterable table whose search text the caller owns.
+
 import { useMemo } from 'react';
 import { cn } from '@/util/cn';
 import type { FilterableTableColumnProperty, FilterableTableProps } from './FilterableTable';

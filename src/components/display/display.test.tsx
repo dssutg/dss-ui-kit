@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The display group renders what it is handed without owning any of it: icons are decoration hidden
  * from the accessibility tree because the control around them carries the name, `HighlightedJson`

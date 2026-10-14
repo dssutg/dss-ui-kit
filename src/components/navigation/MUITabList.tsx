@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The tab bar with its tabs and selection.
+
 import { useState } from 'react';
 import { ControlledMUITabList } from './ControlledMUITabList';
 /**

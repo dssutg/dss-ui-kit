@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A read-only output pane that follows the end as lines arrive.
+
 import { useRef } from 'react';
 import { cn } from '@/util/cn';
 import { useGranularEffect } from '@/util/hooks/use_granular_effect';

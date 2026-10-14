@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 // Ambient declarations for the non-code files the bundler can import. A component library ships
 // source, so a consumer's build resolves these through its own bundler rather than ours.
 

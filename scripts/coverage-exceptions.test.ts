@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Checks every coverage exception names a file the tree still owns.
+
 import { describe, expect, test } from 'vitest';
 import { COVERAGE_EXCEPTIONS } from './coverage-exceptions.ts';
 import { collectFiles } from './util/source-tree.ts';

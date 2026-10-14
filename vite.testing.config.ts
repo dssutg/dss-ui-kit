@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The build of the test helpers published as dss-ui-kit/testing.
+
 import preact from '@preact/preset-vite';
 import { defineConfig } from 'vite';
 

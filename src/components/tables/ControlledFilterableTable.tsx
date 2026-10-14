@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The published alias of ControlledTable, kept for existing imports.
+
 import { ControlledTable, type ControlledTableProps } from './ControlledTable';
 
 /**

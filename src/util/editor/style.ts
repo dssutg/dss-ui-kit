@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The inline styles of the editor, shared by text and highlight.
+
 import type { CSSProperties } from 'react';
 
 const className = 'npm__react-simple-code-editor__textarea';

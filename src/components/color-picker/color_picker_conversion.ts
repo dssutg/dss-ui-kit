@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The conversions between every colour notation and the HSVA the pickers draw in.
+
 import type { HslaColor, HsvaColor, ObjectColor, RgbaColor } from './color_picker_types';
 
 /**

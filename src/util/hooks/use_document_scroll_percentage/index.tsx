@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// How far through the document the reader is, from 0 to 100.
+
 import { useCallback, useState } from 'react';
 import { useEventListener } from '@/util/hooks/use_event_listener';
 import { useGranularEffect } from '@/util/hooks/use_granular_effect';

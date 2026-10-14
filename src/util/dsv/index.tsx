@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * One column written with a chosen delimiter, escaping the delimiter and the backslash itself.
  *

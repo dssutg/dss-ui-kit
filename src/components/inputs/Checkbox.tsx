@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The checkbox the forms of the library use.
+
 import { useId } from 'react';
 import { Icon } from '@/components/display/Icon';
 import { cn } from '@/util/cn';

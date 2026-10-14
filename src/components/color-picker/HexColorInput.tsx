@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The hex colour text field, with or without the prefix and the alpha channel.
+
 import { type JSX, useCallback } from 'react';
 import { ColorInput, type ColorInputBaseProperties } from './color_picker';
 

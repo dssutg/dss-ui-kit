@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Requires every dependency version in package.json to be pinned exactly.
+
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';

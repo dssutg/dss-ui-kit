@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `useDocumentScrollPercentage` reports how far through the document the reader is, from 0 to 100 —
  * read off the document element, clamped, and updated on every scroll. The suite drives real scroll

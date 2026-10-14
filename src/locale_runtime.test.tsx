@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The locale runtime the catalogue tests leave alone: detection from the browser, persistence,
  * plural expansion, the provider's `setLocale`, and the module-level helpers a component reaches for

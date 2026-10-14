@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Holds the checks the ci task and the CI jobs run to one list.
+
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';

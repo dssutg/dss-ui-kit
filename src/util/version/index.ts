@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Orders dotted version numbers, so a caller can ask which of two it has without writing the loop.
  *

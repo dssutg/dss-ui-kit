@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Shows an element only after a trigger has held for its delay.
+
 import { useEffect, useState } from 'react';
 
 /**

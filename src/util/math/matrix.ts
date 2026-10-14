@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * A 4x4 matrix, column-major, as OpenGL expects it.
  *

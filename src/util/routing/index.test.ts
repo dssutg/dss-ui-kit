@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The path helpers are the part of routing that has no React in it, so the suite can state exactly
  * what a path means: which patterns match it, which parameters they bind, and how a path is written

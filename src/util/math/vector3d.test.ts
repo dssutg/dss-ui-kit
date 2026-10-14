@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The spatial vector the scene renderer transforms points with. The suite pins the behaviours
  * callers cannot re-derive from the names: comparisons are tolerant by default and strictly-less,

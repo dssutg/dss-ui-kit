@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// An accordion list whose entries can be renamed, expanded and removed.
+
 import { useCallback } from 'react';
 import { Button } from '@/components/buttons/Button';
 import { IconButton } from '@/components/buttons/IconButton';

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The date helpers feed form fields and clock renders, so the suite holds the pieces the components
  * assemble UI from: 1-based field components, the strftime subset `minstrftime` implements with its

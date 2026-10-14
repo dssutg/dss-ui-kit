@@ -1,4 +1,7 @@
 #!/usr/bin/env -S deno run --allow-read --allow-write --allow-run
+// SPDX-License-Identifier: MIT
+// Regenerates src/icons/index.tsx from the SVG files beside it.
+
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { BundledIcon } from './util/icon-bundle.ts';

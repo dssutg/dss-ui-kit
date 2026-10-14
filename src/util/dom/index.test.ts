@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The DOM helpers mix two kinds of contract: `debounce` is plain event-coalescing logic the
  * resizers and search inputs sit on, while `sanitizeHTMLString`, `escapeHTMLValue` and `html` are

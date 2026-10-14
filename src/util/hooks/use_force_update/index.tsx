@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Returns a re-render for state the library does not track.
+
 import { useState } from 'react';
 
 /**

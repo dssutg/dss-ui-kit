@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `useIsMobileScreen` answers whether the window is narrower than {@link minDesktopWidth} — a layout
  * decision read off the window's inner width and kept current on resize. The suite mounts on both

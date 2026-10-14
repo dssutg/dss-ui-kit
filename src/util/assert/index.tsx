@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Compile-time witnesses for exhaustive switch checks.
  *

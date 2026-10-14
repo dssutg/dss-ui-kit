@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The floating button that scrolls the page back to the top.
+
 import { useState } from 'react';
 import { IconButton } from '@/components/buttons/IconButton';
 import { cn } from '@/util/cn';

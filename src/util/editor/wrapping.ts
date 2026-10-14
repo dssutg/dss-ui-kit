@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Wraps the selected text in a bracket or quote pair.
+
 import type { EditorRecord } from './history';
 
 /**

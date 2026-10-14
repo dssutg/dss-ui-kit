@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Checks the @ alias declared in vite.config.ts and tsconfig.json names the same files.
+
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';

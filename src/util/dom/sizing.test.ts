@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `getDpr` is what canvas renderers multiply CSS pixels by, so its floor is the guarantee: a
  * missing, zeroed or sub-unity device ratio still yields 1. The suite overrides

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The editor's undo history hook and the record it stores.
+
 import { useCallback } from 'react';
 
 export interface EditorRecord {

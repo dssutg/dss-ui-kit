@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The canvas zoom and pan, and the pointer position reported.
 // @vitest-environment jsdom
 import { createRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';

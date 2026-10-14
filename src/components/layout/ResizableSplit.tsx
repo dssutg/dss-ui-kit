@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Panels side by side with draggable dividers that remember their positions.
+
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/util/cn';
 import { useMouseDrag } from '@/util/hooks/use_mouse_drag';

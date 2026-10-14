@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Renders JSON text, highlighting what it can parse and escaping the rest.
+
 import { highlightText } from '@/util/highlight';
 
 /**

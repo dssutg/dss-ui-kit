@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Every language's own name for itself, keyed by ISO 639-1 code.
  *

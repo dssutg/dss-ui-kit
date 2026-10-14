@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The draggable, keyboard-operable divider between two table columns.
+
 import { useLocale } from '@/locale';
 import { cn } from '@/util/cn';
 

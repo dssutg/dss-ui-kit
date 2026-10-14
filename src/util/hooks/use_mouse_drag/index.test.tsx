@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `useMouseDrag` tracks a drag over an element: movement since the drag began, where the pointer is
  * now, and the two ends of the gesture. A null element registers nothing, moves without a press are

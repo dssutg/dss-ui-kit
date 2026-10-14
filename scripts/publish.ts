@@ -1,4 +1,7 @@
 #!/usr/bin/env -S deno run --allow-read --allow-write --allow-run --allow-env
+// SPDX-License-Identifier: MIT
+// Prepares and runs the JSR publish of the library source.
+
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { collectFiles, REPOSITORY_ROOT } from './util/source-tree.ts';

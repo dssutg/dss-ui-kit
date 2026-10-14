@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A decorative wash of light across the viewport, click-through.
+
 import { cn } from '@/util/cn';
 
 /** What {@link LightRayOverlay} takes. */

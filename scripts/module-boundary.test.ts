@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Enforces what each layer of the source tree may import.
+
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';

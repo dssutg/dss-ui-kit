@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Keeps generated build output out of the Git index.
+
 import { execFileSync } from 'node:child_process';
 import { describe, expect, it } from 'vitest';
 import { REPOSITORY_ROOT } from './util/source-tree.ts';

@@ -1,4 +1,7 @@
 #!/usr/bin/env -S deno run --allow-read --allow-write --allow-run --allow-env
+// SPDX-License-Identifier: MIT
+// Regenerates the duplication baseline from the clones currently accepted.
+
 import { join } from 'node:path';
 import { runBaseline, writeBaseline } from './util/baseline.ts';
 import type { DuplicateBlock } from './util/duplication.ts';

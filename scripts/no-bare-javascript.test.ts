@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Fails when a bare JavaScript file appears in the tree the project owns.
+
 import { describe, expect, it } from 'vitest';
 import { collectFiles } from './util/source-tree.ts';
 

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Calls the callback once the tracked state has stopped changing.
+
 import { useEffect, useRef } from 'react';
 import { useGranularEffect } from '@/util/hooks/use_granular_effect';
 import { useTimeout } from '@/util/hooks/use_timeout';

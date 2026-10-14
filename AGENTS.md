@@ -122,6 +122,22 @@ tree and fails if one appears, so the rule is enforced by `deno task ci` rather 
 Root configuration is TypeScript for the same reason — the PostCSS pipeline is declared inside
 `vite.config.ts` rather than in a `postcss.config.js`.
 
+### License headers
+
+**Every source file opens with its license.** A TypeScript file begins
+`// SPDX-License-Identifier: MIT` and a stylesheet begins `/* SPDX-License-Identifier: MIT */` — the
+exact string, as the first line before any other content (a script's shebang is the one thing that
+may go above it). Under the identifier, a short comment states what the file is for, before its
+first statement; a file that already opens with a module docblock is described by that docblock and
+does not need a second copy of the answer.
+
+A file that travels on its own — vendored, scanned, or read as published source — carries nothing
+but itself, so the license it travels under is stated in the file rather than beside it, and the
+sentence under it is what a reader of the file reads first. The rule is held by
+`scripts/mit-license-verification.test.ts`: the identifier is matched exactly and only as the first
+content line, the purpose comment is required to precede the first statement, and the identifiers
+are held against the `license` field of `package.json`.
+
 ## Exports
 
 **Named exports only. `export default` is a lint error** (`style/noDefaultExport` in `biome.json`).
@@ -608,7 +624,8 @@ the source tree through its shared walker (`scripts/util/source-tree.ts`):
 
 - `no-bare-javascript`, `module-boundary`, `no-russian-text`, `no-hardcoded-ui-text`,
   `no-raw-class-strings`, `no-preact-subpath-imports`, `no-type-assertions`, `component-group-tests`,
-  `design-tokens` and `coverage-exceptions`.
+  `design-tokens`, `coverage-exceptions` and `mit-license-verification`, which holds every source
+  file to the SPDX header below.
 - `duplicated-code` is the ratchet over the same tree: it tokenizes the source and fails on a block
   that is written elsewhere, against `scripts/duplication-baseline.json`.
 

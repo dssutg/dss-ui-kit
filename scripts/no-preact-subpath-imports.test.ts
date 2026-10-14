@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Fails on a preact import specifier, which would bypass the react compat alias.
+
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';

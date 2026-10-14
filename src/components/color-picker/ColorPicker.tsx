@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The two-field colour picker, generic over the colour model it is given.
+
 import { type JSX, useRef } from 'react';
 import { cn } from '@/util/cn';
 import { Hue, Saturation, useColorManipulation } from './color_picker_controls';

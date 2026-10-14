@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * A number as hexadecimal bytes, in groups of two digits, wide enough to hold it.
  *

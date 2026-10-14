@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A text editor holding JSON, syntax-highlighted with validity shown.
+
 import { cn } from '@/util/cn';
 import { highlightText } from '@/util/highlight';
 import { Editor } from './Editor';

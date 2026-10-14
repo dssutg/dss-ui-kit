@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A single rotating arc, for indeterminate work.
+
 import { WshSpinner } from './WshSpinner';
 
 /**

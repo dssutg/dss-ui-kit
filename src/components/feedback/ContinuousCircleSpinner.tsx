@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A ring of dots chasing each other, for indeterminate waiting.
+
 import { cn } from '@/util/cn';
 
 /**

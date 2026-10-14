@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Tests for the colour utilities the colour picker is built on.
 // @vitest-environment jsdom
 
 /**

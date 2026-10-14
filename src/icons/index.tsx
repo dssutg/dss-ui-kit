@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The path `d` data of every icon the library ships, keyed by icon name.
  *

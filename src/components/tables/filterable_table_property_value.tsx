@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Writes one property value of one item as text, in the locale of the caller.
+
 import { useLocale } from '@/locale';
 import { formatHexNumber } from '@/util/format';
 import { getEnumLabel } from './enum_label';

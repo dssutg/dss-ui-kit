@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Bézier curves evaluated straight from the Bernstein form, with nothing cached or incremental.
  *

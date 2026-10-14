@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The command console: the input line, the output pane and the commands the caller lists.
+
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { LogOutputTextArea } from '@/components/feedback/LogOutputTextArea';
 import { type MessageKey, type MessageParameters, useLocale } from '@/locale';

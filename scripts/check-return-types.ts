@@ -1,4 +1,7 @@
 #!/usr/bin/env -S deno run --allow-read --allow-write --allow-run --allow-env
+// SPDX-License-Identifier: MIT
+// Checks the public API declares its types, by running the JSR no-slow-types rule.
+
 import { JSR_JSON, writeJsrConfig } from './publish.ts';
 import { REPOSITORY_ROOT } from './util/source-tree.ts';
 

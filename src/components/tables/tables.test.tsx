@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The table group's shared contracts across its tables.
 // @vitest-environment jsdom
 
 import { act } from 'react-dom/test-utils';

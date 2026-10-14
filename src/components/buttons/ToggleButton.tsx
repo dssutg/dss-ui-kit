@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// An icon button selecting one of a fixed set of options.
+
 import type { IconName } from '@/components/display/Icon';
 import { IconButton } from './IconButton';
 

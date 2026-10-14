@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The Russian messages, typed over the same keys en.tsx declares.
+
 import { getPluralizationIndex } from '@/util/pluralization';
 import type { LocaleDates } from './dates';
 import type { en } from './en';

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Shows a number as its individual bits, described by a map the caller gives.
+
 import { useMemo, useState } from 'react';
 import { useLocale } from '@/locale';
 import { cn } from '@/util/cn';

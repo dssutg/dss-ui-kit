@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The round play/pause toggle the playback controls use.
+
 import { cn } from '@/util/cn';
 import { IconButton } from './IconButton';
 

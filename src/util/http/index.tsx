@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 // All HTTP response status codes from (Dec 19th, 2024): https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
 // ORDER RESERVED
 

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The byte-fraction input, clamped to its range and stepped in halves.
+
 import { clamp } from '@/util/math';
 import { TextInput } from './TextInput';
 

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Requires every component group to ship at least one render test.
+
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';

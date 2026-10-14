@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The file helpers split in two: the name and byte-size arithmetic is pure, and the rest drives
  * browser UI — pickers, downloads, the print window — which needs the document. The suite runs in

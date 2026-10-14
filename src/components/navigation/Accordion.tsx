@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A titled section that expands and collapses, expanded by its caller.
+
 import { type RefObject, useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Icon } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';

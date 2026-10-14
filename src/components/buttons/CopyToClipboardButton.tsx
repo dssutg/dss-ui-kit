@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A button that copies content to the clipboard and briefly confirms it.
+
 import { useCallback, useRef, useState } from 'react';
 import { Icon } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';

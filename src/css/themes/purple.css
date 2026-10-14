@@ -1,3 +1,6 @@
+/* SPDX-License-Identifier: MIT */
+/* The purple theme tokens, switched by body[data-theme]. */
+
 body[data-theme="purple"] {
   --color-bbp: var(--color-purple-light);
   --color-bexpander: var(--color-purple-light);

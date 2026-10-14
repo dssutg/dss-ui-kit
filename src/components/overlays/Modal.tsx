@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A centred dialog over a backdrop, portalled to the body.
+
 import { createPortal, useCallback, useEffect, useState } from 'react';
 import { IconButton } from '@/components/buttons/IconButton';
 import { useLocale } from '@/locale';

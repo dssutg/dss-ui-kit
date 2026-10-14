@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The window's inner size, read at mount and updated on resize.
 import { useEffect, useState } from 'react';
 
 /**

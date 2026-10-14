@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A square button carrying one icon and its accessible label.
+
 import type { MouseEventHandler } from 'react';
 import { Icon, type IconName } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';

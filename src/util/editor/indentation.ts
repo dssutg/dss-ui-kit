@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Indentation of lines and the Tab insert the editor types.
+
 import type { EditorRecord } from './history';
 import { getLines } from './history';
 

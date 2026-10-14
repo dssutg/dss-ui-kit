@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Tests for the renderer geometry: colours and transforms.
+
 import { describe, expect, test } from 'vitest';
 import {
   degreesToRadians,

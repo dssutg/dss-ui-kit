@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The colour shapes the picker family passes around.
+
 import type { HslaColor } from '@/util/color';
 
 /** A colour as red, green and blue channels, each 0-255. */

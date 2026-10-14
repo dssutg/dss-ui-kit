@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The array helpers carry the bulk of the library's list arithmetic, including the path comparison
  * tree navigation and the reordering drag-and-drop build on, so the suite pins both the numeric

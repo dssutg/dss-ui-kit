@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The pointer and keyboard interaction of the draggable colour fields.
+
 import { clamp } from '@/util/math';
 import type { Interaction } from './color_picker_types';
 

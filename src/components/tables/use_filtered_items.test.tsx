@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The filter over the items, from schema extraction to the order.
 // @vitest-environment jsdom
 
 import { describe, expect, it } from 'vitest';

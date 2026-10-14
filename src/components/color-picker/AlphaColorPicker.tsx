@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The picker with an alpha bar, generic over its colour model.
+
 import { type JSX, useRef } from 'react';
 import { useLocale } from '@/locale';
 import { cn } from '@/util/cn';

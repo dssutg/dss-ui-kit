@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The chart group's shared contracts across its charts.
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
 import { formatChartHSL, MAX_SCALE, MIN_SCALE, SCALE_FACTOR } from '@/components/charts/Chart';

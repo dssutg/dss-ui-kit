@@ -1,3 +1,6 @@
+/* SPDX-License-Identifier: MIT */
+/* The acme theme tokens, switched by body[data-theme]. */
+
 body[data-theme="acme"] {
   --color-bpd: #ebebce;
   --color-bpl: #ffffea;

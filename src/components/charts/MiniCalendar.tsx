@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A small month grid for picking a day, marked by the caller.
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocale } from '@/locale';
 import { cn } from '@/util/cn';

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Adds an event listener bound to the lifetime of the component.
+
 import { useEffect, useRef } from 'react';
 
 /**

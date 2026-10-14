@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The extension of a filename, without the dot, as the caller would type it in a filter.
  *

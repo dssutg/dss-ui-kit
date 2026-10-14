@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * IPv4 parsing feeds address inputs and octet-wise comparisons, so the suite holds the two halves
  * apart: the regex is the strict validator an edit box is held to, while `parseIp` is the lenient

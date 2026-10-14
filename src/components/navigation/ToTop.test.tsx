@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Renders the floating button that scrolls the page back to the top.
 // @vitest-environment jsdom
 
 import { afterEach, describe, expect, it, vi } from 'vitest';

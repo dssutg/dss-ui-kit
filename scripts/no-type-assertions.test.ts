@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Ratchets the number of type assertions per file against the recorded baseline.
+
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';

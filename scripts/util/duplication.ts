@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The clone detector the duplicated-code guard runs, over token windows of the source.
+// The clone detector the duplicated-code guard runs, over token windows of the source.
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';

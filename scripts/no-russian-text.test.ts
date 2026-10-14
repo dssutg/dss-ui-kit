@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Fails on Cyrillic letters outside the locale files.
+
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';

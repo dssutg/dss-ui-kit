@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The immutable 3D vector the scene renderer moves points with.
+
 import { DEFAULT_EQUALITY_TOLERANCE } from './vector2d';
 
 /**

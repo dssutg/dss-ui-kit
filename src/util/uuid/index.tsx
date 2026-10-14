@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * A random RFC 4122 version 4 identifier, from `crypto.getRandomValues`.
  *

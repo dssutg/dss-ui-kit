@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The test helpers, published as `dss-ui-kit/testing`.
  *

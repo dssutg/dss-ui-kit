@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The error boundary that turns a crash into a copyable report.
+
 import type { ComponentType, ReactNode } from 'react';
 import { Component, type ErrorInfo, useEffect, useState } from 'react';
 import { IconButton } from '@/components/buttons/IconButton';

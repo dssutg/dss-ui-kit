@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `useDebounce` calls its callback once the tracked state has stopped changing, which the search
  * inputs rely on to act on settled text. The suite pins the contract's four corners on the fake

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Plots items against time, one series per value of a chosen property.
+
 import { useCallback, useId, useMemo, useRef, useState } from 'react';
 import {
   type ActionKey,

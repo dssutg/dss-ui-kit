@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `copyToClipboard` prefers the async Clipboard API and falls back to execCommand when the API is
  * absent, rejects or cannot be used; the promise rejects only when even the fallback throws, and

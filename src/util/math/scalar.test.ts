@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The scalar toolkit the rest of the library clamps, interpolates and sorts with. The suite pins the
  * behaviours callers cannot re-derive from the names: `unlerp` reporting progress outside the bounds

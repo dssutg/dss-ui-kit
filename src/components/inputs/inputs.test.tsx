@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The input group is held to the library's rule that a control renders the value it is given and
  * reports what it would move to. Two contracts matter beyond that: the numeric inputs repair what is

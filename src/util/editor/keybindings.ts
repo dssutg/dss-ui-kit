@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The platform shortcuts the editor handles.
+
 import type { KeyboardEvent } from 'react';
 import type { EditorRecord } from './history';
 import {

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The store's get, patch and subscribe, and what re-renders.
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
 import { createStore } from '@/util/store';

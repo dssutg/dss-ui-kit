@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// One numeric part of a time, wrapping above a bound.
+
 import { IconButton } from '@/components/buttons/IconButton';
 import { cn } from '@/util/cn';
 import { clamp } from '@/util/math';

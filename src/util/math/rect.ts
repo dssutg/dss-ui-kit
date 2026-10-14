@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Rectangle arithmetic and the square sizing a layout fits.
+
 import type { Point2D } from './angle';
 
 /**

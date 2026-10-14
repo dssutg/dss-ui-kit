@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The filterable table over caller rows and property schemas.
+
 import type { Context, TargetedEvent } from 'react';
 import { createContext, useContext, useState } from 'react';
 import { ControlledTable } from './ControlledTable';

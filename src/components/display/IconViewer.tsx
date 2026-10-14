@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A self-inspection panel listing every shipped icon, for copying its name.
+
 import { useCallback, useMemo, useState } from 'react';
 import { SearchInput } from '@/components/inputs/SearchInput';
 import { getIconNames } from '@/icons/registry';

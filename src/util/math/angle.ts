@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Angles and directions, and the point type the chart code reads.
+
 import { modulo } from './scalar';
 
 /**

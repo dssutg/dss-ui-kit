@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * Decodes a base64 string holding gzipped JSON and returns whatever it parses to.
  *

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The search field that lists the matches under it.
+
 import { createPortal, useEffect, useId, useRef, useState } from 'react';
 import { IconButton } from '@/components/buttons/IconButton';
 import { Icon } from '@/components/display/Icon';

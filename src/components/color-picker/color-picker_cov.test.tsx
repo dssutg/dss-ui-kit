@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// The residual coverage paths of the colour-picker group.
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ColorInput } from '@/components/color-picker/ColorInput';

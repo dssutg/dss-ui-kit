@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The svg element every icon renders: one path, hidden from the accessibility tree.
+
 import type { iconPaths } from '@/icons/index';
 import { getIconPath } from '@/icons/registry';
 import { cn } from '@/util/cn';

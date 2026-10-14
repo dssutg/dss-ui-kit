@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Fails on a class attribute built by string concatenation instead of cn().
+
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';

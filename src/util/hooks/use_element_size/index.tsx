@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The size of an element, on mount and on resize.
+
 import { useEffect, useState } from 'react';
 
 /**

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The local date and time of a `Date`, split into the fields a form shows, with the month 1-based.
  *

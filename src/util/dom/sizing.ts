@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The device pixel ratio, floored at 1, canvas renderers scale by.
+
 import { clamp } from '@/util/math';
 
 /**

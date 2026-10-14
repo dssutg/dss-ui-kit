@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `useWindowSize` reports the window's inner size, read during the first render so it is correct
  * immediately, and updated on every resize. The suite mounts with a known size, drives a real

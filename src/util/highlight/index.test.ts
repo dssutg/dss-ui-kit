@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `highlightText` colours Lua and JSON source as HTML with one `<span>` per token, and escapes
  * everything it emits: the output is meant for `innerHTML`, so a test pins both the span shape and

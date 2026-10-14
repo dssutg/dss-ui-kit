@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * The `rp` coercion table is what stands between untyped data from outside the UI and the components
  * that render it, so the suite holds it to the contract documented on `rp` itself: every member

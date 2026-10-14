@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The one place a component test renders.
+
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { act } from 'react-dom/test-utils';

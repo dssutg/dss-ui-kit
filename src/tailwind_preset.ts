@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// The Tailwind preset the package publishes as dss-ui-kit/tailwind.
+
 import type { Config } from 'tailwindcss';
 
 /**

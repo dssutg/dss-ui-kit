@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * `useOutsideComponentClick` calls back when a click lands outside an element — how a popover closes.
  * It listens on the capture phase, so a click that the element's own children stop from bubbling is

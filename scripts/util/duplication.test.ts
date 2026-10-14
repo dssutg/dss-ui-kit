@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Tests the clone detector the duplicated-code guard runs.
+
 import { describe, expect, it } from 'vitest';
 import type { SourceFile } from './duplication.ts';
 import { findDuplicateBlocks } from './duplication.ts';

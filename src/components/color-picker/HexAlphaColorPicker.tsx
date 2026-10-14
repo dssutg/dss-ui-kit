@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// A hex colour picker, alpha included.
+
 import type { JSX } from 'react';
 import {
   AlphaColorPicker,
