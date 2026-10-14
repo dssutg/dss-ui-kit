@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { cn } from '@/util/cn';
 import { useGranularEffect } from '@/util/hooks/use_granular_effect';
+import type { CSSStyleWithCustomProperties } from '@/util/style';
 import { uuidv4 } from '@/util/uuid';
 
 /**
@@ -40,18 +41,16 @@ export function Ripple({
       }
 
       function onClick(e: MouseEvent) {
-        const button = e.currentTarget as HTMLButtonElement;
-
         // `currentTarget` is the element the listener is attached to for the whole of the dispatch,
-        // so it is never null inside the handler; the guard is only for the type checker.
+        // so it is always the control hosting the ripple and never null inside the handler.
         // v8 ignore next
-        if (button === null) {
+        if (!(e.currentTarget instanceof HTMLElement)) {
           return;
         }
 
-        const rect = button.getBoundingClientRect();
+        const rect = e.currentTarget.getBoundingClientRect();
 
-        const diameter = Math.max(button.clientWidth, button.clientHeight);
+        const diameter = Math.max(e.currentTarget.clientWidth, e.currentTarget.clientHeight);
         const radius = diameter / 2;
         const id = uuidv4();
 
@@ -92,23 +91,25 @@ export function Ripple({
         className={cn('pointer-events-none absolute left-0 top-0', className)}
         aria-hidden="true"
       >
-        {ripples.map((ripple) => (
-          <span
-            key={ripple.id}
-            className="animate-ripple pointer-events-none absolute rounded-full duration-[var(--ripple-duration)]"
-            aria-hidden="true"
-            style={
-              {
-                '--ripple-duration': `${duration}ms`,
-                width: ripple.diameter,
-                height: ripple.diameter,
-                left: ripple.left,
-                top: ripple.top,
-                backgroundColor: color,
-              } as React.CSSProperties
-            }
-          />
-        ))}
+        {ripples.map((ripple) => {
+          const rippleStyle: CSSStyleWithCustomProperties = {
+            '--ripple-duration': `${duration}ms`,
+            width: ripple.diameter,
+            height: ripple.diameter,
+            left: ripple.left,
+            top: ripple.top,
+            backgroundColor: color,
+          };
+
+          return (
+            <span
+              key={ripple.id}
+              className="animate-ripple pointer-events-none absolute rounded-full duration-[var(--ripple-duration)]"
+              aria-hidden="true"
+              style={rippleStyle}
+            />
+          );
+        })}
       </span>
     )
   );

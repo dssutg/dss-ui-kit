@@ -253,7 +253,10 @@ export function vObject<T>(schema: VSchema<T>): VValidator<T> {
       try {
         result[key] = validator(value[key]);
       } catch (error) {
-        throw new VError(`Error in field "${key}": ${(error as Error)?.message ?? error}`);
+        // A validator may throw anything; the message an `Error` carries is the one to show.
+        throw new VError(
+          `Error in field "${key}": ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     }
 
@@ -277,7 +280,10 @@ export function vArray<T>(itemValidator: VValidator<T>): VValidator<T[]> {
       try {
         result = [...result, itemValidator(item)];
       } catch (error) {
-        throw new VError(`Error in array item: ${(error as Error)?.message ?? error}`);
+        // As in `vObject`: whatever an item validator throws, only an `Error` has a message.
+        throw new VError(
+          `Error in array item: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
     }
 

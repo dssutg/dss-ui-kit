@@ -526,9 +526,7 @@ export function TreeView({
 }
 
 function isEventFromAnotherInput(e: KeyboardEvent) {
-  const targetTagName = (e.target as HTMLElement | undefined)?.tagName;
-
-  return targetTagName === 'INPUT' || targetTagName === 'TEXTAREA';
+  return e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
 }
 
 function isTypeAheadCharacter(key: string) {

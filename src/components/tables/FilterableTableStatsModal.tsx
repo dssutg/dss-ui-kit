@@ -83,7 +83,11 @@ export function FilterableTableStatsModal<T>({
               id={`${id}-property-select`}
               value={statsPropertyName ?? ''}
               onChange={(e) =>
-                setStatsPropertyName(e.currentTarget.value as typeof statsPropertyName)
+                setStatsPropertyName(
+                  searchSchema.properties.find(
+                    (property) => property.name === e.currentTarget.value,
+                  )?.name,
+                )
               }
             >
               {searchSchema.properties.map((property) => (

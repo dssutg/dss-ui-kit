@@ -235,17 +235,32 @@ interface MeasuredElement extends HTMLElement {
   autoSizerFrame?: number;
 }
 
-/** The hidden elements appended to a measured element, and the listener on their animation. */
-interface TriggersElement extends HTMLElement {
-  autoSizerAnimationListener?: EventListener | null | undefined;
+/**
+ * Whether an event target is an element this module observes, which is one that carries the
+ * bookkeeping.
+ *
+ * The DOM gives `event.currentTarget` as `EventTarget | null`, so what a scroll on a measured element
+ * arrives at is settled by this one named question instead of a cast at every use. Everything it
+ * claims is installed together by `addResizeListener`.
+ */
+function isMeasuredElement(element: EventTarget | null): element is MeasuredElement {
+  return element instanceof HTMLElement && 'autoSizerTriggers' in element;
 }
 
 /**
- * One of the children the detector created itself, which therefore exists.
+ * The hidden elements appended to a measured element, and the listener on their animation.
  *
- * The trigger elements are appended by {@link addResizeListener} below in a fixed shape, so their
- * children are as much a part of that shape as the elements themselves.
+ * Besides the classes the stylesheet reads, this element carries the three children the detector
+ * drives: the triggers it grows and contracts to force an overflow, held as references so a reset
+ * works on the elements this module created itself.
  */
+interface TriggersElement extends HTMLElement {
+  autoSizerAnimationListener?: EventListener | null | undefined;
+  autoSizerExpandTrigger: HTMLDivElement;
+  autoSizerExpandChild: HTMLDivElement;
+  autoSizerContractTrigger: HTMLDivElement;
+}
+
 /** The triggers an element carries once it has been observed, which it always has at this point. */
 function requireTriggers(element: MeasuredElement): TriggersElement {
   // Resets only run on an element that has been observed, and observing is what installs the
@@ -255,15 +270,6 @@ function requireTriggers(element: MeasuredElement): TriggersElement {
     throw new Error('AutoSizer: asked to reset the resize triggers of an unobserved element.');
   }
   return element.autoSizerTriggers;
-}
-
-function requireChild(child: Element | null): HTMLElement {
-  // The triggers are appended in a fixed shape: two named children, the first holding one child.
-  // v8 ignore next
-  if (child === null) {
-    throw new Error('AutoSizer: the resize triggers are missing a child element.');
-  }
-  return child as HTMLElement;
 }
 
 const { requestFrame, cancelFrame } = createFrameScheduler();
@@ -331,9 +337,11 @@ function createDetectElementResize(nonce?: string): DetectElementResize {
   {
     resetTriggers = (element) => {
       const triggers = requireTriggers(element);
-      const expand = requireChild(triggers.firstElementChild);
-      const contract = requireChild(triggers.lastElementChild);
-      const expandChild = requireChild(expand.firstElementChild);
+      const {
+        autoSizerExpandTrigger: expand,
+        autoSizerExpandChild: expandChild,
+        autoSizerContractTrigger: contract,
+      } = triggers;
 
       contract.scrollLeft = contract.scrollWidth;
       contract.scrollTop = contract.scrollHeight;
@@ -365,11 +373,11 @@ function createDetectElementResize(nonce?: string): DetectElementResize {
       // The listener is bound only to the element the triggers were installed on, so every scroll
       // it hears arrives at an element that carries them.
       // v8 ignore next
-      if (!(element instanceof HTMLElement) || !('autoSizerTriggers' in element)) {
+      if (!isMeasuredElement(element)) {
         return;
       }
 
-      const measured = element as MeasuredElement;
+      const measured = element;
 
       resetTriggers(measured);
 
@@ -438,15 +446,22 @@ function createDetectElementResize(nonce?: string): DetectElementResize {
       element.autoSizerLastSize = { width: 0, height: 0 };
       element.autoSizerListeners = [];
 
-      const triggers: TriggersElement = doc.createElement('div');
-      triggers.className = 'resize-triggers';
-
       const expandTrigger = doc.createElement('div');
       expandTrigger.className = 'expand-trigger';
-      expandTrigger.appendChild(doc.createElement('div'));
+      const expandChild = doc.createElement('div');
+      expandTrigger.appendChild(expandChild);
 
       const contractTrigger = doc.createElement('div');
       contractTrigger.className = 'contract-trigger';
+
+      // The three children are held on the triggers element itself, so a reset drives the elements
+      // this module made rather than whatever the DOM walk happens to find first.
+      const triggers: TriggersElement = Object.assign(doc.createElement('div'), {
+        autoSizerExpandTrigger: expandTrigger,
+        autoSizerExpandChild: expandChild,
+        autoSizerContractTrigger: contractTrigger,
+      });
+      triggers.className = 'resize-triggers';
 
       triggers.appendChild(expandTrigger);
       triggers.appendChild(contractTrigger);
@@ -513,6 +528,26 @@ function createDetectElementResize(nonce?: string): DetectElementResize {
 }
 
 /**
+ * The default height a caller seeded, which only the shapes that measure a height carry.
+ *
+ * The props are a union, and a shape without a height has no `defaultHeight` key to read, so the
+ * seed is asked for with `in` rather than read off a narrowed shape: a caller who passed a default
+ * for an axis they disabled gets it ignored, not an error.
+ */
+function defaultHeightOf(props: AutoSizerProps): number | undefined {
+  return 'defaultHeight' in props && typeof props.defaultHeight === 'number'
+    ? props.defaultHeight
+    : undefined;
+}
+
+/** The default width a caller seeded. See {@link defaultHeightOf}. */
+function defaultWidthOf(props: AutoSizerProps): number | undefined {
+  return 'defaultWidth' in props && typeof props.defaultWidth === 'number'
+    ? props.defaultWidth
+    : undefined;
+}
+
+/**
  * Calls its child with the size of the surrounding element, and re-renders when that size changes.
  *
  * This is the one component in the library that is a class rather than a function: it has to render
@@ -525,10 +560,10 @@ function createDetectElementResize(nonce?: string): DetectElementResize {
  */
 export class AutoSizer extends Component<AutoSizerProps, AutoSizerState> {
   public override state: AutoSizerState = {
-    height: (this.props as HeightAndWidthProps).defaultHeight || 0,
-    scaledHeight: (this.props as HeightAndWidthProps).defaultHeight || 0,
-    scaledWidth: (this.props as HeightAndWidthProps).defaultWidth || 0,
-    width: (this.props as HeightAndWidthProps).defaultWidth || 0,
+    height: defaultHeightOf(this.props) ?? 0,
+    scaledHeight: defaultHeightOf(this.props) ?? 0,
+    scaledWidth: defaultWidthOf(this.props) ?? 0,
+    width: defaultWidthOf(this.props) ?? 0,
   };
 
   private autoSizer: HTMLElement | null = null;
@@ -601,7 +636,7 @@ export class AutoSizer extends Component<AutoSizerProps, AutoSizerState> {
       style = {},
       tagName = 'div',
       ...rest
-    } = this.props as HeightAndWidthProps;
+    } = this.props;
 
     const { height, scaledHeight, scaledWidth, width } = this.state;
 
@@ -655,7 +690,7 @@ export class AutoSizer extends Component<AutoSizerProps, AutoSizerState> {
   private onResize = () => {
     this.timeoutId = null;
 
-    const { disableHeight, disableWidth, onResize } = this.props as HeightAndWidthProps;
+    const { disableHeight, disableWidth, onResize } = this.props;
     const { parentNode } = this;
 
     // A parent is recorded before any resize callback can run, and unmounting clears the timers

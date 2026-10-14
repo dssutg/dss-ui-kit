@@ -1,4 +1,5 @@
 import { clamp } from '@/util/math';
+import { isRecord } from '@/util/record';
 
 /**
  * Coercion table for render props: turns `unknown` data arriving from outside the UI into the value a
@@ -209,9 +210,7 @@ export const rp = {
    * The members are unchecked, so a caller that cares narrows the values itself.
    */
   recordStringUnknown: (x: unknown): Record<string, unknown> =>
-    typeof x === 'object' && !Array.isArray(x) && !(x instanceof String) && x !== null
-      ? (x as Record<string, unknown>)
-      : ({} as Record<string, unknown>),
+    isRecord(x) && !Array.isArray(x) && !(x instanceof String) ? x : {},
 
   /**
    * Runs a mapping over the value read as a dictionary.
@@ -237,6 +236,6 @@ export const rp = {
     validValues: readonly T[],
     fallbackValue: T,
   ): T {
-    return (validValues as unknown[]).includes(sequence) ? (sequence as T) : fallbackValue;
+    return validValues.find((validValue) => validValue === sequence) ?? fallbackValue;
   },
 } as const;

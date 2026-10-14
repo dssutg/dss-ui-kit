@@ -145,7 +145,10 @@ export function UploadConfig({
       return;
     }
 
-    if (!dropAreaRef.current.contains(event.relatedTarget as Node)) {
+    // A drag that leaves for no target — out of the window entirely — is a leave like any other.
+    const relatedTarget = event.relatedTarget;
+
+    if (!(relatedTarget instanceof Node) || !dropAreaRef.current.contains(relatedTarget)) {
       setHasDragEntered(false);
     }
   }, []);

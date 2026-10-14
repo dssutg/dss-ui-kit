@@ -218,20 +218,18 @@ export const Editor = forwardRef(
         className={className}
       >
         <div
-          style={
-            {
-              display: 'flex',
-              flexDirection: 'column',
-              flexShrink: '0',
-              position: 'absolute',
-              textAlign: 'right',
-              paddingRight: '4px',
-              userSelect: 'none',
-              top: '0',
-              left: '0',
-              width: lineNumberColumnWidth,
-            } as React.CSSProperties
-          }
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            flexShrink: '0',
+            position: 'absolute',
+            textAlign: 'right',
+            paddingRight: '4px',
+            userSelect: 'none',
+            top: '0',
+            left: '0',
+            width: lineNumberColumnWidth,
+          }}
           aria-hidden="true"
           className="border-r-bsp text-tpd border-r-2"
         >
@@ -240,16 +238,14 @@ export const Editor = forwardRef(
         <pre
           className={preClassName}
           aria-hidden="true"
-          style={
-            {
-              ...editorStyles,
-              position: 'relative',
-              pointerEvents: 'none',
-              ...contentStyle,
-              left: textFieldXOffset,
-              width: `calc(100% - ${textFieldXOffset}px)`,
-            } as React.CSSProperties
-          }
+          style={{
+            ...editorStyles,
+            position: 'relative',
+            pointerEvents: 'none',
+            ...contentStyle,
+            left: textFieldXOffset,
+            width: `calc(100% - ${textFieldXOffset}px)`,
+          }}
           {...(typeof highlighted === 'string' ? injectedHighlighted : { children: highlighted })}
         />
         <textarea

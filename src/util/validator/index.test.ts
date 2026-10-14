@@ -216,8 +216,9 @@ describe('vObject', () => {
   });
 
   test('reports the raw thrown value when a field validator throws a non-Error', () => {
-    // The message wording is `(error)?.message ?? error`: an error with no message is named by
-    // its value instead, so the field's failure is still reported rather than swallowed.
+    // The message wording is `error instanceof Error ? message : String(error)`: a thrown value
+    // with no message is named by its value instead, so the field's failure is still reported
+    // rather than swallowed.
     const throwingSchema: VSchema<{ x: number }> = {
       x: (value: number): number => {
         if (value !== 1) {

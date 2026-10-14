@@ -701,6 +701,17 @@ describe('UploadConfig', () => {
     });
     expect(dropArea.className).toContain('border-tok');
 
+    // A leave for no target at all — the pointer left the window — ends the drag like any other.
+    act(() => {
+      dropArea.dispatchEvent(new Event('dragleave', { bubbles: true }));
+    });
+    expect(dropArea.className).toContain('border-tpl');
+
+    act(() => {
+      dropArea.dispatchEvent(new Event('dragenter', { bubbles: true }));
+    });
+    expect(dropArea.className).toContain('border-tok');
+
     const leaveOutside = new Event('dragleave', { bubbles: true });
     Object.defineProperty(leaveOutside, 'relatedTarget', { value: document.body });
     act(() => {

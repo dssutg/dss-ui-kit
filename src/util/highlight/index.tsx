@@ -1,4 +1,4 @@
-const luaTokenPatterns = [
+const luaTokenPatterns: readonly TokenPattern[] = [
   {
     match: /^#!.*|--(\[(=*)\[((?!--]\2])[\s\S])*--]\2]|.*)/g,
     sub: 'todo',
@@ -28,7 +28,7 @@ const luaTokenPatterns = [
   },
 ];
 
-const jsonTokenPatterns = [
+const jsonTokenPatterns: readonly TokenPattern[] = [
   {
     type: 'var',
     match: /("|')?[A-Za-z]\w*\1(?=\s*:)/g,
@@ -54,7 +54,7 @@ const jsonTokenPatterns = [
 // the comment stays plain. It sits in the same map as the public languages but is not part of the
 // `Lang` union — a caller colouring a document chooses one of the public ones; the tokenizer walks
 // into this one itself.
-const todoTokenPatterns = [
+const todoTokenPatterns: readonly TokenPattern[] = [
   {
     type: 'todo',
     match: /\b(?:TODO|FIXME)\b/g,
@@ -76,13 +76,30 @@ const expandData = {
   },
 };
 
+/** A pattern that matches source text itself, and the class the match is reported with. */
+interface MatchedTokenPattern {
+  /** The token class the matched text is reported with, when it takes one. */
+  readonly type?: string;
+  readonly match: RegExp;
+  /** The language the matched text is tokenized as once more. */
+  readonly sub?: TokenizerLang;
+}
+
+/** A pattern that stands in for one of {@link expandData}'s shared patterns, named by its key. */
+interface ExpandedTokenPattern {
+  readonly match?: never;
+  readonly expand: keyof typeof expandData;
+}
+
+type TokenPattern = MatchedTokenPattern | ExpandedTokenPattern;
+
 function sanitize(str = '') {
   return str.replace(/[&]/g, '&#38;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function toSpan(str: string, token: unknown) {
-  if (token) {
-    return `<span class="shj-syn-${token}">${str}</span>`;
+function toSpan(str: string, type: string | undefined) {
+  if (type) {
+    return `<span class="shj-syn-${type}">${str}</span>`;
   }
   return str;
 }
@@ -101,118 +118,138 @@ const langTokenMap = {
   todo: todoTokenPatterns,
 };
 
-// biome-ignore lint: lint/suspicious/noExplicitAny
-function tokenize(src: string | any[], lang: string, token: any) {
+/** The language entries the walk can reach, including the internal `todo` comment language. */
+type TokenizerLang = keyof typeof langTokenMap;
+
+/** What the walk reports one piece of source text with: the class it coloured it as, when it has one.
+ *
+ * The plain runs between two tokens — and the untouched remainder — are reported with no class.
+ */
+type TokenSink = (text: string, type: string | undefined) => void;
+
+/** The earliest match one pass over the language found, and where it leaves the reader. */
+interface EarliestMatch {
+  readonly part: MatchedTokenPattern;
+  /** Where the match starts, which is also where the plain text before it ends. */
+  readonly index: number;
+  /** The text the pattern matched. */
+  readonly match: string;
+  /** The position the reader continues from once the match has been reported. */
+  readonly end: number;
+}
+
+/** A pattern's most recent match, kept so the walk does not re-run `exec` over answered text. */
+interface CachedMatch {
+  readonly match: RegExpExecArray;
+  readonly lastIndex: number;
+}
+
+/**
+ * The pattern's match from `from` onward, out of the cache when the walk still trusts it and through
+ * `exec` otherwise — or `undefined` when the pattern is spent and has no match left to give.
+ */
+function cachedMatchOf(
+  part: MatchedTokenPattern,
+  src: string,
+  from: number,
+  cache: Map<MatchedTokenPattern, CachedMatch>,
+  spent: Set<MatchedTokenPattern>,
+): CachedMatch | undefined {
+  if (spent.has(part)) {
+    return undefined;
+  }
+
+  // Do not call exec again if the previous result is still the answer.
+  let cached = cache.get(part);
+  if (cached === undefined || cached.match.index < from) {
+    part.match.lastIndex = from;
+    const match = part.match.exec(src);
+    if (match === null) {
+      // No more matches with this regex, so the pattern is spent.
+      spent.add(part);
+      return undefined;
+    }
+    cached = { match, lastIndex: part.match.lastIndex };
+    cache.set(part, cached);
+  }
+
+  return cached;
+}
+
+/**
+ * The earliest match the language's still-live patterns make from `from` onward, or `null`.
+ *
+ * The patterns are asked last to first, so a definition later in the language wins a tie at the same
+ * position.
+ */
+function earliestMatch(
+  src: string,
+  from: number,
+  patterns: readonly MatchedTokenPattern[],
+  cache: Map<MatchedTokenPattern, CachedMatch>,
+  spent: Set<MatchedTokenPattern>,
+): EarliestMatch | null {
+  let first: EarliestMatch | null = null;
+
+  for (const part of patterns) {
+    const cached = cachedMatchOf(part, src, from, cache, spent);
+    if (cached === undefined) {
+      continue;
+    }
+
+    // Check if it is the earliest match in the string so far.
+    const matchedText = cached.match[0];
+    if (matchedText && (first === null || cached.match.index <= first.index)) {
+      first = { part, index: cached.match.index, match: matchedText, end: cached.lastIndex };
+    }
+  }
+
+  return first;
+}
+
+/**
+ * Walks source text once, reporting every piece of it through `token`.
+ *
+ * The language's patterns are asked last to first, so a definition later in the language wins a tie
+ * at the same position. A pattern with a `sub` hands its matched text to the named language, which
+ * walks it the same way.
+ */
+function tokenize(src: string, lang: TokenizerLang, token: TokenSink): void {
   try {
-    // biome-ignore lint: lint/suspicious/noExplicitAny
-    let m: any;
-    // biome-ignore lint: lint/suspicious/noExplicitAny
-    let part: any;
-    let first = {};
-    // biome-ignore lint: lint/suspicious/noExplicitAny
-    let match: any;
-    const cache = [];
     let i = 0;
 
-    // The language entries the tokenizer recurses through are reached with a name, never an
-    // arbitrary token list: the public type of `lang` is a closed union and the only `sub` the two
-    // shipped languages carry is a name, so both `typeof lang === 'string'` arms below are always
-    // the string case and neither "not a string" arm can evaluate. The unreached arms stay out of
-    // the coverage gate.
-    // v8 ignore start
-    // biome-ignore lint: lint/suspicious/noExplicitAny
-    const data: any = typeof lang === 'string' ? langTokenMap[lang as Lang] : lang;
-
-    // Make a fast shallow copy to bee able to splice lang without change the original one
-    // biome-ignore lint: lint/suspicious/noExplicitAny
-    const arr = [...(typeof lang === 'string' ? data : (lang as any).sub)];
-    // v8 ignore stop
+    // The patterns are resolved once per walk — a named pattern stands in for the shared one it
+    // names — over a reversed copy, so the language definitions are left untouched.
+    const patterns: readonly MatchedTokenPattern[] = [...langTokenMap[lang]]
+      .map((entry) => ('expand' in entry ? expandData[entry.expand] : entry))
+      .reverse();
+    const cache = new Map<MatchedTokenPattern, CachedMatch>();
+    const spent = new Set<MatchedTokenPattern>();
 
     while (i < src.length) {
-      // biome-ignore lint: lint/suspicious/noExplicitAny
-      (first as any).index = null;
-      m = arr.length;
-      while (m-- > 0) {
-        // biome-ignore lint: lint/suspicious/noExplicitAny
-        part = arr[m].expand ? (expandData as any)[arr[m].expand] : arr[m];
-        // Do not call again exec if the previous result is sufficient
-        // biome-ignore lint: lint/suspicious/noExplicitAny
-        if (cache[m] === undefined || (cache as any)[m].match.index < i) {
-          part.match.lastIndex = i;
-          match = part.match.exec(src);
-          if (match === null) {
-            // No more match with this regex can be disposed
-            arr.splice(m, 1);
-            cache.splice(m, 1);
-            continue;
-          }
-          // Save match for later use to decrease performance cost
-          cache[m] = { match, lastIndex: part.match.lastIndex };
-        }
-        // Check if it the first match in the string
-        if (
-          // biome-ignore lint: lint/suspicious/noExplicitAny
-          (cache as any)[m].match[0] &&
-          // biome-ignore lint: lint/suspicious/noExplicitAny
-          ((cache as any)[m].match.index <= (first as any).index ||
-            // biome-ignore lint: lint/suspicious/noExplicitAny
-            (first as any).index === null)
-        ) {
-          first = {
-            part,
-            // biome-ignore lint: lint/suspicious/noExplicitAny
-            index: (cache as any)[m].match.index,
-            // biome-ignore lint: lint/suspicious/noExplicitAny
-            match: (cache as any)[m].match[0],
-            // biome-ignore lint: lint/suspicious/noExplicitAny
-            end: (cache as any)[m].lastIndex,
-          };
-        }
-      }
-      // biome-ignore lint: lint/suspicious/noExplicitAny
-      if ((first as any).index === null) {
+      const first = earliestMatch(src, i, patterns, cache, spent);
+
+      if (first === null) {
         break;
       }
-      // biome-ignore lint: lint/suspicious/noExplicitAny
-      token(src.slice(i, (first as any).index), data.type);
-      // biome-ignore lint: lint/suspicious/noExplicitAny
-      i = (first as any).end;
-      // biome-ignore lint: lint/suspicious/noExplicitAny
-      if ((first as any).part.sub) {
-        // A `sub` resolves to a name, to a sub-language that calls itself back, or — for a list of
-        // parts — to the parts themselves. The two shipped languages carry a single `sub`, a name,
-        // so the "function" and "parts" arms of the chain cannot evaluate for one of them; the
-        // unreached arms stay out of the coverage gate.
-        //
-        // v8 ignore start
-        tokenize(
-          // biome-ignore lint: lint/suspicious/noExplicitAny
-          (first as any).match,
-          // biome-ignore lint: lint/suspicious/noExplicitAny
-          typeof (first as any).part.sub === 'string'
-            ? // biome-ignore lint: lint/suspicious/noExplicitAny
-              (first as any).part.sub
-            : // biome-ignore lint: lint/suspicious/noExplicitAny
-              typeof (first as any).part.sub === 'function'
-              ? // biome-ignore lint: lint/suspicious/noExplicitAny
-                (first as any).part.sub((first as any).match)
-              : // biome-ignore lint: lint/suspicious/noExplicitAny
-                (first as any).part,
-          // v8 ignore stop
-          token,
-        );
+
+      token(src.slice(i, first.index), undefined);
+      i = first.end;
+
+      if (first.part.sub) {
+        tokenize(first.match, first.part.sub, token);
       } else {
-        // biome-ignore lint: lint/suspicious/noExplicitAny
-        token((first as any).match, (first as any).part.type);
+        token(first.match, first.part.type);
       }
     }
-    token(src.slice(i, src.length), data.type);
+
+    token(src.slice(i), undefined);
   } catch {
     // With the shipped languages no walk can throw: every `sub` name resolves in `langTokenMap` and
     // every pattern is anchored, so the catch is the resilience arm of a walk the module cannot
     // drive into an error any more. The unreached arm stays out of the coverage gate.
     // v8 ignore next
-    token(src);
+    token(src, undefined);
   }
 }
 
@@ -224,13 +261,12 @@ function tokenize(src: string | any[], lang: string, token: any) {
  * stylesheet defines what a token looks like. Every piece of the source is escaped before it is
  * wrapped, so this is safe on text from anywhere.
  */
-export function highlightText(src: string | unknown[], lang: Lang): string {
-  let tmp = '';
+export function highlightText(src: string, lang: Lang): string {
+  let html = '';
 
-  // biome-ignore lint: lint/suspicious/noExplicitAny
-  tokenize(src, lang, (str: string | undefined, type: any) => {
-    tmp += toSpan(sanitize(str), type);
+  tokenize(src, lang, (text, type) => {
+    html += toSpan(sanitize(text), type);
   });
 
-  return tmp;
+  return html;
 }

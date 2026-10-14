@@ -6,6 +6,7 @@ import { SearchInput } from '@/components/inputs/SearchInput';
 import { builtinCatalogues, getLocaleName, translate, useLocale } from '@/locale';
 import { cn } from '@/util/cn';
 import { useIsMobileScreen } from '@/util/hooks/use_is_mobile_screen';
+import type { CSSStyleWithCustomProperties } from '@/util/style';
 import { unreachable } from '@/util/unreachable';
 import { type ColorIndicator, colorIndicatorColorMap, type TreeViewItem } from './TreeView';
 
@@ -144,6 +145,11 @@ export function MenuTree({
 }): React.JSX.Element {
   const { tRaw } = useLocale();
 
+  const rootStyle: CSSStyleWithCustomProperties = {
+    '--menu-tree-width': width,
+    ...style,
+  };
+
   return (
     <div
       className={cn(
@@ -151,12 +157,7 @@ export function MenuTree({
         expanded && 'w-full sm:w-[var(--menu-tree-width)]',
         className,
       )}
-      style={
-        {
-          '--menu-tree-width': width,
-          ...style,
-        } as React.CSSProperties
-      }
+      style={rootStyle}
     >
       {searchShown && expanded && (
         <div className="flex m-2 shrink-0">
@@ -826,7 +827,7 @@ function MenuTreeItem({
  * has a `subitems` array, a tree view item only ever has `children`.
  */
 function isMenuTreeItem(item: TMenuTreeItem | TreeViewItem): item is TMenuTreeItem {
-  return (item as TMenuTreeItem).subitems !== undefined;
+  return 'subitems' in item;
 }
 
 /**

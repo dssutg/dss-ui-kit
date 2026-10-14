@@ -49,7 +49,14 @@ export function Popover({
     if (open && event.code === 'Escape') {
       event.preventDefault();
       onOpenChange(false);
-      (triggerRef.current?.childNodes[0] as HTMLElement | undefined)?.focus();
+
+      const firstChild = triggerRef.current?.firstElementChild;
+
+      // The trigger holds a control, so the element to give focus back to is a real one; a trigger
+      // of plain text has no element to receive focus and nothing else needs doing.
+      if (firstChild instanceof HTMLElement) {
+        firstChild.focus();
+      }
     }
   });
 
@@ -58,10 +65,7 @@ export function Popover({
   const [rootTriggerBox, setRootTriggerBox] = useState<DOMRect | null>(null);
 
   const getTriggerBox = useCallback(() => {
-    return (
-      (triggerRef.current?.childNodes?.[0] as HTMLElement | undefined)?.getBoundingClientRect() ??
-      null
-    );
+    return triggerRef.current?.firstElementChild?.getBoundingClientRect() ?? null;
   }, []);
 
   useGranularEffect(

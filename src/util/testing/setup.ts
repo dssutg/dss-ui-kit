@@ -29,15 +29,17 @@ function stubbedRect(): DOMRect {
     bottom: STUBBED_HEIGHT,
     width: STUBBED_WIDTH,
     height: STUBBED_HEIGHT,
-    toJSON: () => ({}),
-  } as DOMRect;
-}
-
-/** The part of `ResizeObserver` a component uses: construct it, observe, disconnect. */
-interface ResizeObserverLike {
-  observe(target: Element): void;
-  unobserve(target: Element): void;
-  disconnect(): void;
+    toJSON: () => ({
+      x: 0,
+      y: 0,
+      top: 0,
+      left: 0,
+      right: STUBBED_WIDTH,
+      bottom: STUBBED_HEIGHT,
+      width: STUBBED_WIDTH,
+      height: STUBBED_HEIGHT,
+    }),
+  };
 }
 
 /**
@@ -51,7 +53,7 @@ function installResizeObserver(): void {
     return;
   }
 
-  class StubResizeObserver implements ResizeObserverLike {
+  class StubResizeObserver implements ResizeObserver {
     private readonly callback: ResizeObserverCallback;
 
     constructor(callback: ResizeObserverCallback) {
@@ -62,17 +64,15 @@ function installResizeObserver(): void {
       queueMicrotask(() => {
         // The observer is handed back to its own callback because the real one does that, and a
         // component that re-observes from inside the callback relies on being able to.
-        const observer = this as unknown as ResizeObserver;
-
-        const entry = {
+        const entry: ResizeObserverEntry = {
           target,
           contentRect: stubbedRect(),
           borderBoxSize: [{ inlineSize: STUBBED_WIDTH, blockSize: STUBBED_HEIGHT }],
           contentBoxSize: [{ inlineSize: STUBBED_WIDTH, blockSize: STUBBED_HEIGHT }],
           devicePixelContentBoxSize: [{ inlineSize: STUBBED_WIDTH, blockSize: STUBBED_HEIGHT }],
-        } as unknown as ResizeObserverEntry;
+        };
 
-        this.callback([entry], observer);
+        this.callback([entry], this);
       });
     }
 
@@ -85,7 +85,7 @@ function installResizeObserver(): void {
     }
   }
 
-  window.ResizeObserver = StubResizeObserver as unknown as typeof ResizeObserver;
+  window.ResizeObserver = StubResizeObserver;
 }
 
 /**
@@ -124,17 +124,16 @@ function installMatchMedia(): void {
     return;
   }
 
-  window.matchMedia = (query: string) =>
-    ({
-      matches: false,
-      media: query,
-      onchange: null,
-      addListener: () => undefined,
-      removeListener: () => undefined,
-      addEventListener: () => undefined,
-      removeEventListener: () => undefined,
-      dispatchEvent: () => false,
-    }) as unknown as MediaQueryList;
+  window.matchMedia = (query: string): MediaQueryList => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => undefined,
+    removeListener: () => undefined,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+    dispatchEvent: () => false,
+  });
 }
 
 if (typeof window !== 'undefined') {

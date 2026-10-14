@@ -34,12 +34,13 @@ export interface DragNDropOrderedList {
 /**
  * The index a list item was rendered at, read off its `data-position`.
  *
- * `dataset` is an index signature, and the two rules that govern it disagree:
- * `noPropertyAccessFromIndexSignature` wants bracket access, `useLiteralKeys` wants a dot for a key
- * the type knows. The claim here is provable because `getListItemProps` writes the attribute itself.
+ * The attribute is read with `getAttribute` rather than through `dataset`, whose index signature the
+ * two access rules disagree on — bracket access against dot. The claim that the attribute is there
+ * is provable: `getListItemProps` writes it before any row the browser could hand a drag event
+ * about exists.
  */
 function getItemPosition(element: HTMLElement): number {
-  return Number((element.dataset as { position: string }).position);
+  return Number(element.getAttribute('data-position'));
 }
 
 /**

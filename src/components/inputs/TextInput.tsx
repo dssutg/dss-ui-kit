@@ -1,6 +1,7 @@
 import { IconButton } from '@/components/buttons/IconButton';
 import { useLocale } from '@/locale';
 import { cn } from '@/util/cn';
+import type { CSSStyleWithCustomProperties } from '@/util/style';
 
 /**
  * The library's text field: a bare `<input>` with the design system's focus, clear and password
@@ -67,6 +68,7 @@ export function TextInput({
   readonly minWidth?: string | undefined;
   readonly inputPadding?: string | undefined;
   readonly clearButtonPadding?: string | undefined;
+  readonly showHidePasswordPadding?: string | undefined;
   readonly value?: string | undefined;
   readonly min?: string | number | undefined;
   readonly max?: string | number | undefined;
@@ -93,6 +95,14 @@ export function TextInput({
   [x: string]: unknown;
 }): false | React.JSX.Element {
   const { t } = useLocale();
+
+  const fieldStyle: CSSStyleWithCustomProperties = {
+    '--placeholder-color': placeholderColor,
+    color: textColor,
+    border: outline,
+    padding: inputPadding,
+    ...inputStyle,
+  };
 
   return (
     shouldRender && (
@@ -123,15 +133,7 @@ export function TextInput({
           spellcheck={spellCheck}
           pattern={pattern}
           className="m-0 box-border w-full rounded-l-lg text-base outline-none placeholder:text-[var(--placeholder-color)] bg-bin"
-          style={
-            {
-              '--placeholder-color': placeholderColor,
-              color: textColor,
-              border: outline,
-              padding: inputPadding,
-              ...inputStyle,
-            } as React.CSSProperties
-          }
+          style={fieldStyle}
         />
         {hasShowPasswordButton && (
           <IconButton
@@ -142,12 +144,10 @@ export function TextInput({
               ...showPasswordIconInnerStyle,
             }}
             bgClassName="hover:bg-bse bg-bin"
-            style={
-              {
-                fill: 'var(--color-tpl)',
-                padding: showHidePasswordPadding,
-              } as React.CSSProperties
-            }
+            style={{
+              fill: 'var(--color-tpl)',
+              padding: showHidePasswordPadding,
+            }}
             rippleColor="var(--color-ripple-icon-button)"
             onClick={onShowPasswordClick}
             title={t(hiddenText ? 'actions.showPassword' : 'actions.hidePassword')}
@@ -162,15 +162,13 @@ export function TextInput({
             ...clearIconInnerStyle,
           }}
           bgClassName={cn('bg-bin', value !== '' && 'hover:bg-bse')}
-          style={
-            {
-              fill: 'var(--color-tpl)',
-              width: '1.5rem',
-              borderTopRightRadius: '0.5rem',
-              borderBottomRightRadius: '0.5rem',
-              padding: clearButtonPadding,
-            } as React.CSSProperties
-          }
+          style={{
+            fill: 'var(--color-tpl)',
+            width: '1.5rem',
+            borderTopRightRadius: '0.5rem',
+            borderBottomRightRadius: '0.5rem',
+            padding: clearButtonPadding,
+          }}
           rippleColor="var(--color-ripple-icon-button)"
           onClick={(e) => {
             onChangeText?.('');

@@ -100,11 +100,9 @@ export function ControlledMUITabList<ID extends string>({
       return null;
     }
 
-    for (const node of triggerListRef.current.childNodes) {
-      const button = node as HTMLButtonElement;
-
-      if (button.getAttribute('data-tab') === tabId) {
-        const buttonBox = button.getBoundingClientRect();
+    for (const child of triggerListRef.current.children) {
+      if (child.getAttribute('data-tab') === tabId) {
+        const buttonBox = child.getBoundingClientRect();
         const listBox = triggerListRef.current.getBoundingClientRect();
 
         const x = buttonBox.left - listBox.left;

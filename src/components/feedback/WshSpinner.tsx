@@ -1,4 +1,5 @@
 import { cn } from '@/util/cn';
+import type { CSSStyleWithCustomProperties } from '@/util/style';
 
 /**
  * The largest spinner in the set: a wide arc drawn inside a fixed 112-pixel box.
@@ -16,15 +17,15 @@ export function WshSpinner({
   readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
 }): React.JSX.Element {
+  const spinnerStyle: CSSStyleWithCustomProperties = {
+    '--color': color,
+    ...style,
+  };
+
   return (
     <div
       className={cn('opacity-1 flex h-28 w-28 shrink-0 justify-center', className)}
-      style={
-        {
-          '--color': color,
-          ...style,
-        } as React.CSSProperties
-      }
+      style={spinnerStyle}
     >
       <div className="pointer-events-none relative w-16">
         <div>

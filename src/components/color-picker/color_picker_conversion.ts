@@ -23,16 +23,13 @@ export function equalColorObjects(first: ObjectColor, second: ObjectColor): bool
     return true;
   }
 
-  for (const property in first) {
-    // The following allows for a type-safe calling of this function (first & second have to be HSL, HSV, or RGB)
-    // with type-unsafe iterating over object keys. TS does not allow this without an index (`[key: string]: number`)
-    // on an object to define how iteration is normally done. To ensure extra keys are not allowed on our types,
-    // we must cast our object to unknown (as RGB demands `r` be a key, while `Record<string, x>` does not care if
-    // there is or not), and then as a type TS can iterate over.
-    if (
-      (first as unknown as Record<string, number>)[property] !==
-      (second as unknown as Record<string, number>)[property]
-    ) {
+  // Iteration is over the first object's keys, and its pairing with the second is through entries
+  // rather than through an index, because the colour types deliberately have no `[key: string]`
+  // signature: an extra key on the second is ignored rather than counted.
+  const secondValues = new Map(Object.entries(second));
+
+  for (const [property, value] of Object.entries(first)) {
+    if (secondValues.get(property) !== value) {
       return false;
     }
   }

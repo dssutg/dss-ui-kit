@@ -111,60 +111,70 @@ export function hasRecordKey(record: Record<string, unknown>, key: string) {
  * keyed collections other than `Map`/`Set` are thrown away, and functions return as themselves.
  */
 export function deepClone<T>(value: T, seen = new WeakMap<object, unknown>()): T {
+  // The walk answers `unknown`, because what it builds is decided by what it meets; the single cast
+  // is the caller's claim about `T`, the one thing the walk itself cannot prove.
+  return deepCloneUnknown(value, seen) as T;
+}
+
+/** The clone walk proper, typed over `unknown` so every branch narrows instead of casting. */
+function deepCloneUnknown(value: unknown, seen: WeakMap<object, unknown>): unknown {
   // Primitives (including null, undefined, boolean, number, string, symbol, bigint) are returned as is
-  if (value === null || typeof value !== 'object') {
+  if (!isRecord(value)) {
     return value;
   }
 
   // Handle circular references
-  const known = seen.get(value as object);
+  const known = seen.get(value);
   if (known !== undefined) {
-    return known as T;
+    return known;
   }
 
   if (value instanceof Date) {
-    return new Date(value.getTime()) as T;
+    return new Date(value.getTime());
   }
   if (value instanceof RegExp) {
-    return new RegExp(value.source, value.flags) as T;
+    return new RegExp(value.source, value.flags);
   }
   if (value instanceof Map) {
-    const cloned = new Map();
+    const cloned = new Map<unknown, unknown>();
     seen.set(value, cloned);
     for (const [k, v] of value.entries()) {
-      cloned.set(deepClone(k, seen), deepClone(v, seen));
+      cloned.set(deepCloneUnknown(k, seen), deepCloneUnknown(v, seen));
     }
-    return cloned as T;
+    return cloned;
   }
   if (value instanceof Set) {
-    return cloneSet(value, seen) as T;
+    return cloneSet(value, seen);
   }
   if (Array.isArray(value)) {
-    return cloneArray(value, seen) as T;
+    return cloneArray(value, seen);
   }
-  return cloneObject(value, seen) as T;
+  return cloneObject(value, seen);
 }
 
-function cloneSet<T>(value: Set<T>, seen: WeakMap<object, unknown>) {
-  const cloned = new Set<T>();
+function cloneSet(value: Set<unknown>, seen: WeakMap<object, unknown>): Set<unknown> {
+  const cloned = new Set<unknown>();
   seen.set(value, cloned);
   for (const v of value) {
-    cloned.add(deepClone(v, seen));
+    cloned.add(deepCloneUnknown(v, seen));
   }
   return cloned;
 }
 
-function cloneArray<T>(value: readonly T[], seen: WeakMap<object, unknown>) {
+function cloneArray(value: readonly unknown[], seen: WeakMap<object, unknown>): unknown[] {
   const cloned: unknown[] = [];
   seen.set(value, cloned);
   for (const [index, item] of value.entries()) {
-    cloned[index] = deepClone(item, seen);
+    cloned[index] = deepCloneUnknown(item, seen);
   }
   return cloned;
 }
 
-function cloneObject<T extends object>(value: T, seen: WeakMap<object, unknown>) {
-  const cloned = {} as Record<string, unknown>;
+function cloneObject(
+  value: Record<string, unknown>,
+  seen: WeakMap<object, unknown>,
+): Record<string, unknown> {
+  const cloned: Record<string, unknown> = {};
   seen.set(value, cloned);
   // Copy own enumerable properties (including symbol keys)
   for (const key of Reflect.ownKeys(value)) {
@@ -174,10 +184,7 @@ function cloneObject<T extends object>(value: T, seen: WeakMap<object, unknown>)
       if (desc.get || desc.set) {
         Object.defineProperty(cloned, key, desc);
       } else {
-        cloned[key.toString()] = deepClone(
-          (value as Record<string, unknown>)[key.toString()],
-          seen,
-        );
+        cloned[key.toString()] = deepCloneUnknown(value[key.toString()], seen);
       }
     }
   }

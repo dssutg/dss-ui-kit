@@ -72,18 +72,10 @@ export function openFileDialog(
     fileInput.accept = accept;
   }
 
-  fileInput.addEventListener('change', (event: Event) => {
-    const target = event.target as HTMLInputElement;
-
-    // The listener is only ever called for a dispatch on this input, and a DOM dispatch always
-    // names the node it was dispatched on, so `target` cannot be null at runtime: the guard is
-    // for the compiler only. The unreached arm stays out of the coverage gate.
-    // v8 ignore next
-    if (target === null) {
-      return;
-    }
-
-    const file = target.files?.[0];
+  fileInput.addEventListener('change', function () {
+    // The keyed overload types `this` as the element the listener is bound to — the input itself —
+    // so the event parameter is not needed and the file is read without a cast.
+    const file = this.files?.[0];
 
     if (file) {
       callback(file);

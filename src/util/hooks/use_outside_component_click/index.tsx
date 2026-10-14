@@ -19,7 +19,8 @@ export function useOutsideComponentClick(
     const element = componentRef.current;
 
     const onClickInsideWindow = (event: MouseEvent) => {
-      if (!element.contains(event.target as Node)) {
+      // A dispatch on a target that is not a node — the window itself, say — is never inside.
+      if (!(event.target instanceof Node) || !element.contains(event.target)) {
         onOutside();
       }
     };

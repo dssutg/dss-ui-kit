@@ -59,6 +59,17 @@ describe('useOutsideComponentClick', () => {
     expect(onOutside).toHaveBeenCalledTimes(1);
   });
 
+  test('calls back for a click whose target is not a node, as for the window itself', async () => {
+    const onOutside = vi.fn();
+
+    await render(<Probe onOutside={onOutside} attachTarget={true} />);
+
+    // A dispatch on the window carries no node as its target; such a click is outside anything.
+    window.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(onOutside).toHaveBeenCalledTimes(1);
+  });
+
   test('registers nothing while the ref is null, and starts once the element arrives', async () => {
     const silentOutside = vi.fn();
 

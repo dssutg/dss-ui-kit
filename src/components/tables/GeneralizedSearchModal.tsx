@@ -1,9 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/buttons/Button';
-import {
-  DecimalIntegerInput,
-  type DecimalIntegerInputValue,
-} from '@/components/inputs/DecimalIntegerInput';
+import { DecimalIntegerInput } from '@/components/inputs/DecimalIntegerInput';
 import { Input } from '@/components/inputs/Input';
 import { Select } from '@/components/inputs/Select';
 import { TextInput } from '@/components/inputs/TextInput';
@@ -184,7 +181,7 @@ function BooleanSelect({
     return 'false';
   }
 
-  function stringToBoolean(value: OptionalBoolean) {
+  function stringToBoolean(value: string): boolean | null {
     switch (value) {
       case 'true': {
         return true;
@@ -194,7 +191,7 @@ function BooleanSelect({
         return false;
       }
 
-      case notChosen: {
+      default: {
         return null;
       }
     }
@@ -204,7 +201,7 @@ function BooleanSelect({
     <Select
       style={{ width: '100%' }}
       value={booleanToString(value)}
-      onChange={(e) => onChange(stringToBoolean(e.currentTarget.value as OptionalBoolean))}
+      onChange={(e) => onChange(stringToBoolean(e.currentTarget.value))}
     >
       <option value={notChosen}>{t(notChosen)}</option>
       <option value="true">{t('yes')}</option>
@@ -240,15 +237,13 @@ function EnumSelect({
       style={{ width: '100%' }}
       value={value ?? notChosen}
       onChange={(e) => {
-        const chosen = e.currentTarget.value as OptionalValue<string>;
-
-        if (chosen === notChosen) {
+        if (e.currentTarget.value === notChosen) {
           onChange(undefined);
 
           return;
         }
 
-        onChange(chosen);
+        onChange(e.currentTarget.value);
       }}
     >
       <option value={notChosen}>{t(notChosen)}</option>
@@ -281,7 +276,12 @@ function getFilterValueAsString<T>(
     }
 
     case 'dateAndTime':
-      return formatDateAndTime(value as number, dates);
+      // A dateAndTime value is the timestamp the date input reports, and a cleared one is dropped
+      // as empty by the filter above, so nothing but a number gets here; whatever else arrives is
+      // read the way every other type reads a value it cannot interpret. The unreached arm stays
+      // out of the coverage gate.
+      // v8 ignore next
+      return typeof value === 'number' ? formatDateAndTime(value, dates) : (value ?? '').toString();
 
     default:
       return (value ?? '').toString();
@@ -316,6 +316,29 @@ function filterIpCharacters(s: string) {
   return s.replace(/[^\d.]+/g, '');
 }
 
+/**
+ * The value the modal holds, narrowed to the type its property's control takes.
+ *
+ * The map is keyed by a name the modal reads with, so it carries `unknown`; each control is given
+ * the value narrowed with `typeof` instead of a cast, and a value of no other kind reports as the
+ * control's own absence, which is also what an untouched field holds.
+ */
+function valueAsString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined;
+}
+
+function valueAsNumber(value: unknown): number | undefined {
+  return typeof value === 'number' ? value : undefined;
+}
+
+function valueAsNumberOrNull(value: unknown): number | null {
+  return typeof value === 'number' ? value : null;
+}
+
+function valueAsBooleanOrNull(value: unknown): boolean | null {
+  return typeof value === 'boolean' ? value : null;
+}
+
 function InputComponent<T>({
   property,
   value,
@@ -332,7 +355,7 @@ function InputComponent<T>({
           inputPadding="0 0.5rem"
           width="100%"
           clearIconInnerClassName="size-2"
-          value={value as string}
+          value={valueAsString(value)}
           onChange={(e) => {
             if (property.trim) {
               onChange(e.currentTarget.value.trim());
@@ -351,7 +374,7 @@ function InputComponent<T>({
           inputPadding="0 0.5rem"
           width="100%"
           clearIconInnerClassName="size-2"
-          value={value as string}
+          value={valueAsString(value)}
           onChange={(e) => onChange(filterIpCharacters(e.currentTarget.value))}
           onClearClick={() => onChange('')}
         />
@@ -361,7 +384,7 @@ function InputComponent<T>({
     case 'decimalInteger': {
       return (
         <DecimalIntegerInput
-          value={value as DecimalIntegerInputValue}
+          value={valueAsNumber(value)}
           minValue={Math.max(Number.MIN_SAFE_INTEGER, property.min ?? Number.MIN_SAFE_INTEGER)}
           maxValue={Math.min(Number.MAX_SAFE_INTEGER, property.max ?? Number.MAX_SAFE_INTEGER)}
           onChange={onChange}
@@ -371,7 +394,7 @@ function InputComponent<T>({
     }
 
     case 'boolean': {
-      return <BooleanSelect value={(value ?? null) as boolean | null} onChange={onChange} />;
+      return <BooleanSelect value={valueAsBooleanOrNull(value)} onChange={onChange} />;
     }
 
     case 'enum': {
@@ -385,13 +408,13 @@ function InputComponent<T>({
     }
 
     case 'dateAndTime': {
-      return <DateAndTimeInput value={(value ?? null) as number | null} onChange={onChange} />;
+      return <DateAndTimeInput value={valueAsNumberOrNull(value)} onChange={onChange} />;
     }
 
     case 'unsignedHex': {
       return (
         <DecimalIntegerInput
-          value={value as DecimalIntegerInputValue}
+          value={valueAsNumber(value)}
           minValue={Math.max(0, property.min ?? 0)}
           maxValue={Math.min(Number.MAX_SAFE_INTEGER, property.max ?? Number.MAX_SAFE_INTEGER)}
           base={16}

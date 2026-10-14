@@ -89,9 +89,7 @@ export function DecimalIntegerInput({
 
   const handleWheelDefault = useCallback(
     (event: WheelEvent) => {
-      const element = event.currentTarget as HTMLInputElement;
-
-      if (document.activeElement !== element) {
+      if (document.activeElement !== event.currentTarget) {
         return;
       }
 
