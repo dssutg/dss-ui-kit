@@ -62,9 +62,12 @@ function getWeekday(year: number, month: number, monthDay: number) {
 function monthEntry<T>(table: readonly T[], month: number): T {
   const entry = table[month];
 
+  // v8 ignore start: the callers pass months 0..11 from the year loop and Date#getMonth, so a read of
+  // a twelve-entry table cannot miss; the comparison only narrows the read for the compiler.
   if (entry === undefined) {
     throw new RangeError(`Month ${month} is not one of the twelve.`);
   }
+  // v8 ignore stop
 
   return entry;
 }
@@ -91,7 +94,6 @@ interface MonthCalendar {
   numberOfDays: number;
   firstWeekday: number;
   firstWeekdayShift: number;
-  isDayTableIndexMonthDay(index: number): boolean;
   getDayTableIndexClass(
     index: number,
     isSundayFirstWeekDay?: boolean,
@@ -210,12 +212,6 @@ function buildMonthCalendar(
     numberOfDays,
     firstWeekday,
     firstWeekdayShift,
-    isDayTableIndexMonthDay(index: number) {
-      return (
-        index >= firstWeekday + firstWeekdayShift &&
-        index < firstWeekday + firstWeekdayShift + numberOfDays
-      );
-    },
     getDayTableIndexClass(index: number, isSundayFirstWeekDay = true) {
       let indexOffset = 1;
       if (isSundayFirstWeekDay) {
@@ -258,24 +254,15 @@ interface Calendar {
 }
 
 /**
- * Builds a year as its twelve months, defaulting the year to the current one when none is given.
+ * Builds a year as its twelve months, for the year the caller hands over.
  *
  * The result is indexed by the month number `Date#getMonth` reports, so a caller hands a `Date`
  * over without translating anything.
  */
-function getCalendar(
-  year: number | undefined,
-  isSundayFirstWeekDay: boolean,
-  calendarLocale: CalendarLocale,
-) {
-  let definedYear = year;
-  if (definedYear === undefined) {
-    definedYear = new Date().getFullYear();
-  }
-
+function getCalendar(year: number, isSundayFirstWeekDay: boolean, calendarLocale: CalendarLocale) {
   const calendar: Calendar = {
-    year: definedYear,
-    isLeapYear: isLeapYear(definedYear),
+    year,
+    isLeapYear: isLeapYear(year),
     isSundayFirstWeekDay,
     weekdayHeader: [...calendarLocale.weekdayNames],
     months: [],
@@ -284,7 +271,7 @@ function getCalendar(
   for (let month = 0; month < 12; month++) {
     calendar.months = [
       ...calendar.months,
-      buildMonthCalendar(definedYear, month, isSundayFirstWeekDay, calendarLocale),
+      buildMonthCalendar(year, month, isSundayFirstWeekDay, calendarLocale),
     ];
   }
 
@@ -357,9 +344,12 @@ export function StaticCalendar({
   // `getCalendar` builds a month for every index `Date#getMonth` can report, so this cannot be
   // reached. It is spelled out because the compiler cannot, and rendering nothing beats crashing on
   // a property read of `undefined` part way through the tree.
+  // v8 ignore start: getCalendar builds a month for every index Date#getMonth reports, so the arm
+  // that renders nothing cannot run.
   if (month === undefined) {
     return null;
   }
+  // v8 ignore stop
 
   const { dayTable } = month;
 
@@ -368,9 +358,12 @@ export function StaticCalendar({
   const getDayClass = (rowIndex: number, columnIndex: number) => {
     const row = dayTable[rowIndex];
 
+    // v8 ignore start: buildDayTable returns exactly the rows the render loop iterates, so the index
+    // is always present and the check only narrows the read for the compiler.
     if (row === undefined) {
       throw new Error('bad rowIndex');
     }
+    // v8 ignore stop
 
     const monthDayIndex = rowIndex * WEEK_DAYS + columnIndex;
     const day = row[columnIndex];
@@ -381,6 +374,13 @@ export function StaticCalendar({
     }
 
     return dayClass;
+  };
+
+  // The text one cell holds. The read is a defensive one the compiler's index typing asks for: the
+  // render loop's indexes are always inside the full six-by-seven table, so the fallback cannot run.
+  const getDayText = (rowIndex: number, columnIndex: number) => {
+    // v8 ignore next: buildDayTable returns a full six-by-seven table, so the render loop's indexes are always present.
+    return dayTable[rowIndex]?.[columnIndex] ?? '';
   };
 
   return (
@@ -412,7 +412,7 @@ export function StaticCalendar({
           <div key={rowIndex} className="flex justify-between first:mb-2">
             {Array.from({ length: WEEK_DAYS }).map((_, columnIndex: number) => (
               <Day key={columnIndex} dayClass={getDayClass(rowIndex, columnIndex)}>
-                {dayTable[rowIndex]?.[columnIndex] ?? ''}
+                {getDayText(rowIndex, columnIndex)}
               </Day>
             ))}
           </div>

@@ -46,7 +46,11 @@ export function TimePartInput({
         value={value}
         minValue={min}
         maxValue={max}
-        onChange={(value) => onChange(value ?? min)}
+        onChange={(value) => {
+          /* v8 ignore next -- DecimalIntegerInput reports a number (never undefined) when
+          shouldResetEmptyInput is set. */
+          onChange(value ?? min);
+        }}
         shouldResetEmptyInput={true}
         inputStyle={{ width: '3rem' }}
       />

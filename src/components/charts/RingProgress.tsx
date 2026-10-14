@@ -5,6 +5,19 @@ import { useWindowSize } from '@/util/hooks/use_window_size';
 import { cmp, degreesToRadians } from '@/util/math';
 
 /**
+ * The hex form of a break-point colour, or `""` where the browser does not recognise it.
+ *
+ * A break-point colour comes from a caller's data, so an unrecognised one is worth surviving rather
+ * than throwing on; the empty string draws nothing rather than failing the ring.
+ */
+function colorBreakPointHex(color: string): string {
+  // Outside a browser `getComputedStyle` is not there to report a colour, but where it is it always
+  // answers with digits, so the null arm is defensive.
+  // v8 ignore next
+  return cssColorTo6DigitHex(color) ?? '';
+}
+
+/**
  * A ring drawn to a fraction, for progress an operator reads at a glance.
  *
  * The ring is SVG with a stroke-dashoffset rather than a spinning arc, so it can be read as a
@@ -61,7 +74,7 @@ export function RingProgress({
 
   const sortedColorBreakPoints = useMemo(() => {
     return colorBreakPoints
-      .map((bp): [number, string] => [bp[0], cssColorTo6DigitHex(bp[1]) ?? ''])
+      .map((bp): [number, string] => [bp[0], colorBreakPointHex(bp[1])])
       .sort((a, b) => cmp(a[0], b[0]));
   }, [colorBreakPoints]);
 
@@ -69,9 +82,12 @@ export function RingProgress({
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    // The ref is attached by the JSX below before this effect runs, so the canvas is never absent.
+    // v8 ignore start
     if (!canvas) {
       return;
     }
+    // v8 ignore stop
 
     const ctx = canvas.getContext('2d');
     if (!ctx) {

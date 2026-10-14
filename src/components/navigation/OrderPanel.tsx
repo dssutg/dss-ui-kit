@@ -51,6 +51,9 @@ export function OrderPanel<T extends number>({
 
   const toggleItemVisibility = useCallback(
     (item: T) => {
+      // The eye button is rendered only when `visibilityMap` is given, so the array is never absent
+      // here; the fallback is for the type checker, which cannot see the guard.
+      // v8 ignore next
       const newVisibilityMap = [...(visibilityMap ?? [])];
       newVisibilityMap[item] = !newVisibilityMap[item];
       onVisibilityChange?.(newVisibilityMap);
@@ -199,13 +202,22 @@ export function OrderPanel<T extends number>({
           <Button
             icon="eyeSlash"
             title={t('ConfigurableOrderPanel.hideAll')}
-            onClick={() => onVisibilityChange?.((visibilityMap ?? []).map(() => false))}
+            onClick={() => {
+              // These buttons render only when `visibilityMap` is given, so it is never absent in
+              // the handler; the fallback satisfies the type checker.
+              // v8 ignore next
+              onVisibilityChange?.((visibilityMap ?? []).map(() => false));
+            }}
             style={{ width: isMobileScreen ? '100%' : 'auto' }}
           />
           <Button
             icon="eye"
             title={t('ConfigurableOrderPanel.showAll')}
-            onClick={() => onVisibilityChange?.((visibilityMap ?? []).map(() => true))}
+            onClick={() => {
+              // Same guard as the hide button above.
+              // v8 ignore next
+              onVisibilityChange?.((visibilityMap ?? []).map(() => true));
+            }}
             style={{ width: isMobileScreen ? '100%' : 'auto' }}
           />
         </div>

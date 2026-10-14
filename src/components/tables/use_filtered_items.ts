@@ -253,6 +253,8 @@ export function useFilteredItems<T>({
       case 'string':
       case 'ip': {
         const itemValue = normalize(property.extractValue(item));
+        // A string or ip term always parses to a string, so the empty fallback cannot be reached.
+        // v8 ignore next
         const stringValue = normalize((value ?? '').toString());
 
         return itemValue.includes(stringValue);
@@ -260,6 +262,8 @@ export function useFilteredItems<T>({
 
       case 'enum': {
         const itemValue = normalize(getEnumLabel(property, property.extractValue(item)));
+        // An enum term always parses to a string, so the empty fallback cannot be reached.
+        // v8 ignore next
         const stringValue = normalize((value ?? '').toString());
 
         return itemValue.includes(stringValue);
@@ -268,6 +272,8 @@ export function useFilteredItems<T>({
       case 'dateAndTime': {
         const itemValue = formatDateAndTime(property.extractValue(item), dates);
 
+        // A date term always parses to a string, so the empty fallback cannot be reached.
+        // v8 ignore next
         const stringValue = normalize((value ?? '').toString());
 
         return itemValue.includes(stringValue);

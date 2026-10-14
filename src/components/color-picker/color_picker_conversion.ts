@@ -134,6 +134,8 @@ export function hslaStringToHsva(hslString: string): HsvaColor {
   }
 
   return hslaToHsva({
+    // Group 1 is mandatory in the matcher, so a successful match always carries a hue here.
+    // v8 ignore next
     h: parseHue(match[1] ?? '0', match[2]),
     s: Number(match[3]),
     l: Number(match[4]),

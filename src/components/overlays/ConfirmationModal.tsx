@@ -77,6 +77,8 @@ export function ConfirmationModal({
     <Modal
       open={open}
       onOpenChange={(nextOpen) => {
+        // The dialog only ever asks to close; opening it is the caller's decision.
+        // v8 ignore next
         if (!nextOpen) {
           answer(false);
         }

@@ -6,7 +6,7 @@
  * caller bundled rather than one of the library's.
  */
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { HighlightedJson } from '@/components/display/HighlightedJson';
 import { Icon } from '@/components/display/Icon';
 import { IconedSectionTitle } from '@/components/display/IconedSectionTitle';
@@ -21,7 +21,7 @@ import {
   registerIcons,
   unregisterIcon,
 } from '@/icons/registry';
-import { click, render } from '@/util/testing/render';
+import { click, flush, render, type } from '@/util/testing/render';
 
 describe('Icon', () => {
   it('is hidden from the accessibility tree, because the control around it carries the name', async () => {
@@ -165,12 +165,59 @@ describe('IconedSectionTitle', () => {
 });
 
 describe('IconViewer', () => {
+  /** The `navigator.clipboard` state, restored after each test. */
+  let clipboardDescriptor: PropertyDescriptor | undefined;
+
+  beforeEach(() => {
+    clipboardDescriptor = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+  });
+
+  afterEach(() => {
+    if (clipboardDescriptor) {
+      Object.defineProperty(navigator, 'clipboard', clipboardDescriptor);
+    } else {
+      Reflect.deleteProperty(navigator, 'clipboard');
+    }
+  });
+
+  /** Replaces `navigator.clipboard` until the test ends. jsdom ships none. */
+  function stubClipboard(writeText: (text: string) => Promise<void>): void {
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+  }
+
   it('renders every icon it knows about, each labelled with its name', async () => {
     const { findAll } = await render(<IconViewer />);
 
     const labelled = findAll('[aria-label="save"]');
 
     expect(labelled.length).toBeGreaterThan(0);
+  });
+
+  it('shows only the icons matching the search, and keeps the rest as empty cells', async () => {
+    const { findAll, find, query } = await render(<IconViewer />);
+
+    type(find<HTMLInputElement>('input'), 'save');
+    await flush();
+
+    // The matching icon keeps its button; `plus` does not match and still occupies a cell, so the grid
+    // does not reflow around what is being searched for.
+    expect(findAll('[aria-label="save"]')).toHaveLength(1);
+    expect(query('[aria-label="plus"]')).toBeNull();
+  });
+
+  it('copies an icon name on click, because the name is what a caller pastes into code', async () => {
+    const writeText = vi.fn<typeof Clipboard.prototype.writeText>().mockResolvedValue(undefined);
+    stubClipboard(writeText);
+
+    const { find } = await render(<IconViewer />);
+
+    type(find<HTMLInputElement>('input'), 'save');
+    await flush();
+
+    await click(find<HTMLButtonElement>('[aria-label="save"]'));
+    await flush();
+
+    expect(writeText).toHaveBeenCalledWith('save');
   });
 });
 

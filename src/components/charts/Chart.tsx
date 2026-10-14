@@ -344,8 +344,12 @@ function AxisLabels({
   readonly getYLabel: (y: number) => string;
   readonly label: string | undefined;
 }) {
+  // `width` and `height` come from the AutoSizer above, which only calls its children once both axes
+  // are measured, so neither is ever undefined here; the compiler cannot see that.
+  // v8 ignore start
   const columnCount = width === undefined ? 0 : Math.floor(width / gridGap);
   const rowCount = height === undefined ? 0 : Math.floor(height / gridGap);
+  // v8 ignore stop
 
   // A <fieldset> is what `role="group"` was standing in for, and it carries the group's accessible
   // name natively. The browser's own fieldset styling is reset here, since this one groups labels
@@ -362,7 +366,12 @@ function AxisLabels({
           <div
             key={`row-${row}`}
             className="absolute right-1 truncate"
-            style={{ top: row * gridGap, maxWidth: (width ?? 0) / 3 }}
+            style={{
+              top: row * gridGap,
+              // As above, `width` is always measured, so the fallback is unreachable.
+              // v8 ignore next
+              maxWidth: (width ?? 0) / 3,
+            }}
           >
             {text}
           </div>

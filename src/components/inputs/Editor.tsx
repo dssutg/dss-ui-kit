@@ -152,6 +152,10 @@ export const Editor = forwardRef(
 
     useEffect(() => {
       const input = inputRef.current;
+
+      // `recordChange` is backed by a stable ref, so this effect runs once, after the ref is
+      // attached; the null arm is for the compiler. The unreached arm stays out of the coverage gate.
+      // v8 ignore else
       if (input !== null) {
         // Save current state of the input
         const { value, selectionStart, selectionEnd } = input;

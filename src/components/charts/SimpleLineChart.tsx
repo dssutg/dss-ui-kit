@@ -210,9 +210,13 @@ function Canvas({
     () => {
       const canvas = canvasRef.current;
 
+      // The ref is attached to the <canvas> below before this effect runs, so the canvas is never
+      // absent here; the compiler cannot see that.
+      // v8 ignore start
       if (canvas === null) {
         return;
       }
+      // v8 ignore stop
 
       const context = canvas.getContext('2d');
 

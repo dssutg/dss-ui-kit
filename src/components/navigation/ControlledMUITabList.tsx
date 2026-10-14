@@ -61,9 +61,13 @@ export function ControlledMUITabList<ID extends string>({
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       if ((e.code === 'ArrowLeft' || e.code === 'ArrowRight') && tabId !== null) {
+        // The handler is only attached to a list with at least one tab: the component renders nothing
+        // while `tabs[0]` is absent, so this arm cannot execute.
+        // v8 ignore start
         if (tabs.length === 0) {
           return;
         }
+        // v8 ignore stop
 
         let delta = 1;
         if (e.code === 'ArrowLeft') {
@@ -78,6 +82,9 @@ export function ControlledMUITabList<ID extends string>({
           tabs.length,
         );
 
+        // `wrapIndex` keeps the index inside `tabs`, so the id is always present; the fallback arm is
+        // only for the compiler, which cannot see it, and stays out of the gate.
+        // v8 ignore next
         setTabId(tabs[itemIndex]?.id ?? tabId);
       }
     },

@@ -71,6 +71,9 @@ export function EditableAccordionList({
   const modifyItem = useCallback(
     (itemKey: string, newItemState: EditableAccordionListItem) => {
       const index = items.findIndex((listItem) => listItem.key === itemKey);
+      // Every handler passes a key read off a row of the current list, so the key is always present;
+      // the missing arm is only for the compiler, which cannot see it, and stays out of the gate.
+      // v8 ignore next
       if (index >= 0) {
         const newItems = [...items];
         newItems[index] = newItemState;

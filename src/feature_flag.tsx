@@ -98,6 +98,9 @@ export function toggleFeature(featureName: FeatureName): boolean {
 export function getAllFeatureFlags(): FeatureDescriptor[] {
   return [...registry].map((name) => ({
     name,
+    // The registry and the value map are only written together, so a registered name always has a
+    // value; the fallback is unreachable and spelled out because the map type cannot say so.
+    // v8 ignore next
     defaultValue: featureFlags.get(name) ?? false,
   }));
 }

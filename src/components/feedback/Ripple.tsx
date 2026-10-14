@@ -42,6 +42,9 @@ export function Ripple({
       function onClick(e: MouseEvent) {
         const button = e.currentTarget as HTMLButtonElement;
 
+        // `currentTarget` is the element the listener is attached to for the whole of the dispatch,
+        // so it is never null inside the handler; the guard is only for the type checker.
+        // v8 ignore next
         if (button === null) {
           return;
         }

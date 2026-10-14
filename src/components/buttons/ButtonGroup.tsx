@@ -59,6 +59,10 @@ export function ButtonGroup<T extends string>({
     if (event.code !== 'ArrowLeft' && event.code !== 'ArrowRight') {
       return;
     }
+    // The handler is bound to a segment, so it can only run while at least one segment exists; the
+    // guard is for a group rendered with no items, which has no segment to receive the event. The
+    // unreached arm stays out of the coverage gate for that.
+    // v8 ignore next 3
     if (items.length === 0) {
       return;
     }
@@ -69,8 +73,12 @@ export function ButtonGroup<T extends string>({
     );
 
     if (event.code === 'ArrowLeft') {
+      // `wrapIndex` returns an index inside a non-empty list, so the read is always an item; the
+      // fallback is only for the compiler. The unreached arm stays out of the coverage gate.
+      // v8 ignore next
       onItemChange(items[wrapIndex(itemIndex - 1, items.length)]?.id ?? itemId);
     } else {
+      // v8 ignore next
       onItemChange(items[wrapIndex(itemIndex + 1, items.length)]?.id ?? itemId);
     }
   }

@@ -108,6 +108,9 @@ export function Slider({
 
   const onCursorDown = useCallback(
     (event: MouseEvent | TouchEvent) => {
+      // The handler is bound to the element the ref points at, so the ref is set whenever it runs;
+      // the null arm is for the compiler. The unreached arm stays out of the coverage gate.
+      // v8 ignore if
       if (wrapperRef.current === null) {
         return;
       }

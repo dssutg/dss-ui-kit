@@ -32,14 +32,14 @@ export default defineConfig(
       testTimeout: 10_000,
       coverage: {
         provider: 'v8',
-        // The helper layer is what the gate covers. `src/util/` names the directory AGENTS.md calls
-        // "hooks and framework-agnostic helpers", and it is the layer most worth a coverage floor:
-        // pure logic a component reads, with no rendering to make a missing branch invisible.
-        include: ['src/util/**/*.{ts,tsx}'],
+        // The whole library is what the gate covers: the helpers under `src/util/`, the components
+        // under `src/components/`, and the infrastructure modules beside them. The one layer left out
+        // is the testing helpers, listed as an exception below.
+        include: ['src/**/*.{ts,tsx}'],
         // A test is not something to cover, and a shader is not TypeScript. The exceptions are read
         // from the list whose reasons are checked by `scripts/coverage-exceptions.test.ts`.
         exclude: [
-          'src/util/**/*.test.{ts,tsx}',
+          'src/**/*.test.{ts,tsx}',
           ...COVERAGE_EXCEPTIONS.map((exception) => exception.path),
         ],
         reporter: ['text'],

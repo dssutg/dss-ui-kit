@@ -5,7 +5,7 @@ import { collectFiles } from './util/source-tree.ts';
 /**
  * Every coverage exception names a file that exists and says why.
  *
- * The gate in `vitest.config.ts` holds `src/util/` to 100% and the exception list is the one way a
+ * The gate in `vitest.config.ts` holds `src/` to 100% and the exception list is the one way a
  * file leaves it. A list nobody checks is a list that grows: an entry left behind after its file was
  * renamed silently excludes nothing, and an entry with no reason is indistinguishable from gaming
  * the number. This test reads the list rather than the coverage report — it cannot know the file is
@@ -27,7 +27,7 @@ function globToRegExp(pattern: string): RegExp {
 
 describe('coverage exceptions', () => {
   test('every exception names at least one file', () => {
-    const files = collectFiles('src/util');
+    const files = collectFiles('src');
 
     const unmatched = COVERAGE_EXCEPTIONS.filter((exception) => {
       const pattern = globToRegExp(exception.path);
@@ -48,7 +48,7 @@ describe('coverage exceptions', () => {
 
   test('every exception is inside the covered directory', () => {
     const outside = COVERAGE_EXCEPTIONS.filter(
-      (exception) => !exception.path.startsWith('src/util/'),
+      (exception) => !exception.path.startsWith('src/'),
     ).map((exception) => exception.path);
 
     expect(outside).toEqual([]);

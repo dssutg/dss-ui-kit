@@ -76,6 +76,9 @@ export function Popover({
     () => {
       const trigger = triggerRef.current;
 
+      // The trigger is there for as long as this effect is: the ref is attached before mount
+      // effects run and detached only after the cleanups below have.
+      // v8 ignore next
       if (trigger === null) {
         return;
       }
@@ -106,6 +109,8 @@ export function Popover({
   );
 
   useInterval(() => {
+    // The trigger is there for as long as this interval is: unmounting clears both together.
+    // v8 ignore next
     if (triggerRef.current === null) {
       return;
     }
@@ -226,6 +231,8 @@ function PopoverPanel({
       const resizeObserver = new ResizeObserver(updatePos);
       const mutationObserver = new MutationObserver(updatePos);
 
+      // The panel is attached by the time mount effects run, which is what this effect observes.
+      // v8 ignore next
       if (panelRef.current) {
         resizeObserver.observe(panelRef.current);
         mutationObserver.observe(panelRef.current, {
@@ -240,6 +247,9 @@ function PopoverPanel({
       }
 
       return () => {
+        // The panel is still attached here: Preact runs the unmount cleanups before it detaches
+        // refs, so the observers can always be told to stop.
+        // v8 ignore next
         if (panelRef.current) {
           resizeObserver.unobserve(panelRef.current);
           mutationObserver.disconnect();

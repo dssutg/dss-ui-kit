@@ -236,6 +236,7 @@ export function CommandConsole({
       const entered = line.trim();
       const expanded = expandAlias(entered, aliases, commandMap);
       const args = expanded.split(/\s+/);
+      // v8 ignore next: splitting any line returns at least one entry, so the first word is never missing.
       const commandName = args[0] ?? '';
 
       if (commandName === '') {
@@ -448,12 +449,26 @@ function useCommandHistory() {
 
   return {
     lines,
-    inputValue: recalledFrom === null ? draft : (lines[recalledFrom] ?? ''),
+    inputValue: recalledLine(recalledFrom, draft, lines),
     setInput,
     recallPrevious,
     recallNext,
     remember,
   };
+}
+
+/** The line the prompt shows: the draft while it is being edited, the remembered line once it is not. */
+function recalledLine(
+  recalledFrom: number | null,
+  draft: string,
+  lines: readonly string[],
+): string {
+  if (recalledFrom === null) {
+    return draft;
+  }
+
+  // v8 ignore next: a recalled position is always a remembered line, and lines are only ever added to.
+  return lines[recalledFrom] ?? '';
 }
 
 /**
@@ -523,9 +538,12 @@ function expandAlias(
 ): string {
   const [commandName, ...args] = line.split(/\s+/);
 
+  // v8 ignore start: splitting a line returns at least one entry, so the first word is never missing
+  // and the branch only narrows the destructure for the compiler.
   if (commandName === undefined) {
     return line;
   }
+  // v8 ignore stop
 
   const aliasedLine = aliases[commandName];
 
@@ -556,6 +574,7 @@ function builtInCommands(t: Translate): Record<string, CommandConsoleCommand> {
       usage: () => [t('CommandConsole.help.usage')],
       execute: ({ args, echo: echoFromCommand, usage, commands, developerMode }) => {
         if (args.length > 1) {
+          // v8 ignore next: a help line reaches here with at least two args, so the second is never missing.
           const commandName = args[1] ?? '';
           const command = commands[commandName];
 

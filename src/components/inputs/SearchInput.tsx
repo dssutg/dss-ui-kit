@@ -83,6 +83,9 @@ export function SearchInput({
         return;
       }
 
+      // Every setter on the history selection clamps or defaults to a non-negative index, so the
+      // negative arm is for the compiler. The unreached arm stays out of the coverage gate.
+      // v8 ignore if
       if (selectedHistoryItemIndex < 0) {
         setSelectedHistoryItemIndex(0);
       }

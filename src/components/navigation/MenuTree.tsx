@@ -296,9 +296,12 @@ function renderTreeLevelBlock(
     }
 
     // Every connector type above is handled, and this says so: a new one is a type
-    // error here rather than an item that draws no indentation at all.
+    // error here rather than an item that draws no indentation at all. The arm cannot run for
+    // any value the union admits, so it stays out of the coverage gate.
+    // v8 ignore start
     default:
       return unreachable(type);
+    // v8 ignore stop
   }
 }
 

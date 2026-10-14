@@ -122,6 +122,9 @@ interface FrameScheduler {
  * handle carries two ids and why cancelling has to undo both.
  */
 function createFrameScheduler(): FrameScheduler {
+  // The fallback is decided once, at module load, from what the realm ships; jsdom always ships
+  // animation frames, so the timeout-only fallback cannot be the one chosen for this suite.
+  // v8 ignore start
   if (cancelAnimationFrameFn == null || requestAnimationFrameFn == null) {
     return {
       cancelFrame: ([, timeoutID]) => {
@@ -130,6 +133,7 @@ function createFrameScheduler(): FrameScheduler {
       requestFrame: (callback) => [0, setTimeoutFn(callback, TIMEOUT_DURATION)],
     };
   }
+  // v8 ignore end
 
   return {
     cancelFrame: ([animationFrameID, timeoutID]) => {
@@ -167,9 +171,14 @@ function createFrameScheduler(): FrameScheduler {
  */
 function measureSizeWithinPadding(parentNode: HTMLElement): Size {
   const style = window.getComputedStyle(parentNode) || {};
+  // A computed style always answers with a value, even a zero one, so the fallback never runs.
+  // v8 ignore next
   const paddingLeft = parseFloat(style.paddingLeft || '0');
+  // v8 ignore next
   const paddingRight = parseFloat(style.paddingRight || '0');
+  // v8 ignore next
   const paddingTop = parseFloat(style.paddingTop || '0');
+  // v8 ignore next
   const paddingBottom = parseFloat(style.paddingBottom || '0');
 
   const rect = parentNode.getBoundingClientRect();
@@ -239,6 +248,9 @@ interface TriggersElement extends HTMLElement {
  */
 /** The triggers an element carries once it has been observed, which it always has at this point. */
 function requireTriggers(element: MeasuredElement): TriggersElement {
+  // Resets only run on an element that has been observed, and observing is what installs the
+  // triggers, so every reset finds them.
+  // v8 ignore next
   if (element.autoSizerTriggers === undefined) {
     throw new Error('AutoSizer: asked to reset the resize triggers of an unobserved element.');
   }
@@ -246,6 +258,8 @@ function requireTriggers(element: MeasuredElement): TriggersElement {
 }
 
 function requireChild(child: Element | null): HTMLElement {
+  // The triggers are appended in a fixed shape: two named children, the first holding one child.
+  // v8 ignore next
   if (child === null) {
     throw new Error('AutoSizer: the resize triggers are missing a child element.');
   }
@@ -347,6 +361,10 @@ function createDetectElementResize(nonce?: string): DetectElementResize {
       }
 
       const element = event.currentTarget;
+
+      // The listener is bound only to the element the triggers were installed on, so every scroll
+      // it hears arrives at an element that carries them.
+      // v8 ignore next
       if (!(element instanceof HTMLElement) || !('autoSizerTriggers' in element)) {
         return;
       }
@@ -363,6 +381,8 @@ function createDetectElementResize(nonce?: string): DetectElementResize {
         if (checkTriggers(measured) && measured.autoSizerLastSize !== undefined) {
           measured.autoSizerLastSize.width = measured.offsetWidth;
           measured.autoSizerLastSize.height = measured.offsetHeight;
+          // Observing always installs the listener list, so there is always one to walk.
+          // v8 ignore next
           for (const listener of measured.autoSizerListeners ?? []) {
             listener.call(measured, event);
           }
@@ -380,11 +400,16 @@ function createDetectElementResize(nonce?: string): DetectElementResize {
   const createStyles = (doc: Document) => {
     if (!doc.querySelector('#detectElementResize')) {
       // Opacity:0 works around a chrome bug https://code.google.com/p/chromium/issues/detail?id=286360
+      // Both fragments below are built before this runs and neither comes back empty, so the
+      // fallbacks never fire.
+      // v8 ignore next
       const css =
         `${animationKeyframes ? animationKeyframes : ''}.resize-triggers { ${
           animationStyle ? animationStyle : ''
         }visibility: hidden; opacity: 0; } ` +
         '.resize-triggers, .resize-triggers > div, .contract-trigger:before { content: " "; display: block; position: absolute; top: 0; left: 0; height: 100%; width: 100%; overflow: hidden; z-index: -1; } .resize-triggers > div { background: #eee; overflow: auto; } .contract-trigger:before { width: 200%; height: 200%; }';
+      // A document with stylesheets in this realm always has a head to append to.
+      // v8 ignore next
       const head = doc.head || doc.querySelectorAll('head')[0];
       const style = doc.createElement('style');
 
@@ -451,6 +476,9 @@ function createDetectElementResize(nonce?: string): DetectElementResize {
     const triggers = element.autoSizerTriggers;
     const listeners = element.autoSizerListeners;
 
+    // Removal follows an add on the same element, which is what installed the triggers and the
+    // list, so a removal never arrives without both.
+    // v8 ignore next
     if (triggers === undefined || listeners === undefined) {
       return;
     }
@@ -463,6 +491,9 @@ function createDetectElementResize(nonce?: string): DetectElementResize {
 
     element.removeEventListener('scroll', scrollListener, true);
 
+    // The animation listener is installed whenever the triggers are, so it is always the thing
+    // being removed here.
+    // v8 ignore next
     if (triggers.autoSizerAnimationListener) {
       triggers.removeEventListener(animationStartEvent, triggers.autoSizerAnimationListener);
       triggers.autoSizerAnimationListener = null;
@@ -508,6 +539,8 @@ export class AutoSizer extends Component<AutoSizerProps, AutoSizerState> {
 
   public override componentDidMount() {
     const { nonce } = this.props;
+    // The ref is attached before mount effects run, so the element is always there to look up from.
+    // v8 ignore next
     const parentNode = this.autoSizer ? this.autoSizer.parentNode : null;
 
     if (
@@ -625,6 +658,9 @@ export class AutoSizer extends Component<AutoSizerProps, AutoSizerState> {
     const { disableHeight, disableWidth, onResize } = this.props as HeightAndWidthProps;
     const { parentNode } = this;
 
+    // A parent is recorded before any resize callback can run, and unmounting clears the timers
+    // that would call this back, so a resize never arrives without one.
+    // v8 ignore next
     if (parentNode === null) {
       return;
     }

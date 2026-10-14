@@ -273,6 +273,8 @@ function getFilterValueAsString<T>(
 ): string {
   switch (property.type) {
     case 'enum': {
+      // A nullish enum value is dropped by the empty filter above, so the fallback cannot be reached.
+      // v8 ignore next
       const asString = (value ?? '').toString();
 
       return property.options.find((option) => option.value === asString)?.label ?? asString;

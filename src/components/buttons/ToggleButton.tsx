@@ -62,7 +62,9 @@ export function ToggleButton<TValue extends string>({
     throw new Error(`ToggleButton: "${value}" is not one of its options.`);
   }
 
-  // `current` came out of `options`, so the list is not empty and this index is inside it.
+  // `current` came out of `options`, so the list is not empty and this index is inside it; the
+  // fallback is only for the compiler. The unreached arm stays out of the coverage gate for that.
+  // v8 ignore next
   const next = options[(currentIndex + 1) % options.length] ?? current;
 
   return (

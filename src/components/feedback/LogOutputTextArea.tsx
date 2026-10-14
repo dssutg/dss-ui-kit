@@ -29,6 +29,9 @@ export function LogOutputTextArea({
     () => {
       const textarea = textareaRef.current;
 
+      // The ref is attached before the effect runs, so it is never null here; the guard is only for
+      // the type checker.
+      // v8 ignore next
       if (!textarea) {
         return;
       }

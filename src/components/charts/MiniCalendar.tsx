@@ -42,11 +42,15 @@ export function MiniCalendar({
   // before the animation is started.
   useGranularEffect(
     () => {
+      // v8 ignore start: the ref is assigned during the commit that precedes this effect, so every
+      // run of the body — the first one and a re-run on a position change — sees the element, and
+      // the null guard cannot be taken. The tests still assert the position the body computes.
       if (windowRef.current) {
         const { height } = windowRef.current.getBoundingClientRect();
         setCurX(posX);
         setCurY(Math.min(posY, window.innerHeight - height - 100));
       }
+      // v8 ignore stop
     },
     [windowRef, windowRef.current, posY, posX],
     [],

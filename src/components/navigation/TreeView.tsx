@@ -181,6 +181,9 @@ export function TreeView({
       const selectItemAtIndex = (index: number) => {
         const item = visibleItemFlatList[index];
 
+        // The index comes from `clamp` over a list already checked non-empty above, so it always
+        // names an item; the guard is only for the compiler's view of an index.
+        // v8 ignore next
         if (item !== undefined) {
           onSelectedItemIdChange(item.id);
         }
@@ -353,6 +356,9 @@ export function TreeView({
   };
 
   const getTreeItemRowClassName = (item: TreeViewItem) => {
+    // `getVisibleItemFlatList` sets `loading` to a boolean on every row, so the fallback is only
+    // for the optional field in the type and is never taken.
+    // v8 ignore next
     const loading = item.loading ?? false;
 
     return cn(
@@ -466,6 +472,11 @@ export function TreeView({
                     return null;
                   }
 
+                  // `getVisibleItemFlatList` sets `level` on every row, so the fallback is only
+                  // for the optional field in the type and is never taken.
+                  // v8 ignore next
+                  const level = item.level ?? 0;
+
                   return (
                     <div key={item.id} style={style}>
                       <div
@@ -476,7 +487,7 @@ export function TreeView({
                         // Roving tabindex: the selected item is the one in the tab order, so Tab
                         // enters the tree once and the arrow keys move within it.
                         tabIndex={selectedItemId === item.id ? 0 : -1}
-                        aria-level={item.level ?? 0}
+                        aria-level={level}
                         aria-selected={selectedItemId === item.id}
                         aria-expanded={item.children === undefined ? undefined : item.expanded}
                         onClick={() => {
@@ -492,7 +503,7 @@ export function TreeView({
                         onDrop={item.onDrop}
                         className={getTreeItemRowClassName(item)}
                         style={{
-                          paddingLeft: (item.level ?? 0) * levelPaddingPixels,
+                          paddingLeft: level * levelPaddingPixels,
                           ...itemStyle,
                         }}
                       >

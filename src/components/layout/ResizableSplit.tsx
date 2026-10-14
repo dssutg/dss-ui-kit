@@ -156,6 +156,9 @@ function ResizableSplitPanelSizer({
   useMouseDrag(
     ref.current,
     (_, { newPosition }) => {
+      // The drag can only begin on the mounted sizer, and the ref is attached for its lifetime, so
+      // a drag callback never runs without its panel.
+      // v8 ignore next
       if (panelRef.current === null) {
         return;
       }

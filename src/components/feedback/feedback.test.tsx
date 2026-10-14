@@ -8,8 +8,17 @@
  * the two commands a shell cannot do without.
  */
 // @vitest-environment jsdom
-import { describe, expect, it, vi } from 'vitest';
-import { AppCrashGuard } from '@/components/feedback/AppCrashGuard';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  AppCrashGuard,
+  type CrashGuardProps,
+  type CrashReport,
+  CrashReportQueue,
+  clearCachedCrashReports,
+  crashReportCacheKey,
+  crashReportQueueKey,
+  readCachedCrashReports,
+} from '@/components/feedback/AppCrashGuard';
 import {
   CommandConsole,
   type CommandConsoleCommand,
@@ -32,6 +41,15 @@ describe('AppCrashGuard', () => {
       throw new Error('component exploded');
     }
     return <p>intact</p>;
+  }
+
+  /** Throws an error that has lost its stack, the way an engine without stack traces reports one. */
+  function ExplodesWithoutAStack(): React.JSX.Element {
+    const error = new Error('component exploded');
+
+    Object.defineProperty(error, 'stack', { value: undefined });
+
+    throw error;
   }
 
   it('renders its children while nothing has thrown', async () => {
@@ -134,6 +152,488 @@ describe('AppCrashGuard', () => {
     expect(fallbackRoot.className).not.toContain('h-screen');
     expect(fallbackRoot.className).toContain('flex');
   });
+
+  /** Renders the guard over a subtree that throws and returns every report `onCrash` received. */
+  async function crashWith(props: Partial<CrashGuardProps>): Promise<readonly CrashReport[]> {
+    const reports: CrashReport[] = [];
+
+    await render(
+      <AppCrashGuard
+        version="1.0.0"
+        onCrash={(report) => {
+          reports.push(report);
+        }}
+        {...props}
+      >
+        <Exploding explode={true} />
+      </AppCrashGuard>,
+    );
+
+    return reports;
+  }
+
+  it('offers the contact email when the caller gave one', async () => {
+    const { find, query } = await render(
+      <AppCrashGuard version="1.0.0" contact={{ email: 'ops@example.com' }}>
+        <Exploding explode={true} />
+      </AppCrashGuard>,
+    );
+
+    const emailLink = find('a[href^="mailto:"]');
+
+    expect(emailLink.textContent).toBe('ops@example.com');
+    // The report is there for the operator to copy, whatever contact is offered.
+    expect(find<HTMLTextAreaElement>('textarea').value).toContain('"appVersion": "1.0.0"');
+    expect(query('a[rel="noreferrer"]')).toBeNull();
+  });
+
+  it('offers the issue tracker link when the caller gave one', async () => {
+    const { find, query } = await render(
+      <AppCrashGuard version="1.0.0" contact={{ issueUrl: 'https://example.com/issues' }}>
+        <Exploding explode={true} />
+      </AppCrashGuard>,
+    );
+
+    const issueLink = find('a[rel="noreferrer"]');
+
+    expect(issueLink.textContent).toBe('https://example.com/issues');
+    // The link opens in a tab an operator can keep; the mail link is not rendered beside it.
+    expect(issueLink.getAttribute('target')).toBe('_blank');
+    expect(query('a[href^="mailto:"]')).toBeNull();
+  });
+
+  it('records a context a getContext that returns nothing as null, rather than the string "undefined"', async () => {
+    const reports = await crashWith({ getContext: () => undefined });
+
+    expect(reports[0]?.context).toBeNull();
+  });
+
+  it('keeps a crash reportable even when getContext itself throws', async () => {
+    const reports = await crashWith({
+      getContext: () => {
+        throw new Error('the context blew up');
+      },
+    });
+
+    // The failure of the context is the context, and the original crash is beside it unchanged.
+    expect(reports[0]?.context).toContain('the context blew up');
+    expect(reports[0]?.errorMessage).toBe('component exploded');
+  });
+
+  it('reports the application start date the caller gives it', async () => {
+    const startDate = new Date('2026-01-01T00:00:00.000Z');
+    const reports = await crashWith({ startDate });
+
+    expect(reports[0]?.appStartDate).toBe('2026-01-01T00:00:00.000Z');
+  });
+
+  it('records an absent error stack as null, for engines that do not carry one', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    try {
+      const reports: CrashReport[] = [];
+
+      await render(
+        <AppCrashGuard
+          version="1.0.0"
+          onCrash={(report) => {
+            reports.push(report);
+          }}
+        >
+          <ExplodesWithoutAStack />
+        </AppCrashGuard>,
+      );
+
+      expect(reports[0]?.errorStack).toBeNull();
+      expect(reports[0]?.errorMessage).toBe('component exploded');
+    } finally {
+      consoleError.mockRestore();
+    }
+  });
+
+  it('records the environment there is nothing to ask for, from a page with no browser around it', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const originals = [
+      'location',
+      'navigator',
+      'performance',
+      'screen',
+      'innerWidth',
+      'innerHeight',
+    ].map((key) => [key, Object.getOwnPropertyDescriptor(globalThis, key)] as const);
+
+    try {
+      for (const [key] of originals) {
+        Object.defineProperty(globalThis, key, { value: undefined, configurable: true });
+      }
+
+      const reports = await crashWith({});
+
+      // Every field the report carries about the machine is the neutral one, so the report has the
+      // same shape as one taken where the browser answered.
+      expect(reports[0]?.uri).toBe('');
+      expect(reports[0]?.userAgent).toBe('');
+      expect(reports[0]?.language).toBe('');
+      expect(reports[0]?.screenWidth).toBe(0);
+      expect(reports[0]?.screenHeight).toBe(0);
+      expect(reports[0]?.viewportWidth).toBe(0);
+      expect(reports[0]?.viewportHeight).toBe(0);
+      expect(reports[0]?.cookiesEnabled).toBe(false);
+      expect(reports[0]?.onlineStatus).toBe(true);
+      expect(reports[0]?.memory).toEqual({
+        totalJSHeapSize: null,
+        usedJSHeapSize: null,
+        jsHeapSizeLimit: null,
+      });
+    } finally {
+      for (const [key, descriptor] of originals) {
+        if (descriptor !== undefined) {
+          Object.defineProperty(globalThis, key, descriptor);
+        }
+      }
+
+      consoleError.mockRestore();
+    }
+  });
+
+  it('copies the report to the clipboard when its icon button is clicked', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const writeText = vi.fn<(text: string) => Promise<void>>();
+    writeText.mockResolvedValue(undefined);
+
+    const clipboardDescriptor = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+
+    try {
+      Object.defineProperty(navigator, 'clipboard', {
+        value: { writeText },
+        configurable: true,
+      });
+
+      const { find } = await render(
+        <AppCrashGuard version="1.0.0" contact={{ email: 'ops@example.com' }}>
+          <Exploding explode={true} />
+        </AppCrashGuard>,
+      );
+
+      // The copy button belongs to the fallback the operator is reading the report on.
+      const copyButton = find('button[title="Copy the report"]');
+
+      await click(copyButton);
+
+      expect(copyButton.getAttribute('aria-label')).toBe('Copy the report');
+      expect(writeText).toHaveBeenCalledTimes(1);
+      expect(writeText.mock.calls[0]?.[0]).toContain('"errorMessage": "component exploded"');
+    } finally {
+      if (clipboardDescriptor === undefined) {
+        Reflect.deleteProperty(navigator, 'clipboard');
+      } else {
+        Object.defineProperty(navigator, 'clipboard', clipboardDescriptor);
+      }
+
+      consoleError.mockRestore();
+    }
+  });
+});
+
+/** A crash report with only its identity filled in, enough for a queue or a cache round trip. */
+function sampleReport(id: string): CrashReport {
+  return {
+    reportId: id,
+    appVersion: '1.0.0',
+    appStartDate: '2026-01-01T00:00:00.000Z',
+    uri: 'https://example.com/chart',
+    userAgent: 'jsdom',
+    language: 'en',
+    screenWidth: 1024,
+    screenHeight: 768,
+    viewportWidth: 1024,
+    viewportHeight: 768,
+    cookiesEnabled: false,
+    onlineStatus: true,
+    timestamp: '2026-01-01T00:00:01.000Z',
+    errorMessage: id,
+    errorStack: null,
+    componentStack: null,
+    context: null,
+    memory: { totalJSHeapSize: null, usedJSHeapSize: null, jsHeapSizeLimit: null },
+  };
+}
+
+/** The count of entries under the queue key, for an assertion about how much storage holds. */
+function storedQueueEntries(): readonly unknown[] {
+  const raw = localStorage.getItem(crashReportQueueKey);
+
+  if (raw === null) {
+    return [];
+  }
+
+  const entries: unknown = JSON.parse(raw);
+
+  if (!Array.isArray(entries)) {
+    throw new Error('the queue storage did not hold an array');
+  }
+
+  return entries;
+}
+
+describe('the crash report cache', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('returns nothing while there is nothing cached', () => {
+    expect(readCachedCrashReports()).toEqual([]);
+  });
+
+  it('returns the cached reports newest first and never past its sixteen', () => {
+    for (let added = 1; added <= 20; added++) {
+      const queue = new CrashReportQueue();
+      queue.add(sampleReport(`crash ${added}`));
+    }
+
+    const cached = readCachedCrashReports();
+
+    expect(cached).toHaveLength(16);
+    expect(cached[0]?.errorMessage).toBe('crash 20');
+    expect(cached.at(-1)?.errorMessage).toBe('crash 5');
+  });
+
+  it('forgets every cached report when cleared', () => {
+    const queue = new CrashReportQueue();
+    queue.add(sampleReport('crash 1'));
+
+    clearCachedCrashReports();
+
+    expect(readCachedCrashReports()).toEqual([]);
+  });
+
+  it('discards storage another application put under the same key, rather than reading it', () => {
+    const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    try {
+      localStorage.setItem(crashReportCacheKey, '{ this is not a list of reports');
+
+      expect(readCachedCrashReports()).toEqual([]);
+      expect(consoleWarn).toHaveBeenCalledWith(
+        `Discarding unreadable contents of ${crashReportCacheKey}.`,
+      );
+    } finally {
+      consoleWarn.mockRestore();
+    }
+  });
+
+  it('keeps working when storage is unavailable, and reports nothing cached', () => {
+    const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const storageDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+
+    try {
+      if (storageDescriptor === undefined) {
+        throw new Error('the test environment left localStorage undefined');
+      }
+
+      const unavailableStorage = {
+        getItem: () => {
+          throw new Error('storage is unavailable');
+        },
+        setItem: () => {
+          throw new Error('storage is unavailable');
+        },
+      };
+
+      Object.defineProperty(globalThis, 'localStorage', {
+        value: unavailableStorage,
+        configurable: true,
+      });
+
+      const queue = new CrashReportQueue();
+
+      // A report that cannot be cached is not a reason for adding one to fail.
+      expect(() => {
+        queue.add(sampleReport('crash 1'));
+      }).not.toThrow();
+      expect(queue.size).toBe(1);
+      expect(readCachedCrashReports()).toEqual([]);
+      expect(consoleWarn).not.toHaveBeenCalled();
+    } finally {
+      if (storageDescriptor !== undefined) {
+        Object.defineProperty(globalThis, 'localStorage', storageDescriptor);
+      }
+
+      consoleWarn.mockRestore();
+    }
+  });
+});
+
+describe('CrashReportQueue', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('caches a report the moment it is added, so a crash is not lost before delivery', () => {
+    const queue = new CrashReportQueue();
+    const report = sampleReport('crash 1');
+
+    queue.add(report);
+
+    expect(queue.size).toBe(1);
+    expect(readCachedCrashReports().map((cached) => cached.errorMessage)).toEqual(['crash 1']);
+  });
+
+  it('delivers every queued report and returns what it could not deliver, which is nothing', async () => {
+    const queue = new CrashReportQueue();
+    queue.add(sampleReport('first'));
+    queue.add(sampleReport('second'));
+
+    const delivered: string[] = [];
+    const remaining = await queue.process(async (report) => {
+      delivered.push(report.errorMessage);
+      await Promise.resolve();
+    });
+
+    expect(delivered).toEqual(['first', 'second']);
+    expect(remaining).toEqual([]);
+    expect(queue.size).toBe(0);
+    expect(storedQueueEntries()).toEqual([]);
+  });
+
+  it('stops delivering at the first failure and keeps the rest queued for the next run', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    try {
+      const queue = new CrashReportQueue();
+      queue.add(sampleReport('first'));
+      queue.add(sampleReport('second'));
+
+      const submitted: string[] = [];
+      const remaining = await queue.process(async (report) => {
+        submitted.push(report.errorMessage);
+
+        if (report.errorMessage === 'first') {
+          // A transport that is down rejects what it was handed.
+          await Promise.reject(new Error('the backend is down'));
+        }
+      });
+
+      expect(submitted).toEqual(['first']);
+      expect(remaining.map((report) => report.errorMessage)).toEqual(['first', 'second']);
+      expect(consoleError).toHaveBeenCalledTimes(1);
+    } finally {
+      consoleError.mockRestore();
+    }
+  });
+
+  it('answers a call that arrives while a delivery is still in flight, without starting another', async () => {
+    const queue = new CrashReportQueue();
+    queue.add(sampleReport('in flight'));
+
+    let releaseDelivery: () => void = () => undefined;
+    const deliveryGate = new Promise<void>((resolve) => {
+      releaseDelivery = resolve;
+    });
+
+    const inFlight = queue.process(async () => {
+      await deliveryGate;
+    });
+
+    // The reentrant call reads the queue it finds instead of a second drain.
+    const reentrant = await queue.process(async () => undefined);
+
+    expect(reentrant.map((report) => report.errorMessage)).toEqual(['in flight']);
+
+    releaseDelivery();
+    expect(await inFlight).toEqual([]);
+  });
+
+  it('keeps the last eight in storage, so a queue that never drains stays restorable', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    try {
+      const queue = new CrashReportQueue();
+      for (let added = 1; added <= 10; added++) {
+        queue.add(sampleReport(`crash ${added}`));
+      }
+
+      // A submit that always fails leaves the queue as it is; the save at the end of a run is what
+      // gets it into storage.
+      await queue.process(async () => {
+        await Promise.reject(new Error('the backend is down'));
+      });
+
+      const entries = storedQueueEntries();
+      expect(entries).toHaveLength(8);
+
+      // The last eight are what a next run picks up, oldest of the eight first.
+      const restored = new CrashReportQueue();
+      restored.load();
+
+      expect(restored.size).toBe(8);
+
+      const delivered: string[] = [];
+      await restored.process(async (report) => {
+        delivered.push(report.errorMessage);
+        await Promise.resolve();
+      });
+
+      expect(delivered).toEqual([
+        'crash 3',
+        'crash 4',
+        'crash 5',
+        'crash 6',
+        'crash 7',
+        'crash 8',
+        'crash 9',
+        'crash 10',
+      ]);
+    } finally {
+      consoleError.mockRestore();
+    }
+  });
+
+  it('loads whatever a previous run left behind', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    try {
+      const queue = new CrashReportQueue();
+      queue.add(sampleReport('first'));
+      queue.add(sampleReport('second'));
+
+      // A run that cannot deliver leaves its queue in storage for the next one.
+      await queue.process(async () => {
+        await Promise.reject(new Error('the backend is down'));
+      });
+
+      const nextRun = new CrashReportQueue();
+      expect(nextRun.size).toBe(0);
+
+      nextRun.load();
+      expect(nextRun.size).toBe(2);
+
+      const delivered: string[] = [];
+      await nextRun.process(async (report) => {
+        delivered.push(report.errorMessage);
+        await Promise.resolve();
+      });
+
+      expect(delivered).toEqual(['first', 'second']);
+    } finally {
+      consoleError.mockRestore();
+    }
+  });
+
+  it('loads nothing when there is nothing in storage', () => {
+    const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    try {
+      const queue = new CrashReportQueue();
+
+      queue.load();
+
+      expect(queue.size).toBe(0);
+      expect(consoleWarn).not.toHaveBeenCalled();
+    } finally {
+      consoleWarn.mockRestore();
+    }
+  });
 });
 
 describe('Spinner', () => {
@@ -201,6 +701,32 @@ describe('Ripple', () => {
 
     expect(container.querySelectorAll('.animate-ripple').length).toBe(2);
   });
+
+  it('renders nothing when its colour is empty, so a caller can turn the effect off', async () => {
+    const { container } = await render(<Ripple color="" />);
+
+    expect(container.querySelector('span')).toBeNull();
+  });
+
+  it('leaves the ripple off when its host has no parent yet, rather than throwing', async () => {
+    const { container, update } = await render(<Ripple color="#fff" duration={600} />);
+
+    const host = container.querySelector('span');
+
+    if (host === null) {
+      throw new Error('Ripple rendered no host span.');
+    }
+
+    // An ancestor outside React can detach the host while the tree stays mounted, so the effect runs
+    // again with nowhere to attach its listener.
+    host.remove();
+    await update(<Ripple color="#fff" duration={700} />);
+
+    container.appendChild(host);
+    click(host);
+
+    expect(container.querySelectorAll('.animate-ripple').length).toBe(0);
+  });
 });
 
 describe('ScrollProgressBar', () => {
@@ -233,6 +759,39 @@ describe('LogOutputTextArea', () => {
     await update(<LogOutputTextArea output="x" dontWrapLongLines={true} />);
 
     expect(find('textarea').className).toContain('whitespace-pre');
+  });
+
+  it('follows the end on an update when the caller asked it to', async () => {
+    const { find, update } = await render(
+      <LogOutputTextArea output="first" shouldScrollToEndOnUpdate={true} />,
+    );
+
+    await update(<LogOutputTextArea output={'first\nsecond'} shouldScrollToEndOnUpdate={true} />);
+
+    expect(find<HTMLTextAreaElement>('textarea').value).toBe('first\nsecond');
+  });
+
+  it('holds the position of a reader who is scrolled back, rather than dragging them to the end', async () => {
+    const { find, update } = await render(<LogOutputTextArea output="first" />);
+
+    const textarea = find<HTMLTextAreaElement>('textarea');
+    let scrollTop = 0;
+
+    // jsdom does no layout, so the geometry the follow test reads is stubbed here: a tall scrollback
+    // whose top the caret is at is a reader who has deliberately scrolled away from the end.
+    Object.defineProperty(textarea, 'scrollHeight', { value: 1000, configurable: true });
+    Object.defineProperty(textarea, 'clientHeight', { value: 0, configurable: true });
+    Object.defineProperty(textarea, 'scrollTop', {
+      configurable: true,
+      get: () => scrollTop,
+      set: (value: number) => {
+        scrollTop = value;
+      },
+    });
+
+    await update(<LogOutputTextArea output={'first\nsecond'} />);
+
+    expect(textarea.scrollTop).toBe(0);
   });
 });
 
@@ -660,5 +1219,259 @@ describe('CommandConsole', () => {
     });
 
     expect(defaultPrevented).toBe(false);
+  });
+
+  // A Ctrl+press of something the console does not bind is a key the page gets: the combination is
+  // looked up in the table at all only because a Ctrl key could be bound.
+  it('leaves a Ctrl combination it does not bind to the browser as well', async () => {
+    await render(console());
+    const input = document.body.querySelector('input') as HTMLInputElement;
+
+    await type(input, 'echo hello');
+
+    let defaultPrevented = true;
+
+    act(() => {
+      const event = new KeyboardEvent('keydown', {
+        code: 'KeyJ',
+        ctrlKey: true,
+        bubbles: true,
+        cancelable: true,
+      });
+      input.dispatchEvent(event);
+      defaultPrevented = event.defaultPrevented;
+    });
+
+    expect(defaultPrevented).toBe(false);
+    expect(output()).toBe('');
+  });
+
+  it('echoes nothing for a blank line, and recalls nothing when there is no history', async () => {
+    await render(console());
+    const input = document.body.querySelector('input') as HTMLInputElement;
+
+    await type(input, '   ');
+    pressKey(input, 'Enter');
+
+    expect(output()).toBe('');
+    expect(input.value).toBe('   ');
+
+    pressKey(input, 'ArrowUp');
+
+    // No line has run yet, so there is nothing to walk back to.
+    expect(input.value).toBe('   ');
+  });
+
+  it('runs a line pressed on the numpad Enter, not the keyboard one', async () => {
+    await render(console());
+    const input = document.body.querySelector('input') as HTMLInputElement;
+
+    await type(input, 'echo hello');
+    pressKey(input, 'NumpadEnter');
+
+    expect(output()).toBe('> echo hello\nechoed: hello');
+  });
+
+  it('moves the caret to the end of the line on Ctrl+E, keeping the prompt focused', async () => {
+    await render(console());
+    const input = document.body.querySelector('input') as HTMLInputElement;
+
+    await type(input, 'echo hello');
+    input.setSelectionRange(0, 0);
+
+    pressKey(input, 'KeyE', true);
+
+    expect(document.activeElement).toBe(input);
+    expect(input.selectionStart).toBe('echo hello'.length);
+  });
+
+  it('reads a caret the element cannot report as the start of the line', async () => {
+    await render(console());
+    const input = document.body.querySelector('input') as HTMLInputElement;
+
+    await type(input, 'keep drop');
+
+    // jsdom reports a caret as a number always; the fallback is for an element that has none.
+    Object.defineProperty(input, 'selectionEnd', { configurable: true, value: null });
+    pressKey(input, 'KeyU', true);
+
+    expect(input.value).toBe('keep drop');
+
+    Object.defineProperty(input, 'selectionStart', { configurable: true, value: null });
+    pressKey(input, 'KeyK', true);
+
+    expect(input.value).toBe('');
+  });
+
+  it('walks forward through the history it has walked back through', async () => {
+    await render(console());
+    const input = document.body.querySelector('input') as HTMLInputElement;
+
+    await run('echo one');
+    await run('echo two');
+
+    // Nothing has been recalled yet, so walking forward stays on the empty draft.
+    pressKey(input, 'ArrowDown');
+    expect(input.value).toBe('');
+
+    pressKey(input, 'ArrowUp');
+    pressKey(input, 'ArrowUp');
+    pressKey(input, 'ArrowDown');
+
+    expect(input.value).toBe('echo two');
+  });
+
+  it('says when a command asked for by name is not one it holds', async () => {
+    await render(console());
+
+    await run('help echo');
+    await run('help ghost');
+
+    // The name a command was called by is the name its page prints, and a name the console does
+    // not hold gets the line that says so.
+    expect(output()).toContain('usage: echo <text>');
+    expect(output()).toContain(
+      "Error: bad command `ghost'. Enter `help` for the list of commands.",
+    );
+  });
+
+  it('prints the help page of a command that has none', async () => {
+    await render(console());
+
+    await run('help count');
+
+    expect(output()).toContain('`count` has no help page.');
+  });
+
+  it('prints the usage a command asks for when it runs, or the line that says it has none', async () => {
+    const selfDocumenting: CommandConsoleCommand = {
+      about: 'Print its own usage',
+      usage: ['describe <text>'],
+      execute: ({ usage }: CommandConsoleContext) => {
+        usage();
+      },
+    };
+
+    await render(console({ commands: { ...commands, describe: selfDocumenting } }));
+
+    await run('describe mine');
+
+    expect(output()).toContain('usage: describe <text>');
+  });
+
+  it('answers a command that asks for usage it does not have, with the line that says so', async () => {
+    const silent: CommandConsoleCommand = {
+      about: 'Has no usage',
+      execute: ({ usage }: CommandConsoleContext) => {
+        usage();
+      },
+    };
+
+    await render(console({ commands: { ...commands, silent } }));
+
+    await run('silent');
+
+    expect(output()).toContain('`silent` has no help page.');
+  });
+
+  it('appends the arguments of an alias that does not name a place for them', async () => {
+    const aliased: CommandConsoleCommand = {
+      about: 'Set an alias',
+      execute: ({ args, setAlias }: CommandConsoleContext) => {
+        const name = args[1];
+
+        if (name === undefined) {
+          return;
+        }
+
+        setAlias(name, args.slice(2).join(' '));
+      },
+    };
+
+    await render(
+      <CommandConsole
+        open={true}
+        onOpenChange={() => undefined}
+        commands={{ ...commands, alias: aliased }}
+      />,
+    );
+
+    await run('alias e echo');
+    await run('e hello');
+
+    expect(output()).toContain('echoed: hello');
+  });
+
+  it('removes an alias it is told to forget', async () => {
+    const aliased: CommandConsoleCommand = {
+      about: 'Set an alias',
+      execute: ({ args, setAlias }: CommandConsoleContext) => {
+        const name = args[1];
+
+        if (name === undefined) {
+          return;
+        }
+
+        setAlias(name, args.slice(2).join(' '));
+      },
+    };
+    const forget: CommandConsoleCommand = {
+      about: 'Remove an alias',
+      execute: ({ args, setAlias }: CommandConsoleContext) => {
+        const name = args[1];
+
+        if (name === undefined) {
+          return;
+        }
+
+        setAlias(name, undefined);
+      },
+    };
+
+    await render(
+      <CommandConsole
+        open={true}
+        onOpenChange={() => undefined}
+        commands={{ ...commands, alias: aliased, forget: forget }}
+      />,
+    );
+
+    await run('alias e echo $$');
+    await run('e hello');
+    expect(output()).toContain('echoed: hello');
+
+    await run('forget e');
+    await run('e hello');
+
+    // With no alias behind it, the name is one the console does not hold.
+    expect(output()).toContain("Error: bad command `e'.");
+  });
+
+  it('lets an alias stand for nothing, which runs nothing', async () => {
+    const aliased: CommandConsoleCommand = {
+      about: 'Set an alias',
+      execute: ({ args, setAlias }: CommandConsoleContext) => {
+        const name = args[1];
+
+        if (name === undefined) {
+          return;
+        }
+
+        setAlias(name, args.slice(2).join(' '));
+      },
+    };
+
+    await render(
+      <CommandConsole
+        open={true}
+        onOpenChange={() => undefined}
+        commands={{ ...commands, alias: aliased }}
+      />,
+    );
+
+    await run('alias z');
+    await run('z');
+
+    expect(output()).toBe('> alias z\n> z');
   });
 });

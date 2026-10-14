@@ -136,6 +136,9 @@ function Table<T, C extends string>({
 }: FilterableTableProps<T, C>) {
   const context = useContext(FilterableTableContext);
 
+  // The provider is rendered by FilterableTable itself, so the context cannot be null while Table is
+  // mounted. The message stays in case a caller composes Table outside the provider it needs.
+  // v8 ignore if
   if (context === null) {
     throw new Error('FilterableTable must be rendered inside a FilterableTableProvider.');
   }

@@ -144,6 +144,15 @@ describe('ButtonGroup', () => {
     first.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyA', bubbles: true }));
     expect(onItemChange).toHaveBeenCalledTimes(2);
   });
+
+  it('renders its segments transparent when asked, so the group sits on any background', async () => {
+    const { findAll } = await render(
+      <ButtonGroup itemId="a" items={items} onItemChange={() => undefined} transparentBG={true} />,
+    );
+
+    expect(findAll<HTMLButtonElement>('button')[0]?.className).toContain('bg-transparent');
+    expect(findAll<HTMLButtonElement>('button')[0]?.className).not.toContain('bg-bpd');
+  });
 });
 
 /**

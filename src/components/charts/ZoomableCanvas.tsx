@@ -124,9 +124,13 @@ export function ZoomableCanvas({
       function draw() {
         const canvas = internalCanvasRef.current;
 
+        // The JSX below attaches this ref before the effect runs and clears it on unmount, so the
+        // canvas is never absent while draw() can be called; the compiler cannot see that.
+        // v8 ignore start
         if (!canvas) {
           return;
         }
+        // v8 ignore stop
 
         const context: RenderingContext | null = usingWebGL
           ? canvas.getContext('webgl')
@@ -155,9 +159,12 @@ export function ZoomableCanvas({
 
       const canvas = internalCanvasRef.current;
 
+      // As above: the ref is attached before this effect runs, so the canvas is never absent here.
+      // v8 ignore start
       if (!canvas) {
         return;
       }
+      // v8 ignore stop
 
       function handlePointerStart(event: Event, x: number, y: number) {
         event.preventDefault();
@@ -300,9 +307,12 @@ export function ZoomableCanvas({
       }
 
       function handleTouchMove(e: TouchEvent) {
+        // `canvas` was narrowed non-null above and is captured for this effect's lifetime.
+        // v8 ignore start
         if (canvas === null) {
           return;
         }
+        // v8 ignore stop
         if (e.touches.length === 2) {
           zoomForTouchPinch(canvas, e);
           return;

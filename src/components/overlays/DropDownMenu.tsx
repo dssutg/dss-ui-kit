@@ -107,6 +107,9 @@ export function DropDownMenu({
 
       const panelInfo = getPanelMenuItemsByPath(path, menu);
 
+      // A path is only ever set where the menu holds it, and a re-render that invalidates a path
+      // resets it first, so a move always finds the panel the path names.
+      // v8 ignore next
       if (panelInfo === null) {
         return;
       }
@@ -199,18 +202,26 @@ export function DropDownMenu({
   const [rootTriggerBox, setRootTriggerBox] = useState<DOMRect | null>(null);
 
   useEffect(() => {
+    // The trigger's ref is attached before mount effects run, so the box is always measured.
+    // v8 ignore next
     setRootTriggerBox(triggerRef.current?.getBoundingClientRect() ?? null);
   }, []);
 
   useEffect(() => {
     const trigger = triggerRef.current;
 
+    // The trigger is there for as long as this effect is: the ref is attached before mount effects
+    // run and detached only after the cleanups below have.
+    // v8 ignore next
     if (trigger === null) {
       return;
     }
 
     // The element is captured in a closure below, which ends the narrowing the check above did.
     function updateRootTriggerBox() {
+      // The observers are disconnected before they can fire again, so the element is always where
+      // the closure left it.
+      // v8 ignore next
       if (trigger === null) {
         return;
       }
@@ -237,6 +248,8 @@ export function DropDownMenu({
   }, []);
 
   useInterval(() => {
+    // The trigger is there for as long as this interval is: unmounting clears both together.
+    // v8 ignore next
     if (triggerRef.current === null) {
       return;
     }
@@ -446,6 +459,8 @@ function DropDownMenuPanel({
     () => {
       const list = listRef.current;
 
+      // The list's ref is attached before mount effects run, so there is always a list to observe.
+      // v8 ignore next
       if (list === null) {
         return;
       }
@@ -565,6 +580,8 @@ function DropDownMenuItemElement({
 
   useGranularEffect(
     () => {
+      // The item's ref is attached before effects run, so every item has a box to sit against.
+      // v8 ignore next
       const box = itemRef.current?.getBoundingClientRect() ?? null;
 
       setTriggerBox(box);

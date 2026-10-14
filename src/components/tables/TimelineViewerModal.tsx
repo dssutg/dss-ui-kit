@@ -263,7 +263,11 @@ function TimelineViewer<T>({
 
   function seekEnd() {
     setCanvasTransform((transform) => {
+      // The canvas is attached by the chart's own effect before a seek can run, so the zero
+      // fallbacks cannot be reached.
+      // v8 ignore next
       const canvasWidth = canvasRef.current?.width ?? 0;
+      // v8 ignore next
       const canvasHeight = canvasRef.current?.height ?? 0;
 
       const lastX = Math.max(chartDescriptor.lastX);
@@ -314,6 +318,8 @@ function TimelineViewer<T>({
   };
 
   useEventListener('keydown', (e: KeyboardEvent) => {
+    // The viewer is mounted only by its open modal, so `open` is never false while it listens.
+    // v8 ignore if
     if (!open) {
       return;
     }

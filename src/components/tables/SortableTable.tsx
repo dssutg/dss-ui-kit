@@ -435,9 +435,12 @@ export function SortableTable<T, C extends string>({
                       onResize={(movementX) => {
                         const headerColumn = descriptor.headerColumns[index];
 
+                        // `index` comes from mapping the same array, so the entry always exists.
+                        // v8 ignore start
                         if (headerColumn === undefined) {
                           return;
                         }
+                        // v8 ignore stop
 
                         resizeColumn(index, movementX);
                         setIsResizing(true);

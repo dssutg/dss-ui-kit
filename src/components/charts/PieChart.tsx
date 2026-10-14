@@ -51,6 +51,9 @@ export function getShareColor({
   // An empty palette falls back to the default one rather than to nothing: a caller who passes no
   // colours still expects every wedge of the pie to be painted.
   const palette = colors.length === 0 ? defaultPieChartColors : colors;
+  // The palette falls back to the default one above, so it is never empty and the index always
+  // resolves; the compiler cannot see that.
+  // v8 ignore next
   const curColor = palette[shareIndex % palette.length] ?? NO_SHARE_COLOR;
 
   if (shareIndex === totalShares - 1 && curColor === palette[0]) {
@@ -153,9 +156,12 @@ export function PieChart({
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    // The ref is attached by the JSX below before this effect runs, so the canvas is never absent.
+    // v8 ignore start
     if (canvas === null) {
       return;
     }
+    // v8 ignore stop
 
     const ctx = canvas.getContext('2d');
     if (ctx === null) {
@@ -197,9 +203,12 @@ export function PieChart({
       setHoveredShare(null);
 
       const canvas = canvasRef.current;
+      // The listener is bound to the canvas itself, so it cannot run while the canvas is absent.
+      // v8 ignore start
       if (canvas === null) {
         return;
       }
+      // v8 ignore stop
 
       const bb = canvas.getBoundingClientRect();
 
