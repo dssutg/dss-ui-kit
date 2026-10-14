@@ -37,6 +37,10 @@ export function useElementSize<T extends HTMLElement>(
     });
 
     resizeObserver.observe(elementRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
   }, [elementRef.current]);
 
   return size;

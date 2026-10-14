@@ -360,6 +360,7 @@ export {
   calcNormal,
   convertBoxToQuads,
   convertHexColorToGL,
+  convertQuadToQuads,
   flattenSceneObjects,
   generateTransformMatrices,
   getBoxCropUV,

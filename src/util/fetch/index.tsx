@@ -101,7 +101,12 @@ export function useFetch<T = unknown>(
           reportFetchFailure(failure, setError);
           setData(null);
         } finally {
-          setLoading(false);
+          // Only the request that is still the current one may settle the shared `loading` flag:
+          // an aborted request's rejection can land after its replacement has started, and the
+          // flag belongs to that replacement.
+          if (abortControllerRef.current === abortController) {
+            setLoading(false);
+          }
         }
       }
 

@@ -209,22 +209,14 @@ export function darkenColor(color: string, percent: number): string {
     return DEFAULT_COLOR;
   }
 
-  const [red, green, blue] = match.slice(1).map((sequence) => parseInt(sequence, 16));
-
-  // The anchored regex above matched exactly three two-hex-digit groups, so `match.slice(1)` is a
-  // dense three-element list and `parseInt` maps every element: the destructured values cannot be
-  // undefined at runtime. The guard is only for the compiler, which with `noUncheckedIndexedAccess`
-  // cannot see that, and an assertion would trade a question for a claim. The unreached arm stays
-  // out of the coverage gate.
-  // v8 ignore next
-  if (red === undefined || green === undefined || blue === undefined) {
-    return DEFAULT_COLOR;
-  }
+  // The three captured pairs joined are the six-digit form `parseHexColor` already parses, and a
+  // six-digit form cannot miss a channel.
+  const { r, g, b } = parseHexColor(match.slice(1).join(''));
 
   // New RGB
-  const newR = (red * (100 - percent)) / 100;
-  const newG = (green * (100 - percent)) / 100;
-  const newB = (blue * (100 - percent)) / 100;
+  const newR = (r * (100 - percent)) / 100;
+  const newG = (g * (100 - percent)) / 100;
+  const newB = (b * (100 - percent)) / 100;
 
   // Clamped RGB
   const clampedR = Math.round(Math.min(newR, 255));

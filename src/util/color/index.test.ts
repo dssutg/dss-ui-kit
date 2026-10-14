@@ -287,6 +287,10 @@ describe('darkenColor', () => {
     expect(darkenColor('#ff0000', 50)).toBe('#800000');
   });
 
+  test('darkens a colour the caller wrote spaces around', () => {
+    expect(darkenColor('  #408000  ', 50)).toBe('#204000');
+  });
+
   test('answers black for a colour it cannot parse', () => {
     expect(darkenColor('not a hex colour', 50)).toBe('#000000');
     expect(darkenColor('#fff', 50)).toBe('#000000');

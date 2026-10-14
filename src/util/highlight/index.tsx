@@ -49,6 +49,18 @@ const jsonTokenPatterns = [
   },
 ];
 
+// The comment token of the Lua definition points at this language by name, so the text of a comment
+// is tokenized through it: only the marker words the token class names are coloured, and the rest of
+// the comment stays plain. It sits in the same map as the public languages but is not part of the
+// `Lang` union — a caller colouring a document chooses one of the public ones; the tokenizer walks
+// into this one itself.
+const todoTokenPatterns = [
+  {
+    type: 'todo',
+    match: /\b(?:TODO|FIXME)\b/g,
+  },
+];
+
 const expandData = {
   num: {
     type: 'num',
@@ -86,6 +98,7 @@ export type Lang = 'lua' | 'json';
 const langTokenMap = {
   lua: luaTokenPatterns,
   json: jsonTokenPatterns,
+  todo: todoTokenPatterns,
 };
 
 // biome-ignore lint: lint/suspicious/noExplicitAny
@@ -195,6 +208,10 @@ function tokenize(src: string | any[], lang: string, token: any) {
     }
     token(src.slice(i, src.length), data.type);
   } catch {
+    // With the shipped languages no walk can throw: every `sub` name resolves in `langTokenMap` and
+    // every pattern is anchored, so the catch is the resilience arm of a walk the module cannot
+    // drive into an error any more. The unreached arm stays out of the coverage gate.
+    // v8 ignore next
     token(src);
   }
 }

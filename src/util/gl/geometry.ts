@@ -31,6 +31,7 @@ import type {
   Camera,
   GLQuadUV,
   ObjectMaterial,
+  QuadSceneObject,
   SceneObject,
   Vector2Array,
   Vector3Array,
@@ -289,6 +290,33 @@ export function makeTransformedVertex(
 }
 
 /**
+ * An object's transform, resolved to the placement its corners are pushed through.
+ *
+ * The defaults the renderer draws by: a missing position stands at the origin, a missing scale is
+ * one unit, a missing rotation is no rotation. {@link makeTransformedVertex} reads the placement as
+ * its last argument, and the rotation arrives as its sine and cosine because every corner of the
+ * object reads the same six numbers.
+ */
+function placementOf(object: {
+  readonly pos?: Vector3Array | undefined;
+  readonly scale?: Vector3Array | undefined;
+  readonly rotation?: Vector3Array | undefined;
+}) {
+  const [xRot, yRot, zRot] = object.rotation ?? [0, 0, 0];
+
+  return {
+    xRotCos: Math.cos(xRot),
+    xRotSin: Math.sin(xRot),
+    yRotCos: Math.cos(yRot),
+    yRotSin: Math.sin(yRot),
+    zRotCos: Math.cos(zRot),
+    zRotSin: Math.sin(zRot),
+    pos: object.pos ?? [0, 0, 0],
+    scale: object.scale ?? [1, 1, 1],
+  };
+}
+
+/**
  * Resolves a scene into the flat list of drawable objects the renderer uploads.
  *
  * A group contributes its transform to each child and then disappears, so the renderer never has to
@@ -438,37 +466,39 @@ export function calcNormal(v0: Vector3Array, v1: Vector3Array, v2: Vector3Array)
 }
 
 /**
+ * The one quad an object's front face is drawn as: the four unit front corners and one colour per
+ * corner.
+ *
+ * A standalone quad and a box's front face are the same face, so they share this maker and cannot
+ * drift apart in where they sit or what colour they read.
+ */
+function makeFrontFaceQuad(t: ReturnType<typeof placementOf>, color: Vector4Array): GLQuad {
+  return {
+    bottomLeft: makeTransformedVertex(-1, -1, 1, t),
+    bottomRight: makeTransformedVertex(1, -1, 1, t),
+    topRight: makeTransformedVertex(1, 1, 1, t),
+    topLeft: makeTransformedVertex(-1, 1, 1, t),
+
+    bottomLeftColor: color,
+    bottomRightColor: color,
+    topRightColor: color,
+    topLeftColor: color,
+  };
+}
+
+/**
  * The six quads a box is drawn as, wound so that each face points away from its centre.
  *
  * The winding is not cosmetic: back-face culling is off, so a face wound the wrong way is lit from
  * the inside and reads as a dark patch on the box.
  */
 export function convertBoxToQuads(box: BoxSceneObject): GLQuad[] {
-  const [xRot, yRot, zRot] = box.rotation ?? [0, 0, 0];
-
-  const t = {
-    xRotCos: Math.cos(xRot),
-    xRotSin: Math.sin(xRot),
-    yRotCos: Math.cos(yRot),
-    yRotSin: Math.sin(yRot),
-    zRotCos: Math.cos(zRot),
-    zRotSin: Math.sin(zRot),
-    pos: box.pos ?? [0, 0, 0],
-    scale: box.scale ?? [1, 1, 1],
-  };
+  const t = placementOf(box);
 
   return [
     // Front
     {
-      bottomLeft: makeTransformedVertex(-1, -1, 1, t),
-      bottomRight: makeTransformedVertex(1, -1, 1, t),
-      topRight: makeTransformedVertex(1, 1, 1, t),
-      topLeft: makeTransformedVertex(-1, 1, 1, t),
-
-      bottomLeftColor: getFaceColor(box.material, 'front'),
-      bottomRightColor: getFaceColor(box.material, 'front'),
-      topRightColor: getFaceColor(box.material, 'front'),
-      topLeftColor: getFaceColor(box.material, 'front'),
+      ...makeFrontFaceQuad(t, getFaceColor(box.material, 'front')),
 
       ...(box.frontUV === undefined ? {} : { uv: box.frontUV }),
     },
@@ -548,6 +578,17 @@ export function convertBoxToQuads(box: BoxSceneObject): GLQuad[] {
       ...(box.leftUV === undefined ? {} : { uv: box.leftUV }),
     },
   ];
+}
+
+/**
+ * The one quad a standalone quad object is drawn as.
+ *
+ * It is the front face a box with the same transform would show: scale x and y size the rectangle,
+ * scale z offsets its plane in depth, and the rotation turns it. Every corner carries the material's
+ * front colour, and the quad carries no texture coordinates, so it draws untextured.
+ */
+export function convertQuadToQuads(quad: QuadSceneObject): GLQuad[] {
+  return [makeFrontFaceQuad(placementOf(quad), getFaceColor(quad.material, 'front'))];
 }
 
 /** Where the camera sits in world space, which is its own position mirrored through the origin. */

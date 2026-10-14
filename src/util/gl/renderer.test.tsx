@@ -83,6 +83,9 @@ const TOLERANCE_Y = 4;
 /** The white RGBA a flat scene material reads as. */
 const WHITE: [number, number, number, number] = [1, 1, 1, 1];
 
+/** The red RGBA a flat scene material reads as, for a quad distinguishable from a white box. */
+const RED: [number, number, number, number] = [1, 0, 0, 1];
+
 /** What a fake context may be told to fail at; absent means it succeeds. */
 interface FakeSettings {
   readonly shaderCreationFails?: boolean;
@@ -366,7 +369,7 @@ function glyphsBeyondOneAtlas(count: number): string {
 }
 
 /**
- * How many distinct glyphs one atlas holds and one more that cannot fit. The atlas is floored at
+ * How many distinct glyphs one atlas holds and one more that cannot fit. The atlas is capped at
  * 4096, which for the renderer's font holds 4096 / 24 columns * 4096 / 28 rows = 24820 glyphs.
  */
 const GLYPHS_BEYOND_ONE_ATLAS = 24821;
@@ -942,6 +945,47 @@ describe('createSceneRenderContext', () => {
     expect(context.vertexCount).toBe(0);
   });
 
+  test('keeps the atlas within the texture size the device reports', () => {
+    const fakeTwoD = createFake2DContext();
+    stubCanvas2D(fakeTwoD.canvas2D);
+
+    // Five distinct glyphs need a 128 atlas, which a device reporting 64 cannot hold. The cap is
+    // the device's texture limit, so the too-small error path is the behaviour and nothing is
+    // allocated past what the device says it can hold — before the fix the atlas was sized to 128.
+    const { fake, gl } = createFakeWebGL({ maxTextureSize: MINIMUM_MAX_TEXTURE });
+
+    const context = createSceneRenderContext({ objects: [{ type: 'text', text: 'abcde' }] }, gl);
+
+    expect(console.error).toHaveBeenCalledWith(
+      expect.stringContaining('Could not allocate texture atlas for text'),
+    );
+    expect(fakeTwoD.getImageData).not.toHaveBeenCalled();
+    expect(fake.createTexture).not.toHaveBeenCalled();
+    expect(context.fontRenderInfo).toBeNull();
+    expect(context.vertexCount).toBe(0);
+  });
+
+  test('sizes the atlas to a small device limit when the glyphs fit within it', () => {
+    const fakeTwoD = createFake2DContext();
+    stubCanvas2D(fakeTwoD.canvas2D);
+
+    const { fake, gl } = createFakeWebGL({ maxTextureSize: 32 });
+
+    const context = createSceneRenderContext({ objects: [{ type: 'text', text: 'a' }] }, gl);
+
+    if (context.fontRenderInfo === null) {
+      throw new Error('one glyph of a 1 * 1 atlas at 32 fits, so this cannot be reached');
+    }
+
+    // A device reporting 32 gets an atlas of exactly 32: the reported limit is a ceiling on the
+    // doubled size, not a floor under the 4096 default cap.
+    expect(fakeTwoD.fillText).toHaveBeenCalledWith('a', 0, TOLERANCE_Y);
+    expect(fakeTwoD.getImageData).toHaveBeenCalledWith(0, 0, 32, 32);
+    expect(context.fontRenderInfo.atlasWidth).toBe(32);
+    expect(context.fontRenderInfo.atlasHeight).toBe(32);
+    expect(fake.createTexture).toHaveBeenCalledTimes(1);
+  });
+
   test('draws a text run across a line break and leaves the blanks blank', () => {
     const fakeTwoD = createFake2DContext();
     stubCanvas2D(fakeTwoD.canvas2D);
@@ -979,18 +1023,103 @@ describe('createSceneRenderContext', () => {
     expect(modulators.every((component) => component === 1)).toBe(true);
   });
 
-  test('draws a bare quad object as nothing, without an error', () => {
-    // A `quad` object is declared in the SceneObject type this renderer accepts, but the renderer
-    // has no branch for it: the object is dropped silently. That looks like a defect and is
-    // reported as one; this test pins the behaviour today so a fix shows up as a change here.
+  test('uploads a quad object as its single front-face quad', () => {
+    // A `quad` object is drawn as the unit front face a box has: four vertices, the material's
+    // colour on every corner, zero texture coordinates and two triangles of indices.
     const { fake, gl } = createFakeWebGL();
 
     const context = createSceneRenderContext({ objects: [{ type: 'quad', material: WHITE }] }, gl);
 
-    expect(context.fontRenderInfo).toBeNull();
     expect(console.error).not.toHaveBeenCalled();
     expect(fake.createBuffer).toHaveBeenCalledTimes(6);
-    expect(context.vertexCount).toBe(0);
+    expect(fake.bufferData).toHaveBeenCalledTimes(6);
+    expect(context.fontRenderInfo).toBeNull();
+    expect(context.vertexCount).toBe(6);
+
+    const positions = Array.from(
+      uploadedOn(fake.bufferData, GL.ARRAY_BUFFER)[0] ?? new Float32Array(),
+    );
+
+    expect(positions).toEqual([-1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1]);
+
+    // Untextured: one zero pair per corner.
+    const textureCoords = Array.from(
+      uploadedOn(fake.bufferData, GL.ARRAY_BUFFER)[1] ?? new Float32Array(),
+    );
+
+    expect(textureCoords).toHaveLength(8);
+    expect(textureCoords.every((coord) => coord === 0)).toBe(true);
+
+    // Facing the camera, one normal per corner.
+    const normals = Array.from(
+      uploadedOn(fake.bufferData, GL.ARRAY_BUFFER)[2] ?? new Float32Array(),
+    );
+
+    expect(normals).toEqual([0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]);
+
+    // The flat material's colour lands on every corner; the modulator is always full white.
+    const colors = Array.from(
+      uploadedOn(fake.bufferData, GL.ARRAY_BUFFER)[3] ?? new Float32Array(),
+    );
+    const modulators = Array.from(
+      uploadedOn(fake.bufferData, GL.ARRAY_BUFFER)[4] ?? new Float32Array(),
+    );
+
+    expect(colors).toHaveLength(16);
+    expect(colors.every((component) => component === 1)).toBe(true);
+    expect(modulators).toHaveLength(16);
+    expect(modulators.every((component) => component === 1)).toBe(true);
+
+    // One quad is two triangles over its four vertices: 0-1-2 and 0-2-3.
+    const indices = Array.from(
+      uploadedOn(fake.bufferData, GL.ELEMENT_ARRAY_BUFFER)[0] ?? new Uint16Array(),
+    );
+
+    expect(indices).toEqual([0, 1, 2, 0, 2, 3]);
+  });
+
+  test('uploads a quad next to a box, in the order the scene lists them', () => {
+    const { fake, gl } = createFakeWebGL();
+
+    const context = createSceneRenderContext(
+      {
+        objects: [
+          { type: 'quad', material: RED },
+          { type: 'box', pos: [10, 0, 0], material: WHITE },
+        ],
+      },
+      gl,
+    );
+
+    // Seven quads all told — the quad's one first, then the box's six — each worth six indices.
+    expect(context.vertexCount).toBe(42);
+
+    const positions = Array.from(
+      uploadedOn(fake.bufferData, GL.ARRAY_BUFFER)[0] ?? new Float32Array(),
+    );
+
+    expect(positions).toHaveLength(84);
+
+    // The first four corners are the quad's; the box's front face follows as the second quad.
+    expect(positions.slice(0, 12)).toEqual([-1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1]);
+    expect(positions.slice(12, 18)).toEqual([9, -1, 1, 11, -1, 1]);
+
+    // The quad's corners carry its own material, not the box's.
+    const colors = Array.from(
+      uploadedOn(fake.bufferData, GL.ARRAY_BUFFER)[3] ?? new Float32Array(),
+    );
+
+    expect(colors.slice(0, 16)).toEqual([1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1]);
+
+    // The quad object's one quad opens the index buffer as indices 0..3, and the box's six follow.
+    const indices = Array.from(
+      uploadedOn(fake.bufferData, GL.ELEMENT_ARRAY_BUFFER)[0] ?? new Uint16Array(),
+    );
+
+    expect(indices).toEqual([
+      0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11, 12, 13, 14, 12, 14, 15, 16, 17, 18,
+      16, 18, 19, 20, 21, 22, 20, 22, 23, 24, 25, 26, 24, 26, 27,
+    ]);
   });
 });
 

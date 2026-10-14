@@ -32,7 +32,10 @@ export interface BoxFaceColors {
 /** How an object is drawn: one colour per face, or the flat colour every face shares. */
 export type ObjectMaterial = BoxFaceColors | Vector4Array;
 
-/** A single quad in space. Two dimensions of its scale are ignored by the renderer. */
+/**
+ * A single quad in space, drawn as the front face of a unit box: scale x and y size the rectangle
+ * and scale z offsets its plane in depth.
+ */
 export interface QuadSceneObject {
   readonly type: 'quad';
   readonly pos?: Vector3Array | undefined;
@@ -96,7 +99,7 @@ export interface Scene {
   readonly objects: readonly SceneObject[];
 }
 
-/** A camera position, scale and rotation, in degrees for the rotation. */
+/** A camera position, scale and rotation, in radians for the rotation. */
 export interface Camera {
   readonly pos: Vector3Array;
   readonly scale: Vector3Array;

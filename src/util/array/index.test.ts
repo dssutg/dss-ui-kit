@@ -274,6 +274,18 @@ describe('getStringArrayAsColumnLines', () => {
     expect(getStringArrayAsColumnLines([], 2)).toEqual([]);
     expect(getStringArrayAsColumnLines([], 0)).toEqual([]);
   });
+
+  // A column count below one cannot stride anywhere: a stride of zero stepped the cursor nowhere
+  // and looped forever, and a negative or fractional count threw from `new Array`. The rule
+  // `chunkArray` already applies is the rule here too — truncate first, nothing below one.
+  test('answers nothing for a column count below one, like chunkArray does', () => {
+    expect(getStringArrayAsColumnLines(['a', 'b', 'c'], 0)).toEqual([]);
+    expect(getStringArrayAsColumnLines(['a', 'b', 'c'], -2)).toEqual([]);
+  });
+
+  test('truncates a fractional column count before reading it', () => {
+    expect(getStringArrayAsColumnLines(['a', 'b', 'c'], 1.5)).toEqual(['  a  ', '  b  ', '  c  ']);
+  });
 });
 
 describe('groupArrayByProperty', () => {

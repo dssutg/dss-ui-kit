@@ -5,12 +5,11 @@
  * suite drives real registered custom elements through connect, attribute change, re-connect and
  * disconnect and asserts the shadow root's contents, because that is what a subclass can observe.
  *
- * `observedAttributes` reads the base class's `props` field, so a subclass redeclaring the field
- * is never observed by the registry (see the report on web_component.ts:50 about the static
- * binding): the tests define their elements while `WComponent.props` names `label` and restore the
- * property afterwards, which mirrors how the registry reads the getter. Custom element classes are
- * instantiated directly, since a typed instance is the only way the subclass's own methods are
- * reachable from the test without a cast.
+ * `observedAttributes` resolves the `props` of the class the registry reads it from, so a card that
+ * observes an attribute redeclares the field and is observed for exactly what it lists — a
+ * subclass without its own inherits the base's empty list. Custom element classes are instantiated
+ * directly, since a typed instance is the only way the subclass's own methods are reachable from
+ * the test without a cast.
  */
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
@@ -23,23 +22,14 @@ interface RecordedChange {
   readonly newValue: string | null;
 }
 
-const ORIGINAL_PROPS = Object.getOwnPropertyDescriptor(WComponent, 'props');
-
-/**
- * Defines `elementClass` under `tag` while the observed-attribute getter can see `label`, then
- * restores the base class's own `props` property. Runs before any instance of the tag exists.
- */
-function defineWithObservedProps(tag: string, elementClass: CustomElementConstructor): void {
-  Object.defineProperty(WComponent, 'props', { value: ['label'], configurable: true });
-  customElements.define(tag, elementClass);
-  Object.defineProperty(WComponent, 'props', ORIGINAL_PROPS ?? { value: [] });
-}
-
 /** An element using every default hook, including the empty default styles. */
 class PlainCard extends WComponent {}
 
 /** Counts everything the lifecycle calls, and wires a button on each render. */
 class RecordingCard extends WComponent {
+  /** The attribute these tests set to drive re-renders and `onAttrChange` through. */
+  protected static override props = ['label'];
+
   static changes: RecordedChange[] = [];
   static renders = 0;
   static clicks = 0;
@@ -136,13 +126,41 @@ class NoShadowCard extends WComponent {
   }
 }
 
-defineWithObservedProps('wc-test-plain-card', PlainCard);
-defineWithObservedProps('wc-test-recording-card', RecordingCard);
-defineWithObservedProps('wc-test-template-card', TemplateCard);
-defineWithObservedProps('wc-test-sheet-styles-card', SheetStylesCard);
-defineWithObservedProps('wc-test-text-styles-card', TextStylesCard);
-defineWithObservedProps('wc-test-wire-probe-card', WireProbeCard);
-defineWithObservedProps('wc-test-no-shadow-card', NoShadowCard);
+/** An element redeclaring `props` to name its own attributes, registered without any workaround. */
+class OwnPropsCard extends WComponent {
+  protected static override props = ['name', 'value'];
+
+  static changes: RecordedChange[] = [];
+
+  protected override onAttrChange(change: WCAttrChange): void {
+    OwnPropsCard.changes.push({
+      attrName: change.attrName,
+      oldValue: change.oldValue,
+      newValue: change.newValue,
+    });
+  }
+}
+
+/** Lists an attribute and overrides no hook but `render`, for the empty `onAttrChange` default. */
+class DefaultHookCard extends WComponent {
+  protected static override props = ['title'];
+
+  static renders = 0;
+
+  protected override render(): void {
+    DefaultHookCard.renders += 1;
+  }
+}
+
+customElements.define('wc-test-plain-card', PlainCard);
+customElements.define('wc-test-recording-card', RecordingCard);
+customElements.define('wc-test-template-card', TemplateCard);
+customElements.define('wc-test-sheet-styles-card', SheetStylesCard);
+customElements.define('wc-test-text-styles-card', TextStylesCard);
+customElements.define('wc-test-wire-probe-card', WireProbeCard);
+customElements.define('wc-test-no-shadow-card', NoShadowCard);
+customElements.define('wc-test-own-props-card', OwnPropsCard);
+customElements.define('wc-test-default-hook-card', DefaultHookCard);
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -156,6 +174,8 @@ beforeEach(() => {
   RecordingCard.eventTypes = [];
   RecordingCard.connected = 0;
   RecordingCard.disconnected = 0;
+  OwnPropsCard.changes = [];
+  DefaultHookCard.renders = 0;
 });
 
 /** Gives the render pass coalesced on a microtask its turn. */
@@ -279,7 +299,7 @@ describe('WComponent lifecycle', () => {
    */
   test('skips members of the styles array that are not stylesheet objects', async () => {
     class MixedStylesCard extends WComponent {}
-    defineWithObservedProps('wc-test-mixed-styles-card', MixedStylesCard);
+    customElements.define('wc-test-mixed-styles-card', MixedStylesCard);
     Object.defineProperty(MixedStylesCard, 'styles', {
       value: [{}, new CSSStyleSheet()],
       configurable: true,
@@ -296,7 +316,7 @@ describe('WComponent lifecycle', () => {
 
   test('injects nothing when styles are left unset by a JS caller', async () => {
     class UndefinedStylesCard extends WComponent {}
-    defineWithObservedProps('wc-test-undefined-styles-card', UndefinedStylesCard);
+    customElements.define('wc-test-undefined-styles-card', UndefinedStylesCard);
     Object.defineProperty(UndefinedStylesCard, 'styles', {
       value: undefined,
       configurable: true,
@@ -316,6 +336,20 @@ describe('WComponent lifecycle', () => {
 
     expect(card.shadowRoot?.querySelector('p')?.textContent).toBe('first');
     expect(card.shadowRoot?.querySelector('em')?.textContent).toBe('second');
+  });
+
+  // The documented point of the empty `onAttrChange` default: an element that observes an attribute
+  // but keeps every hook needs no override, and the render pass still runs for the change.
+  test('keeps the empty onAttrChange default working for an element that overrides no hook', async () => {
+    const card = new DefaultHookCard();
+    document.body.appendChild(card);
+    await flushRenderPass();
+    expect(DefaultHookCard.renders).toBe(1);
+
+    card.setAttribute('title', 'any');
+    await flushRenderPass();
+
+    expect(DefaultHookCard.renders).toBe(2);
   });
 });
 
@@ -365,5 +399,108 @@ describe('WComponent guard for an absent shadow root', () => {
     card.writeShadowHTML('<p>never rendered</p>');
 
     expect(card.shadowRoot).toBeNull();
+  });
+});
+
+describe('WComponent observed attributes', () => {
+  test('observes the attributes a subclass names by redeclaring props', async () => {
+    // The registry read this getter off the class at define time; it has to see the subclass's own
+    // field, not the base class's.
+    expect(OwnPropsCard.observedAttributes).toEqual(['name', 'value']);
+
+    const card = new OwnPropsCard();
+    document.body.appendChild(card);
+    await flushRenderPass();
+
+    card.setAttribute('name', 'first');
+    card.setAttribute('value', 'x');
+    await flushRenderPass();
+
+    expect(OwnPropsCard.changes).toEqual([
+      { attrName: 'name', oldValue: null, newValue: 'first' },
+      { attrName: 'value', oldValue: null, newValue: 'x' },
+    ]);
+  });
+});
+
+describe('WComponent listener replacement', () => {
+  test('replaces the wired listener on re-render instead of stacking another one', async () => {
+    const card = new RecordingCard();
+    document.body.appendChild(card);
+    await flushRenderPass();
+
+    const button = card.shadowRoot?.querySelector('button');
+    expect(button).not.toBeNull();
+
+    button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(RecordingCard.clicks).toBe(1);
+
+    // The attribute change schedules a render, and the render wires the button again; the second
+    // click therefore runs into whatever that rewiring left behind.
+    card.setAttribute('label', 'again');
+    await flushRenderPass();
+    expect(RecordingCard.renders).toBe(2);
+
+    card.shadowRoot
+      ?.querySelector('button')
+      ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(RecordingCard.clicks).toBe(2);
+  });
+
+  test('after a re-render re-binds a different callback, only the latest one fires', async () => {
+    const card = new WireProbeCard();
+    document.body.appendChild(card);
+    await flushRenderPass();
+
+    const first: Event[] = [];
+    const second: Event[] = [];
+    card.wire('button', 'click', (event) => first.push(event));
+
+    card.shadowRoot
+      ?.querySelector('button')
+      ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(first).toHaveLength(1);
+    expect(second).toHaveLength(0);
+
+    /**
+     * A render rebuilds the markup, so the re-bind below lands on a new element. The listener
+     * recorded from the first wire is on the element it was wired to, and that element is gone.
+     */
+    document.body.removeChild(card);
+    document.body.appendChild(card);
+    await flushRenderPass();
+
+    card.wire('button', 'click', (event) => second.push(event));
+
+    card.shadowRoot
+      ?.querySelector('button')
+      ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(first).toHaveLength(1);
+    expect(second).toHaveLength(1);
+
+    // The surviving binding keeps working: a second event on the same selector still fires.
+    card.shadowRoot
+      ?.querySelector('button')
+      ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(first).toHaveLength(1);
+    expect(second).toHaveLength(2);
+  });
+
+  test('wiring through onClick replaces a listener wired through on for the same selector', async () => {
+    const card = new WireProbeCard();
+    document.body.appendChild(card);
+    await flushRenderPass();
+
+    const viaOnClick: Event[] = [];
+    const viaOn: Event[] = [];
+    card.wireClick('button', (event) => viaOnClick.push(event));
+    card.wire('button', 'click', (event) => viaOn.push(event));
+
+    card.shadowRoot
+      ?.querySelector('button')
+      ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(viaOnClick).toHaveLength(0);
+    expect(viaOn).toHaveLength(1);
   });
 });

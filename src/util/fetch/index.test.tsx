@@ -218,7 +218,32 @@ describe('useFetch', () => {
 
   test('reports a request aborted by a dependency change as cancelled, not failed', async () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    stubFetchUntilAborted();
+
+    // The first request only answers when aborted — the shape the dependency change makes. Every
+    // later request holds its answer until the test resolves it, so the in-flight part of the
+    // contract is observable rather than raced.
+    const pendingResponses: ((response: Response) => void)[] = [];
+    const fetchMock = vi.fn((input: string | URL, init?: RequestInit) => {
+      requests.push({ init, url: String(input) });
+
+      if (fetchMock.mock.calls.length === 1) {
+        return new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => {
+            const abort = new Error('Aborted');
+
+            abort.name = 'AbortError';
+
+            reject(abort);
+          });
+        });
+      }
+
+      return new Promise<Response>((resolve) => {
+        pendingResponses.push(resolve);
+      });
+    });
+
+    vi.stubGlobal('fetch', fetchMock);
 
     const view = await render(<FetchProbe dependencies={['first']} url="/prices" />);
 
@@ -231,9 +256,19 @@ describe('useFetch', () => {
     expect(warnSpy).toHaveBeenCalledWith('Fetch aborted');
     expect(results.at(-1)?.error).toBeNull();
 
-    // The aborted request's own `finally` lowers the shared loading flag even though the request
-    // it belongs to was cancelled and the new request is still in flight — the two closures share
-    // one state slot, and that is the observable behaviour of this hook as written.
+    // Only the request that is still the current one may settle the shared flag. The aborted one
+    // was cancelled while its replacement is still in flight, and loading follows that
+    // replacement rather than the abort.
+    expect(results.at(-1)?.loading).toBe(true);
+
+    // The replacement itself settles, and loading goes down with it.
+    await act(() => {
+      for (const resolve of pendingResponses) {
+        resolve(jsonResponse({ ok: true }));
+      }
+    });
+    await flush();
+
     expect(results.at(-1)?.loading).toBe(false);
   });
 

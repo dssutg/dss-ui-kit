@@ -71,35 +71,44 @@ export function compareArrays<T>(a: readonly T[], b: readonly T[]): number {
  * Two widths are measured per column: the widest entry sets the column's width, and every line is
  * indented and double-spaced between columns. For rendering a picker or a help listing as plain text,
  * not for measuring with.
+ *
+ * Like {@link chunkArray}, a fractional `columnCount` is truncated first, and one below one yields
+ * no lines: a stride of zero would loop forever, and `new Array` rejects the rest.
  */
 export function getStringArrayAsColumnLines(strings: readonly string[], columnCount: number) {
-  const columnWidths = new Array<number>(columnCount).fill(0);
+  const columns = Math.trunc(columnCount);
 
-  for (let i = 0; i < strings.length; i += columnCount) {
-    const columns = strings.slice(i, i + columnCount);
+  if (columns <= 0) {
+    return [];
+  }
 
-    for (let j = 0; j < columnCount; j++) {
+  const columnWidths = new Array<number>(columns).fill(0);
+
+  for (let i = 0; i < strings.length; i += columns) {
+    const row = strings.slice(i, i + columns);
+
+    for (let j = 0; j < columns; j++) {
       // Both reads below are within the widths array's own length, which `.fill(0)` made dense, so
       // the index is always present; the guarded form is only for the compiler, which with
       // `noUncheckedIndexedAccess` cannot see it. The unreached fallback arm stays out of the gate.
       // v8 ignore next
       const widestSoFar = columnWidths[j] ?? 0;
-      columnWidths[j] = Math.max(columns[j]?.length ?? 0, widestSoFar);
+      columnWidths[j] = Math.max(row[j]?.length ?? 0, widestSoFar);
     }
   }
 
   let lines: string[] = [];
 
-  for (let i = 0; i < strings.length; i += columnCount) {
+  for (let i = 0; i < strings.length; i += columns) {
     let line = '';
-    const columns = strings.slice(i, i + columnCount);
+    const row = strings.slice(i, i + columns);
 
-    for (let j = 0; j < columnCount; j++) {
+    for (let j = 0; j < columns; j++) {
       // As in the measuring loop above: the index cannot be outside the dense array.
       // v8 ignore next
       const width = columnWidths[j] ?? 0;
 
-      line = `${line}${(columns[j] ?? '').padEnd(width, ' ')}  `;
+      line = `${line}${(row[j] ?? '').padEnd(width, ' ')}  `;
     }
     lines = [...lines, `  ${line}`];
   }

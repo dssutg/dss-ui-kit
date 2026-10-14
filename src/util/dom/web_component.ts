@@ -14,6 +14,12 @@ export interface WCAttrChange {
 /** Bound listener signature for {@link WComponent.on} — the actual element is not handed back. */
 export type EventCallback = (event: Event) => void;
 
+/** A listener `on` has wired, recorded so the next `on` for the same selector and event unhooks it. */
+interface WiredListener {
+  readonly element: Element;
+  readonly listener: EventListener;
+}
+
 /**
  * The base class for the library's custom elements.
  *
@@ -21,10 +27,15 @@ export type EventCallback = (event: Event) => void;
  * attribute changes produces one render; subclasses override {@link WComponent.render} and list their
  * attributes in the static `props` field, which doubles as `observedAttributes`. Event wiring happens
  * after render: {@link WComponent.on} and {@link WComponent.onClick} throw on a selector that matches
- * nothing, since a silently dead listener reads as a broken component.
+ * nothing, since a silently dead listener reads as a broken component. Rendering again re-binds any
+ * listener a render wired before: the latest binding replaces the previous one rather than stacking
+ * beside it.
  */
 export abstract class WComponent extends HTMLElement {
   private needsRender = false;
+
+  /** Wired listeners by selector and event name; `on` re-binds the pair instead of stacking. */
+  private readonly wiredListeners = new Map<string, WiredListener>();
 
   protected static props: string[] = [];
 
@@ -47,10 +58,16 @@ export abstract class WComponent extends HTMLElement {
   }
 
   static get observedAttributes(): string[] {
-    return WComponent.props;
+    // Read off `this`, not off `WComponent`: inside a static getter `this` is the class the property
+    // was read from, so a subclass that redeclares `props` is observed for the attributes it lists
+    // while one that does not inherits the base's list through the static chain. Naming the base
+    // class instead would statically pin the lookup to `WComponent.props`, and no subclass's own
+    // list would ever reach the registry.
+    // biome-ignore lint/complexity/noThisInStatic: the lookup has to resolve per class; that dynamic dispatch is the point.
+    return this.props;
   }
 
-  // New: static styles property (string or CSSStyleSheet)
+  /** The styles a subclass gives its shadow root: one stylesheet string, or adopted sheets. */
   protected static styles: string | CSSStyleSheet[] = '';
 
   attributeChangedCallback(attrName: string, oldValue: string | null, newValue: string | null) {
@@ -108,7 +125,7 @@ export abstract class WComponent extends HTMLElement {
     }
   }
 
-  // **Inject scoped styles into the shadow root
+  /** Injects the subclass's styles into the shadow root, once per connect. */
   private injectStyles() {
     if (!this.shadowRoot) {
       return;
@@ -143,7 +160,7 @@ export abstract class WComponent extends HTMLElement {
     return this.root.querySelector(selector);
   }
 
-  protected on(selector: string, eventName: string, callback: EventCallback) {
+  protected on(selector: string, eventName: string, callback: EventCallback): void {
     const element = this.root.querySelector(selector);
 
     // A listener registered on a selector that matches nothing would never fire, and the component
@@ -154,7 +171,19 @@ export abstract class WComponent extends HTMLElement {
       );
     }
 
-    element.addEventListener(eventName, callback.bind(this));
+    const key = JSON.stringify([selector, eventName]);
+    const previous = this.wiredListeners.get(key);
+    if (previous) {
+      // Every render re-runs the wiring, and adding a freshly bound closure without removing the
+      // previous one would stack a listener per render. The element recorded with the old binding
+      // may itself be gone — a render can have rebuilt the markup — and removing from it is then a
+      // harmless no-op.
+      previous.element.removeEventListener(eventName, previous.listener);
+    }
+
+    const listener = callback.bind(this);
+    element.addEventListener(eventName, listener);
+    this.wiredListeners.set(key, { element, listener });
   }
 
   protected onClick(selector: string, callback: EventCallback) {

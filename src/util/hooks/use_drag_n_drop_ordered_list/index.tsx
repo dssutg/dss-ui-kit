@@ -72,6 +72,9 @@ export function useDragNDropOrderedList<ListItemDataType>(
       ...dragAndDrop,
       draggedFrom: initialPosition,
       isDragging: true,
+      // The drag holds the caller's list from its first moment, so a drop that arrives before any
+      // hover commits the list unchanged rather than the empty preview the initial state holds.
+      updatedOrder: [...items],
     });
 
     // DnD won't work on Firefox without it

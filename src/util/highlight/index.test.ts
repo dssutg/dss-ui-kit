@@ -64,10 +64,19 @@ describe('highlightText: lua', () => {
     expect(html).toContain('<span class="shj-syn-num">1</span>');
   });
 
-  test('emits a comment as plain unstyled text', () => {
-    // The comment pattern carries a `sub: 'todo'`, and no `todo` language is registered, so the
-    // tokenizer falls into its catch-all and the comment comes out raw rather than crashing a
-    // render that asked for a clock, not a syntax highlighter.
+  // The comment token carries `sub: 'todo'`, so the text of a comment is tokenized through the
+  // registered `todo` language: the marker words are coloured, the rest of the comment stays plain.
+  // Every piece above is emitted exactly once — while `todo` went unregistered the whole attempt
+  // fell into the catch-all instead, which emitted the comment raw, spans and all, as plain text.
+  test('colours the TODO marker inside a comment', () => {
+    const html = highlightText('local x = 1 -- TODO fix me, please', 'lua');
+
+    expect(html).toBe(
+      '<span class="shj-syn-kwd">local</span> x <span class="shj-syn-oper">=</span> <span class="shj-syn-num">1</span> -- <span class="shj-syn-todo">TODO</span> fix me, please',
+    );
+  });
+
+  test('emits a comment without a marker as plain unstyled text', () => {
     const html = highlightText('local x = 1 -- a note', 'lua');
 
     expect(html).toBe(

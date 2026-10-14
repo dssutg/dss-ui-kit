@@ -29,6 +29,9 @@ class RecordingResizeObserver implements ResizeObserver {
 
   readonly observed: Element[] = [];
 
+  /** Whether the source has disconnected this observer, recorded for the teardown tests. */
+  disconnected = false;
+
   constructor(callback: ResizeObserverCallback) {
     RecordingResizeObserver.instances.push(this);
     this.callback = callback;
@@ -43,7 +46,7 @@ class RecordingResizeObserver implements ResizeObserver {
   }
 
   disconnect(): void {
-    // The source never calls this, and the double holds no targets.
+    this.disconnected = true;
   }
 
   /** Delivers the entries to the observer's callback, the way a real observer reports resize. */
@@ -206,7 +209,38 @@ describe('useElementSize', () => {
     ]);
   });
 
-  test('answers nothing to a delivery after the component unmounts', async () => {
+  test('lets go of every observer it replaced, and keeps only the live one', async () => {
+    measureElementsAs(300, 120);
+
+    const view = await render(<SizeProbe elementKey="one" />);
+
+    const observers = RecordingResizeObserver.instances;
+
+    // The mount itself replaces its first effect run — the one that measured before the ref
+    // settled — so the first observer is already history by the time of the first update.
+    expect(observers.length).toBeGreaterThanOrEqual(1);
+
+    await view.update(<SizeProbe elementKey="two" />);
+    await view.update(<SizeProbe elementKey="two" />);
+
+    const liveObserver = observers[observers.length - 1];
+
+    // The swap moved the ref to a new element, and the render that follows it measures and
+    // observes that element afresh.
+    expect(liveObserver?.observed).toEqual([view.find('[data-testid="measured"]')]);
+
+    // Every observer whose element is no longer the one observed has been let go of — without the
+    // cleanup each replaced observer would stay attached to the element it was dropped from.
+    const replaced = observers.slice(0, -1);
+
+    expect(replaced.length).toBeGreaterThan(0);
+
+    for (const observer of replaced) {
+      expect(observer.disconnected).toBe(true);
+    }
+  });
+
+  test('disconnects the observer when the component unmounts', async () => {
     measureElementsAs(300, 120);
 
     const view = await render(<SizeProbe elementKey="one" />);
@@ -216,6 +250,7 @@ describe('useElementSize', () => {
     view.unmount();
 
     // The double answers only when told, and delivery finds a listener whose component is gone.
+    expect(observer?.disconnected).toBe(true);
     expect(() => {
       observer?.deliver([entryWith(new DOMRect(0, 0, 1, 1))]);
     }).not.toThrow();

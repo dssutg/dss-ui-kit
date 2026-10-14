@@ -17,6 +17,7 @@ import vertexShaderSource from '@/util/gl/vertex.glsl' with { type: 'text' };
 import {
   calcNormal,
   convertBoxToQuads,
+  convertQuadToQuads,
   flattenSceneObjects,
   type GLQuad,
   generateTransformMatrices,
@@ -408,7 +409,9 @@ function determineFontAtlasSize({
 
   const charH = fontSize + toleranceY;
 
-  const maxAtlasSize = Math.max(2 ** 12, gl.getParameter(gl.MAX_TEXTURE_SIZE));
+  // The atlas ceiling is the smaller of the default cap and what the device reports: a texture the
+  // device cannot hold arrives incomplete, and nothing draws from it.
+  const maxAtlasSize = Math.min(2 ** 12, gl.getParameter(gl.MAX_TEXTURE_SIZE));
 
   while (atlasSize <= maxAtlasSize) {
     cols = Math.trunc(atlasSize / fontSize);
@@ -710,8 +713,9 @@ function renderTextObject(
  * Flattens a scene into quads and uploads them into freshly created buffers.
  *
  * Text is rasterised into a font atlas here rather than per frame, and only the characters the scene
- * actually uses are rasterised. The atlas is one texture, so a scene needing more than the largest
- * supported texture's worth of distinct glyphs reports an error instead of drawing half its labels.
+ * actually uses are rasterised. The atlas is one texture, so a scene needing more distinct glyphs
+ * than one atlas holds — the atlas is capped at 4096 and never above what the device's
+ * `MAX_TEXTURE_SIZE` reports — reports an error instead of drawing half its labels.
  */
 export function createSceneRenderContext(
   scene: Scene,
@@ -727,13 +731,22 @@ export function createSceneRenderContext(
   for (const object of objs) {
     if (object.type === 'box') {
       quads = [...quads, ...convertBoxToQuads(object)];
-    } else if (object.type === 'text') {
+    } else if (object.type === 'quad') {
+      quads = [...quads, ...convertQuadToQuads(object)];
+    }
+    // The flattening above keeps groups from reaching this chain, so an object that gets past the
+    // box and quad arms is a text run: the text condition's false side cannot run, and the arm
+    // stays out of the coverage gate.
+    //
+    // v8 ignore start
+    else if (object.type === 'text') {
       const chars = object.text.replace(/\s+/g, '');
       for (const c of chars) {
         usedChars.add(c);
       }
       textObjs.push(object);
     }
+    // v8 ignore stop
   }
 
   function createPosBuf() {

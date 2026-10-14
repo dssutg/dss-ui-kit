@@ -10,6 +10,7 @@ import {
   calcNormal,
   convertBoxToQuads,
   convertHexColorToGL,
+  convertQuadToQuads,
   flattenSceneObjects,
   generateTransformMatrices,
   getBoxCropUV,
@@ -330,6 +331,90 @@ describe('convertBoxToQuads', () => {
 
     expect(quads).toHaveLength(6);
     expect(quads[0]?.bottomLeft).toEqual([-1, -1, 1]);
+  });
+});
+
+describe('convertQuadToQuads', () => {
+  test('draws a bare quad as the front face a box has, in one quad, untextured', () => {
+    const [quad] = convertQuadToQuads({ type: 'quad', material: WHITE });
+
+    expect(quad?.bottomLeft).toEqual([-1, -1, 1]);
+    expect(quad?.bottomRight).toEqual([1, -1, 1]);
+    expect(quad?.topRight).toEqual([1, 1, 1]);
+    expect(quad?.topLeft).toEqual([-1, 1, 1]);
+
+    // The flat material colours every corner, and no texture crop is carried.
+    expect(quad?.bottomLeftColor).toEqual(WHITE);
+    expect(quad?.bottomRightColor).toEqual(WHITE);
+    expect(quad?.topRightColor).toEqual(WHITE);
+    expect(quad?.topLeftColor).toEqual(WHITE);
+    expect(quad?.uv).toBeUndefined();
+  });
+
+  test('scales the rectangle with x and y and offsets its plane in depth with z', () => {
+    const [quad] = convertQuadToQuads({ type: 'quad', scale: [2, 3, 4], material: WHITE });
+
+    expect(quad?.bottomLeft).toEqual([-2, -3, 4]);
+    expect(quad?.bottomRight).toEqual([2, -3, 4]);
+    expect(quad?.topRight).toEqual([2, 3, 4]);
+    expect(quad?.topLeft).toEqual([-2, 3, 4]);
+  });
+
+  test('places the rectangle at the quad position', () => {
+    const [quad] = convertQuadToQuads({ type: 'quad', pos: [10, 0, 20], material: WHITE });
+
+    expect(quad?.bottomLeft).toEqual([9, -1, 21]);
+    expect(quad?.bottomRight).toEqual([11, -1, 21]);
+    expect(quad?.topRight).toEqual([11, 1, 21]);
+    expect(quad?.topLeft).toEqual([9, 1, 21]);
+  });
+
+  test('turns the corners about the rotation before placing them at the position', () => {
+    const [quad] = convertQuadToQuads({
+      type: 'quad',
+      pos: [10, 0, 0],
+      scale: [2, 3, 4],
+      rotation: [0, 0, Math.PI / 2],
+      material: WHITE,
+    });
+
+    // A quarter turn about z carries the corner offset onto (-sy, sx), then the position is added;
+    // cos of a quarter turn is not exact in floating point, so these compare approximately.
+    expect(quad?.bottomLeft[0]).toBeCloseTo(13, 10);
+    expect(quad?.bottomLeft[1]).toBeCloseTo(-2, 10);
+    expect(quad?.bottomLeft[2]).toBeCloseTo(4, 10);
+
+    expect(quad?.bottomRight[0]).toBeCloseTo(13, 10);
+    expect(quad?.bottomRight[1]).toBeCloseTo(2, 10);
+    expect(quad?.bottomRight[2]).toBeCloseTo(4, 10);
+
+    expect(quad?.topRight[0]).toBeCloseTo(7, 10);
+    expect(quad?.topRight[1]).toBeCloseTo(2, 10);
+    expect(quad?.topRight[2]).toBeCloseTo(4, 10);
+
+    expect(quad?.topLeft[0]).toBeCloseTo(7, 10);
+    expect(quad?.topLeft[1]).toBeCloseTo(-2, 10);
+    expect(quad?.topLeft[2]).toBeCloseTo(4, 10);
+  });
+
+  test('colours every corner with the material front colour', () => {
+    const [quad] = convertQuadToQuads({
+      type: 'quad',
+      material: {
+        frontFaceColor: [1, 0, 0, 1],
+        backFaceColor: [0, 1, 0, 1],
+        leftFaceColor: [0, 0, 1, 1],
+        rightFaceColor: [1, 1, 0, 1],
+        topFaceColor: [0, 1, 1, 1],
+        bottomFaceColor: [1, 0, 1, 1],
+      },
+    });
+
+    // A quad has only its front face: what the other five faces say does not matter.
+    expect(quad?.bottomLeftColor).toEqual([1, 0, 0, 1]);
+    expect(quad?.bottomRightColor).toEqual([1, 0, 0, 1]);
+    expect(quad?.topRightColor).toEqual([1, 0, 0, 1]);
+    expect(quad?.topLeftColor).toEqual([1, 0, 0, 1]);
   });
 });
 

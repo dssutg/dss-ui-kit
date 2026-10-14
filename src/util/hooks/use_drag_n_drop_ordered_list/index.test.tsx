@@ -215,6 +215,21 @@ describe('useDragNDropOrderedList', () => {
     expect(view.find('[data-testid="status"]').textContent).toBe('dragging:false from:none');
   });
 
+  test('commits the list unchanged to a drop that never hovered a row', async () => {
+    const onChange = vi.fn<(updatedItems: string[]) => void>();
+
+    const view = await render(<ListProbe items={['a', 'b', 'c']} onChange={onChange} />);
+
+    const row = (position: number) => view.find(`li[data-position="${position}"]`);
+
+    sendDragEvent(row(0), 'dragstart', dataTransferSpy());
+    sendDragEvent(row(0), 'drop');
+
+    // A drop with no hover behind it moves nothing, so the caller gets its list back whole — not
+    // the empty preview an unstarted drag would otherwise report.
+    expect(onChange).toHaveBeenCalledWith(['a', 'b', 'c']);
+  });
+
   test('renders the props a draggable row needs', async () => {
     const view = await render(<ListProbe items={['a', 'b', 'c']} />);
 
