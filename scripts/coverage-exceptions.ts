@@ -1,8 +1,9 @@
 /**
- * The code under `src/util/` the coverage gate does not require.
+ * The code the coverage gate does not require.
  *
- * The gate holds the helper layer to a full 100% — every statement, branch, function and line — and
- * an exception here is the only way a file leaves that requirement. It is deliberately a list of
+ * The gate holds the whole published source — `src/util/`, `src/components/` and the infrastructure
+ * modules beside them — to a full 100%, every statement, branch, function and line, and an exception
+ * here is the only way a published file leaves that requirement. It is deliberately a list of
  * named files with a stated reason rather than a percentage: a number can be met by covering the
  * easy half, while a name has to be justified, and the justification is what the next reader checks
  * when they wonder why a file is missing from the report.
