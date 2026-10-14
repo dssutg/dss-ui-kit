@@ -17,6 +17,7 @@ have to reach into their own code for is a prop.
 - [Theming](#theming)
 - [Events](#events)
 - [WebGL](#webgl)
+- [Quality](#quality)
 - [Testing](#testing)
 - [Development](#development)
 - [Licence](#licence)
@@ -223,6 +224,20 @@ projection, with per-face colours or a flat material. It is generic — it has n
 and it is exported in full (`createSceneRenderContext`, `renderScene`, `useGLCtx`,
 `convertBoxToQuads`, `generateTransformMatrices`, …) for an application that needs to draw its own
 scene in the same pipeline the components use.
+
+## Quality
+
+This project is built under an extremely rigorous QA policy, and the gates sit in CI rather than in
+memory:
+
+- **100% coverage of the published source.** Every statement, branch, function and line of the
+  library is covered by tests. The coverage gate fails a build below 100%, because a partial
+  threshold is met by covering the easy half. The one exception is the test helper itself
+  ([Testing](#testing)), which carries the reason it is excluded in the list it is excluded by.
+- **Formally verified helpers.** The pure helper layer under `src/util/` is specified with `//@`
+  annotations and verified with [LemmaScript](https://github.com/midspiral/LemmaScript), which
+  generates Dafny proofs from the ordinary TypeScript source; a separate CI workflow regenerates and
+  re-verifies those proofs on every run.
 
 ## Testing
 
