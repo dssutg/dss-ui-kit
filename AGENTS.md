@@ -581,10 +581,11 @@ written after the fix proves only that the fix ran. It sits beside what it cover
 test, and the failing-then-passing sequence is what makes the fix verifiable rather than asserted.
 
 `deno task test` runs the suite, and `deno task test:coverage` runs it with the coverage gate the
-same thresholds in `vitest.config.ts` hold the helper layer to: **`src/util/` is covered at 100% —
-every statement, branch, function and line.** A partial threshold is a number a partial test can
-meet, so the floor is the whole one. The gate is enforced by `deno task ci`, which runs the coverage
-task beside the plain one.
+thresholds in `vitest.config.ts` hold the whole published source to — `src/util/`, `src/components/`
+and the infrastructure modules beside them: **100% of statements, branches, functions and lines.**
+A partial threshold is a number a partial test can meet, so the floor is the whole one, and the floor
+is held, not visited: new code ships with the tests that cover it, in the commit that adds it. The
+gate is enforced by `deno task ci`, which runs the coverage task beside the plain one.
 
 An exception to that floor is one of two kinds, and both carry their reason with them: a file
 excluded by name in [scripts/coverage-exceptions.ts](scripts/coverage-exceptions.ts) — currently the
@@ -594,6 +595,11 @@ says why. A defensive arm the TypeScript compiler's opinion of an index forces i
 never be driven by a test; the comment is where the claim lives, and a reviewer disagrees with
 either there rather than in a config. `scripts/coverage-exceptions.test.ts` checks the file-level
 list against the tree, so an entry that stops naming a file fails.
+
+**The 100% is held honestly or not at all.** A test that executes a line without asserting what that
+line did, an exception added to move the number rather than to state a fact, or an ignore marker on
+a branch a real input can reach is 0% coverage wearing the same report. The two exceptions above are
+the only exits, each with its reason where a reviewer disagrees with it.
 
 Add tests next to what they cover: `src/**/*.test.ts` beside the
 component or type, `scripts/**/*.test.ts` beside the helper. The repository-policy tests guard
@@ -658,6 +664,10 @@ behaviour, and the library still ships the plain source a consumer imports.
   toolchain, which the Deno gate does not install, so `deno task ci` still runs wherever Deno does.
 - `//@ assume` is not used: it makes a proof vacuous, and a proof that says nothing is worse than no
   proof at all.
+- A proof is earned by its specification, not arranged around the prover: an `ensures` weakened until
+  it constrains nothing, or the hard work moved into a `requires` real callers were never held to, is
+  the vacuity the rule above bans in another shape. New pure logic under `src/util/` carries its
+  annotations and its entry in `LemmaScript-files.txt`, following the sources already listed.
 
 ## Git and versioning
 
@@ -782,6 +792,9 @@ Consequences worth knowing before touching the source:
 
 - `deno task ci` passes (this is the CI gate).
 - If you touched `package.json`, `deno.lock` is refreshed and `deno task install:frozen` passes.
+- Coverage is still 100% where the gate reads, and every source in `LemmaScript-files.txt` still
+  verifies, with its `.dfy` and `.dfy.gen` artefacts regenerated — see [Testing](#testing) and
+  [Verification](#verification).
 - Nothing under `src/components/` or `src/util/` imports a module outside its layer — see
   [Layering](#layering).
 - No new CSS custom property is introduced without its Tailwind colour in `tailwind.config.ts`, and
