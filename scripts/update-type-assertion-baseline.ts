@@ -33,4 +33,6 @@ function main(): void {
   );
 }
 
-runBaseline(main);
+if (import.meta.main) {
+  runBaseline(main);
+}

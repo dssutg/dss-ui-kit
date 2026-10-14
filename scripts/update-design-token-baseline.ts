@@ -24,4 +24,6 @@ function main(): void {
   console.log(`Recorded ${tokens.length} shipped tokens in ${BASELINE_PATH}`);
 }
 
-runBaseline(main);
+if (import.meta.main) {
+  runBaseline(main);
+}

@@ -18,14 +18,14 @@ export function writeBaseline(path: string, value: unknown): void {
 }
 
 /**
- * Runs a baseline generator as a program: no-op when the module is imported, and an error is reported
- * and turned into a non-zero exit when it is the entry point.
+ * Runs a baseline generator's `main`, reporting an error and turning it into a non-zero exit.
+ *
+ * Whether the generator is the program being run is the caller's own fact: `import.meta.main` inside
+ * this helper names this helper, which is never the entry point, so a gate held here returned early
+ * every time and every generator silently wrote nothing. The generator gates with its own
+ * `import.meta.main` before calling.
  */
 export function runBaseline(main: () => void): void {
-  if (!import.meta.main) {
-    return;
-  }
-
   try {
     main();
   } catch (error) {

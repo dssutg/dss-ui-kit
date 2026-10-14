@@ -47,4 +47,6 @@ function main(): void {
   console.log(`Recorded ${entries.length} accepted duplicate blocks in ${BASELINE_PATH}`);
 }
 
-runBaseline(main);
+if (import.meta.main) {
+  runBaseline(main);
+}
