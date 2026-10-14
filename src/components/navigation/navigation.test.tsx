@@ -10,7 +10,11 @@ import {
   type MenuTreeItemClickCallback,
   type TMenuTreeItem,
 } from '@/components/navigation/MenuTree';
-import type { MUITabDescriptor } from '@/components/navigation/MUITabList';
+import {
+  isMUITabActive,
+  type MUITabDescriptor,
+  MUITabList,
+} from '@/components/navigation/MUITabList';
 import { NavBar } from '@/components/navigation/NavBar';
 import { OrderPanel } from '@/components/navigation/OrderPanel';
 import { type RouteDescriptor, RouteSwitch } from '@/components/navigation/RouteSwitch';
@@ -168,6 +172,46 @@ describe('ControlledMUITabList', () => {
     await click(triggers[1] as HTMLElement);
 
     expect(setTabId).toHaveBeenCalledWith('second');
+  });
+});
+
+/**
+ * The uncontrolled list: the same widget with its selection held inside, which is what a caller wants
+ * when nothing outside needs to know which tab is open.
+ */
+describe('MUITabList', () => {
+  const tabs: MUITabDescriptor<'first' | 'second'>[] = [
+    { id: 'first', title: 'First', content: <p>First panel</p>, forceMount: false },
+    { id: 'second', title: 'Second', content: <p>Second panel</p>, forceMount: false },
+  ];
+
+  it('starts on the first tab and moves when another is clicked', async () => {
+    const { findByText, findAll } = await render(
+      <MUITabList tabs={tabs} rightComponent={<span>Extra</span>} />,
+    );
+
+    expect(findByText('First panel')).toBeDefined();
+    expect(findByText('Extra').tagName).toBe('SPAN');
+
+    const triggers = findAll<HTMLElement>('[role="tab"]');
+
+    await click(triggers[1] as HTMLElement);
+
+    expect(findByText('Second panel')).toBeDefined();
+    expect(document.body.textContent).not.toContain('First panel');
+  });
+
+  it('tells a caller whether the content it renders is the active tab', async () => {
+    // The answer is one attribute read rather than a copy of the selection state.
+    const { findByText } = await render(<MUITabList tabs={tabs} />);
+
+    expect(isMUITabActive(findByText('First panel'))).toBe(true);
+  });
+
+  it('renders nothing when it was handed no tabs', async () => {
+    const { container } = await render(<MUITabList tabs={[]} />);
+
+    expect(container.textContent).toBe('');
   });
 });
 

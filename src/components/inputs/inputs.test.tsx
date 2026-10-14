@@ -6,21 +6,36 @@
  * `aria-*` attributes a screen reader reads a switch by.
  */
 // @vitest-environment jsdom
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { BitField } from '@/components/inputs/BitField';
 import { ByteFractionInput } from '@/components/inputs/ByteFractionInput';
 import { Checkbox } from '@/components/inputs/Checkbox';
 import { ColorfulYesNo } from '@/components/inputs/ColorfulYesNo';
 import { DecimalIntegerInput } from '@/components/inputs/DecimalIntegerInput';
+import { DelayedInput } from '@/components/inputs/DelayedInput';
+import { FloatInput } from '@/components/inputs/FloatInput';
+import { HourMinuteSecondTimeInput } from '@/components/inputs/HourMinuteSecondTimeInput';
+import { HourMinuteTimeInput } from '@/components/inputs/HourMinuteTimeInput';
 import { Input } from '@/components/inputs/Input';
+import { IPInput } from '@/components/inputs/IPInput';
 import { JsonEditor } from '@/components/inputs/JsonEditor';
 import { LockableToggleSwitch } from '@/components/inputs/LockableToggleSwitch';
 import { SearchInput } from '@/components/inputs/SearchInput';
 import { Select } from '@/components/inputs/Select';
 import { Slider } from '@/components/inputs/Slider';
+import { SocketServerAddressInput } from '@/components/inputs/SocketServerAddressInput';
 import { TextInput } from '@/components/inputs/TextInput';
+import { TimePartInput } from '@/components/inputs/TimePartInput';
 import { ToggleSwitch } from '@/components/inputs/ToggleSwitch';
 import { UnsignedIntegerInput } from '@/components/inputs/UnsignedIntegerInput';
-import { change, click, render, type } from '@/util/testing/render';
+import { UploadConfig } from '@/components/inputs/UploadConfig';
+import { act, change, click, flush, render, type } from '@/util/testing/render';
+
+// The picker is mocked so the click path can be driven: the real one opens a native dialog a test
+// cannot answer.
+const openFileDialog = vi.hoisted(() => vi.fn());
+
+vi.mock('@/util/file', () => ({ openFileDialog }));
 
 describe('Input', () => {
   it('is a native input with the DOM prop of the same name', async () => {
@@ -427,5 +442,482 @@ describe('Slider', () => {
     );
 
     expect(container.querySelector('[role="slider"]')?.getAttribute('aria-valuenow')).toBe('25');
+  });
+});
+
+/**
+ * A decimal field whose value stays a string, so half-typed text reaches the caller. The bounds the
+ * browser spinner enforces are checked here too: out-of-range text is outlined, not swallowed.
+ */
+describe('FloatInput', () => {
+  it('reports sanitized numeric text as it is typed', async () => {
+    const onChange = vi.fn();
+    const { find } = await render(<FloatInput value="" onChange={onChange} />);
+
+    await type(find<HTMLInputElement>('input'), '1.5');
+
+    expect(onChange).toHaveBeenCalledWith('1.5');
+  });
+
+  it('outlines a value that is a complete number inside its bounds as valid', async () => {
+    const { find } = await render(
+      <FloatInput value="1.5" onChange={() => undefined} min={0} max={2} />,
+    );
+
+    // A valid field is outlined transparently; the number itself is the browser's to render.
+    expect(find<HTMLInputElement>('input').style.border).toContain('rgba(0, 0, 0, 0)');
+  });
+
+  it('outlines a half-typed value as invalid rather than clearing it', async () => {
+    const { find } = await render(<FloatInput value="-" onChange={() => undefined} />);
+
+    expect(find<HTMLInputElement>('input').style.border).toContain('var(--color-tda)');
+  });
+
+  it('outlines a value outside the range as invalid', async () => {
+    const { find } = await render(
+      <FloatInput value="5" onChange={() => undefined} min={0} max={2} />,
+    );
+
+    expect(find<HTMLInputElement>('input').style.border).toContain('var(--color-tda)');
+  });
+});
+
+/**
+ * An IPv4 field: incomplete while it is being typed, and every octet clamped to a byte rather than
+ * rejected, so the caller never holds an address the field cannot show.
+ */
+describe('IPInput', () => {
+  it('reports the address as it is typed', async () => {
+    const onChange = vi.fn();
+    const { find } = await render(<IPInput value="192.168.0.1" onChange={onChange} />);
+
+    await type(find<HTMLInputElement>('input'), '192.168.0.2');
+
+    expect(onChange).toHaveBeenCalledWith('192.168.0.2');
+  });
+
+  it('clamps each octet to a byte', async () => {
+    const onChange = vi.fn();
+    const { find } = await render(<IPInput value="" onChange={onChange} />);
+
+    await type(find<HTMLInputElement>('input'), '999.999.999.999');
+
+    expect(onChange).toHaveBeenCalledWith('255.255.255.255');
+  });
+
+  it('drops a fifth octet and strips what is not a digit or a dot', async () => {
+    const onChange = vi.fn();
+    const { find } = await render(<IPInput value="" onChange={onChange} />);
+
+    await type(find<HTMLInputElement>('input'), '1a.2.3.4.5');
+
+    expect(onChange).toHaveBeenCalledWith('1.2.3.4');
+  });
+
+  it('outlines a complete address as valid and a partial one as not', async () => {
+    const { find, update } = await render(
+      <IPInput value="192.168.0.1" onChange={() => undefined} />,
+    );
+
+    expect(find<HTMLInputElement>('input').style.border).toContain('rgba(0, 0, 0, 0)');
+
+    await update(<IPInput value="192.168" onChange={() => undefined} />);
+
+    expect(find<HTMLInputElement>('input').style.border).toContain('var(--color-tda)');
+  });
+});
+
+/**
+ * A field that holds its own copy of the text and reports it once typing stops — on blur or on Enter —
+ * so the expensive thing behind it is not re-run for every keystroke.
+ */
+describe('DelayedInput', () => {
+  it('holds the typed text and reports it only on blur', async () => {
+    const onChange = vi.fn();
+    const { find } = await render(<DelayedInput value="initial" onChange={onChange} />);
+
+    const input = find<HTMLInputElement>('input');
+
+    await type(input, 'typed');
+
+    expect(input.value).toBe('typed');
+    expect(onChange).not.toHaveBeenCalled();
+
+    input.focus();
+    input.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+
+    expect(onChange).toHaveBeenCalledWith('typed');
+  });
+
+  it('applies the caller filter while typing, before the value settles', async () => {
+    const { find } = await render(
+      <DelayedInput
+        value=""
+        onChange={() => undefined}
+        getFilteredValue={(text) => text.toUpperCase()}
+      />,
+    );
+
+    await type(find<HTMLInputElement>('input'), 'abc');
+
+    expect(find<HTMLInputElement>('input').value).toBe('ABC');
+  });
+
+  it('commits on Enter by blurring the field when the caller asked for it', async () => {
+    const onChange = vi.fn();
+    const { find } = await render(
+      <DelayedInput value="" onChange={onChange} changeOnEnterKey={true} />,
+    );
+
+    const input = find<HTMLInputElement>('input');
+
+    input.focus();
+    await type(input, 'committed');
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+
+    expect(onChange).toHaveBeenCalledWith('committed');
+  });
+
+  it('adopts a value the caller replaces under it', async () => {
+    const { find, update } = await render(<DelayedInput value="one" onChange={() => undefined} />);
+
+    await update(<DelayedInput value="two" onChange={() => undefined} />);
+
+    expect(find<HTMLInputElement>('input').value).toBe('two');
+  });
+});
+
+/**
+ * A text field for a WebSocket address: the address is the caller's, the field reports what was typed,
+ * and Enter is a request to dial rather than something the field does.
+ */
+describe('SocketServerAddressInput', () => {
+  it('reports the typed text and passes the placeholder through', async () => {
+    const onChange = vi.fn();
+    const { find } = await render(
+      <SocketServerAddressInput
+        value=""
+        onChange={onChange}
+        onConfirm={() => undefined}
+        placeholder="wss://host"
+      />,
+    );
+
+    const input = find<HTMLInputElement>('input');
+
+    expect(input.placeholder).toBe('wss://host');
+
+    await type(input, 'wss://example');
+
+    expect(onChange).toHaveBeenCalledWith('wss://example');
+  });
+
+  it('asks to confirm on Enter', async () => {
+    const onConfirm = vi.fn();
+    const { find } = await render(
+      <SocketServerAddressInput value="" onChange={() => undefined} onConfirm={onConfirm} />,
+    );
+
+    find<HTMLInputElement>('input').dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }),
+    );
+
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears through the field clear button', async () => {
+    const onChange = vi.fn();
+    const { find } = await render(
+      <SocketServerAddressInput value="wss://x" onChange={onChange} onConfirm={() => undefined} />,
+    );
+
+    await click(find<HTMLButtonElement>('button'));
+
+    expect(onChange).toHaveBeenCalledWith('');
+  });
+});
+
+/**
+ * One part of a time, wrapping at `max` rather than clamping, with arrows that stop at the bounds so
+ * the value cannot be stepped out of range.
+ */
+describe('TimePartInput', () => {
+  it('steps up and down from its arrows', async () => {
+    const onChange = vi.fn();
+    const { findAll } = await render(<TimePartInput value={5} onChange={onChange} max={10} />);
+
+    // Three buttons: the up arrow, the field's own clear button, and the down arrow.
+    const buttons = findAll<HTMLButtonElement>('button');
+
+    expect(buttons).toHaveLength(3);
+
+    await click(buttons[0] as HTMLButtonElement);
+    expect(onChange).toHaveBeenLastCalledWith(6);
+
+    await click(buttons[2] as HTMLButtonElement);
+    expect(onChange).toHaveBeenLastCalledWith(4);
+  });
+
+  it('disables the arrow that would step past a bound', async () => {
+    const onChange = vi.fn();
+    const { findAll, update } = await render(
+      <TimePartInput value={10} onChange={onChange} max={10} />,
+    );
+
+    // The up arrow is inactive at the top and takes no handler; the down arrow still steps.
+    await click(findAll<HTMLButtonElement>('button')[0] as HTMLButtonElement);
+
+    expect(onChange).not.toHaveBeenCalled();
+
+    await update(<TimePartInput value={0} onChange={onChange} max={10} />);
+
+    const buttons = findAll<HTMLButtonElement>('button');
+
+    await click(buttons[2] as HTMLButtonElement);
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('reports a typed value, reading an emptied field as zero', async () => {
+    const onChange = vi.fn();
+    const { find } = await render(<TimePartInput value={0} onChange={onChange} max={59} />);
+
+    await type(find<HTMLInputElement>('input'), '30');
+
+    expect(onChange).toHaveBeenCalledWith(30);
+  });
+});
+
+describe('HourMinuteTimeInput', () => {
+  it('renders an hour and a minute field with a separator', async () => {
+    const onHourChange = vi.fn();
+    const onMinuteChange = vi.fn();
+    const { findAll } = await render(
+      <HourMinuteTimeInput
+        hour={13}
+        onHourChange={onHourChange}
+        minute={45}
+        onMinuteChange={onMinuteChange}
+      />,
+    );
+
+    // Each field contributes three buttons: up arrow, clear, down arrow.
+    const buttons = findAll<HTMLButtonElement>('button');
+
+    expect(findAll('input')).toHaveLength(2);
+    expect(buttons).toHaveLength(6);
+
+    await click(buttons[0] as HTMLButtonElement);
+    expect(onHourChange).toHaveBeenCalledWith(14);
+
+    await click(buttons[3] as HTMLButtonElement);
+    expect(onMinuteChange).toHaveBeenCalledWith(46);
+  });
+});
+
+describe('HourMinuteSecondTimeInput', () => {
+  it('renders three fields and reports the one that was stepped', async () => {
+    const onSecondChange = vi.fn();
+    const { findAll } = await render(
+      <HourMinuteSecondTimeInput
+        hour={0}
+        onHourChange={() => undefined}
+        minute={0}
+        onMinuteChange={() => undefined}
+        second={30}
+        onSecondChange={onSecondChange}
+      />,
+    );
+
+    // Each field contributes three buttons: up arrow, clear, down arrow.
+    const buttons = findAll<HTMLButtonElement>('button');
+
+    expect(findAll('input')).toHaveLength(3);
+    expect(buttons).toHaveLength(9);
+
+    // The seconds field is the third one, after hour and minute.
+    await click(buttons[6] as HTMLButtonElement);
+
+    expect(onSecondChange).toHaveBeenCalledWith(31);
+  });
+});
+
+/**
+ * A number shown as its bits: `flagDescriptionMap` is the caller's vocabulary and this component is
+ * only the reading of it, listing the set bits and naming them.
+ */
+describe('BitField', () => {
+  const flagDescriptionMap = { 0: 'First flag', 1: 'Second flag', 8: 'Ninth flag' };
+
+  it('renders the octets of the value in hex', async () => {
+    const { findAll } = await render(
+      <BitField flags={1} flagDescriptionMap={flagDescriptionMap} octetCount={2} />,
+    );
+
+    // Two bytes, high byte first: the value 1 is `00` then `01`.
+    expect(findAll('div').map((element) => element.textContent)).toContain('00');
+    expect(document.body.textContent).toContain('01');
+  });
+
+  it('lists only the descriptions of set bits by default', async () => {
+    const { container } = await render(
+      <BitField flags={1} flagDescriptionMap={flagDescriptionMap} octetCount={2} />,
+    );
+
+    expect(container.textContent).toContain('First flag');
+    expect(container.textContent).not.toContain('Second flag');
+    expect(container.textContent).not.toContain('Ninth flag');
+  });
+
+  it('lists every description when told to show the whole field', async () => {
+    const { container } = await render(
+      <BitField
+        flags={1}
+        flagDescriptionMap={flagDescriptionMap}
+        octetCount={2}
+        showEntireDescription={true}
+      />,
+    );
+
+    expect(container.textContent).toContain('First flag');
+    expect(container.textContent).toContain('Second flag');
+    expect(container.textContent).toContain('Ninth flag');
+  });
+
+  it('cross-highlights the bit a row names while the pointer is over it', async () => {
+    const { findByText } = await render(
+      <BitField flags={1} flagDescriptionMap={flagDescriptionMap} octetCount={2} />,
+    );
+
+    const row = findByText('First flag').parentElement;
+
+    act(() => {
+      row?.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+    });
+
+    expect(document.body.querySelector('.text-tok')).not.toBeNull();
+  });
+
+  it('ignores a description for a bit above the shown octets', async () => {
+    const { container } = await render(
+      <BitField
+        flags={1}
+        flagDescriptionMap={{ 0: 'First flag', 64: 'Too high' }}
+        octetCount={1}
+        showEntireDescription={true}
+      />,
+    );
+
+    expect(container.textContent).toContain('First flag');
+    expect(container.textContent).not.toContain('Too high');
+  });
+});
+
+describe('UploadConfig', () => {
+  const file = new File(['contents'], 'report.txt');
+
+  beforeEach(() => {
+    openFileDialog.mockReset();
+  });
+
+  it('shows the hint and an upload action while it is empty', async () => {
+    const { findByText } = await render(<UploadConfig onFileUpload={vi.fn()} />);
+
+    expect(findByText('Drag a file here to upload')).toBeDefined();
+    expect(findByText('Upload')).toBeDefined();
+  });
+
+  it('opens the file picker and reports the chosen file', async () => {
+    const onFileChange = vi.fn();
+    openFileDialog.mockImplementation((callback: (file: File) => void) => callback(file));
+
+    const { findAll, findByText } = await render(
+      <UploadConfig onFileUpload={vi.fn()} onFileChange={onFileChange} />,
+    );
+
+    // The drop area is the first button; the action button follows it.
+    await click(findAll('button')[0] as HTMLButtonElement);
+
+    expect(openFileDialog).toHaveBeenCalled();
+    expect(onFileChange).toHaveBeenCalledWith(file);
+    expect(findByText('report.txt')).toBeDefined();
+  });
+
+  it('uploads the file it holds and reports completion', async () => {
+    const onFileUpload = vi.fn().mockResolvedValue(undefined);
+    const { findAll, findByText } = await render(
+      <UploadConfig onFileUpload={onFileUpload} uploadedFile={file} />,
+    );
+
+    await click(findAll('button')[1] as HTMLButtonElement);
+    await flush();
+
+    expect(onFileUpload).toHaveBeenCalledWith(file);
+    expect(findByText('Uploaded')).toBeDefined();
+  });
+
+  it('tracks progress and cancels an upload in flight', async () => {
+    const onFileUploadCancel = vi.fn();
+    const { findAll, findByText } = await render(
+      <UploadConfig
+        onFileUpload={vi.fn().mockResolvedValue(undefined)}
+        onFileUploadCancel={onFileUploadCancel}
+        uploadedFile={file}
+        progress={0}
+      />,
+    );
+
+    await click(findAll('button')[1] as HTMLButtonElement);
+    await flush();
+
+    // While progress is tracked the status stays in flight and the action becomes a cancel.
+    expect(findByText('0%')).toBeDefined();
+    expect(findByText('Cancel')).toBeDefined();
+
+    await click(findAll('button')[1] as HTMLButtonElement);
+
+    expect(onFileUploadCancel).toHaveBeenCalledWith(file);
+    expect(findByText('Upload')).toBeDefined();
+  });
+
+  it('reports completion once tracked progress reaches the end', async () => {
+    const onFileUpload = vi.fn().mockResolvedValue(undefined);
+    const { findAll, findByText, update } = await render(
+      <UploadConfig onFileUpload={onFileUpload} uploadedFile={file} progress={0} />,
+    );
+
+    await click(findAll('button')[1] as HTMLButtonElement);
+    await flush();
+
+    expect(findByText('0%')).toBeDefined();
+
+    await update(<UploadConfig onFileUpload={onFileUpload} uploadedFile={file} progress={100} />);
+
+    expect(findByText('Uploaded')).toBeDefined();
+  });
+
+  it('takes a file dropped onto the area', async () => {
+    const onFileChange = vi.fn();
+    const { findAll, findByText } = await render(
+      <UploadConfig onFileUpload={vi.fn()} onFileChange={onFileChange} />,
+    );
+
+    const dropArea = findAll('button')[0] as HTMLButtonElement;
+    const drop = new Event('drop', { bubbles: true, cancelable: true });
+
+    Object.defineProperty(drop, 'dataTransfer', { value: { files: [file] } });
+
+    act(() => {
+      dropArea.dispatchEvent(drop);
+    });
+
+    expect(onFileChange).toHaveBeenCalledWith(file);
+    expect(findByText('report.txt')).toBeDefined();
+  });
+
+  it('renders only the drop area when it is drop-only', async () => {
+    const { findAll } = await render(<UploadConfig onFileUpload={vi.fn()} onlyDrop={true} />);
+
+    expect(findAll('button')).toHaveLength(1);
   });
 });

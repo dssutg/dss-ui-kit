@@ -5,12 +5,24 @@ import { describe, expect, it, vi } from 'vitest';
 import { AutoSizer } from '@/components/layout/AutoSizer';
 import { ResizableSplit } from '@/components/layout/ResizableSplit';
 import { ColumnResizer } from '@/components/tables/ColumnResizer';
+import { ControlledFilterableTable } from '@/components/tables/ControlledFilterableTable';
 import { ControlledTable } from '@/components/tables/ControlledTable';
 import { CountLabel } from '@/components/tables/CountLabel';
 import { getEnumLabel } from '@/components/tables/enum_label';
 import { FilterableTable } from '@/components/tables/FilterableTable';
+import { FilterableTableStatsModal } from '@/components/tables/FilterableTableStatsModal';
+import { useSearchSchemaPropertyValueToString } from '@/components/tables/filterable_table_property_value';
 import { SortableTable, type SortableTableDescriptor } from '@/components/tables/SortableTable';
-import { click, flush, render } from '@/util/testing/render';
+import { TimelineViewerModal } from '@/components/tables/TimelineViewerModal';
+import { escapeProp, formatDateAndTime } from '@/components/tables/table_export';
+import {
+  buildFilterableTableSearchText,
+  type SearchPropertySchema,
+  type SearchSchema,
+  useFilteredItems,
+} from '@/components/tables/use_filtered_items';
+import { getLocaleDates } from '@/locale';
+import { change, click, flush, render } from '@/util/testing/render';
 
 /** One row of the table every test here renders, over a shape the library never names. */
 interface Row {
@@ -318,5 +330,348 @@ describe('FilterableTable', () => {
     });
 
     expect(onScroll).toHaveBeenCalled();
+  });
+});
+
+describe('ControlledFilterableTable', () => {
+  it('draws the controlled table it stands in for', async () => {
+    const { findByText } = await render(
+      <ControlledFilterableTable
+        items={rows}
+        countLabelPrefix="Found"
+        minCountLabelWidth="3rem"
+        headerRowHeight={30}
+        rowHeight={30}
+        properties={[
+          {
+            id: 'name',
+            title: 'Name',
+            width: 200,
+            minWidth: 40,
+            cell: ({ data }: { readonly data: Row }) => <span>{data.name}</span>,
+            comparator: (
+              { data: a }: { readonly data: Row },
+              { data: b }: { readonly data: Row },
+            ) => a.name.localeCompare(b.name),
+            search: { type: 'string', extractValue: (item: Row) => item.name },
+          },
+        ]}
+        getExportedTableFilename={() => 'items.csv'}
+        searchText=""
+        setSearchText={vi.fn()}
+      />,
+    );
+
+    expect(findByText('alpha')).toBeDefined();
+  });
+});
+
+describe('escapeProp', () => {
+  it('quotes whitespace and a backslash so a value stays one term', () => {
+    expect(escapeProp('a b')).toBe('a\\ b');
+    expect(escapeProp('a\\b')).toBe('a\\\\b');
+  });
+
+  it('reads an absent value as the empty string', () => {
+    expect(escapeProp(null)).toBe('');
+    expect(escapeProp(undefined)).toBe('');
+  });
+});
+
+describe('buildFilterableTableSearchText', () => {
+  it('writes one escaped name=value term per entry', () => {
+    expect(buildFilterableTableSearchText({ name: 'a b', count: 5 })).toBe('name=a\\ b count=5');
+  });
+
+  it('writes an absent value as an empty term', () => {
+    expect(buildFilterableTableSearchText({ name: null })).toBe('name=');
+  });
+});
+
+describe('formatDateAndTime', () => {
+  it("writes a timestamp in the locale's format", () => {
+    expect(formatDateAndTime(new Date(2020, 0, 2, 15, 4, 5).getTime(), getLocaleDates('en'))).toBe(
+      '01/02/2020 03:04:05 PM',
+    );
+  });
+});
+
+/** A row with one property of each type a search schema can declare. */
+interface FilterRow {
+  readonly id: string;
+  readonly name: string;
+  readonly count: number;
+  readonly active: boolean;
+  readonly status: string;
+  readonly address: string;
+}
+
+const filterRows: FilterRow[] = [
+  { id: 'alpha', name: 'Alpha', count: 1, active: true, status: 'ok', address: '10.0.0.1' },
+  { id: 'beta', name: 'Beta', count: 20, active: false, status: 'bad', address: '10.0.0.2' },
+];
+
+const filterSchema: SearchSchema<FilterRow> = {
+  properties: [
+    { name: 'name', label: 'Name', type: 'string', extractValue: (item) => item.name },
+    { name: 'count', label: 'Count', type: 'decimalInteger', extractValue: (item) => item.count },
+    { name: 'active', label: 'Active', type: 'boolean', extractValue: (item) => item.active },
+    {
+      name: 'status',
+      label: 'Status',
+      type: 'enum',
+      extractValue: (item) => item.status,
+      options: [{ value: 'ok', label: 'Working' }],
+    },
+    { name: 'address', label: 'Address', type: 'ip', extractValue: (item) => item.address },
+  ],
+};
+
+function FilteredList({ searchText }: { readonly searchText: string }) {
+  const filtered = useFilteredItems({ items: filterRows, searchText, searchSchema: filterSchema });
+
+  return (
+    <ul>
+      {filtered.map((item) => (
+        <li key={item.id}>{item.id}</li>
+      ))}
+    </ul>
+  );
+}
+
+describe('useFilteredItems', () => {
+  async function idsFor(searchText: string): Promise<(string | null)[]> {
+    // A test that calls this twice mounts two lists into the body, so the query stays inside the
+    // container this render owns rather than finding both.
+    const { container } = await render(<FilteredList searchText={searchText} />);
+
+    return [...container.querySelectorAll('li')].map((item) => item.textContent);
+  }
+
+  it('returns every item when the search text is empty', async () => {
+    expect(await idsFor('')).toEqual(['alpha', 'beta']);
+  });
+
+  it('fuzzy-matches a free-text term against every property', async () => {
+    expect(await idsFor('alp')).toEqual(['alpha']);
+  });
+
+  it('narrows on a named string property', async () => {
+    expect(await idsFor('name=beta')).toEqual(['beta']);
+  });
+
+  it('compares a numeric property as a number, not as text', async () => {
+    expect(await idsFor('count=20')).toEqual(['beta']);
+    expect(await idsFor('count=2')).toEqual([]);
+  });
+
+  it('reads a boolean property only from true or false', async () => {
+    expect(await idsFor('active=true')).toEqual(['alpha']);
+    expect(await idsFor('active=false')).toEqual(['beta']);
+  });
+
+  it('matches an enum property on its label', async () => {
+    expect(await idsFor('status=working')).toEqual(['alpha']);
+  });
+
+  it('matches an ip property after dropping separators the operator did not type', async () => {
+    expect(await idsFor('address=10.0.0.2')).toEqual(['beta']);
+  });
+});
+
+const booleanProperty: SearchPropertySchema<FilterRow> = {
+  name: 'active',
+  label: 'Active',
+  type: 'boolean',
+  extractValue: (item) => item.active,
+};
+
+const nameProperty: SearchPropertySchema<FilterRow> = {
+  name: 'name',
+  label: 'Name',
+  type: 'string',
+  extractValue: (item) => item.name,
+};
+
+const enumProperty: SearchPropertySchema<FilterRow> = {
+  name: 'status',
+  label: 'Status',
+  type: 'enum',
+  extractValue: (item) => item.status,
+  options: [{ value: 'ok', label: 'Working' }],
+};
+
+const hexProperty: SearchPropertySchema<FilterRow> = {
+  name: 'mask',
+  label: 'Mask',
+  type: 'unsignedHex',
+  extractValue: () => 255,
+};
+
+const dateProperty: SearchPropertySchema<FilterRow> = {
+  name: 'seen',
+  label: 'Seen',
+  type: 'dateAndTime',
+  extractValue: () => new Date(2020, 0, 2, 15, 4, 5).getTime(),
+};
+
+function PropertyValueProbe({
+  item,
+  property,
+}: {
+  readonly item: FilterRow;
+  readonly property: SearchPropertySchema<FilterRow>;
+}) {
+  const toValueString = useSearchSchemaPropertyValueToString<FilterRow>();
+
+  return <span>{toValueString(item, property)}</span>;
+}
+
+describe('useSearchSchemaPropertyValueToString', () => {
+  const row = filterRows[0] as FilterRow;
+
+  it('writes each property type the way the table shows it', async () => {
+    const { container, update } = await render(
+      <PropertyValueProbe item={row} property={nameProperty} />,
+    );
+
+    expect(container.textContent).toBe('Alpha');
+
+    await update(<PropertyValueProbe item={row} property={booleanProperty} />);
+    expect(container.textContent).toBe('Yes');
+
+    await update(<PropertyValueProbe item={row} property={enumProperty} />);
+    expect(container.textContent).toBe('Working');
+
+    await update(<PropertyValueProbe item={row} property={hexProperty} />);
+    expect(container.textContent).toBe('FF');
+
+    await update(<PropertyValueProbe item={row} property={dateProperty} />);
+    expect(container.textContent).toBe('01/02/2020 03:04:05 PM');
+  });
+});
+
+describe('FilterableTableStatsModal', () => {
+  it('renders nothing while it is closed', async () => {
+    const { container } = await render(
+      <FilterableTableStatsModal
+        open={false}
+        onOpenChange={() => undefined}
+        items={filterRows}
+        searchSchema={filterSchema}
+      />,
+    );
+
+    expect(container.textContent).toBe('');
+  });
+
+  it('counts the rows by the property it was given', async () => {
+    const { findAll, findByText } = await render(
+      <FilterableTableStatsModal
+        open={true}
+        onOpenChange={() => undefined}
+        items={filterRows}
+        searchSchema={filterSchema}
+      />,
+    );
+
+    expect(findByText('Stats')).toBeDefined();
+    expect(findByText('Total rows:')).toBeDefined();
+
+    // One option per searchable property, so the caller can pick which breakdown to read.
+    expect(findAll('option')).toHaveLength(filterSchema.properties.length);
+  });
+
+  it('re-breaks the rows down by the property chosen from the select', async () => {
+    const { find } = await render(
+      <FilterableTableStatsModal
+        open={true}
+        onOpenChange={() => undefined}
+        items={filterRows}
+        searchSchema={filterSchema}
+      />,
+    );
+
+    change(find<HTMLSelectElement>('select'), 'active');
+
+    // The two rows are one active and one inactive, written the way the table writes a boolean.
+    expect(document.body.textContent).toContain('Yes');
+    expect(document.body.textContent).toContain('No');
+  });
+
+  it('offers no property select when there are no rows to count', async () => {
+    const { container, findByText } = await render(
+      <FilterableTableStatsModal
+        open={true}
+        onOpenChange={() => undefined}
+        items={[]}
+        searchSchema={filterSchema}
+      />,
+    );
+
+    expect(findByText('Total rows:')).toBeDefined();
+    expect(container.querySelectorAll('select')).toHaveLength(0);
+  });
+});
+
+interface TimelineRow {
+  readonly id: string;
+  readonly name: string;
+  readonly seenAt: number;
+}
+
+const timelineRows: TimelineRow[] = [
+  { id: 'a', name: 'Alpha', seenAt: new Date(2020, 0, 1).getTime() },
+  { id: 'b', name: 'Beta', seenAt: new Date(2020, 0, 2).getTime() },
+];
+
+const timelineSchema: SearchSchema<TimelineRow> = {
+  properties: [
+    { name: 'name', label: 'Name', type: 'string', extractValue: (item) => item.name },
+    { name: 'seen', label: 'Seen', type: 'dateAndTime', extractValue: (item) => item.seenAt },
+  ],
+};
+
+describe('TimelineViewerModal', () => {
+  it('draws the rows over the time property of the schema', async () => {
+    const { findByText, query } = await render(
+      <TimelineViewerModal
+        open={true}
+        onOpenChange={() => undefined}
+        items={timelineRows}
+        searchSchema={timelineSchema}
+      />,
+    );
+
+    expect(findByText('Timeline')).toBeDefined();
+    expect(query('canvas')).not.toBeNull();
+  });
+
+  it('offers only the non-time properties as series', async () => {
+    const { findAll } = await render(
+      <TimelineViewerModal
+        open={true}
+        onOpenChange={() => undefined}
+        items={timelineRows}
+        searchSchema={timelineSchema}
+      />,
+    );
+
+    // A timeline of one time property has no series to draw, so the date is not offered as one.
+    expect(findAll('option')).toHaveLength(1);
+  });
+
+  it('renders nothing extra when there are no rows', async () => {
+    const { findByText, query } = await render(
+      <TimelineViewerModal
+        open={true}
+        onOpenChange={() => undefined}
+        items={[]}
+        searchSchema={timelineSchema}
+      />,
+    );
+
+    expect(findByText('Timeline')).toBeDefined();
+    expect(query('select')).toBeNull();
   });
 });

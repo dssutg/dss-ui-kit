@@ -5,12 +5,16 @@
  * group — plus the difference between the `inactive` visual variant and the `disabled` attribute.
  */
 // @vitest-environment jsdom
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Button } from '@/components/buttons/Button';
 import { ButtonGroup } from '@/components/buttons/ButtonGroup';
+import { CopyToClipboardButton } from '@/components/buttons/CopyToClipboardButton';
+import { DropDownButton } from '@/components/buttons/DropDownButton';
 import { IconButton } from '@/components/buttons/IconButton';
+import { IconedButtonGroup } from '@/components/buttons/IconedButtonGroup';
 import { ToggleButton } from '@/components/buttons/ToggleButton';
-import { click, render } from '@/util/testing/render';
+import type { IconName } from '@/components/display/Icon';
+import { click, flush, render } from '@/util/testing/render';
 
 describe('Button', () => {
   it('renders a real button and reports a click', async () => {
@@ -175,5 +179,177 @@ describe('ToggleButton', () => {
     await expect(
       render(<ToggleButton value="bar" options={options} onChange={() => undefined} />),
     ).rejects.toThrow('"bar" is not one of its options');
+  });
+});
+
+/**
+ * A row of icon buttons acting as one selection: the selected index is the caller's, and a click
+ * reports the index it would move to rather than moving there. The index is a position, not an id,
+ * which is what makes the group a strip rather than a generic list.
+ */
+describe('IconedButtonGroup', () => {
+  const group: { icon: IconName; title: string }[] = [
+    { icon: 'plus', title: 'Add' },
+    { icon: 'minus', title: 'Remove' },
+  ];
+
+  it('marks the selected index and reports the clicked one', async () => {
+    const onChange = vi.fn();
+    const { findAll } = await render(
+      <IconedButtonGroup group={group} value={0} onChange={onChange} />,
+    );
+
+    const buttons = findAll<HTMLButtonElement>('button');
+
+    expect(buttons).toHaveLength(2);
+    expect(buttons[0]?.className).toContain('bg-bse');
+    expect(buttons[1]?.className).toContain('bg-bpd2');
+    expect(buttons[0]?.getAttribute('title')).toBe('Add');
+
+    await click(buttons[1] as HTMLButtonElement);
+
+    expect(onChange).toHaveBeenCalledWith(1);
+  });
+
+  it('selects the first index and tolerates a click with no change handler', async () => {
+    // The default selection is index zero, so a group with no `value` still has somewhere to point.
+    const { findAll } = await render(
+      <IconedButtonGroup group={[{ icon: 'plus', title: 'Add' }]} />,
+    );
+
+    const button = findAll<HTMLButtonElement>('button')[0] as HTMLButtonElement;
+
+    expect(button.className).toContain('bg-bse');
+
+    await click(button);
+  });
+});
+
+describe('CopyToClipboardButton', () => {
+  /** The `navigator.clipboard` state, restored after each test. */
+  let clipboardDescriptor: PropertyDescriptor | undefined;
+
+  beforeEach(() => {
+    clipboardDescriptor = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+  });
+
+  afterEach(() => {
+    if (clipboardDescriptor) {
+      Object.defineProperty(navigator, 'clipboard', clipboardDescriptor);
+    } else {
+      Reflect.deleteProperty(navigator, 'clipboard');
+    }
+  });
+
+  /** Replaces `navigator.clipboard` until the test ends. jsdom ships none. */
+  function stubClipboard(writeText: (text: string) => Promise<void>): void {
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+  }
+
+  it('copies the text it was handed and names itself from the locale', async () => {
+    const writeText = vi.fn<typeof Clipboard.prototype.writeText>().mockResolvedValue(undefined);
+    stubClipboard(writeText);
+
+    const { find } = await render(<CopyToClipboardButton contentToCopy="payload" />);
+
+    const button = find<HTMLButtonElement>('button');
+
+    expect(button.getAttribute('title')).toBe('Copy to clipboard');
+
+    await click(button);
+    await flush();
+
+    expect(writeText).toHaveBeenCalledWith('payload');
+  });
+
+  it('reads a function content at click time rather than capturing it at render time', async () => {
+    // The function is the caller's way to read a value that is not known when the button is drawn.
+    const writeText = vi.fn<typeof Clipboard.prototype.writeText>().mockResolvedValue(undefined);
+    stubClipboard(writeText);
+
+    let current = 'first';
+    const { find } = await render(<CopyToClipboardButton contentToCopy={() => current} />);
+
+    current = 'second';
+
+    await click(find<HTMLButtonElement>('button'));
+    await flush();
+
+    expect(writeText).toHaveBeenCalledWith('second');
+  });
+
+  it('prefers the caller title and shows the copied tooltip after a click', async () => {
+    stubClipboard(vi.fn<typeof Clipboard.prototype.writeText>().mockResolvedValue(undefined));
+
+    const { find } = await render(
+      <CopyToClipboardButton contentToCopy="x" title="Copy the payload" />,
+    );
+
+    expect(find<HTMLButtonElement>('button').getAttribute('title')).toBe('Copy the payload');
+    expect(document.body.querySelector('.scale-y-0')).not.toBeNull();
+
+    await click(find<HTMLButtonElement>('button'));
+    await flush();
+
+    // The tooltip is portalled onto the body and only slides in once the copy has been reported.
+    expect(document.body.querySelector('.scale-y-1')?.textContent).toBe('Copied');
+  });
+});
+
+/**
+ * A menu behind a button trigger rather than a dots trigger: the variant colours the trigger and its
+ * items, and the menu itself belongs to {@link DropDownMenu}, whose item contract is tested there.
+ */
+describe('DropDownButton', () => {
+  it('opens its menu on the trigger and hands an item selection through', async () => {
+    const onSelect = vi.fn();
+    const { findAll } = await render(
+      <DropDownButton
+        triggerTitle="Actions"
+        menu={[{ path: ['rename'], title: 'Rename', onSelect }]}
+      />,
+    );
+
+    const trigger = findAll<HTMLButtonElement>('button').find(
+      (button) => button.textContent?.includes('Actions') === true,
+    );
+
+    if (trigger === undefined) {
+      throw new Error('the trigger was not rendered.');
+    }
+
+    await click(trigger);
+
+    expect(document.body.textContent).toContain('Rename');
+
+    const rename = [...document.body.querySelectorAll<HTMLButtonElement>('button')].find(
+      (button) => button.textContent?.includes('Rename') === true,
+    );
+
+    if (rename === undefined) {
+      throw new Error('the menu item was not rendered.');
+    }
+
+    await click(rename);
+
+    expect(onSelect).toHaveBeenCalledTimes(1);
+  });
+
+  it('colours a danger trigger from its variant', async () => {
+    const { findAll } = await render(
+      <DropDownButton
+        triggerTitle="Delete"
+        variant="danger"
+        menu={[{ path: ['a'], title: 'A' }]}
+      />,
+    );
+
+    const trigger = findAll<HTMLButtonElement>('button').find(
+      (button) => button.textContent?.includes('Delete') === true,
+    );
+
+    // The variant's background is set through the inline style rather than a class, because the
+    // custom property is resolved at runtime by the theme.
+    expect(trigger?.style.backgroundColor).toBe('var(--color-bda)');
   });
 });

@@ -6,7 +6,11 @@ import { HexAlphaColorPicker } from '@/components/color-picker/HexAlphaColorPick
 import { HexAlphaColorPickerPopover } from '@/components/color-picker/HexAlphaColorPickerPopover';
 import { HexColorInput } from '@/components/color-picker/HexColorInput';
 import { HexColorPicker } from '@/components/color-picker/HexColorPicker';
+import { HslaColorPicker } from '@/components/color-picker/HslaColorPicker';
 import { HslaStringColorPicker } from '@/components/color-picker/HslaStringColorPicker';
+import { HslaStringColorPickerPopover } from '@/components/color-picker/HslaStringColorPickerPopover';
+import { RgbaColorPicker } from '@/components/color-picker/RgbaColorPicker';
+import { RgbaStringColorPicker } from '@/components/color-picker/RgbaStringColorPicker';
 import { act, click, render, type, waitFor } from '@/util/testing/render';
 
 /**
@@ -215,5 +219,104 @@ describe('HexAlphaColorPickerPopover', () => {
     await waitFor(() => onChange.mock.calls.length > 0);
 
     expect(onChange).toHaveBeenCalledTimes(1);
+  });
+});
+
+/** Nudges the saturation field so the picker has a changed colour to report. */
+function dragSaturation(find: (selector: string) => HTMLElement): void {
+  act(() => {
+    find('.color-picker-cn__interactive').dispatchEvent(
+      new MouseEvent('mousedown', { bubbles: true, clientX: 10, clientY: 10 }),
+    );
+  });
+}
+
+describe('HslaColorPicker', () => {
+  const color = { h: 120, s: 0.5, l: 0.25, a: 0.5 };
+
+  it('renders an HSLA colour with its alpha channel', async () => {
+    const { container } = await render(
+      <HslaColorPicker color={color} onChange={() => undefined} />,
+    );
+
+    expect(container.querySelector('.color-picker-cn__alpha')).not.toBeNull();
+  });
+
+  it('reports the structured colour it drew', async () => {
+    const onChange = vi.fn();
+    const { find } = await render(<HslaColorPicker color={color} onChange={onChange} />);
+
+    dragSaturation(find);
+
+    expect(onChange).toHaveBeenCalled();
+    expect(onChange.mock.calls[0]?.[0]).toEqual(
+      expect.objectContaining({
+        h: expect.any(Number),
+        s: expect.any(Number),
+        l: expect.any(Number),
+        a: expect.any(Number),
+      }),
+    );
+  });
+});
+
+describe('RgbaColorPicker', () => {
+  const color = { r: 255, g: 0, b: 0, a: 1 };
+
+  it('renders an RGBA colour with its alpha channel', async () => {
+    const { container } = await render(
+      <RgbaColorPicker color={color} onChange={() => undefined} />,
+    );
+
+    expect(container.querySelector('.color-picker-cn__alpha')).not.toBeNull();
+  });
+
+  it('reports the structured colour it drew', async () => {
+    const onChange = vi.fn();
+    const { find } = await render(<RgbaColorPicker color={color} onChange={onChange} />);
+
+    dragSaturation(find);
+
+    expect(onChange).toHaveBeenCalled();
+    expect(onChange.mock.calls[0]?.[0]).toEqual(
+      expect.objectContaining({
+        r: expect.any(Number),
+        g: expect.any(Number),
+        b: expect.any(Number),
+        a: expect.any(Number),
+      }),
+    );
+  });
+});
+
+describe('RgbaStringColorPicker', () => {
+  it('reports the colour as an `rgba()` string', async () => {
+    const onChange = vi.fn();
+    const { find } = await render(
+      <RgbaStringColorPicker color="rgba(255, 0, 0, 1)" onChange={onChange} />,
+    );
+
+    dragSaturation(find);
+
+    expect(onChange).toHaveBeenCalled();
+    expect(onChange.mock.calls[0]?.[0]).toMatch(/^rgba\(/);
+  });
+});
+
+describe('HslaStringColorPickerPopover', () => {
+  it('keeps the picker closed until the trigger is used', async () => {
+    const { findByText, query } = await render(
+      <HslaStringColorPickerPopover
+        trigger={<button type="button">Pick</button>}
+        color="hsla(0, 100%, 50%, 1)"
+        onChange={() => undefined}
+      />,
+    );
+
+    expect(query('.color-picker-cn')).toBeNull();
+
+    await click(findByText('Pick'));
+
+    expect(query('.color-picker-cn')).not.toBeNull();
   });
 });
