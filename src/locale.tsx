@@ -339,7 +339,7 @@ function substituteParameters(
 /**
  * Expands the pluralization placeholders in a message.
  *
- * The syntax is `{:(P):counter:index:form}`: a message may carry one placeholder per plural form, and
+ * The syntax is `{:P:counter:index:form}`: a message may carry one placeholder per plural form, and
  * exactly one survives. `index` is the form number the locale's rules select for `counter`. A counter
  * that is not a parameter is reported and treated as zero rather than silently producing an empty
  * string, because a message that renders as nothing is harder to notice than a console line.
@@ -349,12 +349,12 @@ function expandPluralForms(
   locale: LocaleName,
   parameters: MessageParameters | null | undefined,
 ): string {
-  if (!template.includes('{:(P):')) {
+  if (!template.includes('{:P:')) {
     return template;
   }
 
   return template.replace(
-    /{:(P):([A-Za-z_]\w*):(\d+):([\s\S]*?)}/g,
+    /\{:P:([A-Za-z_]\w*):(\d+):([\s\S]*?)\}/g,
     (_match, counter: string, index: string, form: string) => {
       const rawCount = parameters?.[counter];
 
@@ -454,6 +454,9 @@ function getLocaleScript(locale: LocaleName): LocaleScript | undefined {
 }
 
 function primaryLanguageSubtag(locale: LocaleName): string {
+  // `split` always returns at least a first element, so the guarded read is only for the compiler;
+  // the fallback cannot be reached from any string.
+  // v8 ignore next
   return locale.split('-')[0]?.toLowerCase() ?? '';
 }
 
