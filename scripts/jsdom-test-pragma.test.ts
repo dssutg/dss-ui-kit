@@ -24,7 +24,7 @@ import { collectFiles, REPOSITORY_ROOT } from './util/source-tree.ts';
 /** The import specifiers of one test file. */
 function moduleSpecifiers(path: string): string[] {
   const text = readFileSync(join(REPOSITORY_ROOT, path), 'utf8');
-  const source = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true);
+  const source = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, false);
   const specifiers: string[] = [];
 
   for (const statement of source.statements) {

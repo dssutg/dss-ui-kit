@@ -25,7 +25,7 @@ import { collectFiles, REPOSITORY_ROOT } from './util/source-tree.ts';
 /** The import and `export ... from` specifiers of one source file. */
 function moduleSpecifiers(path: string): string[] {
   const text = readFileSync(join(REPOSITORY_ROOT, path), 'utf8');
-  const source = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true);
+  const source = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, false);
   const specifiers: string[] = [];
 
   const visit = (node: ts.Node): void => {
@@ -64,7 +64,13 @@ function findPreactImports(): string[] {
 }
 
 describe('the Preact compat layer', () => {
-  it('is reached through the React alias, never by importing preact directly', () => {
+  // The scan parses the whole of `src/` in one test. In a plain run that is under two seconds; in
+  // the coverage run the other workers instrumenting `src/` compete for cores with it and the same
+  // scan has been seen to take over ten. The budget is for that contention, not an excuse for a
+  // hung test: a genuinely stuck scan still fails the suite, just later.
+  it('is reached through the React alias, never by importing preact directly', {
+    timeout: 30_000,
+  }, () => {
     expect(findPreactImports()).toEqual([]);
   });
 });
