@@ -131,6 +131,11 @@ describe('useFilteredItems', () => {
     expect(await idsFor('alp')).toEqual(['a']);
   });
 
+  it('ignores a term naming a property the schema does not declare', async () => {
+    expect(await idsFor('unknown=bar')).toEqual(['a', 'b', 'c']);
+    expect(await idsFor('name=alpha unknown=bar')).toEqual(['a']);
+  });
+
   it('narrows on a named string property, and escapes a value holding a space', async () => {
     expect(await idsFor('name=alpha')).toEqual(['a']);
     expect(await idsFor('name=a\\ b')).toEqual(['c']);

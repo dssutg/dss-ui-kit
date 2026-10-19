@@ -148,12 +148,25 @@ interface ParsedSearchProperty<T> {
 }
 
 /**
+ * What one term of a search string turns out to be: a filter on the property it named, the free text
+ * a named property could not read as its own value, or a term naming no declared property at all.
+ */
+type ParsedSearchToken<T> =
+  | {
+      readonly kind: 'property';
+      readonly property: SearchPropertySchema<T>;
+      readonly value: unknown;
+    }
+  | { readonly kind: 'freeText' }
+  | { readonly kind: 'ignored' };
+
+/**
  * Converts the text written after `name=` into the value its property compares against.
  *
  * The property decides what its own text means, so the conversion travels with the property rather
  * than with the schema. `null` means the text is not a value this property can hold — a `boolean`
- * written as anything but `true` or `false` — which the caller reads exactly as it reads a term that
- * names no property: the text stays a free-text search term instead of filtering on nothing.
+ * written as anything but `true` or `false` — which the caller keeps as a free-text search term
+ * instead of filtering on nothing.
  */
 function parsePropertyValue<T>(
   property: SearchPropertySchema<T>,
@@ -309,21 +322,55 @@ export function useFilteredItems<T>({
     );
   }
 
-  function parsePart(part: string): ParsedSearchProperty<T> | null {
-    for (const property of searchSchema.properties) {
-      const prefix = `${property.name}=`;
-      const valueString = part.slice(prefix.length);
+  /**
+   * Reads one term against one property: the token the term becomes when this property claims it, or
+   * `null` when the term does not name this property and the next one should get it.
+   */
+  function parsePropertyPart(
+    part: string,
+    property: SearchPropertySchema<T>,
+  ): ParsedSearchToken<T> | null {
+    const prefix = `${property.name}=`;
 
-      if (!part.startsWith(prefix) || valueString === '') {
-        continue;
-      }
-
-      // The first property the term names owns it, so its conversion — or its refusal to convert —
-      // decides the term. The loop only runs on when no property claimed it.
-      return parsePropertyValue(property, valueString);
+    if (!part.startsWith(prefix)) {
+      return null;
     }
 
-    return null;
+    const valueString = part.slice(prefix.length);
+
+    // A property named with nothing after the `=` is not a filter on that property, so the term
+    // stays free text — exactly as a value the property cannot read does.
+    if (valueString === '') {
+      return { kind: 'freeText' };
+    }
+
+    const parsed = parsePropertyValue(property, valueString);
+
+    if (parsed === null) {
+      return { kind: 'freeText' };
+    }
+
+    return { kind: 'property', property: parsed.property, value: parsed.value };
+  }
+
+  /**
+   * What one term of the search string is.
+   *
+   * The first property the term names owns it, so its conversion — or its refusal to convert —
+   * decides the term. A term that names no declared property, spelled as a `name=value` pair, is a
+   * stale search rather than a filter that found nothing, so it is dropped instead of searched for;
+   * a bare word with no `=` is ordinary free text and stays one.
+   */
+  function parsePart(part: string): ParsedSearchToken<T> {
+    for (const property of searchSchema.properties) {
+      const parsed = parsePropertyPart(part, property);
+
+      if (parsed !== null) {
+        return parsed;
+      }
+    }
+
+    return part.includes('=') ? { kind: 'ignored' } : { kind: 'freeText' };
   }
 
   const fuzzyParts: string[] = [];
@@ -338,12 +385,12 @@ export function useFilteredItems<T>({
   );
 
   for (const part of parts) {
-    const pair = parsePart(part);
+    const parsed = parsePart(part);
 
-    if (pair === null) {
+    if (parsed.kind === 'property') {
+      props.push(parsed);
+    } else if (parsed.kind === 'freeText') {
       fuzzyParts.push(part);
-    } else {
-      props.push(pair);
     }
   }
 

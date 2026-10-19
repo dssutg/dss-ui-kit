@@ -57,6 +57,9 @@ export function ControlledTable<T, C extends string>({
       name: property.id,
       label: property.title,
       ...property.search,
+      // A filter-only property is not a column, so it is hidden from the table — which is what keeps
+      // it out of an export of the table's columns.
+      hiddenInTable: property.variant === 'filter',
     })),
   };
 

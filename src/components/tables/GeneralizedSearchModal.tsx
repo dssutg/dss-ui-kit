@@ -48,8 +48,13 @@ function isEmptyFilterValue<T>(
   value: unknown,
 ): boolean {
   switch (property.type) {
-    case 'string':
-      return property.trim === true && (value ?? '').toString().trim() === '';
+    case 'string': {
+      const text = (value ?? '').toString();
+
+      // A trimmed field treats whitespace as nothing; an untrimmed one only treats the exact empty
+      // string as nothing, because whitespace there is something the operator typed.
+      return property.trim === true ? text.trim() === '' : text === '';
+    }
     case 'ip':
     case 'enum':
     case 'dateAndTime':
@@ -286,7 +291,19 @@ function getFilterValueAsString<T>(
       // v8 ignore next
       return typeof value === 'number' ? formatDateAndTime(value, dates) : (value ?? '').toString();
 
+    case 'unsignedHex':
+      // A hex field's value is the number its input reports. The filter parser reads the term back
+      // with `parseInt(text, 16)`, so the field spells the value as uppercase hex digits rather than
+      // as the decimal number it is. The unreached arm stays out of the coverage gate.
+      // v8 ignore next
+      return typeof value === 'number'
+        ? value.toString(16).toUpperCase()
+        : (value ?? '').toString();
+
     default:
+      // A value the empty filter did not drop is a string or a number, so the nullish fallback
+      // cannot be reached. The unreached arm stays out of the coverage gate.
+      // v8 ignore next
       return (value ?? '').toString();
   }
 }

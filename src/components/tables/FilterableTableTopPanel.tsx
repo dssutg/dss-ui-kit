@@ -18,9 +18,19 @@ import { FilterableTableStatsModal } from './FilterableTableStatsModal';
 import { GeneralizedSearchModal } from './GeneralizedSearchModal';
 import { TimelineViewerModal } from './TimelineViewerModal';
 import { formatDateAndTime, type GetExportedTableFilenameCallback } from './table_export';
-import type { SearchSchema } from './use_filtered_items';
+import type { SearchPropertySchema, SearchSchema } from './use_filtered_items';
 
 export type { EnumOption } from './GeneralizedSearchModal';
+
+/**
+ * The properties an export writes: the table's columns, not the filter-only properties it hides.
+ *
+ * One place decides this, because the CSV and the html/pdf export must agree about what a table's
+ * export contains.
+ */
+function getExportProperties<T>(searchSchema: SearchSchema<T>): SearchPropertySchema<T>[] {
+  return searchSchema.properties.filter((property) => !property.hiddenInTable);
+}
 
 /**
  * The row above a filterable table: the search box, the row count, export, and the buttons that open
@@ -73,9 +83,7 @@ export function FilterableTableTopPanel<T>({
   }, [extraSearchSchema]);
 
   function serializeItemsToCsv() {
-    const columnProperties = extraSearchSchema.properties.filter((prop) =>
-      Boolean(prop.hiddenInTable),
-    );
+    const columnProperties = getExportProperties(extraSearchSchema);
 
     return serializeCSV([
       columnProperties.map((property) => property.label),
@@ -158,9 +166,7 @@ export function FilterableTableTopPanel<T>({
 
     const root = createRoot(pdfContentElement);
 
-    const columnProperties = extraSearchSchema.properties.filter((prop) =>
-      Boolean(prop.hiddenInTable),
-    );
+    const columnProperties = getExportProperties(extraSearchSchema);
 
     root.render(
       <StrictMode>

@@ -135,7 +135,6 @@ const fullSchema: SearchSchema<Row> = {
       name: 'note',
       label: 'Note',
       type: 'string',
-      hiddenInTable: true,
       extractValue: (item) => item.note,
     },
     {
@@ -144,14 +143,12 @@ const fullSchema: SearchSchema<Row> = {
       type: 'decimalInteger',
       min: 0,
       max: 10000,
-      hiddenInTable: true,
       extractValue: (item) => item.count,
     },
     {
       name: 'countFree',
       label: 'Count (free)',
       type: 'decimalInteger',
-      hiddenInTable: true,
       extractValue: (item) => item.count,
     },
     {
@@ -160,21 +157,18 @@ const fullSchema: SearchSchema<Row> = {
       type: 'unsignedHex',
       min: 0,
       max: 16777215,
-      hiddenInTable: true,
       extractValue: (item) => item.mask,
     },
     {
       name: 'maskFree',
       label: 'Mask (free)',
       type: 'unsignedHex',
-      hiddenInTable: true,
       extractValue: (item) => item.mask,
     },
     {
       name: 'active',
       label: 'Active',
       type: 'boolean',
-      hiddenInTable: true,
       extractValue: (item) => item.active,
     },
     {
@@ -182,30 +176,26 @@ const fullSchema: SearchSchema<Row> = {
       label: 'Status',
       type: 'enum',
       options: [{ value: 'ok', label: 'Working' }],
-      hiddenInTable: true,
       extractValue: (item) => item.status,
     },
     {
       name: 'seen',
       label: 'Seen',
       type: 'dateAndTime',
-      hiddenInTable: true,
       extractValue: (item) => item.seen,
     },
     {
       name: 'address',
       label: 'Address',
       type: 'ip',
-      hiddenInTable: true,
       extractValue: (item) => item.address,
     },
   ],
 };
 
 /**
- * The schema of a dateless table: the top panel offers a timeline only when some property is a time,
- * and its export paths write only the properties hidden from the table, so the export branches of
- * every non-date kind are still reached by a schema that leaves the time out.
+ * A schema whose properties are every kind but a time, so the top panel has no timeline entry to
+ * offer.
  */
 const datelessSchema: SearchSchema<Row> = {
   properties: [
@@ -213,28 +203,24 @@ const datelessSchema: SearchSchema<Row> = {
       name: 'note',
       label: 'Note',
       type: 'string',
-      hiddenInTable: true,
       extractValue: (item) => item.note,
     },
     {
       name: 'count',
       label: 'Count',
       type: 'decimalInteger',
-      hiddenInTable: true,
       extractValue: (item) => item.count,
     },
     {
       name: 'mask',
       label: 'Mask',
       type: 'unsignedHex',
-      hiddenInTable: true,
       extractValue: (item) => item.mask,
     },
     {
       name: 'active',
       label: 'Active',
       type: 'boolean',
-      hiddenInTable: true,
       extractValue: (item) => item.active,
     },
     {
@@ -242,14 +228,12 @@ const datelessSchema: SearchSchema<Row> = {
       label: 'Status',
       type: 'enum',
       options: [{ value: 'ok', label: 'Working' }],
-      hiddenInTable: true,
       extractValue: (item) => item.status,
     },
     {
       name: 'address',
       label: 'Address',
       type: 'ip',
-      hiddenInTable: true,
       extractValue: (item) => item.address,
     },
   ],
@@ -313,7 +297,6 @@ function propertyTypeOutsideTheSchemaUnion(): SearchPropertySchema<Row> {
     name: 'future',
     label: 'Future',
     type: 'string',
-    hiddenInTable: true,
     extractValue: (item) => item.name,
   };
 
@@ -639,9 +622,9 @@ describe('GeneralizedSearchModal', () => {
         term('note', 'note-b'),
         term('count', '123'),
         term('countFree', '77'),
-        // A hex field's value reaches the search as its number, not as its padded hex digits.
-        term('mask', '255'),
-        term('maskFree', '16'),
+        // A hex field's value reaches the search as the hex digits the parser reads it back from.
+        term('mask', 'FF'),
+        term('maskFree', '10'),
         term('active', 'true'),
         // An enum field is searched by its label.
         term('status', 'Working'),
@@ -667,6 +650,9 @@ describe('GeneralizedSearchModal', () => {
     // A trimmed string field cleared to nothing is not a filter, not a search for empty text.
     type(rowControl<HTMLInputElement>('Name: ', 'input'), 'alpha');
     click(clearButton('Name: '));
+    // A non-trimmed string field cleared to nothing is not a filter either.
+    type(rowControl<HTMLInputElement>('Note: ', 'input'), 'note-a');
+    click(clearButton('Note: '));
     // A cleared ip field is the same.
     type(rowControl<HTMLInputElement>('Address: ', 'input'), '10.1');
     click(clearButton('Address: '));
@@ -752,7 +738,6 @@ describe('GeneralizedSearchModal', () => {
           label: 'Status',
           type: 'enum',
           options: [],
-          hiddenInTable: true,
           extractValue: (item) => item.status,
         },
       ],
@@ -888,8 +873,8 @@ describe('GeneralizedSearchModal', () => {
 
   it('reads the null a boolean slot holds as the empty value a re-typed field spells', async () => {
     // The value map follows the property, not its type: a boolean slot's null is what a re-typed
-    // field reads back. A non-trimmed string field spells that null as an empty value, which the
-    // search records as a term of its own.
+    // field reads back. A non-trimmed string field spells that null as an empty value, which is not
+    // a filter, so the search holds no term for it either.
     const onSearch = vi.fn();
     const { findByText, update } = await render(
       <GeneralizedSearchModal
@@ -924,7 +909,7 @@ describe('GeneralizedSearchModal', () => {
 
     click(findButton);
 
-    expect(onSearch).toHaveBeenCalledWith(term('active', ''));
+    expect(onSearch).toHaveBeenCalledWith('');
   });
 });
 
@@ -1020,7 +1005,7 @@ describe('FilterableTableTopPanel', () => {
     expect(timelineEntries).toHaveLength(0);
   });
 
-  it('copies the hidden-in-table columns of the rows as a CSV to the clipboard', async () => {
+  it('copies the columns of the rows as a CSV to the clipboard', async () => {
     const writeText = vi.fn((_text: string) => Promise.resolve());
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
 
@@ -1033,8 +1018,10 @@ describe('FilterableTableTopPanel', () => {
 
     const csv = writeText.mock.calls[0]?.[0] ?? '';
 
-    // Every property hidden from the table travels, with its boolean, hex, enum and date forms.
-    expect(csv).toContain('Note,Count,Count (free),Mask,Mask (free),Active,Status,Seen,Address');
+    // Every column of the table travels, with its boolean, hex, enum and date forms.
+    expect(csv).toContain(
+      'Name,Note,Count,Count (free),Mask,Mask (free),Active,Status,Seen,Address',
+    );
     expect(csv).toContain('note-a');
     expect(csv).toContain('FF');
     expect(csv).toContain('Yes');
@@ -1042,6 +1029,39 @@ describe('FilterableTableTopPanel', () => {
     expect(csv).toContain('Working');
     expect(csv).toContain('new');
     expect(csv).toContain(seenTextOfRowA);
+  });
+
+  it('leaves properties hidden from the table out of the CSV', async () => {
+    const writeText = vi.fn((_text: string) => Promise.resolve());
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+
+    const schema: SearchSchema<Row> = {
+      properties: [
+        { name: 'name', label: 'Name', type: 'string', extractValue: (item) => item.name },
+        {
+          name: 'note',
+          label: 'Note',
+          type: 'string',
+          hiddenInTable: true,
+          extractValue: (item) => item.note,
+        },
+      ],
+    };
+
+    const { rendered } = await renderTopPanel({ schema, countLabelPrefix: 'Found' });
+
+    click(rendered.find('button[title="Menu"]'));
+    await flush();
+    click(menuButton('Copy Table as CSV'));
+    await flush();
+
+    const csv = writeText.mock.calls[0]?.[0] ?? '';
+
+    // The column travels; the filter-only property does not.
+    expect(csv).toContain('Name');
+    expect(csv).toContain('alpha');
+    expect(csv).not.toContain('Note');
+    expect(csv).not.toContain('note-a');
   });
 
   it('downloads the same CSV as a plain-text file under the name the caller names it', async () => {
@@ -1186,7 +1206,7 @@ describe('FilterableTableTopPanel', () => {
     });
 
     expect(messages).toContain(
-      'Unreachable value reached: {"name":"future","label":"Future","type":"aTypeAddedToTheSchemaLater","hiddenInTable":true}',
+      'Unreachable value reached: {"name":"future","label":"Future","type":"aTypeAddedToTheSchemaLater"}',
     );
     expect(writeText).not.toHaveBeenCalled();
   });
@@ -1206,7 +1226,7 @@ describe('FilterableTableTopPanel', () => {
     });
 
     expect(messages).toContain(
-      'unexpected property type: {"name":"future","label":"Future","type":"aTypeAddedToTheSchemaLater","hiddenInTable":true}',
+      'unexpected property type: {"name":"future","label":"Future","type":"aTypeAddedToTheSchemaLater"}',
     );
     // The document got as far as the skeleton, which the render failed on.
     expect(printWindow.document.writeln).toHaveBeenCalled();
