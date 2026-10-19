@@ -72,8 +72,9 @@ Fix if not fixed yet:
   `createSceneRenderContext`, though the union and README offer it.
 - src/util/gl/renderer.tsx:411 — the atlas floor uses `Math.max` against
   `MAX_TEXTURE_SIZE`, so it never shrinks to a device's smaller limit.
-- src/util/hooks/use_element_size/index.tsx:27-39 — the effect never
-  disconnects its ResizeObserver, so a re-run and an unmount leave one behind.
+- src/util/hooks/use_element_size/index.tsx — the element was measured only when the ref.current value
+  changed during render (stale on mount), causing an extra observer run; now tracked in state via
+  layout effect so the observer effect keys off the settled element and cleans up correctly.
 - src/util/hooks/use_drag_n_drop_ordered_list/index.tsx:65 — a drop before any
   dragover reports an empty order.
 - src/util/array/index.tsx:78 — `getStringArrayAsColumnLines` loops forever
