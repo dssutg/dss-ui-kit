@@ -157,7 +157,7 @@ export function useVirtualizedList({
 
     // Prevent the element change their look based on if they're odd or even.
     // Make the lower boundary always even number to preserve the odd-even order
-    // when scrolling. Even position is becase zero is even, so when the start of the
+    // when scrolling. Even position is because zero is even, so when the start of the
     // list is visible, the order is still preserved.
     if (startIndex % 2 !== 0) {
       startIndex = startIndex - 1;
