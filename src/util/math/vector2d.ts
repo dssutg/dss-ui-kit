@@ -7,6 +7,17 @@
  */
 export const DEFAULT_EQUALITY_TOLERANCE = 1e-10;
 
+/**
+ * Answers `0` for a negative zero and the value otherwise.
+ *
+ * `-0` and `0` compare equal but are not the same value: `toString` prints one as `-0`, and a
+ * strict deep comparison treats them as different, so a component this class derives is passed
+ * through here to keep every zero reading as the plain one.
+ */
+function nonNegativeZero(value: number): number {
+  return value === 0 ? 0 : value;
+}
+
 export class Vector2D {
   static readonly ZERO: Vector2D = new Vector2D(0, 0);
   static readonly ONE: Vector2D = new Vector2D(1, 1);
@@ -187,7 +198,7 @@ export class Vector2D {
   }
 
   normal(): Vector2D {
-    return new Vector2D(-this.y, this.x);
+    return new Vector2D(nonNegativeZero(-this.y), nonNegativeZero(this.x));
   }
 
   scaleTo(length: number): Vector2D {

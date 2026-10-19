@@ -275,6 +275,34 @@ describe('Vector2D transforms', () => {
     // (-y, x) turns a vector a quarter turn counterclockwise.
     expect(new Vector2D(4, -3).normal().toArray()).toEqual([3, 4]);
   });
+
+  // `-this.y` is `-0` when `this.y` is `+0`, and `this.x` can arrive as `-0`; both would print as
+  // `-0` and fail a strict comparison against the plain zero.
+  test('answers a normal with plain zeros, not negative zeros', () => {
+    // (0,1).normal() = (-1, 0); -1 is fine, 0 is +0
+    const normal = new Vector2D(0, 1).normal();
+
+    expect(Object.is(normal.y, 0)).toBe(true);
+    expect(normal.toString()).toBe('Vector2D(-1, 0)');
+
+    // (1,0).normal() = (0, 1); if 1 gave -0 somewhere? no: (-this.y, this.x) = (0, 1)
+    const fromHorizontal = new Vector2D(1, 0).normal();
+
+    expect(Object.is(fromHorizontal.x, 0)).toBe(true);
+    expect(fromHorizontal.toString()).toBe('Vector2D(0, 1)');
+
+    // (-0, 1).normal() = (-1, -0) -> becomes (-1, 0)
+    const passingThrough = new Vector2D(-0, 1).normal();
+
+    expect(Object.is(passingThrough.y, 0)).toBe(true);
+    expect(passingThrough.toString()).toBe('Vector2D(-1, 0)');
+
+    // (0, -0).normal() = (-(-0), 0) = (0, 0) -> becomes (0, 0)
+    const bothZeroish = new Vector2D(0, -0).normal();
+
+    expect(Object.is(bothZeroish.x, 0)).toBe(true);
+    expect(Object.is(bothZeroish.y, 0)).toBe(true);
+  });
 });
 
 describe('Vector2D components', () => {
