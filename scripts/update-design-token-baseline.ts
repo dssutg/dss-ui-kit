@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --allow-read --allow-write --allow-run
+#!/usr/bin/env -S node --experimental-strip-types
 // SPDX-License-Identifier: MIT
 // Regenerates the design-token baseline from the current token map.
 
@@ -10,7 +10,7 @@ import { REPOSITORY_ROOT } from './util/source-tree.ts';
 /**
  * Regenerates `scripts/design-token-baseline.json`, the tokens a release already shipped.
  *
- * Run it through `deno task design-tokens:baseline`. The baseline is what lets
+ * Run it through `npm run design-tokens:baseline`. The baseline is what lets
  * `scripts/design-tokens.test.ts` tell adding a token from renaming one: the map and the theme files
  * can be renamed in step and still agree with each other, so only a snapshot from before the rename
  * can notice. Updating it is how a token is added, and the missing-name failure it produces is how a

@@ -16,7 +16,7 @@ import { collectFiles, REPOSITORY_ROOT } from './util/source-tree.ts';
  * `src/locales/ru.tsx` and nowhere else, and everything else holds message keys — the only other
  * files that may carry Cyrillic are the ones holding data about a language itself, listed with
  * their reason below. It is checked here rather than left to review — this runs as part of
- * `deno task ci`.
+ * `npm run ci`.
  */
 
 /** Extensions of the files a reader of this repository opens as text. */

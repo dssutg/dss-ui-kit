@@ -2,11 +2,11 @@
 #
 # Runs the same events the main CI pipeline does, because the `//@` annotations live in the source
 # they describe and the generated Dafny sits beside it. `LemmaScript-files.txt` lists the sources
-# that are verified, one path per line; `deno task lemmascript:check` runs the same list locally.
+# that are verified, one path per line; `npm run lemmascript:check` runs the same list locally.
 #
 # `typecheck` is off. The reusable workflow's typecheck step runs `npm ci && npm run typecheck`, and
-# this repository installs with Deno and checks types through `deno task typecheck` in ci.yml.
-# Verification is independent of that check, and the pipeline keeps one type gate rather than two.
+# this repository checks types through `npm run typecheck` in ci.yml. Verification is independent of
+# that check, and the pipeline keeps one type gate rather than two.
 #
 # Both the workflow and the toolchain it drives are pinned to `v0.6.4`, the version `package.json`
 # installs as a dev dependency. The reusable workflow clones LemmaScript at `ls-ref` and runs

@@ -13,7 +13,7 @@ import { defineConfig } from 'vite';
  *
  * `emptyOutDir` is off because this build writes into a `dist/` the library build has already filled,
  * and emptying it here would delete the bundle and the emitted declarations along the way. Order in
- * `deno task build` is what keeps `dist/` correct: the library build empties it, this one adds to it.
+ * `npm run build` is what keeps `dist/` correct: the library build empties it, this one adds to it.
  */
 export default defineConfig({
   build: {

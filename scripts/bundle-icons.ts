@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --allow-read --allow-write --allow-run
+#!/usr/bin/env -S node --experimental-strip-types
 // SPDX-License-Identifier: MIT
 // Regenerates src/icons/index.tsx from the SVG files beside it.
 
@@ -11,12 +11,13 @@ import {
   renderIconPathModule,
   roundPathData,
 } from './util/icon-bundle.ts';
+import { runCommand } from './util/run-command.ts';
 import { REPOSITORY_ROOT } from './util/source-tree.ts';
 
 /**
  * Bundles the source SVGs into `src/icons/index.tsx`, the path data every icon is drawn from.
  *
- * Run it through `deno task icons`. The generated module is committed rather than built, because a
+ * Run it through `npm run icons`. The generated module is committed rather than built, because a
  * consumer installs the package rather than this repository: the path data of an icon is data the
  * library ships, not something it derives at load time, and `IconName` is the union of the keys of
  * that module — a type derived from a build step is a type a consumer's editor cannot see.
@@ -79,22 +80,17 @@ function readIcon(fileName: string): BundledIcon {
 }
 
 /**
- * Formats the module that was just written, so the generated file is the one `deno task format`
+ * Formats the module that was just written, so the generated file is the one `npm run format`
  * would have produced.
  *
  * Only this one path is passed to the formatter: a generation step that reformatted the repository
  * would take a contributor's unrelated work and fold it into the diff that added an icon.
  */
 function formatGeneratedModule(): void {
-  const { code, stderr } = new Deno.Command('deno', {
-    args: ['run', '-A', 'npm:@biomejs/biome', 'format', '--write', MODULE_PATH],
-    cwd: REPOSITORY_ROOT,
-    stdout: 'piped',
-    stderr: 'piped',
-  }).outputSync();
-
-  if (code !== 0) {
-    console.error(new TextDecoder().decode(stderr));
+  try {
+    runCommand('biome', ['format', '--write', MODULE_PATH]);
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
     throw new Error(
       'Biome could not format the generated module — the module above is unformatted',
     );
@@ -119,6 +115,6 @@ if (import.meta.main) {
     main();
   } catch (error) {
     console.error(`\n✖ ${error instanceof Error ? error.message : String(error)}`);
-    Deno.exit(1);
+    process.exit(1);
   }
 }

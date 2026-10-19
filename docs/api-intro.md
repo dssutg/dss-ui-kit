@@ -5,7 +5,7 @@ This documentation is generated from the source code by
 edited by hand — regenerate it with:
 
 ```bash
-deno task docs
+npm run docs
 ```
 
 The output is written to `docs/api/` and is not committed, so the documentation cannot drift from

@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT
 // Fails on a comment in biome.json, which would make Biome discard its overrides.
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { REPOSITORY_ROOT } from './util/source-tree.ts';
 
 /**
  * A rule that is turned off has a reason written down for it, and the reason stops being true the
@@ -27,8 +30,8 @@ function stripStringLiterals(text: string): string {
 }
 
 describe('biome configuration', () => {
-  it('contains no comment, because one silently discards the overrides', async () => {
-    const config = await Deno.readTextFile(CONFIG_PATH);
+  it('contains no comment, because one silently discards the overrides', () => {
+    const config = readFileSync(join(REPOSITORY_ROOT, CONFIG_PATH), 'utf8');
     const outsideStrings = stripStringLiterals(config);
     const lineComments = outsideStrings.match(/^\s*\/\//gm) ?? [];
     const blockComments = outsideStrings.match(/\/\*/g) ?? [];
@@ -39,8 +42,8 @@ describe('biome configuration', () => {
     }).toEqual({ lineComments: [], blockComments: [] });
   });
 
-  it('has overrides that actually take effect', async () => {
-    const config = JSON.parse(await Deno.readTextFile(CONFIG_PATH));
+  it('has overrides that actually take effect', () => {
+    const config = JSON.parse(readFileSync(join(REPOSITORY_ROOT, CONFIG_PATH), 'utf8'));
     const iconsOverride = (config.overrides ?? []).find(
       (override: { includes?: string[] }) => override.includes?.includes('src/icons/**') === true,
     );

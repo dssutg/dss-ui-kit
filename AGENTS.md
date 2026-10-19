@@ -28,23 +28,23 @@ One tool per concern, and nothing else.
 
 | Concern          | Tool                                 | Command                    |
 | ---------------- | ------------------------------------ | -------------------------- |
-| Build / dev      | Vite 8                               | `deno task dev`            |
+| Build / dev      | Vite 8                               | `npm run dev`              |
 | Styling          | Tailwind CSS 3                       | automatic via PostCSS      |
 | UI runtime       | Preact via the React compat layer    | —                          |
-| Lint + format    | Biome 2 (`biome ci` in `lint`)       | `deno task lint`           |
-| Format (write)   | Biome 2                              | `deno task format`         |
-| Type check       | tsgo (`@typescript/native-preview`) | `deno task typecheck`      |
-| Tests            | Vitest                               | `deno task test`           |
-| Verification     | LemmaScript (Dafny backend)          | `deno task lemmascript:gen` |
-| API docs         | TypeDoc 0.28                         | `deno task docs`           |
+| Lint + format    | Biome 2 (`biome ci` in `lint`)       | `npm run lint`             |
+| Format (write)   | Biome 2                              | `npm run format`           |
+| Type check       | tsgo (`@typescript/native-preview`) | `npm run typecheck`        |
+| Tests            | Vitest                               | `npm run test`             |
+| Verification     | LemmaScript (Dafny backend)          | `npm run lemmascript:gen`  |
+| API docs         | TypeDoc 0.28                         | `npm run docs`             |
 | Release          | bump-version                         | `bump-version`             |
-| JSR publish      | `scripts/publish.ts`                 | `deno task publish`        |
+| npm publish      | `npm publish`                        | `npm run release`          |
 
-Everything runs through **Deno 2** — there is no npm/yarn/pnpm step, and Deno resolves
-`package.json` dependencies into `node_modules`.
+Everything runs through **Node.js 26**, with npm as the package manager and the lockfile it writes.
+There is no yarn or pnpm step.
 
-Biome is the **only** formatter and linter. Deno's `deno fmt` / `deno lint` are disabled in
-`deno.json` — do not run them, and do not reformat files to satisfy them.
+Biome is the **only** formatter and linter. Node's own formatting and linting do not exist, so the
+formatter is unambiguous — do not reformat files to satisfy anything else.
 
 ## Code style
 
@@ -77,7 +77,7 @@ comment in `biome.json`, so this cannot come back unnoticed. The reasons live he
 When a task ends in something a tool on this machine can produce deterministically, run the tool
 instead of writing, editing or checking the thing by hand. Reformatting to the style, reordering
 imports, mass-renaming an identifier, applying a lint rule's suggested fix across files —
-`deno task format` does all of it in one pass; a hand edit is slower, may disagree with the
+`npm run format` does all of it in one pass; a hand edit is slower, may disagree with the
 formatter, and turns the diff into lines nobody needs to read. The same holds for running and
 reading: `git log` beats guessing at history, `grep` beats eyeballing a file for a name, and the
 command list beats recalling a command. An agent's judgement belongs where tools stop — deciding
@@ -85,15 +85,15 @@ command list beats recalling a command. An agent's judgement belongs where tools
 
 The same principle has three dedicated tools:
 
-- **Markdown** — `deno task lint:markdown` checks every file the repository owns, so line length,
+- **Markdown** — `npm run lint:markdown` checks every file the repository owns, so line length,
   heading style, blank lines and the rest are read from the report, not inspected in the editor.
-  A finding is fixed at the source, or by `deno task format:markdown` when the rule can autofix;
+  A finding is fixed at the source, or by `npm run format:markdown` when the rule can autofix;
   do not reformat or rewrap Markdown by hand and expect agreement. The generated changelog
   (`CHANGELOG.md`) and the TypeDoc output (`docs/api/`) are outside the check.
 - **Multi-file rewrites** — a mechanical change that touches many files belongs in a codemod
-  (`deno task codemod …`), not in one file edited at a time. Rename a symbol, move a module or
+  (`npm run codemod …`), not in one file edited at a time. Rename a symbol, move a module or
   apply a repeated pattern with a codemod when the count is more than a handful, and let
-  `deno task format` settle the style afterwards; a long series of hand edits is how one missed
+  `npm run format` settle the style afterwards; a long series of hand edits is how one missed
   occurrence survives.
 - **AST search and rewrite** — [ast-grep](https://ast-grep.github.io)
   (`node_modules/.bin/ast-grep`) matches code by syntax-tree pattern, so `$X as unknown as $T`
@@ -106,7 +106,7 @@ The same principle has three dedicated tools:
 **Prefer the semantic tools to raw text search-and-replace.** Find code with the repo-mapper MCP
 (`repo_map` for a ranked map of the files a change touches, `search_identifiers` for where a name
 is defined and used), check behaviour with the playwright MCP against a running page instead of
-inferring it from markup, and use ast-grep and `deno task codemod` above to make the edit. Text
+inferring it from markup, and use ast-grep and `npm run codemod` above to make the edit. Text
 search-and-replace is the fallback: reach for it only when a semantic tool is worse for the task
 at hand or is not available.
 
@@ -118,7 +118,7 @@ write.
 
 A JavaScript file arrives with none of the checking the rest of the codebase is held to, and it is
 the easiest thing in the world to add by accident. `scripts/no-bare-javascript.test.ts` walks the
-tree and fails if one appears, so the rule is enforced by `deno task ci` rather than left to memory.
+tree and fails if one appears, so the rule is enforced by `npm run ci` rather than left to memory.
 Root configuration is TypeScript for the same reason — the PostCSS pipeline is declared inside
 `vite.config.ts` rather than in a `postcss.config.js`.
 
@@ -179,7 +179,7 @@ not a convenience.
 - **A sibling may be imported as `./name`.** `./ColorInput` from inside `src/components/color-picker/`
   names exactly one file and cannot be misread. The rule is about not walking *up* the tree, and `./`
   does not.
-- `scripts/` runs directly under Deno, outside the Vite alias, so it keeps single-level
+- `scripts/` runs directly under Node, outside the Vite alias, so it keeps single-level
   `./util/source-tree.ts` imports. `../**` is still rejected.
 - The `@` alias is declared twice and both halves must agree — `resolve.alias` in `vite.config.ts`
   for the bundler, and `compilerOptions.paths` in `tsconfig.json` for the type checker.
@@ -257,7 +257,7 @@ stylistic preferences; each one has caught a real problem.
 - **Do not widen a type to silence a check.** A cast is a claim you could not prove. Narrow the
   input instead, or make the function return the type you actually meant. `scripts/no-type-assertions.test.ts`
   counts every non-`const` assertion per file against `scripts/type-assertion-baseline.json`: a new
-  assertion fails, and the baseline may only be lowered, by `deno task type-assertions:baseline`,
+  assertion fails, and the baseline may only be lowered, by `npm run type-assertions:baseline`,
   never raised. The casts that predate the rule are recorded, not endorsed — the next change to a file
   still removes one it can.
 - **Name things for what they are, not for how they are built**: `DEFAULT_SECTION_HEADING`, not
@@ -334,7 +334,7 @@ is optional. Renaming a token is a breaking change; adding one is not.
 `scripts/design-tokens.test.ts` reads the map and the theme files against each other and against
 `scripts/design-token-baseline.json`, the set a release already shipped: the two files catching each
 other cannot see a rename applied to both, so a name missing from the baseline is what reports the
-rename. Adding a token means adding it to the baseline, by `deno task design-tokens:baseline`.
+rename. Adding a token means adding it to the baseline, by `npm run design-tokens:baseline`.
 
 **A theme is data, not a build artefact.** `--color-bda` is resolved at runtime by CSS, so switching
 theme is a `data-theme` attribute on `<body>` and nothing is recompiled.
@@ -413,68 +413,67 @@ because a peer range (`"preact": ">=10.19.0 <11"`) is the constraint that must b
 After editing dependencies, always refresh the lockfile and commit it:
 
 ```bash
-deno add npm:some-package   # or: deno add --dev npm:some-package
-deno task install:frozen    # verifies package.json and deno.lock agree
+npm install                 # or: npm install --save-dev some-package
+npm run install:frozen      # verifies package.json and package-lock.json agree
 ```
 
-`deno install --frozen` fails if the lockfile is stale, so never edit `deno.lock` by hand. CI runs
-it before every job.
+`npm ci` fails if the lockfile is stale or does not match `package.json`, so never edit
+`package-lock.json` by hand. CI runs it before every job.
 
 ## Commands
 
 ```bash
-deno install              # install/refresh dependencies (run after editing package.json)
-deno task install:frozen  # verify package.json and deno.lock agree (what CI does)
-deno task dev             # dev server
-deno task build           # production build into dist/
-deno task preview         # serve the production build
-deno task lint            # biome ci + markdownlint + typecheck
-deno task lint:commits    # bump-version lint: the history since the last release is Conventional Commits
-deno task format          # biome check --write (apply safe fixes)
-deno task format:markdown # apply markdownlint's autofixes
-deno task codemod         # run a codemod for a mechanical multi-file rewrite
-deno task typecheck       # tsgo only
-deno task test            # unit tests
-deno task test:coverage   # unit tests with the coverage gate on src/util/
-deno task docs            # TypeDoc API reference into docs/api/
-deno task icons           # regenerate src/icons/index.tsx from the source SVGs
-deno task lemmascript:gen   # regenerate the Dafny artifacts from the annotated sources
-deno task lemmascript:check # regenerate and verify them, against the file list (Dafny 4.x)
-deno task <name>:baseline # regenerate a ratchet (design-tokens:, type-assertions:, duplication:)
-deno task ci              # the full local gate, exactly what CI runs
+npm install               # install/refresh dependencies (run after editing package.json)
+npm run install:frozen  # verify package.json and package-lock.json agree (what CI does)
+npm run dev             # dev server
+npm run build           # production build into dist/
+npm run preview         # serve the production build
+npm run lint            # biome ci + markdownlint + typecheck
+npm run lint:commits    # bump-version lint: the history since the last release is Conventional Commits
+npm run format          # biome check --write (apply safe fixes)
+npm run format:markdown # apply markdownlint's autofixes
+npm run codemod         # run a codemod for a mechanical multi-file rewrite
+npm run typecheck       # tsgo only
+npm run test            # unit tests
+npm run test:coverage   # unit tests with the coverage gate on src/util/
+npm run docs            # TypeDoc API reference into docs/api/
+npm run icons           # regenerate src/icons/index.tsx from the source SVGs
+npm run lemmascript:gen   # regenerate the Dafny artifacts from the annotated sources
+npm run lemmascript:check # regenerate and verify them, against the file list (Dafny 4.x)
+npm run <name>:baseline # regenerate a ratchet (design-tokens:, type-assertions:, duplication:)
+npm run ci              # the full local gate, exactly what CI runs
 ```
 
-`deno task ci` must pass before any commit. It chains `install:frozen`, `format:check`, `lint`,
-`lint:commits`, `test`, `test:coverage`, `build`, `pack`, `lint:return-types`, `publish:dry` and
-`docs`, which is the whole of the GitHub Actions pipeline in one command. `lint:commits` runs the
-`bump-version` binary,
+`npm run ci` must pass before any commit. It chains `install:frozen`, `format:check`, `lint`,
+`lint:commits`, `test`, `test:coverage`, `build`, `pack`, `release:dry` and `docs`, which is the
+whole of the GitHub Actions pipeline in one command. `lint:commits` runs the `bump-version` binary,
 which must be on `PATH`; CI installs a pinned release of it, and a clone that does not have it runs
-every other task unchanged.
-If Biome reports a fixable problem, run `deno task format` rather than editing by hand. Releases are
+every other script unchanged.
+If Biome reports a fixable problem, run `npm run format` rather than editing by hand. Releases are
 not a task here because they are the maintainer's alone and run through an external tool — see
 [Releasing](#releasing).
 
 ## Continuous integration
 
 [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) defines a strict pipeline: `format`, `lint`,
-`commits`, `typecheck`, `test` → `build`, `return-types`, `docs`. `biome ci` treats formatting as an
-error, so an unformatted file fails the pipeline.
+`commits`, `typecheck`, `test` → `build`, `docs`. `biome ci` treats formatting as an error, so an
+unformatted file fails the pipeline.
 
 Every job checks the repository out and then runs `.github/actions/setup/action.yml`, which installs
-the pinned Deno and runs `deno install --frozen`. A shared action rather than a copy per job: a
-lockfile that has to agree with `package.json` is checked the same way everywhere, or not at all.
-The checkout is a separate step because a local action is loaded from the working directory — the
-action cannot be the thing that put it there.
+the pinned Node and runs `npm ci`. A shared action rather than a copy per job: a lockfile that has to
+agree with `package.json` is checked the same way everywhere, or not at all. The checkout is a
+separate step because a local action is loaded from the working directory — the action cannot be the
+thing that put it there.
 
 The `commits` job fetches the full history and the tags, installs the pinned `bump-version` release
-and runs `deno task lint:commits`, so the history is held to Conventional Commits by the same tool a
+and runs `npm run lint:commits`, so the history is held to Conventional Commits by the same tool a
 release reads it with, and not only by the local hook a clone may not have installed. The `build` job
-also runs `deno task publish:dry` after `pack`, so the source is proven to load under Deno's resolver
-before the maintainer publishes it.
+also runs `npm run release:dry` after `pack`, so the npm tarball is proven to prepare — every check
+runs without contacting the registry — before the maintainer publishes it.
 
-The pipeline keeps one gate deliberately: every job runs the same commands `deno task ci` runs, so a
-green pipeline and a green `deno task ci` mean the same thing. `scripts/ci-parity.test.ts` holds the
-two lists together: a command added to a job and not to the `ci` task fails, because it would be a
+The pipeline keeps one gate deliberately: every job runs the same commands `npm run ci` runs, so a
+green pipeline and a green `npm run ci` mean the same thing. `scripts/ci-parity.test.ts` holds the
+two lists together: a command added to a job and not to the `ci` script fails, because it would be a
 check no contributor runs.
 
 ## Project layout
@@ -504,11 +503,9 @@ src/
     global.css            global element styles the components assume
   index.css               Tailwind entry point (index.css is the only global stylesheet)
 scripts/
-  publish.ts              writes jsr.json and publishes the source to JSR
   check-package-manifest.ts  verifies every path in package.json `files` exists in dist/
-  check-return-types.ts   runs JSR's no-slow-types rule against src/index.ts
-  bundle-icons.ts         bundles src/icons/*.svg into src/icons/index.tsx (run by `deno task icons`)
-  update-*-baseline.ts    regenerates a `*-baseline.json` ratchet; run through its `deno task *:baseline`
+  bundle-icons.ts         bundles src/icons/*.svg into src/icons/index.tsx (run by `npm run icons`)
+  update-*-baseline.ts    regenerates a `*-baseline.json` ratchet; run through its `npm run *:baseline`
   *-baseline.json         the sets a release already shipped, which a test refuses to let grow or shrink
   *.test.ts               the repository-policy tests
   util/                   helpers for the scripts above, including the shared tree walker
@@ -548,8 +545,8 @@ file name becomes the directory's name, so no file repeats the directory it sits
 The API reference is **generated from the source** by TypeDoc, which reads the TSDoc comments:
 
 ```bash
-deno task docs          # writes docs/api/
-deno task docs:watch    # rebuilds on save
+npm run docs          # writes docs/api/
+npm run docs:watch    # rebuilds on save
 ```
 
 - Entry points and output are configured in `typedoc.json`; TypeScript options live in
@@ -596,12 +593,12 @@ behaviour that was wrong, so it fails on the unfixed code and passes on the fixe
 written after the fix proves only that the fix ran. It sits beside what it covers like any other
 test, and the failing-then-passing sequence is what makes the fix verifiable rather than asserted.
 
-`deno task test` runs the suite, and `deno task test:coverage` runs it with the coverage gate the
+`npm run test` runs the suite, and `npm run test:coverage` runs it with the coverage gate the
 thresholds in `vitest.config.ts` hold the whole published source to — `src/util/`, `src/components/`
 and the infrastructure modules beside them: **100% of statements, branches, functions and lines.**
 A partial threshold is a number a partial test can meet, so the floor is the whole one, and the floor
 is held, not visited: new code ships with the tests that cover it, in the commit that adds it. The
-gate is enforced by `deno task ci`, which runs the coverage task beside the plain one.
+gate is enforced by `npm run ci`, which runs the coverage task beside the plain one.
 
 An exception to that floor is one of two kinds, and both carry their reason with them: a file
 excluded by name in [scripts/coverage-exceptions.ts](scripts/coverage-exceptions.ts) — currently the
@@ -632,7 +629,7 @@ the source tree through its shared walker (`scripts/util/source-tree.ts`):
 A second group guards one repository-wide fact and reads the file that states it, rather than
 walking the tree: `alias-agreement`, `no-stylesheet-import`, `pinned-dependencies`, `version-sync`,
 `ci-parity`, `jsdom-test-pragma`, `generated-artefacts` and `lint-overrides` — the two configs,
-`src/index.ts`, `package.json`, `deno.json`, `biome.json`, the workflow and the Git index.
+`src/index.ts`, `package.json`, `biome.json`, the workflow and the Git index.
 
 The suite covers the pure helpers that carry the most logic per line, the repository-policy rules, and
 every component group with at least one render test.
@@ -674,11 +671,11 @@ behaviour, and the library still ships the plain source a consumer imports.
   `//@ decreases` state what it does; the specification is the reference for the whole
   surface: [SPEC.md](https://github.com/midspiral/LemmaScript/blob/main/SPEC.md).
 - `LemmaScript-files.txt` at the repository root lists the verified sources, one path per line.
-  `deno task lemmascript:check` reads the same list, so a local run verifies what CI does.
+  `npm run lemmascript:check` reads the same list, so a local run verifies what CI does.
 - Each source generates `foo.dfy.gen` (always regeneratable) and `foo.dfy` (the source of truth,
   where proofs are added). The diff between them is additions only, and both are committed.
 - The pipeline is `.github/workflows/lemmascript.yml`, separate from `ci.yml`: it needs the Dafny
-  toolchain, which the Deno gate does not install, so `deno task ci` still runs wherever Deno does.
+  toolchain, which the Node gate does not install, so `npm run ci` still runs wherever Node does.
 - `//@ assume` is not used: it makes a proof vacuous, and a proof that says nothing is worse than no
   proof at all.
 - A proof is earned by its specification, not arranged around the prover: an `ensures` weakened until
@@ -690,7 +687,7 @@ behaviour, and the library still ships the plain source a consumer imports.
 
 **Every commit message must follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).**
 `bump-version add-hook` installs a `commit-msg` hook that rejects a bad message, and the CI `commits`
-job runs `deno task lint:commits` — the same `bump-version lint` — over the history since the last
+job runs `npm run lint:commits` — the same `bump-version lint` — over the history since the last
 release, so the rule is enforced on the server rather than only by a hook a clone may not have
 installed.
 
@@ -768,47 +765,42 @@ working tree or staged changes, and `-force` runs it non-interactively.
 Never hand-edit the `version` field in `package.json` or the generated sections in `CHANGELOG.md`.
 Both are owned by the tool.
 
-## Publishing to JSR
+## Publishing to npm
 
-The same version also ships as source: `deno task publish` publishes `src/` to
-[`@dssutg/dss-ui-kit`](https://jsr.io/@dssutg/dss-ui-kit) from the maintainer's machine. Like
-`docs/api/`, the `jsr.json` it publishes through is generated, not committed — a stale imports map
-resolves against files that have since moved.
+`npm run release` builds the package and runs `npm publish` from the maintainer's machine, shipping
+the built `dist/` — the bundle, the type declarations and the stylesheet — to the npm registry under
+the name `dss-ui-kit`. The `package.json` manifest is what npm reads, and the build is a
+`prepublishOnly` hook so a publish always ships a fresh build.
 
-The constraint that shapes it: `deno publish` type-checks the package with Deno, reading everything
-through the imports map of one config file. Three repository conventions do not survive that reading
-as-is, and the publish script carries each of them across instead of the source bending to JSR:
+The exports are the package's public surface, and every one of them is a build of its own:
 
-- **The `@/` alias is resolved to exact files.** Deno's resolver does not do the `index.*`-inside-a-
-  directory lookup the bundler does, so the script maps every `@/` specifier the published files
-  import onto the file it names — including the `.glsl` shaders.
-- **`react` is an alias onto Preact.** The map turns `react` into `npm:preact@<pinned>/compat…`, the
-  same external the bundle keeps. A source statement stays `react`.
-- **The global stylesheet is imported nowhere.** Deno cannot read a CSS module, so `src/index.ts`
-  carries no side-effect CSS import and the stylesheet exists as a build of its own
-  (`vite.css.config.ts` → `dist/dss-ui-kit.css`, what npm installs as `dss-ui-kit/style.css`), and
-  as packaged files under `src/css/` for a JSR consumer's Tailwind/PostCSS pipeline.
+- `.` — `dist/dss-ui-kit.js` (ES) and `dist/dss-ui-kit.umd.cjs` (UMD), with `dist/types/index.d.ts`
+  as the types: the whole library, a single public surface, one Preact kept external.
+- `./style.css` — `dist/dss-ui-kit.css`. The global stylesheet is a build of its own
+  (`vite.css.config.ts`) because the library build only emits one when a module imports it, and
+  `src/index.ts` must not: a script-tag consumer loads it separately and a bundler consumer decides
+  whether to import it. The source under `src/css/` also ships as package files for a consumer's own
+  Tailwind/PostCSS pipeline.
+- `./tailwind` — `dist/tailwind.js`, the Tailwind token preset.
+- `./testing` — `dist/testing.js`, the test helper, which the consumer's own vitest runs.
 
-The publish runs without a slow-types allowance, so a function or symbol the publish would flag
-(`missing-explicit-return-type`, `missing-explicit-type`) fails it: every exported symbol reachable
-from `src/index.ts` carries an explicit type. `deno task lint:return-types` runs that rule alone —
-JSR's `no-slow-types` against the generated config — and `deno task ci` runs it, so this cannot reach
-`main` unchecked. Run it before finishing a new export, and keep the pattern in new code.
+`scripts/check-package-manifest.ts` (run by `npm run pack`) proves every path the manifest names
+exists in `dist/`, and `npm run release:dry` runs the same preparation and checks without contacting
+the registry, so a broken `exports` map fails the pipeline rather than someone's install. There is no
+separate slow-type check: `tsgo` emits the declarations with `--declaration` under
+`tsconfig.build.json`, and a type it cannot emit is a build failure.
 
 Consequences worth knowing before touching the source:
 
 - A new specifier under `src/` that no candidate file backs (`@/util/new-thing` with no directory)
-  fails the publish, by design — run `deno task publish:dry` after moving files.
-- The test helpers (`src/util/testing/`) are excluded from the package, together with the
-  `src/testing.ts` entry that publishes them for npm as `dss-ui-kit/testing`; JSR serves source,
-  and a package without a vitest dependency has no test helpers to ship.
+  fails the build, by design — run `npm run build` after moving files.
 - The `.glsl` shaders are imported with the standard `with { type: 'text' }`, not Vite's `?raw`; the
   rollup `moduleTypes` in `vite.config.ts` is the reading Vite gives them.
 
 ## Before you finish
 
-- `deno task ci` passes (this is the CI gate).
-- If you touched `package.json`, `deno.lock` is refreshed and `deno task install:frozen` passes.
+- `npm run ci` passes (this is the CI gate).
+- If you touched `package.json`, `package-lock.json` is refreshed and `npm run install:frozen` passes.
 - Coverage is still 100% where the gate reads, and every source in `LemmaScript-files.txt` still
   verifies, with its `.dfy` and `.dfy.gen` artefacts regenerated — see [Testing](#testing) and
   [Verification](#verification).

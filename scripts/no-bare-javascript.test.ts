@@ -9,7 +9,7 @@ import { collectFiles } from './util/source-tree.ts';
  * this repository does not own, so a `.js` file in the tree is always something the project itself
  * introduced — and it would arrive without the types and the strictness everything else is held
  * to. The rule is easy to state and easy to break by accident, so it is checked here rather than
- * left to review: this runs as part of `deno task ci`.
+ * left to review: this runs as part of `npm run ci`.
  */
 
 /** Every spelling of a JavaScript file, including the module and CommonJS extensions. */

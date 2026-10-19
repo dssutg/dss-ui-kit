@@ -13,7 +13,7 @@
     "dss"
   ],
   "engines": {
-    "deno": "2.9.7"
+    "node": "26.10.0"
   },
   "main": "./dist/dss-ui-kit.umd.cjs",
   "module": "./dist/dss-ui-kit.js",
@@ -46,15 +46,41 @@
     "LICENSE"
   ],
   "scripts": {
-    "dev": "deno task dev",
-    "build": "deno task build",
-    "preview": "deno task preview",
-    "lint": "deno task lint",
-    "format": "deno task format",
-    "typecheck": "deno task typecheck",
-    "test": "deno task test",
-    "docs": "deno task docs",
-    "ci": "deno task ci"
+    "dev": "vite",
+    "build": "npm run build:bundle && npm run build:preset && npm run build:testing && npm run build:css && npm run build:types",
+    "build:bundle": "vite build",
+    "build:preset": "vite build --config vite.preset.config.ts",
+    "build:testing": "vite build --config vite.testing.config.ts",
+    "build:css": "vite build --config vite.css.config.ts",
+    "build:types": "tsgo --emitDeclarationOnly --declaration --declarationMap --outDir dist/types -p tsconfig.build.json",
+    "pack": "node --experimental-strip-types scripts/check-package-manifest.ts",
+    "preview": "vite preview",
+    "typecheck": "tsgo --noEmit -p tsconfig.json && tsgo --noEmit -p tsconfig.node.json",
+    "lint": "npm run lint:biome && npm run lint:markdown && npm run typecheck",
+    "lint:biome": "biome ci .",
+    "lint:markdown": "markdownlint-cli2",
+    "lint:commits": "bump-version lint",
+    "lint:types": "npm run typecheck",
+    "format": "biome check --write .",
+    "format:check": "biome format .",
+    "format:markdown": "markdownlint-cli2 --fix",
+    "install:frozen": "npm ci",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest",
+    "docs": "typedoc",
+    "docs:watch": "typedoc --watch",
+    "icons": "node --experimental-strip-types scripts/bundle-icons.ts",
+    "lemmascript:gen": "lsc gen --backend=dafny",
+    "lemmascript:check": "lsc check --backend=dafny",
+    "duplication:baseline": "node --experimental-strip-types scripts/update-duplication-baseline.ts",
+    "design-tokens:baseline": "node --experimental-strip-types scripts/update-design-token-baseline.ts",
+    "type-assertions:baseline": "node --experimental-strip-types scripts/update-type-assertion-baseline.ts",
+    "ci": "npm run install:frozen && npm run format:check && npm run lint && npm run lint:commits && npm run test && npm run test:coverage && npm run build && npm run pack && npm run release:dry && npm run docs",
+    "prepublishOnly": "npm run build",
+    "release": "npm publish",
+    "release:dry": "npm publish --dry-run",
+    "codemod": "codemod"
   },
   "peerDependencies": {
     "preact": ">=10.19.0 <11"
@@ -67,7 +93,6 @@
     "@biomejs/biome": "2.5.14",
     "@preact/preset-vite": "2.10.6",
     "@tailwindcss/forms": "0.5.11",
-    "@types/deno": "2.7.0",
     "@types/node": "26.6.3",
     "@typescript/native-preview": "7.0.0-dev.20260707.2",
     "@vitest/coverage-v8": "5.0.2",

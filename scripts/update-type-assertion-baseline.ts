@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --allow-read --allow-write --allow-run
+#!/usr/bin/env -S node --experimental-strip-types
 // SPDX-License-Identifier: MIT
 // Regenerates the type-assertion baseline from the casts currently in the source.
 
@@ -11,7 +11,7 @@ import { countTypeAssertionsByFile } from './util/type-assertions.ts';
  * Regenerates `scripts/type-assertion-baseline.json`, the per-file assertion counts the guard
  * accepts.
  *
- * Run it through `deno task type-assertions:baseline`. The baseline is a snapshot of the casts that
+ * Run it through `npm run type-assertions:baseline`. The baseline is a snapshot of the casts that
  * exist today, so `scripts/no-type-assertions.test.ts` fails on a new one without failing on the ones
  * already in the tree; accepting a cast lowers or raises a single number, and deduplicating a file's
  * casts retires the entry.

@@ -12,10 +12,11 @@
  * import 'dss-ui-kit/style.css';
  * ```
  *
- * The stylesheet is a separate export rather than an import here. JSR type-checks the package with
- * Deno, which cannot read a CSS module, so the side-effect import is one line the source cannot
- * spell — and a component library that injected its own CSS on import would make the order it
- * loads in significant anyway. The caller decides when the theme and the utilities land.
+ * The stylesheet is a separate export rather than an import here. A script-tag consumer loads it
+ * separately and a bundler consumer decides whether to import it, so a side-effect import in this
+ * module would make the order it loads in significant — and a component library that injected its
+ * own CSS on import would make that order a decision the library took. The caller decides when the
+ * theme and the utilities land.
  *
  * ## What is deliberately not exported
  *

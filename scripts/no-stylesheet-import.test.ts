@@ -11,10 +11,10 @@ import { REPOSITORY_ROOT } from './util/source-tree.ts';
  * The public surface carries no stylesheet import.
  *
  * The CSS is a build of its own (`vite.css.config.ts` → `dist/dss-ui-kit.css`), reached through the
- * `dss-ui-kit/style.css` subpath, because Deno cannot read a CSS module and the JSR publish reads
- * `src/index.ts` as source. A side-effect `import '...css'` added here would fail that publish and
- * would also make the order the stylesheet loads in significant, a decision the caller owns. So the
- * absence is a property of the file, and it is checked rather than left to the comment above it.
+ * `dss-ui-kit/style.css` subpath: a script-tag consumer loads it separately, and a bundler consumer
+ * decides whether to import it. A side-effect `import '...css'` added here would make the order the
+ * stylesheet loads in significant, a decision the caller owns. So the absence is a property of the
+ * file, and it is checked rather than left to the comment above it.
  *
  * Comments are not imports, which is why this reads the syntax tree rather than the text: the module
  * documents the subpath it deliberately does not import in its own TSDoc.

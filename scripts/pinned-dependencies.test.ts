@@ -9,7 +9,7 @@ import { REPOSITORY_ROOT } from './util/source-tree.ts';
 /**
  * A dependency range is a bug, not a convenience.
  *
- * `deno install --frozen` proves the lockfile and `package.json` agree, but a lockfile can agree with
+ * `npm ci` proves the lockfile and `package.json` agree, but a lockfile can agree with
  * a range just as well as with an exact version: `"^2.6.1"` and `"2.6.1"` both install a lock entry,
  * and the range only drifts on the next install, in an environment that is not this one. The two
  * fields a consumer's install resolves are therefore held to an exact version here, where the failure

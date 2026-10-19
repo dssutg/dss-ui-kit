@@ -22,7 +22,7 @@ import { defineConfig } from 'vite';
  * build stands on its own whether or not the library build changes.
  *
  * `emptyOutDir` is off for the same reason as the preset build: this build writes into a `dist/` the
- * library build has already filled. Order in `deno task build` is what keeps `dist/` correct.
+ * library build has already filled. Order in `npm run build` is what keeps `dist/` correct.
  */
 export default defineConfig({
   plugins: [preact()],

@@ -27,29 +27,14 @@ have to reach into their own code for is a prop.
 From npm:
 
 ```sh
-deno add npm:dss-ui-kit npm:preact
-```
-
-From JSR (the TypeScript source, not a bundle):
-
-```sh
-deno add jsr:@dssutg/dss-ui-kit
+npm install dss-ui-kit preact
 ```
 
 Preact is a peer dependency, so the library runs on the Preact your application already has. The
-code is
-written against the React API and bundled with `preact/compat`, so `react`, `react-dom` and
-`react-dom/client` all resolve to Preact inside this package. The JSR package relies on the same
-aliasing: a Deno consumer needs
-
-```json
-// deno.json
-{ "imports": { "react": "npm:preact@^10.19.0/compat" } }
-```
-
-or the equivalent, since the source names `react` and JSR does not rewrite it — the imports map of
-the publish resolves it for the Deno checker, and a bundler consumer maps it as they do for npm
-(`react` → `preact/compat`).
+code is written against the React API and bundled with `preact/compat`, so `react`, `react-dom` and
+`react-dom/client` all resolve to Preact inside this package. A bundler maps those the same way this
+package does (`react` → `preact/compat`); no extra configuration is needed because the built bundle
+already carries the aliasing.
 
 ## Use
 
@@ -256,25 +241,25 @@ that run it, not to the runtime — and a consumer who does not test components 
 
 ## Development
 
-Deno 2 drives everything; there is no npm or yarn step.
+Node 26 drives everything, with npm for installs and the scripts below.
 
 ```sh
-deno install            # install or refresh dependencies
-deno task dev           # dev server
-deno task build         # production build into dist/
-deno task lint          # biome ci + markdownlint + typecheck
-deno task format        # biome check --write (apply safe fixes)
-deno task typecheck     # tsgo only
-deno task test          # unit tests
-deno task docs          # TypeDoc API reference into docs/api/
-deno task icons         # regenerate src/icons/index.tsx from the source SVGs
-deno task codemod       # run a codemod for a mechanical multi-file rewrite
-deno task publish:dry   # what a JSR publish of the current tree would carry
-deno task publish       # publish the TypeScript source to jsr.io/@dssutg/dss-ui-kit
-deno task ci            # the full local gate, exactly what CI runs
+npm install             # install or refresh dependencies
+npm run dev             # dev server
+npm run build           # production build into dist/
+npm run lint            # biome ci + markdownlint + typecheck
+npm run format          # biome check --write (apply safe fixes)
+npm run typecheck       # tsgo only
+npm run test            # unit tests
+npm run docs            # TypeDoc API reference into docs/api/
+npm run icons           # regenerate src/icons/index.tsx from the source SVGs
+npm run codemod         # run a codemod for a mechanical multi-file rewrite
+npm run release:dry     # what an npm publish of the current tree would carry
+npm run release         # build and publish the package to the npm registry
+npm run ci              # the full local gate, exactly what CI runs
 ```
 
-`deno task ci` is the gate: a green pipeline and a green `deno task ci` mean the same thing.
+`npm run ci` is the gate: a green pipeline and a green `npm run ci` mean the same thing.
 
 ### Releases
 

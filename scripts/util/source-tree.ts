@@ -24,15 +24,7 @@ export const REPOSITORY_ROOT = dirname(dirname(import.meta.dirname));
  * sources. Note that only `docs/api` is excluded rather than all of `docs`, so a stray script
  * placed beside the specifications is still collected.
  */
-export const IGNORED_PATHS = [
-  '.deno',
-  '.git',
-  '.vite',
-  'coverage',
-  'dist',
-  'docs/api',
-  'node_modules',
-];
+export const IGNORED_PATHS = ['.git', '.vite', 'coverage', 'dist', 'docs/api', 'node_modules'];
 
 /** Rewrites a path with forward slashes so the comparisons below are platform independent. */
 function toPosixPath(path: string): string {

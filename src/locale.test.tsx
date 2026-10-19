@@ -71,7 +71,7 @@ function LocaleProbe(): React.JSX.Element {
 
 describe('the type t is checked against', () => {
   it('takes a declared key and nothing else', () => {
-    // Compile-time assertions: they hold or fail under `deno task typecheck`, which is the gate
+    // Compile-time assertions: they hold or fail under `npm run typecheck`, which is the gate
     // that runs before every commit. The first pins `t`'s parameter to the public union; the rest
     // are the property itself — a library key and a declared key compile, a typo and a bare string
     // do not.

@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --allow-read --allow-write --allow-run --allow-env
+#!/usr/bin/env -S node --experimental-strip-types
 // SPDX-License-Identifier: MIT
 // Regenerates the duplication baseline from the clones currently accepted.
 
@@ -11,7 +11,7 @@ import { REPOSITORY_ROOT } from './util/source-tree.ts';
 /**
  * Regenerates `scripts/duplication-baseline.json`, the clones the duplicated-code guard accepts.
  *
- * Run it through `deno task duplication:baseline`. The baseline is a snapshot of the duplication
+ * Run it through `npm run duplication:baseline`. The baseline is a snapshot of the duplication
  * that exists today, so the guard in `scripts/duplicated-code.test.ts` fails on a new clone without
  * failing on the ones already in the tree; adding to it is how a clone is accepted, and removing a
  * line that has been deduplicated is how an acceptance is retired.

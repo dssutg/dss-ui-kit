@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --allow-read
+#!/usr/bin/env -S node --experimental-strip-types
 // SPDX-License-Identifier: MIT
 // Checks every path in the files list of package.json exists in the build.
 
@@ -12,7 +12,7 @@ import { REPOSITORY_ROOT } from './util/source-tree.ts';
  * A library's manifest is the part of it a consumer never sees the source of, so a stale path in
  * it is invisible until someone installs the package and their bundler fails on an import. That is
  * a bad time to find out — the library built, the tests passed, and CI was green. This check runs
- * immediately after `deno task build` so the failure lands here instead.
+ * immediately after `npm run build` so the failure lands here instead.
  *
  * It checks the fields a consumer's resolver actually reads: `main`, `module`, `types`, `style`, and
  * every string in the `exports` map. It does not check that the files are correct, only that they
@@ -70,8 +70,8 @@ if (import.meta.main) {
       console.error(`  - ${path}`);
     }
     console.error('');
-    console.error('Run `deno task build` first. If the build succeeded, the manifest is wrong.');
-    Deno.exit(1);
+    console.error('Run `npm run build` first. If the build succeeded, the manifest is wrong.');
+    process.exit(1);
   }
 
   console.log('package.json: every path in the manifest exists in dist/');

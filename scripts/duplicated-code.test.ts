@@ -12,7 +12,7 @@ import { REPOSITORY_ROOT } from './util/source-tree.ts';
  * Duplicated logic is the one defect a code review is worst at: the reader sees the copy in front of
  * them and not the copy three directories away, and the cost lands on whoever changes the fact next.
  * AGENTS.md states the rule — a fact needed in two places belongs in one place — and this is the
- * mechanical half of it, running as part of `deno task ci`.
+ * mechanical half of it, running as part of `npm run ci`.
  *
  * The finding is about the repository's own code and about exact repetition. The detector tokenizes
  * with the TypeScript scanner, so a reformat or a comment does not hide a clone, but two functions
