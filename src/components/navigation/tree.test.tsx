@@ -453,6 +453,20 @@ describe('TreeView typeahead', () => {
       'true',
     );
   });
+
+  it('starts one reset timer per typeahead key rather than scheduling the reset twice', async () => {
+    const { find } = await render(<TreeViewHarness initialTree={expandableTree} />);
+
+    const setTimeout = vi.spyOn(globalThis, 'setTimeout');
+
+    keyDown(find('[role="tree"]'), 'l');
+
+    const resetTimers = setTimeout.mock.calls.filter(([, delay]) => delay === 500);
+
+    expect(resetTimers).toHaveLength(1);
+
+    setTimeout.mockRestore();
+  });
 });
 
 describe('TreeView expansion', () => {
@@ -480,7 +494,7 @@ describe('TreeView expansion', () => {
     expect(findAll<HTMLElement>('[role="treeitem"]')).toHaveLength(4);
   });
 
-  it('leaves a leaf unchanged when it is double-clicked', async () => {
+  it('does not report an expansion change for a leaf that is double-clicked', async () => {
     const onItemExpansionChange = vi.fn();
     const { findAll } = await render(
       <TreeViewHarness
@@ -494,7 +508,7 @@ describe('TreeView expansion', () => {
 
     await doubleClick(at(findAll<HTMLElement>('[role="treeitem"]'), 0));
 
-    expect(onItemExpansionChange).toHaveBeenCalledWith('plain', true);
+    expect(onItemExpansionChange).not.toHaveBeenCalled();
   });
 
   it('toggles a row from its own expansion control without selecting it', async () => {

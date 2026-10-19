@@ -272,8 +272,6 @@ export function TreeView({
             trySelectNextFoundItem(visibleItemFlatList);
           }
         }
-
-        resetTypeAhead();
       };
 
       resetTypeAhead();
@@ -327,6 +325,10 @@ export function TreeView({
   // Shared by the double click and the expansion button, so the tree update is written once.
   const toggleExpansion = useCallback(
     (item: TreeViewItem) => {
+      if (item.children === undefined) {
+        return;
+      }
+
       setTree(updateTreeToToggleItemExpansion(tree, item.id));
       onItemExpansionChange?.(item.id, !item.expanded);
     },
@@ -612,9 +614,6 @@ function updateTreeToToggleItemExpansion(items: TreeViewItem[], itemId: string) 
   function update(items: TreeViewItem[]): TreeViewItem[] {
     return items.map((item) => {
       if (item.id === itemId) {
-        if (item.children === undefined) {
-          return item;
-        }
         return { ...item, expanded: !item.expanded };
       }
 
