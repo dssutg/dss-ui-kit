@@ -182,8 +182,9 @@ function cachedMatchOf(
 /**
  * The earliest match the language's still-live patterns make from `from` onward, or `null`.
  *
- * The patterns are asked last to first, so a definition later in the language wins a tie at the same
- * position.
+ * The patterns are asked last to first and a match at the position already held replaces it, so the
+ * earliest definition in the language wins a tie at the same position — which is what lets the Lua
+ * comment pattern claim a leading `--` before the operator pattern does.
  */
 function earliestMatch(
   src: string,
@@ -213,9 +214,9 @@ function earliestMatch(
 /**
  * Walks source text once, reporting every piece of it through `token`.
  *
- * The language's patterns are asked last to first, so a definition later in the language wins a tie
- * at the same position. A pattern with a `sub` hands its matched text to the named language, which
- * walks it the same way.
+ * The language's patterns are asked last to first, so the earliest definition in the language wins
+ * a tie at the same position. A pattern with a `sub` hands its matched text to the named language,
+ * which walks it the same way.
  */
 function tokenize(src: string, lang: TokenizerLang, token: TokenSink): void {
   try {
