@@ -75,8 +75,9 @@ Fix if not fixed yet:
 - src/util/hooks/use_element_size/index.tsx — the element was measured only when the ref.current value
   changed during render (stale on mount), causing an extra observer run; now tracked in state via
   layout effect so the observer effect keys off the settled element and cleans up correctly.
-- src/util/hooks/use_drag_n_drop_ordered_list/index.tsx:65 — a drop before any
-  dragover reports an empty order.
+- src/util/hooks/use_drag_n_drop_ordered_list/index.tsx — the drop commits only for a
+  drag the hook started, so a drop from outside the list no longer reports the empty
+  initial preview as the order.
 - src/util/array/index.tsx:78 — `getStringArrayAsColumnLines` loops forever
   with a `columnCount` of `0` and a non-empty list.
 - src/util/fetch/index.tsx:103-105 — an aborted request's own `finally` clears

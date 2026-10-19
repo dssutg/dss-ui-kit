@@ -121,7 +121,13 @@ export function useDragNDropOrderedList<ListItemDataType>(
   };
 
   const onDrop = () => {
-    onChange?.(dragAndDrop.updatedOrder);
+    // A drop can arrive for a drag the hook never started — one from outside the list — and the
+    // initial state holds an empty preview. Committing it would report the list emptied, so the
+    // commit is kept to a drag this hook is following.
+    if (dragAndDrop.draggedFrom !== null) {
+      onChange?.(dragAndDrop.updatedOrder);
+    }
+
     setDragAndDrop({
       ...dragAndDrop,
       draggedFrom: null,

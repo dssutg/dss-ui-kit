@@ -261,7 +261,7 @@ describe('OrderPanel', () => {
     expect(onChange).toHaveBeenCalledWith([1, 2]);
   });
 
-  it('ignores a drag over when nothing is being dragged', async () => {
+  it('ignores drag events when nothing is being dragged', async () => {
     const onChange = vi.fn();
     const { container } = await render(<OrderPanel items={[1, 2]} onChange={onChange} />);
 
@@ -270,7 +270,7 @@ describe('OrderPanel', () => {
     dispatchDrag(requireRow(rows, 1), 'dragover');
     dispatchDrag(requireRow(rows, 1), 'drop');
 
-    expect(onChange).toHaveBeenCalledWith([]);
+    expect(onChange).not.toHaveBeenCalled();
   });
 
   it('runs its footer buttons full width on a narrow screen', async () => {

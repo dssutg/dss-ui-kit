@@ -231,6 +231,21 @@ describe('useDragNDropOrderedList', () => {
     expect(onChange).toHaveBeenCalledWith(['a', 'b', 'c']);
   });
 
+  test('reports nothing for a drop that never started a drag', async () => {
+    const onChange = vi.fn<(updatedItems: string[]) => void>();
+
+    const view = await render(<ListProbe items={['a', 'b', 'c']} onChange={onChange} />);
+
+    const row = (position: number) => view.find(`li[data-position="${position}"]`);
+
+    // A drag from outside the list — a file, another page — delivers a drop onto a row without the
+    // hook ever seeing a dragstart, so there is no order to report.
+    sendDragEvent(row(1), 'drop');
+
+    expect(onChange).not.toHaveBeenCalled();
+    expect(view.find('[data-testid="status"]').textContent).toBe('dragging:false from:none');
+  });
+
   test('renders the props a draggable row needs', async () => {
     const view = await render(<ListProbe items={['a', 'b', 'c']} />);
 
