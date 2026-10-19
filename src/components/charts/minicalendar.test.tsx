@@ -32,9 +32,9 @@ describe('MiniCalendar', () => {
 
     await click(find('button'));
 
-    // The click the popup receives is its own and bubbles to the window listener, so a click on it
-    // is reported by both handlers that close it.
-    expect(onClose).toHaveBeenCalledTimes(2);
+    // The click the popup receives bubbles to the window listener, which is the only handler that
+    // closes it, so a click on the popup is reported once.
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 
   it('takes the focus when it becomes visible, and lets it go when it is hidden', async () => {

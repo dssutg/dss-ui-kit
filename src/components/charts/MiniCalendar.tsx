@@ -36,7 +36,7 @@ export function MiniCalendar({
   const [curX, setCurX] = useState(posX);
   const [curY, setCurY] = useState(posY);
 
-  // NOTE If you use a pop-up animation, this position correct
+  // NOTE If you use a pop-up animation, this position correction
   // is not going to work properly because the pop-up affects
   // the transform scale and it in turn affects the size of
   // the window making it smaller than it is after the animation.
@@ -84,7 +84,8 @@ export function MiniCalendar({
 
   return (
     // A button, because a click anywhere on the popup closes it. It is not a submit button and does
-    // nothing else, so `type="button"` keeps it out of any form around it.
+    // nothing else, so `type="button"` keeps it out of any form around it. The window listener above
+    // reports the close, so the button carries no click handler of its own.
     <button
       ref={windowRef}
       type="button"
@@ -98,7 +99,6 @@ export function MiniCalendar({
         top: curY,
         left: curX,
       }}
-      onClick={onClose}
       onKeyDown={onKeyDown}
     >
       <StaticCalendar date={date} />
