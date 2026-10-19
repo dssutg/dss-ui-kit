@@ -48,8 +48,6 @@ fallbacks.
 - src/components/inputs/UploadConfig.tsx:101 — with `uploadedFile` and `progress=100` on first
   render, the status settles on `chosen`, not `complete`, because the `uploadedFile` effect
   re-renders after the progress effect and its `chosen` wins.
-- cloneObject copies symbol-keyed value properties under key.toString() ("Symbol(foo)"), contradicting
-  its "including symbol keys" comment (src/util/record/index.tsx:170-184).
 
 Fix if not fixed yet:
 

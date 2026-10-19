@@ -103,7 +103,8 @@ export function hasRecordKey(record: Record<string, unknown>, key: string) {
 
 /**
  * Deep clone of primitives, arrays, plain objects, `Date`, `RegExp`, `Map` and `Set`, with circular
- * references preserved as shared references in the copy.
+ * references preserved as shared references in the copy, and object keys kept as they are — a
+ * symbol-keyed property comes back under the same symbol, never under its string form.
  *
  * The registry (`seen`) is what makes a cycle terminate — it is also why two mentions of the same
  * sub-object come back as one: identity is cloned, not just shape. Accessors are copied rather than
@@ -172,12 +173,12 @@ function cloneArray(value: readonly unknown[], seen: WeakMap<object, unknown>): 
 }
 
 function cloneObject(
-  value: Record<string, unknown>,
+  value: Record<string | symbol, unknown>,
   seen: WeakMap<object, unknown>,
-): Record<string, unknown> {
-  const cloned: Record<string, unknown> = {};
+): Record<string | symbol, unknown> {
+  const cloned: Record<string | symbol, unknown> = {};
   seen.set(value, cloned);
-  // Copy own enumerable properties (including symbol keys)
+  // Copy own properties, string and symbol keys alike, each under the key it has on the source
   for (const key of Reflect.ownKeys(value)) {
     const desc = Object.getOwnPropertyDescriptor(value, key);
     if (desc) {
@@ -185,7 +186,7 @@ function cloneObject(
       if (desc.get || desc.set) {
         Object.defineProperty(cloned, key, desc);
       } else {
-        cloned[key.toString()] = deepCloneUnknown(value[key.toString()], seen);
+        cloned[key] = deepCloneUnknown(value[key], seen);
       }
     }
   }

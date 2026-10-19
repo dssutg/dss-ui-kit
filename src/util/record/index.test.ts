@@ -245,6 +245,28 @@ describe('deepClone', () => {
     expect(stored).toBe(7);
   });
 
+  test('keeps a symbol key a symbol on the copy instead of stringifying it', () => {
+    const tag = Symbol('tag');
+    const original = { [tag]: { nested: 1 } };
+
+    const copy = deepClone(original);
+
+    expect(Reflect.ownKeys(copy)).toContain(tag);
+    expect(copy[tag]).toEqual({ nested: 1 });
+    expect(copy[tag]).not.toBe(original[tag]);
+    expect(Object.hasOwn(copy, 'Symbol(tag)')).toBe(false);
+  });
+
+  test('copies string-keyed and symbol-keyed properties side by side', () => {
+    const tag = Symbol('tag');
+    const original: Record<string | symbol, unknown> = { name: 'value', [tag]: 7 };
+
+    const copy = deepClone(original);
+
+    expect(Reflect.ownKeys(copy)).toEqual(['name', tag]);
+    expect(copy).toEqual(original);
+  });
+
   test('skips a key that reports no property descriptor for itself', () => {
     // A proxy may list a key in `ownKeys` while answering no descriptor for it; the clone must skip
     // it without failing and copy the keys that do have one.
