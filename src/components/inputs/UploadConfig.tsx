@@ -89,6 +89,7 @@ export function UploadConfig({
 
       if (droppedFile !== undefined) {
         setFile(droppedFile);
+        setStatus('chosen');
         onFileChange?.(droppedFile);
       }
     },
@@ -96,14 +97,9 @@ export function UploadConfig({
   );
 
   useEffect(() => {
-    if (file) {
-      setStatus('chosen');
-    }
-  }, [file]);
-
-  useEffect(() => {
     if (uploadedFile !== undefined) {
       setFile(uploadedFile);
+      setStatus('chosen');
     }
   }, [uploadedFile]);
 
@@ -160,6 +156,7 @@ export function UploadConfig({
     openFileDialog((file) => {
       onFileChange?.(file);
       setFile(file);
+      setStatus('chosen');
     });
   }, [onFileChange]);
 

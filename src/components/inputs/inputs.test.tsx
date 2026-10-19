@@ -897,6 +897,16 @@ describe('UploadConfig', () => {
     expect(findByText('Uploaded')).toBeDefined();
   });
 
+  it('reports completion for an uploaded file whose progress is already at the end', async () => {
+    const { findByText } = await render(
+      <UploadConfig onFileUpload={vi.fn()} uploadedFile={file} progress={100} />,
+    );
+
+    await flush();
+
+    expect(findByText('Uploaded')).toBeDefined();
+  });
+
   it('takes a file dropped onto the area', async () => {
     const onFileChange = vi.fn();
     const { findAll, findByText } = await render(
