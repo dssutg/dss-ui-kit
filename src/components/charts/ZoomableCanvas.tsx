@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 // A canvas the wheel zooms and the pointer pans around.
 
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { DOMRectContainsPoint } from '@/util/dom';
 import { useGranularEffect } from '@/util/hooks/use_granular_effect';
+import { usePropertyRef } from '@/util/hooks/use_property_ref';
 
 /**
  * Where the pointer is over a canvas, in the canvas's own pixels.
@@ -85,6 +86,7 @@ export function ZoomableCanvas({
   canvasRef,
   usingWebGL = false,
   shouldReleaseDragOnMouseLeave = false,
+  contentVersion = 0,
 }: {
   readonly width: number;
   readonly height: number;
@@ -109,304 +111,365 @@ export function ZoomableCanvas({
   canvasRef?: React.RefObject<HTMLCanvasElement> | undefined;
   readonly usingWebGL?: boolean | undefined;
   readonly shouldReleaseDragOnMouseLeave?: boolean | undefined;
+  /**
+   * A number that changes when the drawn content changes while the view does not — an image that has
+   * just finished loading, an icon that has just entered its cache.
+   *
+   * Content arriving asynchronously moves none of the other dependencies, so without a change here the
+   * canvas keeps the frame it painted before the content landed. The value is a trigger and is never
+   * read: bump it and the canvas repaints as it does when the transform changes.
+   */
+  readonly contentVersion?: number | undefined;
   readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
 }): React.JSX.Element {
   const internalCanvasRef = useRef<HTMLCanvasElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [startY, setStartY] = useState(0);
-  const [startDistance, setStartDistance] = useState(0);
+
+  /**
+   * Where the current gesture is, in the state the listeners read and write between events.
+   *
+   * Refs rather than state: these change on every pointer move, and a re-render for a value no render
+   * shows would be work the operator never sees — beside re-running whatever shared a dependency list
+   * with them, which is how the listeners below came to be torn down on every pointer start.
+   */
+  const isDraggingRef = useRef(false);
+  const startXRef = useRef(0);
+  const startYRef = useRef(0);
+  const startDistanceRef = useRef(0);
 
   const pointerStartXRef = useRef(0);
   const pointerStartYRef = useRef(0);
   const hasPointerMovedSinceStartRef = useRef(false);
 
+  /**
+   * The props the listeners and the drawing read, newest first.
+   *
+   * The listeners are attached once and never re-attached — an event arriving between a teardown and
+   * its replacement is an event nobody sees — so they read the current props through this ref instead
+   * of closing over the render they were attached in.
+   */
+  const latestPropsRef = usePropertyRef({
+    transform,
+    drawCallback,
+    usingWebGL,
+    onTransformChange,
+    minScale,
+    maxScale,
+    scaleFactor,
+    onClickAt,
+    onMouseMoveNoDragging,
+    onSingleTouchMove,
+    onCanvasDragStart,
+    onCanvasDragEnd,
+    shouldReleaseDragOnMouseLeave,
+  });
+
+  /**
+   * Clears the canvas and paints it with the newest props.
+   *
+   * Its identity never changes, which is what lets both effects below depend on it: depending on it
+   * re-runs neither of them, it is only there to be called.
+   */
+  const draw = useCallback(() => {
+    const canvas = internalCanvasRef.current;
+
+    // The JSX below attaches this ref before the effect runs and clears it on unmount, so the
+    // canvas is never absent while draw() can be called; the compiler cannot see that.
+    // v8 ignore start
+    if (!canvas) {
+      return;
+    }
+    // v8 ignore stop
+
+    const props = latestPropsRef.current;
+
+    const context: RenderingContext | null = props.usingWebGL
+      ? canvas.getContext('webgl')
+      : canvas.getContext('2d');
+
+    if (!context || !clearForDrawing(context)) {
+      return;
+    }
+
+    const { x: canvasX, y: canvasY } = canvas.getBoundingClientRect();
+
+    const drawProps: ZoomableCanvasDrawCallbackProps = {
+      mouseX: pointerStartXRef.current - canvasX,
+      mouseY: pointerStartYRef.current - canvasY,
+    };
+
+    props.drawCallback(context, props.transform, drawProps);
+  }, [latestPropsRef]);
+
+  // Forward the internal ref to the caller, which sizes the canvas from it.
+  useEffect(() => {
+    if (canvasRef) {
+      canvasRef.current = internalCanvasRef.current;
+    }
+  }, [canvasRef]);
+
+  /**
+   * Paints whenever the view, the drawing itself or the drawn content changes.
+   *
+   * `contentVersion` sits here as a trigger rather than as a value the effect reads: content that
+   * arrives asynchronously changes nothing else in the list, so a caller bumps it to repaint.
+   */
   useGranularEffect(
     () => {
-      function draw() {
-        const canvas = internalCanvasRef.current;
+      draw();
+    },
+    [width, height, transform, drawCallback, usingWebGL, contentVersion],
+    [draw],
+  );
 
-        // The JSX below attaches this ref before the effect runs and clears it on unmount, so the
-        // canvas is never absent while draw() can be called; the compiler cannot see that.
-        // v8 ignore start
-        if (!canvas) {
-          return;
-        }
-        // v8 ignore stop
+  /**
+   * Attaches the canvas and document listeners for as long as the component is mounted.
+   *
+   * Attached once, and never again while it is mounted: everything these handlers read that can
+   * change — the transform, the caller's callbacks, the gesture state — comes through the refs above,
+   * so no pointer move or button press can change what this effect depends on. Sharing a dependency
+   * list with the drag state used to tear every listener down and put it back on each pointer start,
+   * and an event landing in that gap was never seen.
+   */
+  useEffect(() => {
+    const canvas = internalCanvasRef.current;
 
-        const context: RenderingContext | null = usingWebGL
-          ? canvas.getContext('webgl')
-          : canvas.getContext('2d');
+    // As above: the ref is attached before this effect runs, so the canvas is never absent here.
+    // v8 ignore start
+    if (!canvas) {
+      return;
+    }
+    // v8 ignore stop
 
-        if (!context || !clearForDrawing(context)) {
-          return;
-        }
+    function handlePointerStart(event: Event, x: number, y: number) {
+      event.preventDefault();
+      startDragging();
+      hasPointerMovedSinceStartRef.current = false;
+      pointerStartXRef.current = x;
+      pointerStartYRef.current = y;
 
-        const { x: canvasX, y: canvasY } = canvas.getBoundingClientRect();
-
-        const props: ZoomableCanvasDrawCallbackProps = {
-          mouseX: pointerStartXRef.current - canvasX,
-          mouseY: pointerStartYRef.current - canvasY,
-        };
-
-        drawCallback(context, transform, props);
-      }
+      const props = latestPropsRef.current;
+      startXRef.current = x - props.transform.offsetX;
+      startYRef.current = y - props.transform.offsetY;
 
       draw();
+    }
 
-      // Forward the internal ref to the caller, which sizes the canvas from it.
-      if (canvasRef) {
-        canvasRef.current = internalCanvasRef.current;
-      }
-
-      const canvas = internalCanvasRef.current;
-
-      // As above: the ref is attached before this effect runs, so the canvas is never absent here.
-      // v8 ignore start
-      if (!canvas) {
+    function handlePointerMove(event: Event, x: number, y: number) {
+      if (!isDraggingRef.current) {
         return;
       }
-      // v8 ignore stop
 
-      function handlePointerStart(event: Event, x: number, y: number) {
-        event.preventDefault();
-        startDragging();
-        hasPointerMovedSinceStartRef.current = false;
-        pointerStartXRef.current = x;
-        pointerStartYRef.current = y;
-        setStartX(x - transform.offsetX);
-        setStartY(y - transform.offsetY);
+      hasPointerMovedSinceStartRef.current = true;
+
+      event.preventDefault();
+
+      const props = latestPropsRef.current;
+      const offsetX = x - startXRef.current;
+      const offsetY = y - startYRef.current;
+
+      props.onTransformChange({ ...props.transform, offsetX, offsetY });
+
+      draw();
+    }
+
+    function startDragging() {
+      isDraggingRef.current = true;
+      latestPropsRef.current.onCanvasDragStart?.();
+    }
+
+    function endDragging() {
+      isDraggingRef.current = false;
+      latestPropsRef.current.onCanvasDragEnd?.();
+      draw();
+    }
+
+    function zoomToPos(zoomDirection: number, x: number, y: number) {
+      const props = latestPropsRef.current;
+
+      let factor = props.scaleFactor;
+      if (zoomDirection >= 0) {
+        factor = -props.scaleFactor;
       }
 
-      function handlePointerMove(event: Event, x: number, y: number) {
-        if (!isDragging) {
-          return;
-        }
+      let scale = props.transform.scale * (1 + factor);
+      if (props.minScale !== undefined && scale < props.minScale) {
+        scale = props.minScale;
+      } else if (props.maxScale !== undefined && scale > props.maxScale) {
+        scale = props.maxScale;
+      }
 
-        hasPointerMovedSinceStartRef.current = true;
+      const scaleChange = scale / props.transform.scale - 1;
+      const offsetX = props.transform.offsetX - (x - props.transform.offsetX) * scaleChange;
+      const offsetY = props.transform.offsetY - (y - props.transform.offsetY) * scaleChange;
 
-        event.preventDefault();
+      props.onTransformChange({ scale, offsetX, offsetY });
+      draw();
+    }
 
-        const offsetX = x - startX;
-        const offsetY = y - startY;
+    function handleMouseDown(event: MouseEvent) {
+      handlePointerStart(event, event.clientX, event.clientY);
+    }
 
-        onTransformChange({ ...transform, offsetX, offsetY });
+    function handleMouseMove(event: MouseEvent) {
+      handlePointerMove(event, event.clientX, event.clientY);
+    }
 
+    function tryEmitClickAtEvent() {
+      if (
+        hasPointerMovedSinceStartRef.current ||
+        !internalCanvasRef.current ||
+        !latestPropsRef.current.onClickAt
+      ) {
+        return;
+      }
+
+      const rect = internalCanvasRef.current.getBoundingClientRect();
+
+      const pointerX = pointerStartXRef.current;
+      const pointerY = pointerStartYRef.current;
+
+      const x = pointerX - rect.x;
+      const y = pointerY - rect.y;
+
+      if (DOMRectContainsPoint(rect, pointerX, pointerY)) {
+        latestPropsRef.current.onClickAt?.(x, y);
         draw();
       }
+    }
 
-      function startDragging() {
-        setIsDragging(true);
-        onCanvasDragStart?.();
-      }
-
-      function endDragging() {
-        setIsDragging(false);
-        onCanvasDragEnd?.();
-      }
-
-      function zoomToPos(zoomDirection: number, x: number, y: number) {
-        let factor = scaleFactor;
-        if (zoomDirection >= 0) {
-          factor = -scaleFactor;
-        }
-
-        let scale = transform.scale * (1 + factor);
-        if (minScale !== undefined && scale < minScale) {
-          scale = minScale;
-        } else if (maxScale !== undefined && scale > maxScale) {
-          scale = maxScale;
-        }
-
-        const scaleChange = scale / transform.scale - 1;
-        const offsetX = transform.offsetX - (x - transform.offsetX) * scaleChange;
-        const offsetY = transform.offsetY - (y - transform.offsetY) * scaleChange;
-
-        onTransformChange({ scale, offsetX, offsetY });
-        draw();
-      }
-
-      function handleMouseDown(event: MouseEvent) {
-        handlePointerStart(event, event.clientX, event.clientY);
-      }
-
-      function handleMouseMove(event: MouseEvent) {
-        handlePointerMove(event, event.clientX, event.clientY);
-      }
-
-      function tryEmitClickAtEvent() {
-        if (hasPointerMovedSinceStartRef.current || !internalCanvasRef.current || !onClickAt) {
-          return;
-        }
-
-        const rect = internalCanvasRef.current.getBoundingClientRect();
-
-        const pointerX = pointerStartXRef.current;
-        const pointerY = pointerStartYRef.current;
-
-        const x = pointerX - rect.x;
-        const y = pointerY - rect.y;
-
-        if (DOMRectContainsPoint(rect, pointerX, pointerY)) {
-          onClickAt(x, y);
-          draw();
-        }
-      }
-
-      function handleMouseLeave() {
-        if (shouldReleaseDragOnMouseLeave) {
-          endDragging();
-        }
-      }
-
-      function handleWheel(event: WheelEvent) {
-        event.preventDefault();
-        zoomToPos(event.deltaY, event.offsetX, event.offsetY);
-      }
-
-      function handleTouchStart(event: TouchEvent) {
-        const first = event.touches.item(0);
-
-        if (event.touches.length === 2) {
-          setStartDistance(getTouchPointDistance(event.touches));
-        } else if (first !== null) {
-          setStartDistance(0);
-          handlePointerStart(event, first.clientX, first.clientY);
-        }
-      }
-
-      /**
-       * Two fingers down: the distance between them is the zoom level, and their midpoint is the
-       * point that stays put while the canvas scales under them.
-       */
-      function zoomForTouchPinch(canvas: HTMLCanvasElement, e: TouchEvent) {
-        e.preventDefault();
-
-        const currentDistance = getTouchPointDistance(e.touches);
-
-        const minDistance = 1;
-
-        if (startDistance >= minDistance) {
-          const firstTouch = e.touches.item(0);
-          const secondTouch = e.touches.item(1);
-
-          if (firstTouch !== null && secondTouch !== null) {
-            const canvasRect = canvas.getBoundingClientRect();
-
-            const pinchX = (firstTouch.clientX + secondTouch.clientX) / 2;
-            const pinchY = (firstTouch.clientY + secondTouch.clientY) / 2;
-
-            const offsetX = pinchX - canvasRect.x;
-            const offsetY = pinchY - canvasRect.y;
-
-            zoomToPos(startDistance - currentDistance, offsetX, offsetY);
-          }
-        }
-
-        setStartDistance(currentDistance);
-
-        draw();
-      }
-
-      function handleTouchMove(e: TouchEvent) {
-        // `canvas` was narrowed non-null above and is captured for this effect's lifetime.
-        // v8 ignore start
-        if (canvas === null) {
-          return;
-        }
-        // v8 ignore stop
-        if (e.touches.length === 2) {
-          zoomForTouchPinch(canvas, e);
-          return;
-        }
-
-        const first = e.touches.item(0);
-
-        if (first !== null) {
-          onSingleTouchMove?.(e);
-          handlePointerMove(e, first.clientX, first.clientY);
-        }
-      }
-
-      function handleTouchEnd(event: TouchEvent) {
-        if (event.touches.length < 2) {
-          setStartDistance(0);
-          tryEmitClickAtEvent();
-        }
+    function handleMouseLeave() {
+      if (latestPropsRef.current.shouldReleaseDragOnMouseLeave) {
         endDragging();
       }
+    }
 
-      function handleTouchCancel() {
-        setStartDistance(0);
-        endDragging();
+    function handleWheel(event: WheelEvent) {
+      event.preventDefault();
+      zoomToPos(event.deltaY, event.offsetX, event.offsetY);
+    }
+
+    function handleTouchStart(event: TouchEvent) {
+      const first = event.touches.item(0);
+
+      if (event.touches.length === 2) {
+        startDistanceRef.current = getTouchPointDistance(event.touches);
+        draw();
+      } else if (first !== null) {
+        startDistanceRef.current = 0;
+        handlePointerStart(event, first.clientX, first.clientY);
       }
+    }
 
-      function handleCanvasMouseMove(e: MouseEvent) {
-        if (!isDragging) {
-          onMouseMoveNoDragging?.(e);
+    /**
+     * Two fingers down: the distance between them is the zoom level, and their midpoint is the
+     * point that stays put while the canvas scales under them.
+     */
+    function zoomForTouchPinch(canvas: HTMLCanvasElement, e: TouchEvent) {
+      e.preventDefault();
+
+      const currentDistance = getTouchPointDistance(e.touches);
+
+      const minDistance = 1;
+
+      if (startDistanceRef.current >= minDistance) {
+        const firstTouch = e.touches.item(0);
+        const secondTouch = e.touches.item(1);
+
+        if (firstTouch !== null && secondTouch !== null) {
+          const canvasRect = canvas.getBoundingClientRect();
+
+          const pinchX = (firstTouch.clientX + secondTouch.clientX) / 2;
+          const pinchY = (firstTouch.clientY + secondTouch.clientY) / 2;
+
+          const offsetX = pinchX - canvasRect.x;
+          const offsetY = pinchY - canvasRect.y;
+
+          zoomToPos(startDistanceRef.current - currentDistance, offsetX, offsetY);
         }
       }
 
-      function toggleEventListeners(canvas: HTMLCanvasElement, toggleType: 'add' | 'remove') {
-        const toggleCanvasListener =
-          toggleType === 'add'
-            ? canvas.addEventListener.bind(canvas)
-            : canvas.removeEventListener.bind(canvas);
+      startDistanceRef.current = currentDistance;
 
-        const toggleDocumentListener =
-          toggleType === 'add'
-            ? document.addEventListener.bind(document)
-            : document.removeEventListener.bind(document);
+      draw();
+    }
 
-        toggleCanvasListener('mousedown', handleMouseDown);
-        toggleCanvasListener('touchstart', handleTouchStart);
-        toggleCanvasListener('touchmove', handleTouchMove);
-        toggleCanvasListener('touchend', handleTouchEnd);
-        toggleCanvasListener('touchcancel', handleTouchCancel);
-        toggleCanvasListener('mouseleave', handleMouseLeave);
-        toggleCanvasListener('wheel', handleWheel);
-        toggleCanvasListener('mousemove', handleCanvasMouseMove);
-
-        toggleDocumentListener('mousemove', handleMouseMove);
-        toggleDocumentListener('mouseup', (e) => {
-          pointerStartXRef.current = e.clientX;
-          pointerStartYRef.current = e.clientY;
-          endDragging();
-          tryEmitClickAtEvent();
-        });
+    /**
+     * An arrow rather than a function declaration: a declaration is hoisted, so the narrowing that
+     * established `canvas` above does not reach inside one and it would need a null check of its own.
+     */
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        zoomForTouchPinch(canvas, e);
+        return;
       }
 
-      toggleEventListeners(canvas, 'add');
+      const first = e.touches.item(0);
 
-      return () => {
-        toggleEventListeners(canvas, 'remove');
-      };
-    },
-    [
-      width,
-      height,
-      transform,
-      startDistance,
-      onTransformChange,
-      drawCallback,
-      minScale,
-      maxScale,
-      scaleFactor,
-      isDragging,
-      canvasRef,
-      onClickAt,
-      onCanvasDragStart,
-      onCanvasDragEnd,
-      onMouseMoveNoDragging,
-      onSingleTouchMove,
-      shouldReleaseDragOnMouseLeave,
-      startX,
-      startY,
-      usingWebGL,
-    ],
-    [],
-  );
+      if (first !== null) {
+        latestPropsRef.current.onSingleTouchMove?.(e);
+        handlePointerMove(e, first.clientX, first.clientY);
+      }
+    };
+
+    function handleTouchEnd(event: TouchEvent) {
+      if (event.touches.length < 2) {
+        startDistanceRef.current = 0;
+        tryEmitClickAtEvent();
+      }
+      endDragging();
+    }
+
+    function handleTouchCancel() {
+      startDistanceRef.current = 0;
+      endDragging();
+    }
+
+    function handleCanvasMouseMove(e: MouseEvent) {
+      if (!isDraggingRef.current) {
+        latestPropsRef.current.onMouseMoveNoDragging?.(e);
+      }
+    }
+
+    function handleMouseUp(event: MouseEvent) {
+      pointerStartXRef.current = event.clientX;
+      pointerStartYRef.current = event.clientY;
+      endDragging();
+      tryEmitClickAtEvent();
+    }
+
+    function toggleEventListeners(canvas: HTMLCanvasElement, toggleType: 'add' | 'remove') {
+      const toggleCanvasListener =
+        toggleType === 'add'
+          ? canvas.addEventListener.bind(canvas)
+          : canvas.removeEventListener.bind(canvas);
+
+      const toggleDocumentListener =
+        toggleType === 'add'
+          ? document.addEventListener.bind(document)
+          : document.removeEventListener.bind(document);
+
+      toggleCanvasListener('mousedown', handleMouseDown);
+      toggleCanvasListener('touchstart', handleTouchStart);
+      toggleCanvasListener('touchmove', handleTouchMove);
+      toggleCanvasListener('touchend', handleTouchEnd);
+      toggleCanvasListener('touchcancel', handleTouchCancel);
+      toggleCanvasListener('mouseleave', handleMouseLeave);
+      toggleCanvasListener('wheel', handleWheel);
+      toggleCanvasListener('mousemove', handleCanvasMouseMove);
+
+      toggleDocumentListener('mousemove', handleMouseMove);
+      // Named rather than inline: `removeEventListener` matches the function it was added with, and a
+      // fresh arrow here is a document listener nothing ever removes.
+      toggleDocumentListener('mouseup', handleMouseUp);
+    }
+
+    toggleEventListeners(canvas, 'add');
+
+    return () => {
+      toggleEventListeners(canvas, 'remove');
+    };
+  }, [draw, latestPropsRef]);
 
   return (
     <canvas

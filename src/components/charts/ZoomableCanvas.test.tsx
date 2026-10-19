@@ -691,4 +691,161 @@ describe('ZoomableCanvas', () => {
 
     expect(find('canvas')).toBeDefined();
   });
+
+  it('repaints when the drawn content changes and the view does not', async () => {
+    stubGetContext(() => new FakeCanvasRenderingContext2D());
+
+    // Held outside the JSX so that only the content version differs between the two renders: an
+    // inline handler would be a new identity and repaint for a reason that has nothing to do with
+    // the content arriving.
+    const drawCallback = vi.fn();
+    const onTransformChange = () => undefined;
+
+    const { update } = await render(
+      <ZoomableCanvas
+        width={320}
+        height={200}
+        transform={ORIGIN}
+        onTransformChange={onTransformChange}
+        drawCallback={drawCallback}
+        contentVersion={0}
+      />,
+    );
+
+    const drawsBefore = drawCallback.mock.calls.length;
+
+    await update(
+      <ZoomableCanvas
+        width={320}
+        height={200}
+        transform={ORIGIN}
+        onTransformChange={onTransformChange}
+        drawCallback={drawCallback}
+        contentVersion={1}
+      />,
+    );
+
+    expect(drawCallback).toHaveBeenCalledTimes(drawsBefore + 1);
+  });
+
+  it('repaints with the transform it has just been given', async () => {
+    const context = new FakeCanvasRenderingContext2D();
+    const drawCallback = vi.fn();
+
+    stubGetContext(() => context);
+
+    const onTransformChange = () => undefined;
+    const { update } = await render(
+      <ZoomableCanvas
+        width={320}
+        height={200}
+        transform={ORIGIN}
+        onTransformChange={onTransformChange}
+        drawCallback={drawCallback}
+      />,
+    );
+
+    const nextTransform = { scale: 2, offsetX: 10, offsetY: 20 };
+
+    await update(
+      <ZoomableCanvas
+        width={320}
+        height={200}
+        transform={nextTransform}
+        onTransformChange={onTransformChange}
+        drawCallback={drawCallback}
+      />,
+    );
+
+    expect(drawCallback).toHaveBeenLastCalledWith(context, nextTransform, {
+      mouseX: 0,
+      mouseY: 0,
+    });
+  });
+
+  it('repaints when the canvas is resized', async () => {
+    stubGetContext(() => new FakeCanvasRenderingContext2D());
+
+    const drawCallback = vi.fn();
+    const onTransformChange = () => undefined;
+
+    const { update } = await render(
+      <ZoomableCanvas
+        width={320}
+        height={200}
+        transform={ORIGIN}
+        onTransformChange={onTransformChange}
+        drawCallback={drawCallback}
+      />,
+    );
+
+    const drawsBefore = drawCallback.mock.calls.length;
+
+    await update(
+      <ZoomableCanvas
+        width={640}
+        height={200}
+        transform={ORIGIN}
+        onTransformChange={onTransformChange}
+        drawCallback={drawCallback}
+      />,
+    );
+
+    expect(drawCallback).toHaveBeenCalledTimes(drawsBefore + 1);
+  });
+
+  it('keeps its listeners attached while a drag runs', async () => {
+    stubGetContext(() => new FakeCanvasRenderingContext2D());
+
+    const onTransformChange = vi.fn();
+    const { find } = await render(
+      <ZoomableCanvas
+        width={320}
+        height={200}
+        transform={ORIGIN}
+        onTransformChange={onTransformChange}
+        drawCallback={() => undefined}
+      />,
+    );
+
+    const canvas = find('canvas');
+
+    const addCanvasListener = vi.spyOn(canvas, 'addEventListener');
+    const removeCanvasListener = vi.spyOn(canvas, 'removeEventListener');
+    const removeDocumentListener = vi.spyOn(document, 'removeEventListener');
+
+    dispatchMouse(canvas, 'mousedown', 100, 50);
+    dispatchMouse(canvas, 'mousemove', 150, 90);
+    dispatchMouse(canvas, 'mouseup', 150, 90);
+
+    // A pointer start used to change the state the registration effect depended on, which tore every
+    // listener down and put it back — an event arriving in that gap was never seen. The gesture above
+    // has to run on the listeners the mount attached, and it still has to pan.
+    expect(addCanvasListener).not.toHaveBeenCalled();
+    expect(removeCanvasListener).not.toHaveBeenCalled();
+    expect(removeDocumentListener).not.toHaveBeenCalled();
+    expect(onTransformChange).toHaveBeenCalledWith({ scale: 1, offsetX: 50, offsetY: 40 });
+  });
+
+  it('leaves no document listener behind when it unmounts', async () => {
+    stubGetContext(() => new FakeCanvasRenderingContext2D());
+
+    const onCanvasDragEnd = vi.fn();
+    const { unmount } = await render(
+      <ZoomableCanvas
+        width={320}
+        height={200}
+        transform={ORIGIN}
+        onTransformChange={() => undefined}
+        drawCallback={() => undefined}
+        onCanvasDragEnd={onCanvasDragEnd}
+      />,
+    );
+
+    unmount();
+
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, clientX: 0, clientY: 0 }));
+
+    expect(onCanvasDragEnd).not.toHaveBeenCalled();
+  });
 });
