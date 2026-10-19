@@ -42,12 +42,12 @@ fallbacks.
 
 ## Other issues
 
-- src/components/tables/use_filtered_items.ts:216 — the doc says an undeclared-property term is
-  "ignored rather than treated as unmatched", but `parsePart` returns `null` for it and the loop
-  records it as free text, so it filters every row out.
-- src/components/inputs/UploadConfig.tsx:101 — with `uploadedFile` and `progress=100` on first
-  render, the status settles on `chosen`, not `complete`, because the `uploadedFile` effect
-  re-renders after the progress effect and its `chosen` wins.
+- src/components/tables/use_filtered_items.ts — a term naming a property the schema does not declare
+  is now ignored rather than treated as unmatched: `parsePart` reads it as a token of its own instead
+  of recording it as free text that filtered every row out.
+- src/components/inputs/UploadConfig.tsx — with `uploadedFile` and `progress=100` on first render, the
+  status now settles on `complete`: the `uploadedFile` effect sets `chosen` in the same pass the
+  progress effect sets `complete`, and no later effect re-renders over it.
 
 Fix if not fixed yet:
 
@@ -56,9 +56,9 @@ Fix if not fixed yet:
 - TreeView.tsx:275 - resetTypeAhead runs once before the key switch and again
   at the end of searchByTypeAhead, so a typeahead key starts two timers.
 - VirtualizedList.tsx:157 - comment typo "is becase".
-- tables: the search form renders an unsignedHex filter value as decimal, the
-  export writes only properties hidden from the table, and empty-detection
-  skips non-trim string fields.
+- tables: the search form now spells an unsignedHex filter value as the hex digits the parser reads
+  it back from, the export writes the table's columns rather than the properties hidden from it, and
+  empty-detection treats a cleared non-trim string field as empty.
 - MiniCalendar.tsx:36 - comment grammar; a popup click reports onClose twice.
 - Ripple.tsx:43 - the currentTarget cast names HTMLButtonElement although the
   listener sits on any parent element; works because only geometry is read.
