@@ -80,8 +80,9 @@ Fix if not fixed yet:
   initial preview as the order.
 - src/util/array/index.tsx — `getStringArrayAsColumnLines` returns an empty array when
   `columnCount <= 0`, avoiding infinite loop (already handled).
-- src/util/fetch/index.tsx:103-105 — an aborted request's own `finally` clears
-  the shared `loading` flag while its replacement is still in flight.
+- src/util/fetch/index.tsx — an aborted request's own `finally` cleared the shared `loading` flag
+  while its replacement was still in flight; now only the request that is still current settles it,
+  by comparing its own `AbortController` against the one the ref holds.
 - src/util/color/index.tsx:214-215 — the destructuring fallback after the
   anchored three-group regex is unreachable defensive code.
 
