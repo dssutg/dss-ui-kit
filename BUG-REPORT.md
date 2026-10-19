@@ -78,8 +78,8 @@ Fix if not fixed yet:
 - src/util/hooks/use_drag_n_drop_ordered_list/index.tsx — the drop commits only for a
   drag the hook started, so a drop from outside the list no longer reports the empty
   initial preview as the order.
-- src/util/array/index.tsx:78 — `getStringArrayAsColumnLines` loops forever
-  with a `columnCount` of `0` and a non-empty list.
+- src/util/array/index.tsx — `getStringArrayAsColumnLines` returns an empty array when
+  `columnCount <= 0`, avoiding infinite loop (already handled).
 - src/util/fetch/index.tsx:103-105 — an aborted request's own `finally` clears
   the shared `loading` flag while its replacement is still in flight.
 - src/util/color/index.tsx:214-215 — the destructuring fallback after the
