@@ -14,6 +14,7 @@ import type { LocaleDates } from './dates';
  */
 export const en = {
   'AlphaColorPicker.alpha': 'Alpha',
+  'BackLink.title': 'Go back',
   'BitField.bitNoPrefix': 'Bit ',
   'Chart.axis': 'Chart axis labels',
   'ColorPickerControls.color': 'Color',

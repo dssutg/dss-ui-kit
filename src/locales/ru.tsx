@@ -7,6 +7,7 @@ import type { en } from './en';
 
 export const ru = {
   'AlphaColorPicker.alpha': 'Альфа',
+  'BackLink.title': 'Назад',
   'BitField.bitNoPrefix': 'Бит ',
   'Chart.axis': 'Подписи осей графика',
   'ColorPickerControls.color': 'Цвет',

@@ -290,6 +290,17 @@ be put in a page that routes somewhere else. What a path *means* is here, though
 `dispatchPathMap` and `RouteSwitch` read a path the caller holds and say what it addresses, and
 none of them touches the location or the history.
 
+A compact link back to the previous section, with the destination owned by the caller's router:
+
+```tsx
+import { BackLink } from 'dss-ui-kit';
+
+function BackToOverview({ onNavigate }: { readonly onNavigate: (to: string) => void }) {
+  // The arrow carries no name of its own, so the link is announced by its title.
+  return <BackLink to="/overview" onNavigate={onNavigate} />;
+}
+```
+
 ```tsx
 import { Accordion, MenuTree, type TMenuTreeItem } from 'dss-ui-kit';
 import { useState } from 'preact/hooks';

@@ -218,6 +218,8 @@ export { AutoSizer } from '@/components/layout/AutoSizer';
 
 export { ResizableSplit } from '@/components/layout/ResizableSplit';
 export { Accordion, useAccordion } from '@/components/navigation/Accordion';
+export type { BackLinkProps } from '@/components/navigation/BackLink';
+export { BackLink } from '@/components/navigation/BackLink';
 export { ControlledMUITabList } from '@/components/navigation/ControlledMUITabList';
 export type { EditableAccordionListItem } from '@/components/navigation/EditableAccordionList';
 export { EditableAccordionList } from '@/components/navigation/EditableAccordionList';
