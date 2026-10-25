@@ -300,6 +300,7 @@ export {
 } from '@/icons/registry';
 export type { LocaleDates } from '@/locales/dates';
 export { langNames } from '@/locales/lang-names';
+export { fromBase64Url, toBase64Url } from '@/util/base64url';
 export { tryCatch, tryCatchAsync } from '@/util/catch';
 export { cn } from '@/util/cn';
 export type { HexColorBreakPoint, HslaColor, RGBA32, RGBA32BreakPoint } from '@/util/color';
