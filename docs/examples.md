@@ -496,6 +496,20 @@ function DeviceSummary({ device }: { readonly device: Device }) {
 }
 ```
 
+`StatusIndicator` is a dot and a label, nothing else: the caller picks the tone and supplies the
+already-translated text, because the meaning of a value is the caller's.
+
+```tsx
+import { StatusIndicator, type StatusTone } from 'dss-ui-kit';
+
+function Summary({ score, label }: { readonly score: number; readonly label: string }) {
+  // The thresholds are the caller's decision; the indicator draws the tone it is handed.
+  const tone: StatusTone = score >= 80 ? 'ok' : score >= 40 ? 'warning' : 'error';
+
+  return <StatusIndicator tone={tone} label={label} />;
+}
+```
+
 ### Decoration across the viewport
 
 `LightRayOverlay` is a wash of light behind everything, drawn with an image the caller hands it. It

@@ -133,6 +133,12 @@ export type { LightRayOverlayProps } from '@/components/display/LightRayOverlay'
 export { LightRayOverlay } from '@/components/display/LightRayOverlay';
 export type { LinkProps } from '@/components/display/Link';
 export { Link } from '@/components/display/Link';
+export type { StatusIndicatorProps, StatusTone } from '@/components/display/StatusIndicator';
+export {
+  STATUS_TONES,
+  StatusIndicator,
+  statusToneClasses,
+} from '@/components/display/StatusIndicator';
 export type {
   CrashGuardProps,
   CrashReport,
