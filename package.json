@@ -34,6 +34,10 @@
       "types": "./dist/types/testing.d.ts",
       "import": "./dist/testing.js"
     },
+    "./util": {
+      "types": "./dist/types/util/index.d.ts",
+      "import": "./dist/util.js"
+    },
     "./package.json": "./package.json"
   },
   "sideEffects": [
@@ -47,10 +51,11 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "npm run build:bundle && npm run build:preset && npm run build:testing && npm run build:css && npm run build:types",
+    "build": "npm run build:bundle && npm run build:preset && npm run build:testing && npm run build:util && npm run build:css && npm run build:types",
     "build:bundle": "vite build",
     "build:preset": "vite build --config vite.preset.config.ts",
     "build:testing": "vite build --config vite.testing.config.ts",
+    "build:util": "vite build --config vite.util.config.ts",
     "build:css": "vite build --config vite.css.config.ts",
     "build:types": "tsgo --emitDeclarationOnly --declaration --declarationMap --outDir dist/types -p tsconfig.build.json",
     "pack": "node --experimental-strip-types scripts/check-package-manifest.ts",

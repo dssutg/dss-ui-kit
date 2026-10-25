@@ -19,6 +19,7 @@ have to reach into their own code for is a prop.
 - [WebGL](#webgl)
 - [Quality](#quality)
 - [Testing](#testing)
+- [Utilities](#utilities)
 - [Development](#development)
 - [Licence](#licence)
 
@@ -45,9 +46,10 @@ import { Button, ControlledTable, LocaleProvider, setTheme } from 'dss-ui-kit';
 import 'dss-ui-kit/style.css';
 ```
 
-A module that is not reachable from the root is not part of the runtime library. Three subpaths are
+A module that is not reachable from the root is not part of the runtime library. Four subpaths are
 deliberate, documented exceptions: the stylesheet (`style.css`), the token preset
-([Styling](#styling)) and the test helper ([Testing](#testing)). Anything else would be depending on
+([Styling](#styling)), the test helper ([Testing](#testing)) and the React-free helpers
+([Utilities](#utilities)). Anything else would be depending on
 something the version number does not describe.
 
 ### Components
@@ -238,6 +240,20 @@ out of the runtime bundle: the `afterEach` it registers at import time resolves 
 consumer's own runner, so a suite that imports the helper hooks into the vitest it started. It is a
 deliberate exception to the root being the whole public surface — the helper belongs to the tests
 that run it, not to the runtime — and a consumer who does not test components never imports it.
+
+## Utilities
+
+The pure helpers a Node process imports do not ride the package root: the root entry is the
+component library, and importing it pulls in the Preact peer and the whole component tree with it.
+They are published alone on a subpath whose module graph touches nothing browser-only:
+
+```ts
+import { errorMessage, fromBase64Url, toBase64Url } from 'dss-ui-kit/util';
+```
+
+Everything on this subpath imports where React does not exist, which is what makes it usable from
+the server. A helper that reaches a component, the locale or a browser-only module belongs on the
+root entry instead.
 
 ## Development
 

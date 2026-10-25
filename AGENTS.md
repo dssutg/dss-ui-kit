@@ -482,7 +482,8 @@ check no contributor runs.
 src/
   index.ts                the package's public surface; the runtime entry point consumers need
   util/                   hooks and framework-agnostic helpers, one directory per group;
-                          an entry is index.* so the directory is the import specifier
+                          an entry is index.* so the directory is the import specifier;
+                          index.ts is also the React-free `dss-ui-kit/util` subpath barrel
     array/ assert/ catch/ color/ date/ dom/ dsv/ editor/ fetch/ file/ format/
     fuzzy_search/ gl/ highlight/ hooks/ http/ ipv4/ is_tab_active/ key_map/
     math/ pluralization/ record/ rp/ string/ swipe/ testing/ unreachable/ uuid/ validator/
@@ -783,6 +784,10 @@ The exports are the package's public surface, and every one of them is a build o
   Tailwind/PostCSS pipeline.
 - `./tailwind` — `dist/tailwind.js`, the Tailwind token preset.
 - `./testing` — `dist/testing.js`, the test helper, which the consumer's own vitest runs.
+- `./util` — `dist/util.js`, the pure helpers a Node process imports without the Preact peer:
+  `errorMessage` and the base64url codec. The bundle's module graph must stay clear of React,
+  `src/components/` and the browser-only infrastructure modules, which is what makes the subpath
+  importable where the root entry is not.
 
 `scripts/check-package-manifest.ts` (run by `npm run pack`) proves every path the manifest names
 exists in `dist/`, and `npm run release:dry` runs the same preparation and checks without contacting
