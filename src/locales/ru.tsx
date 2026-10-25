@@ -9,6 +9,7 @@ export const ru = {
   'AlphaColorPicker.alpha': 'Альфа',
   'BackLink.title': 'Назад',
   'BitField.bitNoPrefix': 'Бит ',
+  'Breadcrumbs.label': 'Хлебные крошки',
   'Chart.axis': 'Подписи осей графика',
   'ColorPickerControls.color': 'Цвет',
   'ColorPickerControls.hue': 'Оттенок',

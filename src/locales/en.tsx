@@ -16,6 +16,7 @@ export const en = {
   'AlphaColorPicker.alpha': 'Alpha',
   'BackLink.title': 'Go back',
   'BitField.bitNoPrefix': 'Bit ',
+  'Breadcrumbs.label': 'Breadcrumb',
   'Chart.axis': 'Chart axis labels',
   'ColorPickerControls.color': 'Color',
   'ColorPickerControls.hue': 'Hue',

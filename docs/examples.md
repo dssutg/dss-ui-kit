@@ -301,6 +301,23 @@ function BackToOverview({ onNavigate }: { readonly onNavigate: (to: string) => v
 }
 ```
 
+A trail whose earlier steps are links and whose last step is the current page:
+
+```tsx
+import { Breadcrumbs, type BreadcrumbItem } from 'dss-ui-kit';
+
+const items: readonly BreadcrumbItem[] = [
+  { to: '/', label: 'Start' },
+  { to: '/section', label: 'Section' },
+  { to: '/section/page', label: 'Current page' },
+];
+
+function Trail({ onNavigate }: { readonly onNavigate: (to: string) => void }) {
+  // The caller supplies both the trail and the navigation; the last item is never a link.
+  return <Breadcrumbs items={items} onNavigate={onNavigate} />;
+}
+```
+
 ```tsx
 import { Accordion, MenuTree, type TMenuTreeItem } from 'dss-ui-kit';
 import { useState } from 'preact/hooks';
