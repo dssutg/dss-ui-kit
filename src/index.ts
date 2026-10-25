@@ -343,6 +343,7 @@ export {
   WComponent,
 } from '@/util/dom';
 export { parseCSV, parseDSV, serializeCSV, serializeDSV } from '@/util/dsv';
+export { errorMessage } from '@/util/error_message';
 export {
   downloadCanvasAsFile,
   downloadStringAsPlainTextFile,
