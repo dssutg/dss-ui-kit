@@ -263,7 +263,7 @@ export function click(element: Element, init: MouseEventInit = {}): MouseEvent {
 }
 
 /** Sets an input's value the way typing does, so the change handler sees a real change. */
-export function type(input: HTMLInputElement, value: string): void {
+export function type(input: HTMLInputElement | HTMLTextAreaElement, value: string): void {
   act(() => {
     input.value = value;
     input.dispatchEvent(new Event('input', { bubbles: true }));

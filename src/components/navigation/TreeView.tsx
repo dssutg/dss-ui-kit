@@ -36,6 +36,7 @@ import { SearchInput } from '@/components/inputs/SearchInput';
 import { VirtualizedList } from '@/components/inputs/VirtualizedList';
 import { AutoSizer } from '@/components/layout/AutoSizer';
 import { cn } from '@/util/cn';
+import type { DataAttributes } from '@/util/dom';
 import { useGranularEffect } from '@/util/hooks/use_granular_effect';
 import { clamp } from '@/util/math';
 
@@ -57,6 +58,13 @@ export interface TreeViewItem {
   expanded?: boolean | undefined;
   checked?: boolean | undefined;
   level?: number | undefined;
+  /**
+   * Turns the row into a native drag source: a `<div>` is not draggable by default, so an item the
+   * caller wants to drag out of the tree — onto a panel, another tree — asks for it here.
+   */
+  draggable?: boolean | undefined;
+  onDragStart?: (e: DragEvent) => void;
+  onDragEnd?: (e: DragEvent) => void;
   onDragOver?: (e: DragEvent) => void;
   onDrop?: (e: DragEvent) => void;
 }
@@ -90,6 +98,7 @@ export function TreeView({
   onCopy,
   onCut,
   onPaste,
+  ...dataProps
 }: {
   readonly tree: TreeViewItem[];
   readonly setTree: (tree: TreeViewItem[]) => void;
@@ -111,7 +120,7 @@ export function TreeView({
   readonly onCopy?: (e: ClipboardEvent) => void;
   readonly onCut?: (e: ClipboardEvent) => void;
   readonly onPaste?: (e: ClipboardEvent) => void;
-}): React.JSX.Element {
+} & DataAttributes): React.JSX.Element {
   const [typeAheadBuffer, setTypeAheadBuffer] = useState<string>('');
 
   const [searchText, setSearchText] = useState<string>('');
@@ -447,6 +456,7 @@ export function TreeView({
       onCopy={onCopy}
       onCut={onCut}
       onPaste={onPaste}
+      {...dataProps}
     >
       {hasSearch && (
         <div className="shrink-0">
@@ -502,8 +512,11 @@ export function TreeView({
                         onKeyDown={(e) => {
                           handleTreeItemKeyDown(item, e);
                         }}
+                        onDragStart={item.onDragStart}
+                        onDragEnd={item.onDragEnd}
                         onDragOver={item.onDragOver}
                         onDrop={item.onDrop}
+                        draggable={item.draggable}
                         className={getTreeItemRowClassName(item)}
                         style={{
                           paddingLeft: level * levelPaddingPixels,

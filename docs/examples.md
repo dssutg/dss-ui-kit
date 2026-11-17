@@ -82,16 +82,17 @@ means.
 ```tsx
 // `useState` comes from Preact, not from this package: the library ships its own hooks and no
 // re-export of the runtime's.
-import { SearchInput, Select, TextInput } from 'dss-ui-kit';
+import { SearchInput, Select, TextArea, TextInput } from 'dss-ui-kit';
 import { useState } from 'preact/hooks';
 
 interface Filter {
   readonly text: string;
   readonly zone: string;
+  readonly notes: string;
 }
 
 function FilterBar({ onChange }: { readonly onChange: (filter: Filter) => void }) {
-  const [filter, setFilter] = useState<Filter>({ text: '', zone: 'all' });
+  const [filter, setFilter] = useState<Filter>({ text: '', zone: 'all', notes: '' });
 
   const update = (next: Partial<Filter>) => {
     const merged = { ...filter, ...next };
@@ -117,6 +118,13 @@ function FilterBar({ onChange }: { readonly onChange: (filter: Filter) => void }
         placeholder="Free text"
         onChangeText={(text) => update({ text })}
         onClearClick={() => update({ text: '' })}
+      />
+      {/* A multiline value is `TextArea`: plain text over `rows` lines, with none of the structured
+          editors around it — what the operator types is exactly what the caller is handed. */}
+      <TextArea
+        placeholder="Notes"
+        rows={3}
+        onChangeText={(notes) => update({ notes })}
       />
     </>
   );
@@ -178,7 +186,13 @@ const properties: FilterableTablePropertyList<Device, ColumnId> = [
   },
 ];
 
-function DeviceTable({ devices }: { readonly devices: Device[] }) {
+function DeviceTable({
+  devices,
+  onOpen,
+}: {
+  readonly devices: Device[];
+  readonly onOpen: (device: Device) => void;
+}) {
   // `ControlledTable` holds nothing itself, so the search string is the caller's state and may live
   // in a URL rather than in React.
   const [searchText, setSearchText] = useState('');
@@ -197,6 +211,9 @@ function DeviceTable({ devices }: { readonly devices: Device[] }) {
       getExportedTableFilename={() => 'devices.csv'}
       sortColumnId="name"
       getItemId={(device) => device.id}
+      // A row click is reported, not routed: what a click opens is the caller's decision, as is what
+      // a drop onto a row means (`onRowDrop`, which turns the rows into drop targets).
+      onRowClick={({ row }) => onOpen(row.data)}
     />
   );
 }

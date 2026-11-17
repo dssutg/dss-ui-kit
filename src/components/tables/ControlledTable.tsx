@@ -48,9 +48,12 @@ export function ControlledTable<T, C extends string>({
   style,
   historyId,
   getItemId,
+  onRowClick,
+  onRowDrop,
   onScroll,
   searchText,
   setSearchText,
+  ...dataProps
 }: ControlledTableProps<T, C>): React.JSX.Element {
   const searchSchema: SearchSchema<T> = {
     properties: properties.map((property) => ({
@@ -105,6 +108,10 @@ export function ControlledTable<T, C extends string>({
     columnComparators: Object.fromEntries(
       properties.map(({ id, comparator }) => [id, comparator]),
     ) as SortableTableColumnComparatorTable<T, C>,
+    // The handlers are spread in only when given, because `exactOptionalPropertyTypes` reads an
+    // explicit `undefined` as a handler that was passed and refused.
+    ...(onRowClick === undefined ? {} : { onRowClick }),
+    ...(onRowDrop === undefined ? {} : { onRowDrop }),
     rows: filteredItems.map((item, index) => ({
       id:
         getItemId === undefined ? JSON.stringify([item, index]) : getItemId(item, index).toString(),
@@ -119,6 +126,7 @@ export function ControlledTable<T, C extends string>({
         className,
       )}
       style={style}
+      {...dataProps}
     >
       <FilterableTableTopPanel
         historyId={historyId}

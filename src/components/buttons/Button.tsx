@@ -4,6 +4,7 @@
 import { Icon, type IconName } from '@/components/display/Icon';
 import { Ripple } from '@/components/feedback/Ripple';
 import { cn } from '@/util/cn';
+import type { DataAttributes } from '@/util/dom';
 
 /**
  * The button's role, which is what decides its colours.
@@ -55,9 +56,9 @@ const buttonIconColors: Readonly<Record<ButtonType, string>> = {
  * It does not manage a pressed state: a button that toggles is {@link ToggleButton}, and one that
  * submits a form is this with `htmlButtonType="submit"`.
  *
- * It takes exactly the props below and forwards none of the rest: there is no `...rest` spread, so an
- * attribute the component does not name is not silently dropped on the element either. A caller that
- * needs an `aria-*` attribute the component does not name does not reach for this button.
+ * It takes exactly the props below plus `data-*` attributes: the `data-*` ones are forwarded onto the
+ * `<button>` rather than dropped between the props and the element, which is how a caller marks a
+ * button for its own tests or scripts. Anything else unnamed is not forwarded.
  *
  * `disabled` is the browser's own, on the `<button>` itself: a disabled button is not clickable and
  * not focusable, which is what makes it different from the `inactive` type — a visual variant that
@@ -79,6 +80,7 @@ export function Button({
   disabled,
   onClick,
   children,
+  ...dataProps
 }: {
   readonly type?: ButtonType | undefined;
   readonly htmlButtonType?: 'button' | 'submit' | 'reset' | undefined;
@@ -90,7 +92,7 @@ export function Button({
   readonly disabled?: boolean | undefined;
   readonly onClick?: React.MouseEventHandler<HTMLButtonElement> | undefined;
   readonly children?: React.ReactNode | undefined;
-}): React.JSX.Element {
+} & DataAttributes): React.JSX.Element {
   return (
     <button
       ref={buttonRef ?? null}
@@ -104,6 +106,7 @@ export function Button({
       )}
       style={style}
       onClick={onClick}
+      {...dataProps}
     >
       <Ripple color="var(--color-ripple-button)" />
       {icon !== undefined && (

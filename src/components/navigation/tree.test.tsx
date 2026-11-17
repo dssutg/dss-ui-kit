@@ -711,6 +711,39 @@ describe('TreeView checkbox, drag and drop, and clipboard', () => {
     expect(onDrop).toHaveBeenCalledTimes(1);
   });
 
+  it('is a drag source only for the item that asks, and reports the drag to it', async () => {
+    // A <div> is not draggable by default; the attribute is what makes the row draggable at all.
+    const onDragStart = vi.fn();
+    const onDragEnd = vi.fn();
+    const { findAll } = await render(
+      <TreeViewHarness
+        initialTree={[
+          { id: 'leaf', label: 'Leaf', draggable: true, onDragStart, onDragEnd },
+          { id: 'solo', label: 'Solo' },
+        ]}
+      />,
+    );
+
+    const rows = findAll<HTMLElement>('[role="treeitem"]');
+
+    expect(at(rows, 0).draggable).toBe(true);
+    expect(at(rows, 1).draggable).toBe(false);
+
+    fire(at(rows, 0), 'dragstart');
+    fire(at(rows, 0), 'dragend');
+
+    expect(onDragStart).toHaveBeenCalledTimes(1);
+    expect(onDragEnd).toHaveBeenCalledTimes(1);
+  });
+
+  it('forwards data-* attributes onto the tree root', async () => {
+    const { find } = await render(
+      <TreeViewHarness initialTree={expandableTree} data-testid="asset-tree" />,
+    );
+
+    expect(find('[role="tree"]').getAttribute('data-testid')).toBe('asset-tree');
+  });
+
   it('forwards the clipboard and drag handlers it was given for the tree as a whole', async () => {
     const onDragOver = vi.fn();
     const onCopy = vi.fn();

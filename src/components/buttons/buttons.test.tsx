@@ -62,6 +62,15 @@ describe('Button', () => {
     expect(find<HTMLButtonElement>('button').type).toBe('submit');
   });
 
+  it('forwards data-* attributes onto the button', async () => {
+    const { find } = await render(<Button title="Save" data-testid="save" data-form="main" />);
+
+    const button = find<HTMLButtonElement>('button');
+
+    expect(button.getAttribute('data-testid')).toBe('save');
+    expect(button.getAttribute('data-form')).toBe('main');
+  });
+
   it('makes an inactive button unclickable with the pointer, but keeps it a real button', async () => {
     // `inactive` is a visual variant rather than the `disabled` attribute, and the difference matters:
     // the button stays in the layout and stays focusable, and only the pointer is taken away.
@@ -99,6 +108,44 @@ describe('IconButton', () => {
     await click(find<HTMLButtonElement>('button'));
 
     expect(onClick).not.toHaveBeenCalled();
+  });
+
+  it('disables the real button and takes the handlers and ripple with it', async () => {
+    // Like `Button`, the `disabled` attribute goes on the element itself, so the browser's own
+    // "not clickable and not focusable" applies; `inactive` keeps the button focusable instead.
+    const onClick = vi.fn();
+    const { find } = await render(<IconButton icon="plus" disabled={true} onClick={onClick} />);
+
+    const button = find<HTMLButtonElement>('button');
+
+    expect(button.disabled).toBe(true);
+    expect(button.className).toContain('pointer-events-none');
+
+    await click(button);
+
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
+  it('turns the native drag source on only when asked', async () => {
+    // A <button> is not draggable by default; the attribute is what makes it one.
+    const { find, update } = await render(<IconButton icon="plus" draggable={true} />);
+
+    expect(find<HTMLButtonElement>('button').draggable).toBe(true);
+
+    await update(<IconButton icon="plus" />);
+
+    expect(find<HTMLButtonElement>('button').draggable).toBe(false);
+  });
+
+  it('forwards data-* attributes onto the button', async () => {
+    const { find } = await render(
+      <IconButton icon="plus" data-testid="add-row" data-purpose="toolbar" />,
+    );
+
+    const button = find<HTMLButtonElement>('button');
+
+    expect(button.getAttribute('data-testid')).toBe('add-row');
+    expect(button.getAttribute('data-purpose')).toBe('toolbar');
   });
 });
 
@@ -165,6 +212,84 @@ describe('ButtonGroup', () => {
 
     expect(findAll<HTMLButtonElement>('button')[0]?.className).toContain('bg-transparent');
     expect(findAll<HTMLButtonElement>('button')[0]?.className).not.toContain('bg-bpd');
+  });
+
+  it('disables the item it is told to and reports nothing for a click on it', async () => {
+    // The `disabled` attribute is the browser's own, so a disabled segment is neither clickable nor
+    // focusable; the styling says so to the eye as well.
+    const disabledItems = [
+      { id: 'a', title: 'First' },
+      { id: 'b', title: 'Second', disabled: true },
+    ] as const;
+    const onItemChange = vi.fn();
+    const { findAll } = await render(
+      <ButtonGroup itemId="a" items={disabledItems} onItemChange={onItemChange} />,
+    );
+
+    const second = findAll<HTMLButtonElement>('button')[1] as HTMLButtonElement;
+
+    expect(second.disabled).toBe(true);
+    expect(second.className).toContain('pointer-events-none');
+
+    await click(second);
+
+    expect(onItemChange).not.toHaveBeenCalled();
+  });
+
+  it('steps the arrow keys over a disabled item', async () => {
+    // A keyboard user should land on an item that can answer, so the disabled one is not a stop.
+    const skipItems = [
+      { id: 'a', title: 'First' },
+      { id: 'b', title: 'Second', disabled: true },
+      { id: 'c', title: 'Third' },
+    ] as const;
+    const onItemChange = vi.fn();
+    const { findAll, update } = await render(
+      <ButtonGroup itemId="a" items={skipItems} onItemChange={onItemChange} />,
+    );
+
+    const buttons = findAll<HTMLButtonElement>('button');
+
+    // Right from `a` skips the disabled `b` and lands on `c`.
+    buttons[0]?.dispatchEvent(new KeyboardEvent('keydown', { code: 'ArrowRight', bubbles: true }));
+    expect(onItemChange).toHaveBeenLastCalledWith('c');
+
+    // The group is controlled, so the caller moves the selection before the next press: left from
+    // `c` skips the disabled `b` and lands back on `a`.
+    await update(<ButtonGroup itemId="c" items={skipItems} onItemChange={onItemChange} />);
+    buttons[2]?.dispatchEvent(new KeyboardEvent('keydown', { code: 'ArrowLeft', bubbles: true }));
+    expect(onItemChange).toHaveBeenLastCalledWith('a');
+  });
+
+  it('keeps the selection when every other item is disabled', async () => {
+    // Nowhere to go is a real state, not a crash: the keys leave the selection on the one enabled
+    // item rather than moving it onto a disabled one.
+    const onItemChange = vi.fn();
+    const { find } = await render(
+      <ButtonGroup
+        itemId="a"
+        items={[
+          { id: 'a', title: 'First' },
+          { id: 'b', title: 'Second', disabled: true },
+          { id: 'c', title: 'Third', disabled: true },
+        ]}
+        onItemChange={onItemChange}
+      />,
+    );
+
+    find<HTMLButtonElement>('button').dispatchEvent(
+      new KeyboardEvent('keydown', { code: 'ArrowRight', bubbles: true }),
+    );
+
+    expect(onItemChange).toHaveBeenLastCalledWith('a');
+  });
+
+  it('forwards data-* attributes onto the wrapper', async () => {
+    const { container } = await render(
+      <ButtonGroup itemId="a" items={items} onItemChange={() => undefined} data-testid="view" />,
+    );
+
+    expect(container.firstElementChild?.getAttribute('data-testid')).toBe('view');
   });
 });
 

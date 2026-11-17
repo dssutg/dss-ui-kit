@@ -4,6 +4,7 @@
 import { IconButton } from '@/components/buttons/IconButton';
 import { useLocale } from '@/locale';
 import { cn } from '@/util/cn';
+import type { DataAttributes } from '@/util/dom';
 import type { CSSStyleWithCustomProperties } from '@/util/style';
 
 /**
@@ -19,9 +20,10 @@ import type { CSSStyleWithCustomProperties } from '@/util/style';
  * `shouldRender` exists because a panel can want the layout of a text field without the field — a
  * value with no way to edit it, which must not be announced as editable.
  *
- * `className` is an explicit prop rather than something the `[x: string]: unknown` index signature
- * swallows: the signature admits a `className` without applying one, so a caller passing it got no
- * error, no effect, and nothing to notice.
+ * `className` and `data-*` attributes are explicit about where they land: `className` styles the
+ * wrapper and the `data-*` attributes reach the `<input>`. They are declared props rather than
+ * something an untyped index signature swallows, because a prop a signature admits without applying
+ * it gives the caller no error, no effect, and nothing to notice.
  */
 export function TextInput({
   id,
@@ -59,6 +61,7 @@ export function TextInput({
   clearIconInnerStyle,
   className,
   inputStyle,
+  ...dataProps
 }: {
   readonly id?: string | undefined;
   readonly type?: React.HTMLInputTypeAttribute | undefined;
@@ -95,8 +98,7 @@ export function TextInput({
   readonly clearIconInnerStyle?: React.CSSProperties | undefined;
   readonly className?: string | undefined;
   readonly inputStyle?: React.CSSProperties | undefined;
-  [x: string]: unknown;
-}): false | React.JSX.Element {
+} & DataAttributes): false | React.JSX.Element {
   const { t } = useLocale();
 
   const fieldStyle: CSSStyleWithCustomProperties = {
@@ -137,6 +139,7 @@ export function TextInput({
           pattern={pattern}
           className="m-0 box-border w-full rounded-l-lg text-base outline-none placeholder:text-[var(--placeholder-color)] bg-bin"
           style={fieldStyle}
+          {...dataProps}
         />
         {hasShowPasswordButton && (
           <IconButton

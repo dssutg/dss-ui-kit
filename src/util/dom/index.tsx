@@ -7,6 +7,7 @@
  * components and non-component code; see each module's own docs for the contracts.
  */
 export { copyToClipboard } from './clipboard';
+export type { DataAttributes } from './data_attributes';
 export { DragHandler } from './drag';
 export { decompressJSON } from './encoding';
 export { hasUserFocusedInput, onBackdropClick } from './focus';

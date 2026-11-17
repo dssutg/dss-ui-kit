@@ -74,6 +74,24 @@ export type SortableTableRowDescriptor<T> = Readonly<{
 }>;
 
 /**
+ * What a row's click is reported with: the click, the row and its index in the drawn order.
+ */
+export type SortableTableRowClickEvent<T> = Readonly<{
+  event: MouseEvent;
+  row: SortableTableRowDescriptor<T>;
+  rowIndex: number;
+}>;
+
+/**
+ * What a row's drop is reported with: the drop, the row and its index in the drawn order.
+ */
+export type SortableTableRowDropEvent<T> = Readonly<{
+  event: DragEvent;
+  row: SortableTableRowDescriptor<T>;
+  rowIndex: number;
+}>;
+
+/**
  * What a cell renderer is given: the row, its index, the column, and the column's current width.
  *
  * `columnWidth` is there because a cell that has to fit inside it — a bar, a number, a progress
@@ -117,15 +135,14 @@ export type SortableTableDescriptor<T, C extends string> = Readonly<{
   rowHeight: number;
   cellRenderer: SortableTableCellRenderer<T, C>;
   columnComparators: SortableTableColumnComparatorTable<T, C>;
-  onRowClick?: ({
-    event,
-    row,
-    rowIndex,
-  }: {
-    event: MouseEvent;
-    row: SortableTableRowDescriptor<T>;
-    rowIndex: number;
-  }) => void;
+  onRowClick?: (event: SortableTableRowClickEvent<T>) => void;
+  /**
+   * Called when something is dropped onto a row.
+   *
+   * A row with a drop handler is a drop target: the table answers `dragover` over it, which is what
+   * the browser requires before a `drop` fires at all.
+   */
+  onRowDrop?: (event: SortableTableRowDropEvent<T>) => void;
   getRowStyle?: ({
     row,
     rowIndex,

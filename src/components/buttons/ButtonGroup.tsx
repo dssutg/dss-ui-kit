@@ -3,6 +3,7 @@
 
 import { Ripple } from '@/components/feedback/Ripple';
 import { cn } from '@/util/cn';
+import type { DataAttributes } from '@/util/dom';
 import { wrapIndex } from '@/util/math';
 
 /**
@@ -10,7 +11,7 @@ import { wrapIndex } from '@/util/math';
  *
  * Generic over the id type, so the id a click reports is the caller's own union and not a string.
  */
-export interface ButtonGroupProps<T extends string> {
+export interface ButtonGroupProps<T extends string> extends DataAttributes {
   readonly itemId: T;
   readonly items: readonly ButtonGroupItem<T>[];
   readonly onItemChange: ButtonGroupItemChangeHandler<T>;
@@ -23,10 +24,14 @@ export interface ButtonGroupProps<T extends string> {
 /**
  * One entry of a {@link ButtonGroup}: its id, which is what {@link ButtonGroupItemChangeHandler}
  * receives, and the title rendered on it.
+ *
+ * `disabled` takes the item out of the group's behaviour, not only out of its look: a disabled item
+ * cannot be clicked and the arrow keys step over it.
  */
 export interface ButtonGroupItem<T extends string> {
   readonly id: T;
   readonly title: string;
+  readonly disabled?: boolean | undefined;
 }
 
 /**
@@ -47,6 +52,33 @@ export type ButtonGroupItemChangeHandler<T extends string> = (itemId: T) => void
  * The arrow keys move the selection and wrap at both ends, from any segment, because a group of
  * buttons is one control as far as a keyboard is concerned and the segments are only its parts.
  */
+/**
+ * The nearest item in `direction` from `start` that is not disabled, wrapping at both ends.
+ *
+ * Used by the arrow keys so a disabled segment is stepped over rather than selected: a keyboard user
+ * should land on an item that can answer. When every other item is disabled the selection has
+ * nowhere else to go, and the one it is on comes back unchanged.
+ */
+function nearestEnabledItem<T extends string>(
+  items: readonly ButtonGroupItem<T>[],
+  start: number,
+  direction: 1 | -1,
+): ButtonGroupItem<T> | undefined {
+  let index = start;
+
+  for (let step = 0; step < items.length; step++) {
+    index = wrapIndex(index + direction, items.length);
+
+    if (items[index]?.disabled !== true) {
+      return items[index];
+    }
+  }
+
+  // `start` is an index inside the non-empty list checked by the caller, so the item is there.
+  // v8 ignore next
+  return items[start];
+}
+
 export function ButtonGroup<T extends string>({
   itemId,
   items,
@@ -55,6 +87,7 @@ export function ButtonGroup<T extends string>({
   style,
   buttonStyle,
   transparentBG = false,
+  ...dataProps
 }: ButtonGroupProps<T>): React.JSX.Element {
   // Handled on each segment rather than on the wrapper: the segments are already focusable, so a
   // focusable wrapper would only add a tab stop that does nothing on Enter or Space.
@@ -76,35 +109,43 @@ export function ButtonGroup<T extends string>({
     );
 
     if (event.code === 'ArrowLeft') {
-      // `wrapIndex` returns an index inside a non-empty list, so the read is always an item; the
-      // fallback is only for the compiler. The unreached arm stays out of the coverage gate.
+      // `nearestEnabledItem` walks a non-empty list, so the item is always found; the fallback is
+      // only for the compiler. The unreached arm stays out of the coverage gate.
       // v8 ignore next
-      onItemChange(items[wrapIndex(itemIndex - 1, items.length)]?.id ?? itemId);
+      onItemChange(nearestEnabledItem(items, itemIndex, -1)?.id ?? itemId);
     } else {
       // v8 ignore next
-      onItemChange(items[wrapIndex(itemIndex + 1, items.length)]?.id ?? itemId);
+      onItemChange(nearestEnabledItem(items, itemIndex, 1)?.id ?? itemId);
     }
   }
 
   return (
-    <div className={cn('flex', className)} style={style}>
-      {items.map((item) => (
-        <button
-          key={item.id}
-          type="button"
-          onClick={() => onItemChange(item.id)}
-          onKeyDown={onKeyDown}
-          className={cn(
-            'relative flex shrink-0 select-none items-center justify-center overflow-hidden border-2 px-4 py-2 outline-2 outline-white transition-colors duration-200 first:rounded-l-lg last:rounded-r-lg hover:brightness-150',
-            transparentBG ? 'bg-transparent' : 'bg-bpd',
-            itemId === item.id ? 'border-tli text-tli' : 'border-bsp text-tpl',
-          )}
-          style={buttonStyle}
-        >
-          <Ripple color="var(--color-ripple-button)" />
-          <div className="max-w-full overflow-x-hidden text-ellipsis">{item.title}</div>
-        </button>
-      ))}
+    <div className={cn('flex', className)} style={style} {...dataProps}>
+      {items.map((item) => {
+        const disabled = item.disabled ?? false;
+
+        return (
+          <button
+            key={item.id}
+            type="button"
+            disabled={disabled}
+            // A disabled segment reports nothing: the handler is dropped rather than left for the
+            // browser to suppress, because a synthetic click reaches the listener regardless.
+            onClick={disabled ? undefined : () => onItemChange(item.id)}
+            onKeyDown={onKeyDown}
+            className={cn(
+              'relative flex shrink-0 select-none items-center justify-center overflow-hidden border-2 px-4 py-2 outline-2 outline-white transition-colors duration-200 first:rounded-l-lg last:rounded-r-lg hover:brightness-150',
+              transparentBG ? 'bg-transparent' : 'bg-bpd',
+              itemId === item.id ? 'border-tli text-tli' : 'border-bsp text-tpl',
+              disabled && 'pointer-events-none opacity-50',
+            )}
+            style={buttonStyle}
+          >
+            <Ripple color="var(--color-ripple-button)" />
+            <div className="max-w-full overflow-x-hidden text-ellipsis">{item.title}</div>
+          </button>
+        );
+      })}
     </div>
   );
 }

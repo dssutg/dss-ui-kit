@@ -188,6 +188,8 @@ export { Select } from '@/components/inputs/Select';
 export { Slider } from '@/components/inputs/Slider';
 export type { SocketServerAddressInputProps } from '@/components/inputs/SocketServerAddressInput';
 export { SocketServerAddressInput } from '@/components/inputs/SocketServerAddressInput';
+export type { TextAreaProps, TextAreaResize } from '@/components/inputs/TextArea';
+export { TextArea } from '@/components/inputs/TextArea';
 export { TextInput } from '@/components/inputs/TextInput';
 export type { TimePartInputProps } from '@/components/inputs/TimePartInput';
 export { TimePartInput } from '@/components/inputs/TimePartInput';
@@ -283,7 +285,9 @@ export type {
   SortableTableComparatorFunction,
   SortableTableDescriptor,
   SortableTableHeaderColumn,
+  SortableTableRowClickEvent,
   SortableTableRowDescriptor,
+  SortableTableRowDropEvent,
 } from '@/components/tables/SortableTable';
 export { makeSortableTableCellRenderer, SortableTable } from '@/components/tables/SortableTable';
 export type { SortableTableRow } from '@/components/tables/SortableTableRow';
@@ -329,7 +333,7 @@ export {
 
 export type { CalendarLocale, DateFormatLocale, DateLocale, DateNames } from '@/util/date';
 export { formatRelativeDate, getDateComponents } from '@/util/date';
-export type { EventCallback, SanitizeSVGOptions, WCAttrChange } from '@/util/dom';
+export type { DataAttributes, EventCallback, SanitizeSVGOptions, WCAttrChange } from '@/util/dom';
 export {
   areDOMRectsEqual,
   copyToClipboard,

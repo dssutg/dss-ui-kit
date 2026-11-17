@@ -374,7 +374,6 @@ function InputComponent<T>({
         <TextInput
           inputPadding="0 0.5rem"
           width="100%"
-          clearIconInnerClassName="size-2"
           value={valueAsString(value)}
           onChange={(e) => {
             if (property.trim) {
@@ -393,7 +392,6 @@ function InputComponent<T>({
         <TextInput
           inputPadding="0 0.5rem"
           width="100%"
-          clearIconInnerClassName="size-2"
           value={valueAsString(value)}
           onChange={(e) => onChange(filterIpCharacters(e.currentTarget.value))}
           onClearClick={() => onChange('')}

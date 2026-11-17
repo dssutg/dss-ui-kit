@@ -15,44 +15,11 @@ export type ControlledFilterableTableProps<T, C extends string> = ControlledTabl
  * The published name of {@link ControlledTable}, kept so an existing import keeps resolving.
  *
  * Deprecated in favour of `ControlledTable`, which says in its name that the caller holds the search
- * text. This is a wrapper rather than an alias so the two can be told apart in a stack trace.
+ * text. This is a wrapper rather than an alias so the two can be told apart in a stack trace; every
+ * prop, including `data-*`, travels through untouched.
  */
-export function ControlledFilterableTable<T, C extends string>({
-  items,
-  countLabelPrefix,
-  minCountLabelWidth,
-  headerRowHeight,
-  rowHeight,
-  properties,
-  getExportedTableFilename,
-  sortColumnId,
-  reversedSort,
-  className,
-  style,
-  historyId,
-  getItemId,
-  onScroll,
-  searchText,
-  setSearchText,
-}: ControlledTableProps<T, C>): React.JSX.Element {
-  return (
-    <ControlledTable
-      items={items}
-      countLabelPrefix={countLabelPrefix}
-      minCountLabelWidth={minCountLabelWidth}
-      headerRowHeight={headerRowHeight}
-      rowHeight={rowHeight}
-      properties={properties}
-      getExportedTableFilename={getExportedTableFilename}
-      sortColumnId={sortColumnId}
-      reversedSort={reversedSort}
-      className={className}
-      style={style}
-      historyId={historyId}
-      getItemId={getItemId}
-      onScroll={onScroll}
-      searchText={searchText}
-      setSearchText={setSearchText}
-    />
-  );
+export function ControlledFilterableTable<T, C extends string>(
+  props: ControlledTableProps<T, C>,
+): React.JSX.Element {
+  return <ControlledTable {...props} />;
 }

@@ -85,6 +85,10 @@ export function SortableTableRow<T, C extends string>({
         ...descriptor?.getRowStyle?.({ row, rowIndex }),
       }}
       onClick={(e) => descriptor?.onRowClick?.({ event: e, row, rowIndex })}
+      // A drop target has to answer dragover for the browser to fire drop at all, so a row with a
+      // drop handler is one; a row without one stays inert to a drag passing over it.
+      onDragOver={descriptor?.onRowDrop === undefined ? undefined : (e) => e.preventDefault()}
+      onDrop={(e) => descriptor?.onRowDrop?.({ event: e, row, rowIndex })}
     >
       {cells}
     </tr>

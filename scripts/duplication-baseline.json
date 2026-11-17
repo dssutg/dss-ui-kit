@@ -68,30 +68,6 @@
     "signature": "1275da5fcb9eba99ddf0f5a62f3ed97885a8247fbec6516551df0c8aeb8148aa"
   },
   {
-    "files": [
-      "src/components/tables/ControlledFilterableTable.tsx",
-      "src/components/tables/ControlledTable.tsx"
-    ],
-    "tokens": 57,
-    "signature": "fe1311877506debf35ab987f8eda98430caf7d655b61602063b8693c1f0e7c24"
-  },
-  {
-    "files": [
-      "src/components/tables/ControlledFilterableTable.tsx",
-      "src/components/tables/FilterableTable.tsx"
-    ],
-    "tokens": 70,
-    "signature": "38bbfe9787abc19c55b291bf3989c83049558a162f2804932b34af1299140de3"
-  },
-  {
-    "files": [
-      "src/components/tables/ControlledFilterableTable.tsx",
-      "src/components/tables/FilterableTable.tsx"
-    ],
-    "tokens": 89,
-    "signature": "b3668cb1b5b4bc6316c9c0951ca38c873baffe59b573f403e8c323adeae00954"
-  },
-  {
     "files": ["src/util/gl/renderer.tsx"],
     "tokens": 54,
     "signature": "c77da2774e7985e5289ce932a73bda7b74ea1ad89d015993be962577588d6daa"

@@ -333,6 +333,59 @@ describe('FilterableTable', () => {
 
     expect(onScroll).toHaveBeenCalled();
   });
+
+  it('answers dragover on a row so the browser fires drop, and forwards the drop on it', async () => {
+    const onRowDrop = vi.fn();
+    const { findByText } = await render(
+      <FilterableTable
+        items={rows}
+        countLabelPrefix="Found"
+        minCountLabelWidth="3rem"
+        headerRowHeight={30}
+        rowHeight={30}
+        properties={[
+          {
+            id: 'name',
+            title: 'Name',
+            width: 200,
+            minWidth: 40,
+            cell: ({ data }: { readonly data: Row }) => <span>{data.name}</span>,
+            comparator: (
+              { data: a }: { readonly data: Row },
+              { data: b }: { readonly data: Row },
+            ) => a.name.localeCompare(b.name),
+            search: { type: 'string', extractValue: (item: Row) => item.name },
+          },
+        ]}
+        getExportedTableFilename={() => 'items.csv'}
+        onRowDrop={onRowDrop}
+      />,
+    );
+
+    const row = findByText('alpha').closest('tr');
+
+    if (row === null) {
+      throw new Error('no row for alpha.');
+    }
+
+    const dragOver = new Event('dragover', { bubbles: true, cancelable: true });
+
+    act(() => {
+      row.dispatchEvent(dragOver);
+    });
+
+    // The dragover answer is what lets the browser fire drop at the row at all.
+    expect(dragOver.defaultPrevented).toBe(true);
+
+    const drop = new Event('drop', { bubbles: true, cancelable: true });
+
+    act(() => {
+      row.dispatchEvent(drop);
+    });
+
+    expect(onRowDrop).toHaveBeenCalledTimes(1);
+    expect(onRowDrop.mock.calls[0]?.[0]).toMatchObject({ rowIndex: 0, row: { data: rows[0] } });
+  });
 });
 
 describe('ControlledFilterableTable', () => {
@@ -365,6 +418,42 @@ describe('ControlledFilterableTable', () => {
     );
 
     expect(findByText('alpha')).toBeDefined();
+  });
+
+  it('forwards a row click with the row behind it', async () => {
+    const onRowClick = vi.fn();
+    const { findByText } = await render(
+      <ControlledFilterableTable
+        items={rows}
+        countLabelPrefix="Found"
+        minCountLabelWidth="3rem"
+        headerRowHeight={30}
+        rowHeight={30}
+        properties={[
+          {
+            id: 'name',
+            title: 'Name',
+            width: 200,
+            minWidth: 40,
+            cell: ({ data }: { readonly data: Row }) => <span>{data.name}</span>,
+            comparator: (
+              { data: a }: { readonly data: Row },
+              { data: b }: { readonly data: Row },
+            ) => a.name.localeCompare(b.name),
+            search: { type: 'string', extractValue: (item: Row) => item.name },
+          },
+        ]}
+        getExportedTableFilename={() => 'items.csv'}
+        searchText=""
+        setSearchText={vi.fn()}
+        onRowClick={onRowClick}
+      />,
+    );
+
+    await click(findByText('alpha'));
+
+    expect(onRowClick).toHaveBeenCalledTimes(1);
+    expect(onRowClick.mock.calls[0]?.[0]).toMatchObject({ rowIndex: 0, row: { data: rows[0] } });
   });
 });
 

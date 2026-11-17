@@ -3,8 +3,14 @@
 
 import type { Context, TargetedEvent } from 'react';
 import { createContext, useContext, useState } from 'react';
+import type { DataAttributes } from '@/util/dom';
 import { ControlledTable } from './ControlledTable';
-import type { SortableTableCellRenderer, SortableTableComparatorFunction } from './SortableTable';
+import type {
+  SortableTableCellRenderer,
+  SortableTableComparatorFunction,
+  SortableTableRowClickEvent,
+  SortableTableRowDropEvent,
+} from './SortableTable';
 import type { GetExportedTableFilenameCallback } from './table_export';
 import type { AnonymousSearchPropertySchema } from './use_filtered_items';
 
@@ -59,7 +65,7 @@ export type FilterableTablePropertyList<T, C extends string> = FilterableTablePr
  * are the caller's because the row geometry has to be exact. `getItemId` is needed only for
  * export and selection; when it is absent the table keys rows by index.
  */
-export interface FilterableTableProps<T, C extends string> {
+export interface FilterableTableProps<T, C extends string> extends DataAttributes {
   readonly items: T[];
   readonly countLabelPrefix: string;
   readonly minCountLabelWidth: string;
@@ -73,6 +79,17 @@ export interface FilterableTableProps<T, C extends string> {
   readonly style?: React.CSSProperties | undefined;
   readonly historyId?: string | undefined;
   readonly getItemId?: ((item: T, index: number) => string | number) | undefined;
+  /**
+   * Called when a row is clicked, with the row and its index in the drawn order.
+   */
+  readonly onRowClick?: ((event: SortableTableRowClickEvent<T>) => void) | undefined;
+  /**
+   * Called when something is dropped onto a row, with the row it landed on.
+   *
+   * A row with a drop handler answers `dragover`, which is what the browser requires before a `drop`
+   * fires at all.
+   */
+  readonly onRowDrop?: ((event: SortableTableRowDropEvent<T>) => void) | undefined;
   /** Called when the table's own scrolling element is scrolled. */
   readonly onScroll?: ((event: TargetedEvent<HTMLDivElement, Event>) => void) | undefined;
 }
@@ -83,60 +100,17 @@ export interface FilterableTableProps<T, C extends string> {
  * The searchable counterpart of {@link ControlledTable}: use this one when nothing outside the table
  * needs the search string, and the controlled one when something does.
  */
-export function FilterableTable<T, C extends string>({
-  items,
-  countLabelPrefix,
-  minCountLabelWidth,
-  headerRowHeight,
-  rowHeight,
-  properties,
-  getExportedTableFilename,
-  sortColumnId,
-  reversedSort,
-  className,
-  style,
-  historyId,
-  getItemId,
-  onScroll,
-}: FilterableTableProps<T, C>): React.JSX.Element {
+export function FilterableTable<T, C extends string>(
+  props: FilterableTableProps<T, C>,
+): React.JSX.Element {
   return (
     <FilterableTableContextProvider>
-      <Table
-        items={items}
-        countLabelPrefix={countLabelPrefix}
-        minCountLabelWidth={minCountLabelWidth}
-        headerRowHeight={headerRowHeight}
-        rowHeight={rowHeight}
-        properties={properties}
-        getExportedTableFilename={getExportedTableFilename}
-        sortColumnId={sortColumnId}
-        reversedSort={reversedSort}
-        className={className}
-        style={style}
-        historyId={historyId}
-        getItemId={getItemId}
-        onScroll={onScroll}
-      />
+      <Table {...props} />
     </FilterableTableContextProvider>
   );
 }
 
-function Table<T, C extends string>({
-  items,
-  countLabelPrefix,
-  minCountLabelWidth,
-  headerRowHeight,
-  rowHeight,
-  properties,
-  getExportedTableFilename,
-  sortColumnId,
-  reversedSort,
-  className,
-  style,
-  historyId,
-  getItemId,
-  onScroll,
-}: FilterableTableProps<T, C>) {
+function Table<T, C extends string>(props: FilterableTableProps<T, C>) {
   const context = useContext(FilterableTableContext);
 
   // The provider is rendered by FilterableTable itself, so the context cannot be null while Table is
@@ -148,26 +122,7 @@ function Table<T, C extends string>({
 
   const { searchText, setSearchText } = context;
 
-  return (
-    <ControlledTable
-      items={items}
-      countLabelPrefix={countLabelPrefix}
-      minCountLabelWidth={minCountLabelWidth}
-      headerRowHeight={headerRowHeight}
-      rowHeight={rowHeight}
-      properties={properties}
-      getExportedTableFilename={getExportedTableFilename}
-      sortColumnId={sortColumnId}
-      reversedSort={reversedSort}
-      className={className}
-      style={style}
-      historyId={historyId}
-      getItemId={getItemId}
-      onScroll={onScroll}
-      searchText={searchText}
-      setSearchText={setSearchText}
-    />
-  );
+  return <ControlledTable {...props} searchText={searchText} setSearchText={setSearchText} />;
 }
 
 function FilterableTableContextProvider({ children }: { readonly children: React.ReactNode }) {

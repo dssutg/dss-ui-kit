@@ -524,6 +524,105 @@ describe('ControlledTable', () => {
     expect(findAll('th')).toHaveLength(1);
     expect(findByText('alpha')).toBeDefined();
   });
+
+  it('reports a row click with the row and its drawn index, and forwards data attributes to its root', async () => {
+    const onRowClick = vi.fn();
+    const { container, findByText } = await render(
+      <ControlledTable
+        items={manyRows(2, 'alpha')}
+        countLabelPrefix="Found"
+        minCountLabelWidth="3rem"
+        headerRowHeight={30}
+        rowHeight={30}
+        properties={[
+          {
+            id: 'name',
+            variant: undefined,
+            title: 'Name',
+            width: 200,
+            minWidth: 40,
+            cell: ({ data }) => <span>{data.name}</span>,
+            comparator: ({ data: a }, { data: b }) => a.name.localeCompare(b.name),
+            search: { type: 'string', extractValue: (item) => item.name },
+          },
+        ]}
+        getExportedTableFilename={() => 'items.csv'}
+        getItemId={(item) => item.id}
+        searchText=""
+        setSearchText={vi.fn()}
+        onRowClick={onRowClick}
+        data-test-id="items-table"
+      />,
+    );
+
+    // The data attributes the caller hands the table reach its root element.
+    expect(container.firstElementChild?.getAttribute('data-test-id')).toBe('items-table');
+
+    await click(findByText('alpha'));
+
+    expect(onRowClick).toHaveBeenCalledTimes(1);
+    expect(onRowClick.mock.calls[0]?.[0]).toMatchObject({
+      rowIndex: 0,
+      row: { id: '0', data: { name: 'alpha', note: 'note-0' } },
+    });
+  });
+
+  it('answers dragover on a row so the browser fires drop, and reports the drop on it', async () => {
+    const onRowDrop = vi.fn();
+    const { findByText } = await render(
+      <ControlledTable
+        items={manyRows(2, 'alpha')}
+        countLabelPrefix="Found"
+        minCountLabelWidth="3rem"
+        headerRowHeight={30}
+        rowHeight={30}
+        properties={[
+          {
+            id: 'name',
+            variant: undefined,
+            title: 'Name',
+            width: 200,
+            minWidth: 40,
+            cell: ({ data }) => <span>{data.name}</span>,
+            comparator: ({ data: a }, { data: b }) => a.name.localeCompare(b.name),
+            search: { type: 'string', extractValue: (item) => item.name },
+          },
+        ]}
+        getExportedTableFilename={() => 'items.csv'}
+        getItemId={(item) => item.id}
+        searchText=""
+        setSearchText={vi.fn()}
+        onRowDrop={onRowDrop}
+      />,
+    );
+
+    const row = findByText('alpha').closest('tr');
+
+    if (row === null) {
+      throw new Error('no row for alpha.');
+    }
+
+    const dragOver = new Event('dragover', { bubbles: true, cancelable: true });
+
+    act(() => {
+      row.dispatchEvent(dragOver);
+    });
+
+    // The dragover answer is what lets the browser fire drop at the row at all.
+    expect(dragOver.defaultPrevented).toBe(true);
+
+    const drop = new Event('drop', { bubbles: true, cancelable: true });
+
+    act(() => {
+      row.dispatchEvent(drop);
+    });
+
+    expect(onRowDrop).toHaveBeenCalledTimes(1);
+    expect(onRowDrop.mock.calls[0]?.[0]).toMatchObject({
+      rowIndex: 0,
+      row: { id: '0', data: { name: 'alpha' } },
+    });
+  });
 });
 
 describe('FilterableTableStatsModal', () => {
