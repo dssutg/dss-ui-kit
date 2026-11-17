@@ -57,7 +57,11 @@ const buttonIconColors: Readonly<Record<ButtonType, string>> = {
  *
  * It takes exactly the props below and forwards none of the rest: there is no `...rest` spread, so an
  * attribute the component does not name is not silently dropped on the element either. A caller that
- * needs `disabled` or an `aria-*` attribute does not reach for this button.
+ * needs an `aria-*` attribute the component does not name does not reach for this button.
+ *
+ * `disabled` is the browser's own, on the `<button>` itself: a disabled button is not clickable and
+ * not focusable, which is what makes it different from the `inactive` type — a visual variant that
+ * stays a real button.
  *
  * `className` and `style` both reach the `<button>` itself, which is the one thing this component does
  * not hand over: it will let a caller restyle the button its `type` chose, because a component that
@@ -72,6 +76,7 @@ export function Button({
   className,
   style,
   buttonRef,
+  disabled,
   onClick,
   children,
 }: {
@@ -82,6 +87,7 @@ export function Button({
   readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
   buttonRef?: React.Ref<HTMLButtonElement> | undefined;
+  readonly disabled?: boolean | undefined;
   readonly onClick?: React.MouseEventHandler<HTMLButtonElement> | undefined;
   readonly children?: React.ReactNode | undefined;
 }): React.JSX.Element {
@@ -89,9 +95,10 @@ export function Button({
     <button
       ref={buttonRef ?? null}
       type={htmlButtonType}
+      disabled={disabled}
       className={cn(
         'relative flex shrink-0 select-none items-center justify-center overflow-hidden rounded-lg hover:brightness-150',
-        type === 'inactive' && 'pointer-events-none',
+        (type === 'inactive' || disabled) && 'pointer-events-none',
         buttonTypeClasses[type],
         className,
       )}

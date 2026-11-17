@@ -32,6 +32,18 @@ describe('Button', () => {
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 
+  it('disables the real button when told to', async () => {
+    const onClick = vi.fn();
+    const { find } = await render(<Button title="Save" disabled={true} onClick={onClick} />);
+
+    const button = find<HTMLButtonElement>('button');
+
+    // The attribute goes on the element rather than being simulated with classes, so the browser's
+    // own "a disabled button is not clickable and not focusable" behaviour applies.
+    expect(button.disabled).toBe(true);
+    expect(button.className).toContain('pointer-events-none');
+  });
+
   it('merges the caller classes over its own, so a caller can restyle a button it was handed', async () => {
     // The button picks its colours from `type`, and a class the caller passes is the caller's decision:
     // it wins where the two conflict, and the layout classes survive where they do not.
