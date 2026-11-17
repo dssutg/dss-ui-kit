@@ -337,6 +337,36 @@ describe('Checkbox', () => {
 
     expect(onChange).toHaveBeenCalledWith(true);
   });
+
+  it('disables the real input when told to', async () => {
+    const { find } = await render(
+      <Checkbox checked={false} onChange={() => undefined} disabled={true} />,
+    );
+
+    // The attribute goes on the input itself, so the browser's own "a disabled control receives no
+    // events" behaviour applies; jsdom fires the change anyway, so what is pinned here is the
+    // attribute the component owns, not the emulator's event suppression.
+    expect(find<HTMLInputElement>('input').disabled).toBe(true);
+  });
+
+  it('shows the disabled state on the control rather than only carrying the attribute', async () => {
+    const { find } = await render(
+      <Checkbox checked={false} onChange={() => undefined} disabled={true} />,
+    );
+
+    // The visible control is the label and the box it holds: the input itself is `sr-only`, so the
+    // taken-away state has to be visible there for an operator to read it.
+    expect(find('label').className).toContain('cursor-default');
+    expect(find('label').className).toContain('opacity-50');
+  });
+
+  it('names the input for the accessibility tree when given an aria label', async () => {
+    const { find } = await render(
+      <Checkbox checked={false} onChange={() => undefined} ariaLabel="Verbose logging" />,
+    );
+
+    expect(find<HTMLInputElement>('input').getAttribute('aria-label')).toBe('Verbose logging');
+  });
 });
 
 /**

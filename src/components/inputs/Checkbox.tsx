@@ -10,7 +10,8 @@ import { cn } from '@/util/cn';
  *
  * The label is wired to the input with a generated id rather than wrapped around it, so clicking the
  * text toggles the box while the DOM stays flat — a wrapping label cannot hold a control the caller
- * puts inside it. `label` is optional: an unlabelled checkbox is a caller decision, not a default.
+ * puts inside it. `label` is optional: an unlabelled checkbox is a caller decision, not a default,
+ * and one that takes the label anyway names itself with `ariaLabel`, which reaches the input.
  */
 export function Checkbox({
   checked,
@@ -19,6 +20,8 @@ export function Checkbox({
   className,
   style,
   labelStyle,
+  disabled,
+  ariaLabel,
 }: {
   readonly checked: boolean;
   readonly onChange: (checked: boolean) => void;
@@ -26,6 +29,8 @@ export function Checkbox({
   readonly className?: string | undefined;
   readonly style?: React.CSSProperties | undefined;
   readonly labelStyle?: React.CSSProperties | undefined;
+  readonly disabled?: boolean | undefined;
+  readonly ariaLabel?: string | undefined;
 }): React.JSX.Element {
   const id = useId();
 
@@ -37,8 +42,18 @@ export function Checkbox({
         className="sr-only"
         checked={checked}
         onChange={(e) => onChange(e.currentTarget.checked)}
+        disabled={disabled}
+        aria-label={ariaLabel}
       />
-      <label htmlFor={id} className="flex items-center cursor-pointer w-full">
+      {/* The input is `sr-only`, so the visible control is the label and the box it holds: the
+          taken-away state is shown there, or a disabled checkbox would look live to an operator. */}
+      <label
+        htmlFor={id}
+        className={cn(
+          'flex items-center w-full',
+          disabled ? 'cursor-default opacity-50' : 'cursor-pointer',
+        )}
+      >
         <div
           className={cn(
             'transition-background flex size-5 cursor-pointer items-center justify-center rounded border-2 text-base duration-200 shrink-0',
