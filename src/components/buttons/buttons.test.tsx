@@ -32,7 +32,7 @@ describe('Button', () => {
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 
-  it('disables the real button when told to', async () => {
+  it('disables the real button, dims it and drops the handler, like IconButton does', async () => {
     const onClick = vi.fn();
     const { find } = await render(<Button title="Save" disabled={true} onClick={onClick} />);
 
@@ -42,6 +42,11 @@ describe('Button', () => {
     // own "a disabled button is not clickable and not focusable" behaviour applies.
     expect(button.disabled).toBe(true);
     expect(button.className).toContain('pointer-events-none');
+    expect(button.className).toContain('opacity-50');
+
+    await click(button);
+
+    expect(onClick).not.toHaveBeenCalled();
   });
 
   it('merges the caller classes over its own, so a caller can restyle a button it was handed', async () => {

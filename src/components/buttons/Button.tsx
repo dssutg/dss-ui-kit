@@ -62,7 +62,8 @@ const buttonIconColors: Readonly<Record<ButtonType, string>> = {
  *
  * `disabled` is the browser's own, on the `<button>` itself: a disabled button is not clickable and
  * not focusable, which is what makes it different from the `inactive` type — a visual variant that
- * stays a real button.
+ * stays a real button. Like {@link IconButton}, a disabled button is dimmed and its handler is not
+ * attached, so the click never reaches a caller that asked for one.
  *
  * `className` and `style` both reach the `<button>` itself, which is the one thing this component does
  * not hand over: it will let a caller restyle the button its `type` chose, because a component that
@@ -98,14 +99,15 @@ export function Button({
       ref={buttonRef ?? null}
       type={htmlButtonType}
       disabled={disabled}
+      onClick={disabled ? undefined : onClick}
       className={cn(
         'relative flex shrink-0 select-none items-center justify-center overflow-hidden rounded-lg hover:brightness-150',
         (type === 'inactive' || disabled) && 'pointer-events-none',
+        disabled && 'opacity-50',
         buttonTypeClasses[type],
         className,
       )}
       style={style}
-      onClick={onClick}
       {...dataProps}
     >
       <Ripple color="var(--color-ripple-button)" />
