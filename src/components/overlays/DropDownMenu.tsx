@@ -101,9 +101,9 @@ export function DropDownMenu({
 
       if (path.length === 0) {
         if (up) {
-          setPath(menu[menu.length - 1]?.path ?? []);
+          setPath(menu[nextSelectableIndex(menu, menu.length - 1, -1)]?.path ?? []);
         } else {
-          setPath(menu[0]?.path ?? []);
+          setPath(menu[nextSelectableIndex(menu, 0, 1)]?.path ?? []);
         }
         return;
       }
@@ -124,7 +124,8 @@ export function DropDownMenu({
         delta = -1;
       }
 
-      const newPath = panel[clamp(itemIndex + delta, 0, panel.length)]?.path;
+      const newPath =
+        panel[nextSelectableIndex(panel, clamp(itemIndex + delta, 0, panel.length), delta)]?.path;
 
       if (newPath === undefined) {
         return;
@@ -349,13 +350,38 @@ export function DropDownMenu({
  * `path` is the item's place in the menu, given as the titles from the root down, and is how a nested
  * item is identified: the menu opens one panel per path, so the path is not decoration and must be
  * unique within the menu. `onSelect` is the whole action; the menu closes itself after calling it.
+ *
+ * A separator item — `separator: true` — renders a divider between two groups instead of an action:
+ * it ignores `title`, `icon`, `onSelect` and `submenu`, is never highlighted or chosen, and the arrow
+ * keys step over it. Its `path` is still its identity and still must be unique.
  */
 export interface DropDownMenuItem {
   path: string[];
   icon?: IconName | undefined;
-  title: string;
+  title?: string | undefined;
   onSelect?: () => void;
   submenu?: DropDownMenuItem[] | undefined;
+  separator?: boolean | undefined;
+}
+
+/**
+ * The index of the nearest item that is not a separator, starting at `from` and walking `delta`.
+ *
+ * A separator is a divider between groups and not a step the keyboard can hold: the walk may end
+ * past the edge, which the caller reads through the missing item as "no move".
+ */
+function nextSelectableIndex(
+  panel: readonly DropDownMenuItem[],
+  from: number,
+  delta: number,
+): number {
+  let index = from;
+
+  while (panel[index]?.separator === true) {
+    index += delta;
+  }
+
+  return index;
 }
 
 function getPanelMenuItemsByPath(path: readonly string[], rootPanel: readonly DropDownMenuItem[]) {
@@ -499,20 +525,30 @@ function DropDownMenuPanel({
         ...dropDownListStyle,
       }}
     >
-      {submenu.map((item) => (
-        <DropDownMenuItemElement
-          key={JSON.stringify([item.path, posX, posY])}
-          item={item}
-          onClose={onClose}
-          path={path}
-          setPath={setPath}
-          rootTriggerBox={rootTriggerBox}
-          dropDownListStyle={dropDownListStyle}
-          menuItemClassName={menuItemClassName}
-          menuItemIconStyle={menuItemIconStyle}
-          menuItemIconMoreStyle={menuItemIconMoreStyle}
-        />
-      ))}
+      {submenu.map((item) => {
+        const key = JSON.stringify([item.path, posX, posY]);
+
+        return item.separator === true ? (
+          // `<hr>` is the separator element: it carries the role this menu needs without naming it.
+          <hr
+            key={key}
+            className={cn('mx-2 my-1 h-px shrink-0 border-none bg-bsp', menuItemClassName)}
+          />
+        ) : (
+          <DropDownMenuItemElement
+            key={key}
+            item={item}
+            onClose={onClose}
+            path={path}
+            setPath={setPath}
+            rootTriggerBox={rootTriggerBox}
+            dropDownListStyle={dropDownListStyle}
+            menuItemClassName={menuItemClassName}
+            menuItemIconStyle={menuItemIconStyle}
+            menuItemIconMoreStyle={menuItemIconMoreStyle}
+          />
+        );
+      })}
     </div>
   );
 }

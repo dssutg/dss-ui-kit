@@ -661,6 +661,61 @@ describe('DropDownMenu', () => {
     expect(document.body.textContent).not.toContain('Inner');
   });
 
+  it('renders a separator item as a divider between the groups it names', async () => {
+    const menu: DropDownMenuItem[] = [
+      { path: ['first'], title: 'First' },
+      { path: ['divider'], separator: true },
+      { path: ['second'], title: 'Second' },
+    ];
+    await render(<DropDownMenu menu={menu} />);
+
+    await click(firstButton());
+
+    const panel = document.body.querySelector<HTMLDivElement>('div.bg-bpd');
+
+    if (panel === null) {
+      throw new Error('the menu panel was not rendered.');
+    }
+
+    const children = [...panel.children];
+
+    expect(children).toHaveLength(3);
+
+    const dividerIndex = children.findIndex((child) => child.tagName === 'HR');
+
+    expect(dividerIndex).toBe(1);
+    expect(children[0]?.textContent).toContain('First');
+    expect(children[2]?.textContent).toContain('Second');
+  });
+
+  it('steps over a separator with the arrow keys', async () => {
+    const menu: DropDownMenuItem[] = [
+      { path: ['top-divider'], separator: true },
+      { path: ['first'], title: 'First' },
+      { path: ['mid-divider'], separator: true },
+      { path: ['second'], title: 'Second' },
+    ];
+    await render(<DropDownMenu menu={menu} />);
+
+    await click(firstButton());
+
+    // Down from nothing lands on the first item, not on the divider in front of it.
+    pressWindowKey({ key: 'ArrowDown', code: 'ArrowDown' });
+    expect(highlightedTitles()).toEqual(['First']);
+
+    // Down from First steps over the divider between the groups.
+    pressWindowKey({ key: 'ArrowDown', code: 'ArrowDown' });
+    expect(highlightedTitles()).toEqual(['Second']);
+
+    // Up from Second steps back over it.
+    pressWindowKey({ key: 'ArrowUp', code: 'ArrowUp' });
+    expect(highlightedTitles()).toEqual(['First']);
+
+    // Up from the first item stays put: past the divider at the top there is nothing to reach.
+    pressWindowKey({ key: 'ArrowUp', code: 'ArrowUp' });
+    expect(highlightedTitles()).toEqual(['First']);
+  });
+
   it('renders a button trigger with the caller decorations and reports its pointer events', async () => {
     const onTriggerClick = vi.fn();
     const onTriggerEnter = vi.fn();
