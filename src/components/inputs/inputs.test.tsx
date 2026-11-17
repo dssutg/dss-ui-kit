@@ -7,6 +7,8 @@
  * `aria-*` attributes a screen reader reads a switch by.
  */
 // @vitest-environment jsdom
+
+import { createRef } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BitField } from '@/components/inputs/BitField';
 import { ByteFractionInput } from '@/components/inputs/ByteFractionInput';
@@ -232,6 +234,27 @@ describe('Select', () => {
     );
 
     expect(find<HTMLSelectElement>('select').disabled).toBe(true);
+  });
+
+  it('names itself for the accessibility tree when given an aria label', async () => {
+    const { find } = await render(
+      <Select value="a" onChange={() => undefined} ariaLabel="Shelf">
+        <option value="a">First</option>
+      </Select>,
+    );
+
+    expect(find<HTMLSelectElement>('select').getAttribute('aria-label')).toBe('Shelf');
+  });
+
+  it('forwards a ref to the select element', async () => {
+    const selectRef = createRef<HTMLSelectElement>();
+    const { find } = await render(
+      <Select value="a" onChange={() => undefined} selectRef={selectRef}>
+        <option value="a">First</option>
+      </Select>,
+    );
+
+    expect(selectRef.current).toBe(find<HTMLSelectElement>('select'));
   });
 });
 

@@ -12,6 +12,9 @@ import { getCSSVariableValue } from '@/util/color';
  * correct in every theme without a second copy of the icon. It is a native select on purpose: the
  * dropdown list is the browser's, which is the one part of a select that cannot be made to look right
  * and is the part an operator relies on.
+ *
+ * `ariaLabel` is how a select the caller does not label with a `<label htmlFor>` gets its accessible
+ * name; the name is the caller's decision because the library does not know what the select chooses.
  */
 export function Select({
   value,
@@ -20,6 +23,8 @@ export function Select({
   style,
   disabled,
   id,
+  ariaLabel,
+  selectRef,
   children,
 }: {
   readonly value: string;
@@ -28,6 +33,8 @@ export function Select({
   readonly style?: React.CSSProperties | undefined;
   readonly disabled?: boolean | undefined;
   readonly id?: string | undefined;
+  readonly ariaLabel?: string | undefined;
+  selectRef?: React.Ref<HTMLSelectElement> | undefined;
   readonly children: React.ReactNode;
 }): React.JSX.Element {
   useTheme();
@@ -36,6 +43,7 @@ export function Select({
 
   return (
     <select
+      ref={selectRef ?? null}
       id={id}
       tabIndex={0}
       className={cn(
@@ -50,6 +58,7 @@ export function Select({
       value={value}
       onChange={onChange}
       disabled={disabled}
+      aria-label={ariaLabel}
     >
       {children}
     </select>
