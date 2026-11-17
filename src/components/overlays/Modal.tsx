@@ -11,9 +11,12 @@ import { useGranularEffect } from '@/util/hooks/use_granular_effect';
  * A centred dialog over a backdrop, with a title bar and a close button.
  *
  * `open` and `onOpenChange` are the caller's, so a modal can be opened by a route, a key press or
- * another modal. Focus moves to the panel when it opens and returns to the control that opened it
- * when it closes; pass nothing that would rather not be focused, and the panel itself takes focus,
- * because a dialog whose first field takes focus is a decision only the caller can make.
+ * another modal. Escape closes it, as do the close button and the backdrop.
+ *
+ * It manages no focus and carries no dialog semantics of its own: no `role="dialog"`, no
+ * `aria-modal`, nothing moves to the panel when it opens, and nothing returns to the control that
+ * opened it when it closes. A caller whose dialog needs any of that manages its own, because where
+ * focus belongs — the first field, the accept button, the opener — is the caller's decision to make.
  */
 export function Modal({
   open,
