@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.7.0](https://github.com/dssutg/dss-ui-kit/compare/v0.6.0...v0.7.0) (2026-11-17)
+
+
+### Features
+
+* **ui:** add TextArea, disabled/draggable and data-* props, and row click/drop forwarding [559e665](https://github.com/dssutg/dss-ui-kit/commit/559e665cb53ee52f8bd2767ea1aceb568714e51b)
+
+
+### Bug Fixes
+
+* **ui:** dim Button and drop its handler when disabled [f43d3a2](https://github.com/dssutg/dss-ui-kit/commit/f43d3a2a339d347acaca55786eec5973e7574577)
+
 ## [0.6.0](https://github.com/dssutg/dss-ui-kit/compare/v0.5.1...v0.6.0) (2026-11-17)
 
 
@@ -288,4 +300,5 @@
 - **config:** ignore the RepoMapper tag cache directory ([25e8244](https://github.com/dssutg/dss-ui-kit/commit/25e824493196b31f1fde7491807d46d6305b9e20))
 
 **Contributors:** Daniil Stepanov
+
 
