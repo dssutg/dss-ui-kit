@@ -64,7 +64,10 @@ export function Breadcrumbs({
           const isLast = index === items.length - 1;
 
           return (
-            <li key={item.to} className={cn('whitespace-nowrap', itemClassName)}>
+            // The trail is read in order and never reordered, so a step's place is its identity.
+            // The destination cannot be: a trail may begin and end on `/`, which would name two
+            // children with one key.
+            <li key={index} className={cn('whitespace-nowrap', itemClassName)}>
               {isLast ? (
                 <span aria-current="page">{item.label}</span>
               ) : (

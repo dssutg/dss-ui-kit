@@ -84,6 +84,48 @@ describe('Breadcrumbs', () => {
     }
   });
 
+  it('renders a trail that visits one path twice', async () => {
+    // A trail can begin and end on `/`, so the destination cannot be what identifies a step: the
+    // steps are taken in order, and the place in the order is the identity.
+    const repeated: readonly BreadcrumbItem[] = [
+      { to: '/', label: 'Home' },
+      { to: '/sections/main', label: 'Main' },
+      { to: '/', label: 'Overview' },
+    ];
+
+    const { findAll } = await render(<Breadcrumbs items={repeated} />);
+
+    expect(findAll('li')).toHaveLength(3);
+    expect(findAll('[aria-current="page"]').map((step) => step.textContent)).toEqual(['Overview']);
+  });
+
+  it('updates a step in place when its destination changes', async () => {
+    // Keyed by destination, a rewritten step's element is matched against the step that now holds
+    // that destination and moved across the trail, replacing the element that showed the step.
+    const { findAll, update } = await render(
+      <Breadcrumbs
+        items={[
+          { to: '/', label: 'Home' },
+          { to: '/main', label: 'Main' },
+        ]}
+      />,
+    );
+    const firstBefore = findAll('li')[0];
+    const secondBefore = findAll('li')[1];
+
+    await update(
+      <Breadcrumbs
+        items={[
+          { to: '/', label: 'Home' },
+          { to: '/other', label: 'Other' },
+        ]}
+      />,
+    );
+
+    expect(findAll('li')[0]).toBe(firstBefore);
+    expect(findAll('li')[1]).toBe(secondBefore);
+  });
+
   it('renders an empty nav for an empty trail', async () => {
     const { find, query } = await render(<Breadcrumbs items={[]} />);
 
