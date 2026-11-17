@@ -160,10 +160,10 @@ describe('ControlledMUITabList', () => {
     expect(container.textContent).toBe('');
   });
 
-  it('reports the first tab as the selection when the tab list changes', async () => {
+  it('keeps the selection when the tab list changes and the selected tab survives', async () => {
     const setTabId = vi.fn();
     const { update } = await render(
-      <ControlledMUITabList tabs={tabs} tabId="first" setTabId={setTabId} />,
+      <ControlledMUITabList tabs={tabs} tabId="second" setTabId={setTabId} />,
     );
 
     setTabId.mockClear();
@@ -173,7 +173,48 @@ describe('ControlledMUITabList', () => {
       { id: 'third', title: 'Third', content: <p>Third panel</p>, forceMount: false },
     ];
 
-    await update(<ControlledMUITabList tabs={moreTabs} tabId="first" setTabId={setTabId} />);
+    await update(<ControlledMUITabList tabs={moreTabs} tabId="second" setTabId={setTabId} />);
+
+    expect(setTabId).not.toHaveBeenCalled();
+  });
+
+  it('keeps the selection when the caller hands over a fresh copy of the same tab list', async () => {
+    // A caller that builds the list inline hands over a new identity on every render; the selection
+    // is the caller's, and an equal list is no reason to take it back to the first tab.
+    const setTabId = vi.fn();
+    const copy: MUITabDescriptor<string>[] = tabs.map((tab) => ({ ...tab }));
+
+    const { update } = await render(
+      <ControlledMUITabList tabs={tabs} tabId="second" setTabId={setTabId} />,
+    );
+
+    setTabId.mockClear();
+
+    await update(<ControlledMUITabList tabs={copy} tabId="second" setTabId={setTabId} />);
+
+    expect(setTabId).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the first tab when the selected tab is gone', async () => {
+    const setTabId = vi.fn();
+    const { update } = await render(
+      <ControlledMUITabList tabs={tabs} tabId="second" setTabId={setTabId} />,
+    );
+
+    setTabId.mockClear();
+
+    const otherTabs: MUITabDescriptor<string>[] = [
+      { id: 'other', title: 'Other', content: <p>Other panel</p>, forceMount: false },
+    ];
+
+    await update(<ControlledMUITabList tabs={otherTabs} tabId="second" setTabId={setTabId} />);
+
+    expect(setTabId).toHaveBeenCalledWith('other');
+  });
+
+  it('reports the first tab when it was given no selection', async () => {
+    const setTabId = vi.fn();
+    await render(<ControlledMUITabList tabs={tabs} tabId={null} setTabId={setTabId} />);
 
     expect(setTabId).toHaveBeenCalledWith('first');
   });

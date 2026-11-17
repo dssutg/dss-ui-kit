@@ -13,6 +13,12 @@ import type { MUITabDescriptor } from './MUITabList';
  * A tab list whose selected tab is the caller's, for a tab selection that has to outlive the component
  * — one in a URL, or one two panels have to agree on.
  *
+ * The selection is re-synced only when it has to be: a change to `tabs` that still holds the selected
+ * id — including a fresh copy of the same list, which a caller that does not memoize hands over on
+ * every render — reports nothing, and one that does not, like a caller whose selection is still
+ * `null`, falls back to the first tab. The tab bodies are the caller's too: a tab's `content` mounts
+ * into the list's own panel element, so holding it in a store is not required to keep it alive.
+ *
  * {@link MUITabList} is the same thing with the selection held inside it, and is what an application
  * wants unless something outside needs to know which tab is open.
  */
@@ -45,10 +51,15 @@ export function ControlledMUITabList<ID extends string>({
 
   useGranularEffect(
     () => {
-      setTabId(tabs[0]?.id ?? null);
+      // The selection is the caller's, so a change to `tabs` is only worth reporting when it takes
+      // that selection away: a list that still holds the selected id reports nothing, and one that
+      // does not — or a caller that has not chosen yet — falls back to the first tab.
+      if (tabId === null || !tabs.some((tab) => tab.id === tabId)) {
+        setTabId(tabs[0]?.id ?? null);
+      }
     },
-    [tabs.length],
     [tabs],
+    [tabId, setTabId],
   );
 
   // Force additional component re-render after refs have been initialized
