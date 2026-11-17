@@ -1,5 +1,114 @@
 # Changelog
 
+## [0.6.0](https://github.com/dssutg/dss-ui-kit/compare/v0.5.1...v0.6.0) (2026-11-17)
+
+
+### Features
+
+* **exports:** export all public symbols from index.ts [354d244](https://github.com/dssutg/dss-ui-kit/commit/354d244c2299ac2896cdaf2b45dceafa781578ab)
+* **exports:** export the util/color helpers [349e7c5](https://github.com/dssutg/dss-ui-kit/commit/349e7c571072f60820ab6786972e880cfd0595f0)
+* **locale:** check t's keys against a CustomMessages augmentation point [0c0c114](https://github.com/dssutg/dss-ui-kit/commit/0c0c114962e0136ee797d5086b16f31cdf996860)
+* **locale:** export the endonym language name table [76e3d3a](https://github.com/dssutg/dss-ui-kit/commit/76e3d3a1ad3f8e1ce07e277622dd0315d892f850)
+* **theme:** make color-black grayscale [af58532](https://github.com/dssutg/dss-ui-kit/commit/af58532c73ef726a826b6bcb3aa4303d8f5e476f)
+* **ui:** add a back link [80afb83](https://github.com/dssutg/dss-ui-kit/commit/80afb838c60ab0abd183411a07bb1a8b3891e262)
+* **ui:** add a state store, route path routines and a routing-aware Link [433cad8](https://github.com/dssutg/dss-ui-kit/commit/433cad84c36919dd53e2f89dad01b3b1271a0ea8)
+* **ui:** add a status indicator [950272a](https://github.com/dssutg/dss-ui-kit/commit/950272aab0253ece5f638a80dacc7487de36ae35)
+* **ui:** add breadcrumbs [e720706](https://github.com/dssutg/dss-ui-kit/commit/e7207065e031f000f41d63927ceed85e611a4e87)
+* **ui:** add onScroll to the table components [7161128](https://github.com/dssutg/dss-ui-kit/commit/71611282b765ddc587debc60f66d159617d35115)
+* **util:** add an error message helper [0375562](https://github.com/dssutg/dss-ui-kit/commit/0375562a09a2c7f813b24dfc39c93229ebe49ec4)
+* **util:** add unpadded base64url encoding [9a0a44c](https://github.com/dssutg/dss-ui-kit/commit/9a0a44c933c47f8c51bb6bf5aa64adeb70512402)
+* **util:** export math types named in public signatures [ef6642b](https://github.com/dssutg/dss-ui-kit/commit/ef6642b74dddd8242cc3eb4312952d7fcf92a7fb)
+* **util:** export the remaining public file helpers [9997c62](https://github.com/dssutg/dss-ui-kit/commit/9997c6200deaa6b02eeb14279c7deaba8dc35a99)
+* **util:** look up a key map binding by its action [be4ee92](https://github.com/dssutg/dss-ui-kit/commit/be4ee92271a7cbc65fc58915c621ff5b53058c94)
+* **util:** publish the React-free helpers on a util subpath [b1449ec](https://github.com/dssutg/dss-ui-kit/commit/b1449ec929f57f309cfaefb1d21ef77910064d2a)
+* **util:** sanitize untrusted SVG strings [d019f61](https://github.com/dssutg/dss-ui-kit/commit/d019f61b47b52dde93ebd8b8c195b024b70a7b1b)
+
+
+### Bug Fixes
+
+* **build:** keep vitest out of the published runtime bundle [ab9cd18](https://github.com/dssutg/dss-ui-kit/commit/ab9cd18006ba29251bb2db191c1126ff3cd967b1)
+* **config:** gate the baseline generators on the entry point they actually run [1116788](https://github.com/dssutg/dss-ui-kit/commit/1116788f56410688e359d7147835d828b4584c8a)
+* **config:** give the whole-tree scan the budget the coverage run can meet [6f780b0](https://github.com/dssutg/dss-ui-kit/commit/6f780b07b6311d6082f367a3e7d0801c5361d746)
+* **locale:** expand the plural placeholders a message carries [09ca086](https://github.com/dssutg/dss-ui-kit/commit/09ca0860be4939ed9c0754fad4a1e2e732b81a1b)
+* **math:** normalize -0 components in Vector2D.normal [d1f38e6](https://github.com/dssutg/dss-ui-kit/commit/d1f38e67ef7220e6cefb81966c93ab94e6eec5ca)
+* **ui:** close MiniCalendar once per popup click [662f951](https://github.com/dssutg/dss-ui-kit/commit/662f951dab868d35941f0c65aa740dbde94382b8)
+* **ui:** correct the table search filter values, export columns and empty detection [e2eab17](https://github.com/dssutg/dss-ui-kit/commit/e2eab179bb9718efe092a5f9d89f956cd4f3fea2)
+* **ui:** give Button the disabled attribute [a0c5cd3](https://github.com/dssutg/dss-ui-kit/commit/a0c5cd3f1ba1a4bdda65d80eb0bbf88398bfc4d4)
+* **ui:** give Checkbox a disabled state and an accessible name [a080658](https://github.com/dssutg/dss-ui-kit/commit/a0806584201fa052f0be9028c9ad549668b62adc)
+* **ui:** give DropDownMenu separator items [d08c0e0](https://github.com/dssutg/dss-ui-kit/commit/d08c0e0d544745e240ed1fcc9bb3e0bebbc60be3)
+* **ui:** key breadcrumb steps by their place in the trail [e8b5237](https://github.com/dssutg/dss-ui-kit/commit/e8b5237d3c2839f180e818685dab2d439ed69154)
+* **ui:** leave a leaf's expansion untouched and reset typeahead once per key [3b04bb8](https://github.com/dssutg/dss-ui-kit/commit/3b04bb8cb09d251502837cb2e36468a4d531446c)
+* **ui:** name the select for the accessibility tree and forward its ref [3077390](https://github.com/dssutg/dss-ui-kit/commit/3077390ce829756be1a01c8ae81c84b9e3a4e5ca)
+* **ui:** re-sync the controlled tab list only when the selection is gone [dc37dc5](https://github.com/dssutg/dss-ui-kit/commit/dc37dc53497cfd2e1d1cd6a8f26051e9f11f0611)
+* **ui:** settle UploadConfig on complete when the file is already uploaded [ce3c8df](https://github.com/dssutg/dss-ui-kit/commit/ce3c8df3593bce2ae81c14a6e08ad6ca2a72ec0b)
+* **ui:** split ZoomableCanvas listeners from draw effect and add content redraw trigger [7719029](https://github.com/dssutg/dss-ui-kit/commit/7719029758d427dc1dcb1162d2da00feb0552e0f)
+* **util:** commit a drop only for a drag the hook started [c4daf9e](https://github.com/dssutg/dss-ui-kit/commit/c4daf9eea9538fa684965e1bbd4ef2834de70492)
+* **util:** correct the vector zero check and the in-place transpose [1bb5e58](https://github.com/dssutg/dss-ui-kit/commit/1bb5e587bc3428e10c1026c4e89c83f6152cd427)
+* **util:** keep symbol keys as symbols when cloning objects [54e6cd6](https://github.com/dssutg/dss-ui-kit/commit/54e6cd60f9e8353461c4abed6a75bc5c4b5015e4)
+* **util:** measure useElementSize's element on the commit that attaches it [100f1ae](https://github.com/dssutg/dss-ui-kit/commit/100f1aeda475fcd386a4f186345ed4083506f546)
+* **util:** repair the ten defects the coverage work reported [a23efb6](https://github.com/dssutg/dss-ui-kit/commit/a23efb6e7da91bfaf12977c06a6961af24018b84)
+
+
+### Refactoring
+
+* remove the castable type assertions from the library [e91904d](https://github.com/dssutg/dss-ui-kit/commit/e91904d4d96610c761df440a654dc621d14d8315)
+* **tables:** break the import cycle around ControlledTable [858244e](https://github.com/dssutg/dss-ui-kit/commit/858244e62d062c0692129af03d096e4339f34805)
+* **util:** add explicit return types to exported symbols [7ecd483](https://github.com/dssutg/dss-ui-kit/commit/7ecd48356a823933277ff5baebfcd1be8d33aa2e)
+* **util:** drop the unreachable boxed-String clause from rp.boolean [d3a153e](https://github.com/dssutg/dss-ui-kit/commit/d3a153ea8ebc372ea28c985f864566215587954b)
+
+
+### Documentation
+
+* **agents:** require a failing test alongside a bug fix [5d501de](https://github.com/dssutg/dss-ui-kit/commit/5d501de936aa7c0f6f4d8dbd240aa94c205952df)
+* correct the stale coverage-gate description in the exceptions list [f88c56f](https://github.com/dssutg/dss-ui-kit/commit/f88c56fa369bae79af2b5e47a3246a20b99d9986)
+* remove the fixed bug reports [0a1f3bc](https://github.com/dssutg/dss-ui-kit/commit/0a1f3bcd08ad3dea119b1e47ead147c7ca7af70a)
+* require maintained 100% coverage and honest formal proofs [8246cc7](https://github.com/dssutg/dss-ui-kit/commit/8246cc723bce6867c04b198bd9781c6b754c3665)
+* state the coverage and formal-verification policy in the README [3ff76bb](https://github.com/dssutg/dss-ui-kit/commit/3ff76bb932f4a1546e4bd26f136e1f391515c970)
+* **ui:** fix the becase typo in the VirtualizedList comment [5ea08e6](https://github.com/dssutg/dss-ui-kit/commit/5ea08e60eb6488fdb609f1796067cf36867d4808)
+* **ui:** say what Modal does not do about focus [768ff0d](https://github.com/dssutg/dss-ui-kit/commit/768ff0d756831aff7a399c5ce495253912eb0cd4)
+* update changelog [624fd38](https://github.com/dssutg/dss-ui-kit/commit/624fd3864678c0199dd1b3396c8fef1fb9f51e35)
+* update drag-and-drop ordered list bug entry after fix [2752a8f](https://github.com/dssutg/dss-ui-kit/commit/2752a8f616da1eeabe60bc3b2d028e9988048d22)
+* update fetch loading flag bug entry after fix [390c0b6](https://github.com/dssutg/dss-ui-kit/commit/390c0b6e7795f19de1216e8d0be509c5307a77d6)
+* update the tables and UploadConfig bug entries after the fixes [bc619ca](https://github.com/dssutg/dss-ui-kit/commit/bc619cabe3fe45ce5e4c37dc44023d3b4c635ab5)
+* update useElementSize bug entry after fix [cb928ea](https://github.com/dssutg/dss-ui-kit/commit/cb928ea58b41b5eee59536b76d2a03f8f1bb15b1)
+* **util:** correct the stale highlight report entries and tokenizer comments [ccac816](https://github.com/dssutg/dss-ui-kit/commit/ccac8166b500eb62fa34a3ad71b04d4a58190baf)
+
+
+### Tests
+
+* **coverage:** hold src/util/ to 100% with a threshold gate and named exceptions [53fa59a](https://github.com/dssutg/dss-ui-kit/commit/53fa59a625247b0f8b25803108014af55ad17826)
+* **lemmascript:** verify roundToPowerOfTwo and the NDC point check [5350233](https://github.com/dssutg/dss-ui-kit/commit/5350233f8778a342a3c7a4426b623f4a42386157)
+* **lemmascript:** verify the clamp, modulo, sum and trim helpers [d5e4a76](https://github.com/dssutg/dss-ui-kit/commit/d5e4a7676fa599db16bda1c7d89ed5d42bc43cc1)
+* **ui:** add the missing purpose comment [eb06b9c](https://github.com/dssutg/dss-ui-kit/commit/eb06b9cef75950399cad53bdc43d72df6f1a9034)
+* **ui:** cover the untested controls, tabs, table helpers and pickers [0fd7f4a](https://github.com/dssutg/dss-ui-kit/commit/0fd7f4a5e0694f42c1f3d95981f2e2ab93d50155)
+* **ui:** hold all of src/ to 100% coverage [caaae7a](https://github.com/dssutg/dss-ui-kit/commit/caaae7adab9824f4de5f4c0991b5dfe38e30e72c)
+
+
+### Build
+
+* **config:** require an MIT SPDX identifier and a purpose comment on every source file [70ab071](https://github.com/dssutg/dss-ui-kit/commit/70ab071bd281836497dd97413441ca9af14b5321)
+* **lemmascript:** add the verification toolchain and its pipeline [f40c748](https://github.com/dssutg/dss-ui-kit/commit/f40c7485841bf6f563f15e9fe7859e9597815122)
+* migrate the toolchain from discontinued Deno to Node.js 26 and npm [cd7b0e1](https://github.com/dssutg/dss-ui-kit/commit/cd7b0e1b40b0ff29918d8901ba6420feab7be22c)
+
+
+### Continuous Integration
+
+* check explicit return types without a dry publish [ebf9185](https://github.com/dssutg/dss-ui-kit/commit/ebf9185381ac78c45463ea3236f13b7c2ee00a05)
+* enable stricter Biome lint rules [1dade15](https://github.com/dssutg/dss-ui-kit/commit/1dade1560e69b5ef29c7a2952f1e551f72bfa6fc)
+* enforce commit lint, dry publish and the remaining AGENTS.md rules [14b25ec](https://github.com/dssutg/dss-ui-kit/commit/14b25ec4c88ee0700b053b94cc9beca90b4c1477)
+* guard the remaining AGENTS.md rules [d4bd665](https://github.com/dssutg/dss-ui-kit/commit/d4bd66518300d6a135404d6cf9e7ea302dfe68f9)
+* guard the repository against duplicated code [8ea8e0f](https://github.com/dssutg/dss-ui-kit/commit/8ea8e0fbccac03efb745ab58fab96f6de624079f)
+* **lemmascript:** pin the verification workflow and toolchain to v0.6.4 [02b6231](https://github.com/dssutg/dss-ui-kit/commit/02b6231d28b087973e3c74e57ea246af51d76784)
+* make stricter TypeScript and Biome [41cf9ce](https://github.com/dssutg/dss-ui-kit/commit/41cf9cebe82d7a8de35dd013038329d459ba7c20)
+
+
+### Chores
+
+* bump the pinned Deno to 2.9.7 [ad8cf4a](https://github.com/dssutg/dss-ui-kit/commit/ad8cf4afb5d4f809755dafd2eb6f28cbd94e92e9)
+* **config:** exclude the generated jsr.json from the format check [f51da31](https://github.com/dssutg/dss-ui-kit/commit/f51da316db10402c925ac596675d50a7206c00ae)
+* **release:** document the fixed bump-version hook and drop the workaround [5227c5c](https://github.com/dssutg/dss-ui-kit/commit/5227c5c48ef4b832b0548f86609d18a3c9563f5d)
+* **release:** replace the release scripts with the external bump-version tool [955287e](https://github.com/dssutg/dss-ui-kit/commit/955287e3866845fd9072a6480e442dcf3bb18968)
+
 [0.2.0] — 2026-10-04
 
 ### Features
@@ -179,3 +288,4 @@
 - **config:** ignore the RepoMapper tag cache directory ([25e8244](https://github.com/dssutg/dss-ui-kit/commit/25e824493196b31f1fde7491807d46d6305b9e20))
 
 **Contributors:** Daniil Stepanov
+
